@@ -1,0 +1,5 @@
+<job>
+ <macro name="~/mpdroot/macro/mpd/runMC.C"/>
+ <file input="auau.09gev.mbias.98k.ftn14" output="~/mpdroot/macro/mpd/evetest.root"/>
+ <run mode="global" count="1" config="~/mpdroot/build/config.sh"/>
+</job>

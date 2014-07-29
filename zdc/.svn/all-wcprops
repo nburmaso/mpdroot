@@ -1,0 +1,149 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/mpdroot/!svn/ver/1230/trunk/zdc
+END
+MpdZdcTstSim.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/320/trunk/zdc/MpdZdcTstSim.h
+END
+MpdZdcPsdGeoPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/79/trunk/zdc/MpdZdcPsdGeoPar.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/860/trunk/zdc/CMakeLists.txt
+END
+MpdZdcGeo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/315/trunk/zdc/MpdZdcGeo.cxx
+END
+MpdZdcPsdDigiPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/319/trunk/zdc/MpdZdcPsdDigiPar.h
+END
+MpdZdcDigi.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/818/trunk/zdc/MpdZdcDigi.cxx
+END
+MpdZdcGeoPar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/315/trunk/zdc/MpdZdcGeoPar.cxx
+END
+MpdZdcPoint.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/957/trunk/zdc/MpdZdcPoint.h
+END
+MpdZdcDigiPar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/309/trunk/zdc/MpdZdcDigiPar.cxx
+END
+MpdZdc.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/1004/trunk/zdc/MpdZdc.cxx
+END
+MpdZdcDigiProducer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/1230/trunk/zdc/MpdZdcDigiProducer.cxx
+END
+MpdZdcTstSim.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/904/trunk/zdc/MpdZdcTstSim.cxx
+END
+MpdZdcDigiScheme.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/314/trunk/zdc/MpdZdcDigiScheme.h
+END
+MpdZdcContFact.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/308/trunk/zdc/MpdZdcContFact.h
+END
+MpdZdcPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/957/trunk/zdc/MpdZdcPoint.cxx
+END
+MpdZdcGeo.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/315/trunk/zdc/MpdZdcGeo.h
+END
+MpdZdcDigiScheme.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/904/trunk/zdc/MpdZdcDigiScheme.cxx
+END
+MpdZdcDigi.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/75/trunk/zdc/MpdZdcDigi.h
+END
+MpdZdcContFact.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/307/trunk/zdc/MpdZdcContFact.cxx
+END
+MpdZdcLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/79/trunk/zdc/MpdZdcLinkDef.h
+END
+MpdZdcGeoPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/315/trunk/zdc/MpdZdcGeoPar.h
+END
+MpdZdcDigiPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/310/trunk/zdc/MpdZdcDigiPar.h
+END
+MpdZdc.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mpdroot/!svn/ver/818/trunk/zdc/MpdZdc.h
+END
+MpdZdcDigiProducer.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/943/trunk/zdc/MpdZdcDigiProducer.h
+END

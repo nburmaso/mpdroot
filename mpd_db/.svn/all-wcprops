@@ -1,0 +1,173 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/mpdroot/!svn/ver/1231/trunk/mpd_db
+END
+MpdDbGeoShape.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbGeoShape.cxx
+END
+get_mpd_prod
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1155/trunk/mpd_db/get_mpd_prod
+END
+MpdDbManufacturer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbManufacturer.cxx
+END
+get_mpd_prod.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1150/trunk/mpd_db/get_mpd_prod.cxx
+END
+MpdDbDetector.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbDetector.h
+END
+MpdDbConnection.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbConnection.cxx
+END
+MpdDbGeoParameter.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbGeoParameter.h
+END
+mpd_geo.sql
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1231/trunk/mpd_db/mpd_geo.sql
+END
+MpdDbLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbLinkDef.h
+END
+MpdDbComponent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbComponent.cxx
+END
+MpdDbMedia.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbMedia.h
+END
+MpdDbComponentType.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbComponentType.cxx
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/1150/trunk/mpd_db/Makefile
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/CMakeLists.txt
+END
+MpdGeoParameter.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/1231/trunk/mpd_db/MpdGeoParameter.cxx
+END
+mpd.sql
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/1150/trunk/mpd_db/mpd.sql
+END
+MpdDbGeoPoint.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbGeoPoint.h
+END
+MpdDbDetector.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbDetector.cxx
+END
+MpdDbGeoParameter.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbGeoParameter.cxx
+END
+MpdDbMedia.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbMedia.cxx
+END
+db_schema.png
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/db_schema.png
+END
+MpdDbGeoShape.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbGeoShape.h
+END
+MpdDbManufacturer.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbManufacturer.h
+END
+MpdDbConnection.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbConnection.h
+END
+MpdDbGeoPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1192/trunk/mpd_db/MpdDbGeoPoint.cxx
+END
+MpdDbComponent.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbComponent.h
+END
+MpdDbComponentType.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/1108/trunk/mpd_db/MpdDbComponentType.h
+END
+MpdGeoParameter.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1231/trunk/mpd_db/MpdGeoParameter.h
+END

@@ -1,0 +1,25 @@
+// Installation procedure for MPDRoot at JINR
+=============================================
+  configure the required packages
+
+ create a build directory
+
+It is more convenient to have separate build directory for the the
+different systems
+
+       > bash
+       > mkdir MyBuild
+ 
+configure mpdroot
+   
+       > cd  "MpdRoot_top_directory"
+       > . ./SetEnv.sh
+       > cd  MyBuild
+       > cmake "MpdRoot_top_directory"
+
+
+build the framework
+
+       > .  ./config.sh
+       > make
+       > make install

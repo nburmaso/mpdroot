@@ -1,0 +1,32 @@
+To run Monte Carlo in batch mode on LIT farm (from lxmpd-ui.jinr.ru) adn wrire output
+root files to dcache edit respective lines (ENERGY, INFILE, MACDIR, MACFILE, i, NFILES,
+NEVENTS (total number of events to be processed is NFILES*NEVENTS) as well as 
+INDIR and OUTDIR if necessary) in mcpbs_dcache.sh (currently available UrQMD
+files are listed as INFILE):
+
+export ENERGY=04GeV/
+export INDIR=/opt/exp_soft/mpd/data4mpd/UrQMD/2.3/
+export INFILE=auau.04gev.0_3fm.10k.f14
+#export INFILE=auau.07gev.0-3fm.26.8k.f14
+#export INFILE=auau.09gev.0_3fm.41.5k.f14
+#export INFILE=auau.11gev.0-3fm.11k.f14
+if [ ! -f $INDIR$INFILE ]; then
+  export INDIRTMP=dcap://lxse-dc01.jinr.ru:22126//pnfs/jinr.ru/data/mpd/data4mpd/UrQMD/2.3/
+  dccp $INDIRTMP$INFILE $INDIR
+fi
+
+export OUTDIR=dcap://lxse-dc01.jinr.ru:22126//pnfs/jinr.ru/data/mpd/data4mpd/data/$ENERGY
+export MACDIR=/opt/exp_soft/mpd/geger/new_prod/$ENERGY
+export MACFILE="runMC.C"
+
+export OFILE=auau_04gev_0_3fm
+export NFILES=50
+export NEVENTS=200
+
+To run:
+
+Path_to_your_scripts/mcpbs_dcache.sh (./mcpbs_dcache.sh from $pwd)
+
+To change environment variables for different Fairsoft version edit mc_dcache.sh.
+
+See the runMC.C as an example of root macro for reading the DST file.

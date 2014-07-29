@@ -1,0 +1,185 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/mpdroot/!svn/ver/1070/trunk/parbase
+END
+FairDetParIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairDetParIo.cxx
+END
+FairParAsciiFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/977/trunk/parbase/FairParAsciiFileIo.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1070/trunk/parbase/CMakeLists.txt
+END
+FairParIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/977/trunk/parbase/FairParIo.cxx
+END
+FairGenericParRootFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairGenericParRootFileIo.cxx
+END
+FairDetParRootFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairDetParRootFileIo.cxx
+END
+FairParRootFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/991/trunk/parbase/FairParRootFileIo.cxx
+END
+FairRuntimeDb.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairRuntimeDb.h
+END
+FairGenericParAsciiFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairGenericParAsciiFileIo.cxx
+END
+FairDetParAsciiFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairDetParAsciiFileIo.cxx
+END
+FairParGenericSet.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairParGenericSet.h
+END
+FairRtdbRun.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/868/trunk/parbase/FairRtdbRun.cxx
+END
+FairParamList.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairParamList.h
+END
+FairParSet.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairParSet.h
+END
+FairParAsciiFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/977/trunk/parbase/FairParAsciiFileIo.cxx
+END
+FairContFact.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairContFact.h
+END
+FairRuntimeDb.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1070/trunk/parbase/FairRuntimeDb.cxx
+END
+FairParGenericSet.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairParGenericSet.cxx
+END
+FairDetParIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairDetParIo.h
+END
+FairParamList.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairParamList.cxx
+END
+ParBaseLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1070/trunk/parbase/ParBaseLinkDef.h
+END
+FairParSet.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairParSet.cxx
+END
+FairParIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/977/trunk/parbase/FairParIo.h
+END
+FairGenericParRootFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairGenericParRootFileIo.h
+END
+FairDetParRootFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairDetParRootFileIo.h
+END
+FairContFact.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairContFact.cxx
+END
+FairParRootFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/977/trunk/parbase/FairParRootFileIo.h
+END
+FairDetParAsciiFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairDetParAsciiFileIo.h
+END
+FairRtdbRun.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairRtdbRun.h
+END
+FairGenericParAsciiFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/mpdroot/!svn/ver/860/trunk/parbase/FairGenericParAsciiFileIo.h
+END

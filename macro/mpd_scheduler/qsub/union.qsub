@@ -1,0 +1,18 @@
+#!/bin/bash
+#$ -j y
+#$ -N mpd-union-task
+#$ -cwd
+
+# request Bourne again shell as shell for job
+#$ -S /bin/bash
+
+echo "Start date: `date`"
+
+if [ "$config" != "" ]
+then
+ eval $config
+fi
+
+root -b -q "$VMCWORKDIR/macro/mpd_scheduler/union.C(\"$sParameters\")"
+
+echo "  End date: `date`"

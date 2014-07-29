@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/svn/mpdroot/!svn/ver/1280/trunk
+END
+NEWS
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/svn/mpdroot/!svn/ver/3/trunk/NEWS
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/1272/trunk/CMakeLists.txt
+END
+SetEnv.sh
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/mpdroot/!svn/ver/1259/trunk/SetEnv.sh
+END
+MpdRoot_test1.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/118/trunk/MpdRoot_test1.cmake
+END
+AUTHORS
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/mpdroot/!svn/ver/3/trunk/AUTHORS
+END
+CTestConfig.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1217/trunk/CTestConfig.cmake
+END
+ChangeLog
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/mpdroot/!svn/ver/1219/trunk/ChangeLog
+END
+CDash_ShortHelp.txt
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1055/trunk/CDash_ShortHelp.txt
+END
+CTestCustom.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1213/trunk/CTestCustom.cmake
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/mpdroot/!svn/ver/3/trunk/README
+END
+MpdRoot_test.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1151/trunk/MpdRoot_test.cmake
+END
+Dart.sh
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/mpdroot/!svn/ver/1213/trunk/Dart.sh
+END
+INSTALL
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/mpdroot/!svn/ver/3/trunk/INSTALL
+END
+INSTALL.JINR
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mpdroot/!svn/ver/754/trunk/INSTALL.JINR
+END
+CDash_Env_MpdRoot.sh
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/1209/trunk/CDash_Env_MpdRoot.sh
+END
+COPYING
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/mpdroot/!svn/ver/3/trunk/COPYING
+END

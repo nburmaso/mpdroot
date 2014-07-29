@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep
+END
+tpcSimulation.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/tpcSimulation.cpp
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/Makefile
+END
+showFoundClustersQA3Theta.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/showFoundClustersQA3Theta.cpp
+END
+show.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/show.cpp
+END
+geometry_v1.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/geometry_v1.cpp
+END
+main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/main.cpp
+END
+showFoundClustersQA3.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/showFoundClustersQA3.cpp
+END
+showFoundClustersQA3Phi.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/showFoundClustersQA3Phi.cpp
+END
+parameters.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/parameters.hpp
+END
+runMCTrack.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/mpdroot/!svn/ver/808/trunk/macro/tpc/angDep/runMCTrack.cpp
+END

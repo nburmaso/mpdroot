@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/mpdroot/!svn/ver/1269/trunk/sft
+END
+MpdSftHit.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftHit.h
+END
+MpdSftGeo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftGeo.cxx
+END
+MpdSftHitProducer.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftHitProducer.h
+END
+MpdSftGeoPar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftGeoPar.cxx
+END
+MpdSftPoint.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftPoint.h
+END
+MpdSft.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/1269/trunk/sft/MpdSft.cxx
+END
+MpdSftHit.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftHit.cxx
+END
+MpdSftContFact.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftContFact.h
+END
+MpdSftHitProducer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/860/trunk/sft/MpdSftHitProducer.cxx
+END
+MpdSftPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftPoint.cxx
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/860/trunk/sft/CMakeLists.txt
+END
+MpdSftGeo.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftGeo.h
+END
+MpdSftLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/214/trunk/sft/MpdSftLinkDef.h
+END
+MpdSftContFact.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftContFact.cxx
+END
+MpdSftGeoPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSftGeoPar.h
+END
+MpdSft.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mpdroot/!svn/ver/323/trunk/sft/MpdSft.h
+END

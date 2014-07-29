@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/mpdroot/!svn/ver/1133/trunk/emc
+END
+MpdEmcPoint.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmcPoint.h
+END
+MpdEmc.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmc.cxx
+END
+MpdEmcHit.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmcHit.cxx
+END
+MpdEmcContFact.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/690/trunk/emc/MpdEmcContFact.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1133/trunk/emc/CMakeLists.txt
+END
+MpdEmcHitProducer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmcHitProducer.cxx
+END
+MpdEmcPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmcPoint.cxx
+END
+MpdEmcGeo.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/690/trunk/emc/MpdEmcGeo.h
+END
+MpdEmcLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmcLinkDef.h
+END
+MpdEmcContFact.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/690/trunk/emc/MpdEmcContFact.cxx
+END
+MpdEmcGeoPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/690/trunk/emc/MpdEmcGeoPar.h
+END
+MpdEmc.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmc.h
+END
+MpdEmcHit.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmcHit.h
+END
+MpdEmcGeo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/690/trunk/emc/MpdEmcGeo.cxx
+END
+MpdEmcHitProducer.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1133/trunk/emc/MpdEmcHitProducer.h
+END
+MpdEmcGeoPar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/690/trunk/emc/MpdEmcGeoPar.cxx
+END

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/mpdroot/!svn/ver/777/trunk/macro/physical_analysis/physics_group/dcache_scripts
+END
+cp2dcache.sh
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/mpdroot/!svn/ver/777/trunk/macro/physical_analysis/physics_group/dcache_scripts/cp2dcache.sh
+END
+cp_from_dcache.sh
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/mpdroot/!svn/ver/777/trunk/macro/physical_analysis/physics_group/dcache_scripts/cp_from_dcache.sh
+END
+mv2dcache.sh
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/mpdroot/!svn/ver/777/trunk/macro/physical_analysis/physics_group/dcache_scripts/mv2dcache.sh
+END
+mv_from_dcache.sh
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/mpdroot/!svn/ver/777/trunk/macro/physical_analysis/physics_group/dcache_scripts/mv_from_dcache.sh
+END
+rm_from_dcache.sh
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/mpdroot/!svn/ver/777/trunk/macro/physical_analysis/physics_group/dcache_scripts/rm_from_dcache.sh
+END

@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/mpdroot/!svn/ver/1256/trunk/mcstack
+END
+FairMCTrack.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/605/trunk/mcstack/FairMCTrack.h
+END
+MpdDetectorList.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1256/trunk/mcstack/MpdDetectorList.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1070/trunk/mcstack/CMakeLists.txt
+END
+FairStack.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/860/trunk/mcstack/FairStack.h
+END
+FairMCTrack.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/860/trunk/mcstack/FairMCTrack.cxx
+END
+FairStack.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1042/trunk/mcstack/FairStack.cxx
+END
+MCStackLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/334/trunk/mcstack/MCStackLinkDef.h
+END

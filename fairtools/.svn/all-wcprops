@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/mpdroot/!svn/ver/1070/trunk/fairtools
+END
+FairLogger.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1070/trunk/fairtools/FairLogger.cxx
+END
+FairToolsLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/1070/trunk/fairtools/FairToolsLinkDef.h
+END
+FairLogger.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1070/trunk/fairtools/FairLogger.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1070/trunk/fairtools/CMakeLists.txt
+END

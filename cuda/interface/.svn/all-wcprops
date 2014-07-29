@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/1070/trunk/cuda/interface
+END
+FairCuda.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/860/trunk/cuda/interface/FairCuda.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/1070/trunk/cuda/interface/CMakeLists.txt
+END
+cudaLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/860/trunk/cuda/interface/cudaLinkDef.h
+END

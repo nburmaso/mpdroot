@@ -1,0 +1,287 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/mpdroot/!svn/ver/910/trunk/stt
+END
+CbmSttHitProducerIdeal.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHitProducerIdeal.h
+END
+CbmSttHelixTrackFitter.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/910/trunk/stt/CbmSttHelixTrackFitter.cxx
+END
+CbmGeoSttPar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmGeoSttPar.cxx
+END
+CbmSttParRootFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/815/trunk/stt/CbmSttParRootFileIo.cxx
+END
+SttLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/348/trunk/stt/SttLinkDef.h
+END
+CbmSttHitProducerReal.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHitProducerReal.h
+END
+CbmSttTrackMatch.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttTrackMatch.cxx
+END
+CbmSttTrackFinder.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttTrackFinder.h
+END
+CbmSttTrackFitter.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttTrackFitter.cxx
+END
+CbmSttParAsciiFileIo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttParAsciiFileIo.cxx
+END
+CbmSttContFact.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttContFact.h
+END
+CbmSttFindTracks.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttFindTracks.cxx
+END
+CbmSttMatchTracks.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttMatchTracks.h
+END
+CbmSttPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttPoint.cxx
+END
+CbmSttTrack.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttTrack.h
+END
+CbmSttFitTracks.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttFitTracks.cxx
+END
+CbmSttTrackFinderIdeal.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/860/trunk/stt/CbmSttTrackFinderIdeal.cxx
+END
+CbmSttHitInfo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHitInfo.cxx
+END
+CbmSttHelixTrackFitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHelixTrackFitter.h
+END
+CbmGeoSttPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmGeoSttPar.h
+END
+CbmSttParRootFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttParRootFileIo.h
+END
+CbmSttTrackMatch.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttTrackMatch.h
+END
+TStraw.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/mpdroot/!svn/ver/910/trunk/stt/TStraw.cxx
+END
+CbmSttTrackFitter.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttTrackFitter.h
+END
+CbmSttParAsciiFileIo.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttParAsciiFileIo.h
+END
+CbmGeoStt.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmGeoStt.cxx
+END
+CbmSttFindTracks.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttFindTracks.h
+END
+CbmSttPoint.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttPoint.h
+END
+CbmStt.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/mpdroot/!svn/ver/910/trunk/stt/CbmStt.cxx
+END
+CbmSttDigiPar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttDigiPar.cxx
+END
+CbmSttFitTracks.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttFitTracks.h
+END
+CbmSttTrackFinderIdeal.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/383/trunk/stt/CbmSttTrackFinderIdeal.h
+END
+CbmSttHit.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHit.cxx
+END
+CbmSttHitInfo.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHitInfo.h
+END
+CbmSttHitProducerIdeal.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHitProducerIdeal.cxx
+END
+CbmSttHitProducerReal.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/416/trunk/stt/CbmSttHitProducerReal.cxx
+END
+CbmSttTrackFinder.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttTrackFinder.cxx
+END
+TStraw.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mpdroot/!svn/ver/815/trunk/stt/TStraw.h
+END
+CbmSttHoughDefines.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHoughDefines.h
+END
+CbmGeoStt.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmGeoStt.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/860/trunk/stt/CMakeLists.txt
+END
+CbmSttContFact.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttContFact.cxx
+END
+CbmSttMatchTracks.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/910/trunk/stt/CbmSttMatchTracks.cxx
+END
+CbmSttDigiPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttDigiPar.h
+END
+CbmSttTrack.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/910/trunk/stt/CbmSttTrack.cxx
+END
+CbmStt.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mpdroot/!svn/ver/509/trunk/stt/CbmStt.h
+END
+CbmSttHit.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/348/trunk/stt/CbmSttHit.h
+END

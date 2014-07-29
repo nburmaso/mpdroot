@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/mpdroot/!svn/ver/1209/trunk/macro/ndet
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1209/trunk/macro/ndet/CMakeLists.txt
+END
+runMC_ndet.C
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1130/trunk/macro/ndet/runMC_ndet.C
+END
+recoMC_ndet.C
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1129/trunk/macro/ndet/recoMC_ndet.C
+END

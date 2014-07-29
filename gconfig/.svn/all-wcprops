@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/mpdroot/!svn/ver/1274/trunk/gconfig
+END
+g3Config_new.C
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/638/trunk/gconfig/g3Config_new.C
+END
+libMpdRoot.par
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1230/trunk/gconfig/libMpdRoot.par
+END
+fllibs.C
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/64/trunk/gconfig/fllibs.C
+END
+DecayConfig.C
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/3/trunk/gconfig/DecayConfig.C
+END
+run_fluka.sh
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/66/trunk/gconfig/run_fluka.sh
+END
+Geane.C
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/636/trunk/gconfig/Geane.C
+END
+constants.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1274/trunk/gconfig/constants.h
+END
+g3libs.C
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/mpdroot/!svn/ver/3/trunk/gconfig/g3libs.C
+END
+g4libs.C
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/64/trunk/gconfig/g4libs.C
+END
+g4config.in
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1144/trunk/gconfig/g4config.in
+END
+UserDecay.C
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1144/trunk/gconfig/UserDecay.C
+END
+flConfig.C
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/637/trunk/gconfig/flConfig.C
+END
+SetCuts.C
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/635/trunk/gconfig/SetCuts.C
+END
+basiclibs.C
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1070/trunk/gconfig/basiclibs.C
+END
+g3Config.C
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1204/trunk/gconfig/g3Config.C
+END
+g4Config.C
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1206/trunk/gconfig/g4Config.C
+END

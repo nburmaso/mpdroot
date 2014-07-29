@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/mpdroot/!svn/ver/1129/trunk/macro/zdc
+END
+tst_ZdcTstSim.C
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1129/trunk/macro/zdc/tst_ZdcTstSim.C
+END
+tst_ZdcScheme.C
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1129/trunk/macro/zdc/tst_ZdcScheme.C
+END
+reco_with_zdc.C
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1109/trunk/macro/zdc/reco_with_zdc.C
+END
+runMC.C
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1102/trunk/macro/zdc/runMC.C
+END
+runMC_zdc.C
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1129/trunk/macro/zdc/runMC_zdc.C
+END
+tst_ZdcDigi.C
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1129/trunk/macro/zdc/tst_ZdcDigi.C
+END
+zdc_tpc_selection.C
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/952/trunk/macro/zdc/zdc_tpc_selection.C
+END
+extract_zdc_histo_from_dst.C
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/mpdroot/!svn/ver/1085/trunk/macro/zdc/extract_zdc_histo_from_dst.C
+END

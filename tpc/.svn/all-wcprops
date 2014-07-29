@@ -1,0 +1,323 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/mpdroot/!svn/ver/1280/trunk/tpc
+END
+MpdTpcHit.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/900/trunk/tpc/MpdTpcHit.cxx
+END
+MpdTpcDigit.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1205/trunk/tpc/MpdTpcDigit.h
+END
+TpcPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/298/trunk/tpc/TpcPoint.cxx
+END
+MpdTpcSectorGeo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1267/trunk/tpc/MpdTpcSectorGeo.cxx
+END
+MpdParticleIdentification.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/mpdroot/!svn/ver/1065/trunk/tpc/MpdParticleIdentification.h
+END
+MpdTpc2dCluster.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1178/trunk/tpc/MpdTpc2dCluster.h
+END
+MpdTpcClusterFinderQAHistograms.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/mpdroot/!svn/ver/1250/trunk/tpc/MpdTpcClusterFinderQAHistograms.cxx
+END
+MpdTpcClusterFinderTask.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/mpdroot/!svn/ver/1250/trunk/tpc/MpdTpcClusterFinderTask.cxx
+END
+TpcDetector.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/988/trunk/tpc/TpcDetector.h
+END
+MpdTpcClusterizerTask.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/905/trunk/tpc/MpdTpcClusterizerTask.cxx
+END
+MpdTpcSector.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/1237/trunk/tpc/MpdTpcSector.cxx
+END
+TpcContFact.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/298/trunk/tpc/TpcContFact.cxx
+END
+tpcLinkDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/1235/trunk/tpc/tpcLinkDef.h
+END
+TpcFoundCluster.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1083/trunk/tpc/TpcFoundCluster.h
+END
+TpcCluster.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/386/trunk/tpc/TpcCluster.h
+END
+MpdTpcHit.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/900/trunk/tpc/MpdTpcHit.h
+END
+TpcGas.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/mpdroot/!svn/ver/905/trunk/tpc/TpcGas.cxx
+END
+TpcGeo.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/mpdroot/!svn/ver/298/trunk/tpc/TpcGeo.cxx
+END
+TpcCommon.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/386/trunk/tpc/TpcCommon.h
+END
+TpcGeoPar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/298/trunk/tpc/TpcGeoPar.cxx
+END
+TaskHelpers.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1033/trunk/tpc/TaskHelpers.cxx
+END
+MpdTpcDigitizerQAHistograms.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/mpdroot/!svn/ver/1247/trunk/tpc/MpdTpcDigitizerQAHistograms.cxx
+END
+MpdTpcDigitizerTask.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/mpdroot/!svn/ver/1248/trunk/tpc/MpdTpcDigitizerTask.cxx
+END
+TpcPoint.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/1007/trunk/tpc/TpcPoint.h
+END
+MpdTpcSectorGeo.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1280/trunk/tpc/MpdTpcSectorGeo.h
+END
+MpdTpcPeak.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1238/trunk/tpc/MpdTpcPeak.cxx
+END
+MpdTpcFoundHit.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1238/trunk/tpc/MpdTpcFoundHit.cxx
+END
+MpdTpcClusterFinderTask.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/mpdroot/!svn/ver/1241/trunk/tpc/MpdTpcClusterFinderTask.h
+END
+MpdTpcClusterFinderQAHistograms.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/mpdroot/!svn/ver/1250/trunk/tpc/MpdTpcClusterFinderQAHistograms.h
+END
+MpdTpcClusterizerTask.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/mpdroot/!svn/ver/483/trunk/tpc/MpdTpcClusterizerTask.h
+END
+MpdTpcSector.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1235/trunk/tpc/MpdTpcSector.h
+END
+TpcContFact.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/298/trunk/tpc/TpcContFact.h
+END
+TpcTimeBin.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/386/trunk/tpc/TpcTimeBin.cxx
+END
+MpdTpcHitProducer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1280/trunk/tpc/MpdTpcHitProducer.cxx
+END
+MpdTpcDriftTask.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/905/trunk/tpc/MpdTpcDriftTask.cxx
+END
+TpcGeo.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mpdroot/!svn/ver/298/trunk/tpc/TpcGeo.h
+END
+TpcGas.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/mpdroot/!svn/ver/905/trunk/tpc/TpcGas.h
+END
+MpdTpcDigit.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1205/trunk/tpc/MpdTpcDigit.cxx
+END
+TpcGeoPar.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/mpdroot/!svn/ver/298/trunk/tpc/TpcGeoPar.h
+END
+MpdTpcDigitizerTask.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1241/trunk/tpc/MpdTpcDigitizerTask.h
+END
+MpdTpcDigitizerQAHistograms.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/mpdroot/!svn/ver/1247/trunk/tpc/MpdTpcDigitizerQAHistograms.h
+END
+TaskHelpers.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1033/trunk/tpc/TaskHelpers.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/1235/trunk/tpc/CMakeLists.txt
+END
+MpdTpcFoundHit.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/1238/trunk/tpc/MpdTpcFoundHit.h
+END
+MpdTpcPeak.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/1238/trunk/tpc/MpdTpcPeak.h
+END
+MpdParticleIdentification.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/mpdroot/!svn/ver/1166/trunk/tpc/MpdParticleIdentification.cxx
+END
+MpdTpc2dCluster.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1205/trunk/tpc/MpdTpc2dCluster.cxx
+END
+TpcDetector.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/mpdroot/!svn/ver/998/trunk/tpc/TpcDetector.cxx
+END
+TpcTimeBin.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/386/trunk/tpc/TpcTimeBin.h
+END
+TpcFoundCluster.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1083/trunk/tpc/TpcFoundCluster.cxx
+END
+MpdTpcHitProducer.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/mpdroot/!svn/ver/1207/trunk/tpc/MpdTpcHitProducer.h
+END
+MpdTpcDriftTask.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/483/trunk/tpc/MpdTpcDriftTask.h
+END
+TpcCluster.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/386/trunk/tpc/TpcCluster.cxx
+END

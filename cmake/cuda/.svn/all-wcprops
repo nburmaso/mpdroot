@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/mpdroot/!svn/ver/1143/trunk/cmake/cuda
+END
+FindCUDA.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/mpdroot/!svn/ver/1143/trunk/cmake/cuda/FindCUDA.cmake
+END
+LICENSE.txt
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/1070/trunk/cmake/cuda/LICENSE.txt
+END

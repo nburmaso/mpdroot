@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/mpdroot/!svn/ver/1142/trunk/macro/emc
+END
+emc.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/mpdroot/!svn/ver/1138/trunk/macro/emc/emc.h
+END
+EmcGeom.C
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1142/trunk/macro/emc/EmcGeom.C
+END
+EmcGeom.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/mpdroot/!svn/ver/1139/trunk/macro/emc/EmcGeom.cxx
+END
+EmcGeom.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/mpdroot/!svn/ver/1142/trunk/macro/emc/EmcGeom.h
+END

@@ -1,0 +1,16 @@
+To run analysis jobs on the DSTs in batch mode on LIT farm (from lxmpd-ui.jinr.ru) 
+from the dcache directly edit lines corresponding to ENERGY, your workind directory
+(MACDIR) (full path) and root macro file (MACFILE) in anapbs_from_dcache.sh:
+
+export INDIR=dcap://lxse-dc01.jinr.ru:22126//pnfs/jinr.ru/data/mpd/data4mpd/dst/
+export ENERGY=09GeV/
+export MACDIR=/opt/exp_soft/mpd/geger/new_prod/$ENERGY
+export MACFILE="anaDST.C"
+
+To run:
+
+Path_to_your_scripts/anapbs_from_dcache.sh (./anapbs_from_dcache.sh from $pwd)
+
+To change environment variables for different Fairsoft version edit ana_form_dcache.sh.
+
+See the anaDST.C as an example of root macro for reading the DST file.

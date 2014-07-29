@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/mpdroot/!svn/ver/1129/trunk/macro/cpc
+END
+cpc.geo
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1099/trunk/macro/cpc/cpc.geo
+END
+draw.C
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/mpdroot/!svn/ver/1129/trunk/macro/cpc/draw.C
+END
+geometry_cpc_new05cm.C
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/mpdroot/!svn/ver/1101/trunk/macro/cpc/geometry_cpc_new05cm.C
+END
+geometry_v1.C
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/mpdroot/!svn/ver/542/trunk/macro/cpc/geometry_v1.C
+END
+geometry_cpc2.C
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/543/trunk/macro/cpc/geometry_cpc2.C
+END
+runMC.C
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1129/trunk/macro/cpc/runMC.C
+END
+MakeHits.C
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/mpdroot/!svn/ver/1129/trunk/macro/cpc/MakeHits.C
+END
+cpc_simple_wall.geo
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/mpdroot/!svn/ver/339/trunk/macro/cpc/cpc_simple_wall.geo
+END

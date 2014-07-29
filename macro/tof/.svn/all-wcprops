@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/mpdroot/!svn/ver/1209/trunk/macro/tof
+END
+read_MC_DST.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/918/trunk/macro/tof/read_MC_DST.cxx
+END
+runKF.C
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/1129/trunk/macro/tof/runKF.C
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/mpdroot/!svn/ver/1209/trunk/macro/tof/CMakeLists.txt
+END
+makefile
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/mpdroot/!svn/ver/740/trunk/macro/tof/makefile
+END
