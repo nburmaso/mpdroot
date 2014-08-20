@@ -1,101 +1,0 @@
-10
-
-dir
-1280
-http://mpd.jinr.ru/svn/mpdroot/trunk/macro
-http://mpd.jinr.ru/svn/mpdroot
-
-
-
-2014-05-28T10:06:46.146629Z
-1272
-gertsen
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-20595965-1bdd-4e26-9c6f-9e50de90473a
-
-mpd_scheduler
-dir
-
-physical_analysis
-dir
-
-mpd
-dir
-
-zdc
-dir
-
-emc
-dir
-
-cpc
-dir
-
-tpc
-dir
-
-eventdisplay
-dir
-
-tof
-dir
-
-profiling
-dir
-
-mpdgenerators
-dir
-
-ndet
-dir
-
-etof
-dir
-
-CMakeLists.txt
-file
-
-
-
-
-2014-07-29T06:01:13.596846Z
-23071c20a69ebd69b83eb5028062d84d
-2010-02-09T08:01:27.170781Z
-536
-litvin
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-104
-
