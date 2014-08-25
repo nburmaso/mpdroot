@@ -4,7 +4,11 @@
 
    if [ "$debug" = "yes" ];
    then
-     debugstring="--build=debug"
+     if [ "$compiler" = "Clang" -a "$arch" = "linux" ]; then
+       debugstring=""
+     else
+       debugstring="--build=debug"
+     fi
    else
      debugstring=""
    fi   
@@ -19,12 +23,14 @@
     fi
    #######################################################
 
+   OPENGL=" "
    if [ "$compiler" = "Clang" ]; then
      root_comp_flag="--with-clang"
-     mac_minor=$(sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 2)
-     if [ $mac_minor -eq 9 ]; 
-     then
+     if [ $haslibcxx ]; then
        root_comp_flag="--with-clang --enable-cxx11 --enable-libcxx"
+     fi
+     if [ "$platform" = "linux" ]; then
+       OPENGL="--with-opengl-incdir=$SIMPATH_INSTALL/include --with-opengl-libdir=$SIMPATH_INSTALL/lib"
      fi
    else
      root_comp_flag="--with-cc=$CC --with-cxx=$CXX --with-ld=$CXX"   
@@ -41,36 +47,36 @@
    else
       ROOFIT="--enable-roofit"
     fi
+
+   if [ "$build_python" = "yes" ];
+   then
+      PYTHONBUILD="--enable-python"
+   else   
+      PYTHONBUILD=" "
+   fi
+   
    #######################################################
       
-   if [ "$make_install" = "yes" ]; 
-   then
      pythia6_libdir=$SIMPATH_INSTALL/lib
      pythia8_libdir=$SIMPATH_INSTALL/lib
      pythia8_incdir=$SIMPATH_INSTALL/include
      gsl_dir=$SIMPATH_INSTALL
-     etc_string="--etcdir=$SIMPATH_INSTALL/etc"
+     etc_string="--etcdir=$SIMPATH_INSTALL/share/root/etc"
      prefix_string="--prefix=$install_prefix"
-   else
-     pythia6_libdir=$SIMPATH/generators/lib
-     pythia8_libdir=$SIMPATH/generators/lib
-     pythia8_incdir=$SIMPATH/generators/include
-     gsl_dir=$SIMPATH/basics/gsl
-     etc_string=""
-     prefix_string=""
-   fi
  
-   ./configure $arch  --enable-soversion   $XROOTD  $ROOFIT \
+   ./configure $arch  --enable-soversion $PYTHONBUILD $XROOTD  $ROOFIT \
                     --enable-minuit2  --enable-gdml --enable-xml \
-		    --enable-builtin-ftgl  --enable-builtin-glew --enable-builtin-freetype\
+		    --enable-builtin-ftgl --enable-builtin-glew \
+                    --enable-builtin-freetype $OPENGL \
 		    --with-pythia6-libdir=$pythia6_libdir \
 		    --with-pythia8-libdir=$pythia8_libdir \
 		    --with-pythia8-incdir=$pythia8_incdir \
-		    --enable-mysql --enable-pgsql\
+		    --enable-mysql --enable-pgsql \
                     --disable-globus \
                     --disable-reflex \
                     --disable-cintex \
- 		    --with-xrootd=/opt/fairsoft/xrootd \
+                    --enable-vc --enable-http \
+                    --with-xrootd=/opt/fairsoft/xrootd \
  		    --with-xrootd-libdir=/opt/fairsoft/xrootd/lib64 \
  		    --with-xrootd-incdir=/opt/fairsoft/xrootd/include/xrootd \
                     --with-gsl-incdir=$gsl_dir/include \

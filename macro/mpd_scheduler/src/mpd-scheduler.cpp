@@ -348,9 +348,9 @@ void* ThreadProcessFile(void* thread_parameter)
 		if (thread_par->isMerge)
 		{
 			string exe_dir = getBundlePath();
-			exe_dir = exe_dir.erase(exe_dir.length()-1, 1) + "/union.C";
-			char* pcSUB = new char[44+sUnion.length()+sConfig.length()+exe_dir.length()+logs.length()];
-		    sprintf (pcSUB, "%sroot -b -q \"%s(\\\"%s\\\", %d)\"", sConfig.c_str(), exe_dir.c_str(),
+			string UNIONc_path = exe_dir + "union.C";
+			char* pcSUB = new char[44+sUnion.length()+sConfig.length()+UNIONc_path.length()+logs.length()];
+		    sprintf (pcSUB, "%sroot -b -q \"%s(\\\"%s\\\", %d)\"", sConfig.c_str(), UNIONc_path.c_str(),
 		    		sUnion.c_str(), thread_par->isMerge);
 
 		    if (logs != "")
@@ -591,6 +591,9 @@ int main(int argc, char** argv){
 	bool isGen = false, isEnergy = false, isMaxEnergy = false, isParts = false, isDesc = false, isType = false;
 	string strGen, strParts, strDesc, strType;
 	double fEnergy, fMaxEnergy;
+
+	// path to executable's directory ('/' - last char)
+	string exe_dir = getBundlePath();
 
     // cycle for all jobs
 	xmlNodePtr cur_node = root;
@@ -1039,7 +1042,7 @@ int main(int argc, char** argv){
                     		sConfig += " 2>&1";
                     	}
                     	else*/
-                    	sConfig += " > /dev/null";
+                    	//sConfig += " > /dev/null";
                     }
 
                     // process count is equal count of input files if more
@@ -1182,14 +1185,15 @@ int main(int argc, char** argv){
                     }
 
                     // RUN JOB in SGE
-                    pcSUB = new char[100+sMacroName.length()+fileName.length()+sConfig.length()];
+                    string MPDqsub_path = exe_dir + "mpd.qsub";
+                    pcSUB = new char[100+sMacroName.length()+fileName.length()+sConfig.length()+MPDqsub_path.length()];
                     if (isCommand){
-                    	sprintf (pcSUB, "qsub -t 1-1 -tc %d -v config=\"%s\",sched_command_line=\"%s\" mpd.qsub",
-                    			proc_count, sConfig.c_str(), command_line);
+                    	sprintf (pcSUB, "qsub -t 1-1 -tc %d -v config=\"%s\",sched_command_line=\"%s\" %s",
+                    			proc_count, sConfig.c_str(), command_line, MPDqsub_path.c_str());
                     }
                     else{
-                    	sprintf (pcSUB, "qsub -t 1-%d -tc %d -v macro=\"%s\",files=\"%s\",config=\"%s\" mpd.qsub",
-                    			iParallelCount, proc_count, macro_name, fileName.c_str(), sConfig.c_str());
+                    	sprintf (pcSUB, "qsub -t 1-%d -tc %d -v macro=\"%s\",files=\"%s\",config=\"%s\" %s",
+                    			iParallelCount, proc_count, macro_name, fileName.c_str(), sConfig.c_str(), MPDqsub_path.c_str());
                     }
 
                     //cout<<"COMMAND: "<<pcSUB<<endl;
@@ -1215,8 +1219,10 @@ int main(int argc, char** argv){
                     if (!vecParallelOutputs.empty()){
                     	for (int i = 0; i < (int)vecParallelOutputs.size(); i++){
                     		string par = vecParallelOutputs.at(i);
-                    		pcSUB = new char[100+ID.length()+par.length()+sConfig.length()];
-                    	    sprintf (pcSUB, "qsub -hold_jid %s -v \"sParameters=%s\",config=\"%s\" union.qsub", ID.c_str(), par.c_str(), sConfig.c_str());
+                    		string UNIONqsub_path = exe_dir + "union.qsub";
+                    		pcSUB = new char[100+ID.length()+par.length()+sConfig.length()+UNIONqsub_path.length()];
+                    	    sprintf (pcSUB, "qsub -hold_jid %s -v \"sParameters=%s\",config=\"%s\" %s",
+                    	    		ID.c_str(), par.c_str(), sConfig.c_str(), UNIONqsub_path.c_str());
 
                     	    stream = popen(pcSUB, "r");
                     	    while (fgets(buffer, MAX_BUFFER, stream) != NULL)
