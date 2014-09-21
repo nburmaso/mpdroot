@@ -50,6 +50,7 @@ class MpdParticle : public TObject
   Double_t GetMass() const { return fMass; }
   Double_t GetMeas(Int_t i) const { return fMeas(i,0); }
   Double_t GetXY(Int_t i) const { return fXY0[i]; }
+  Int_t GetFlag() const { return fFlag; }
   //Double_t Phi() const { return GetMeas(2); }
   //Double_t Pt() const { return TMath::Min (TMath::Abs(1./GetMeas(4)*fieldConst), 100.); }
   //Double_t Theta() const { return GetMeas(3); }
@@ -88,7 +89,7 @@ class MpdParticle : public TObject
   //TMatrixD& GetW() const { return fW; }
 
   void SetIndx (Int_t indx) { fIndx = indx; }
-  void SetPdg (Int_t pdg) { fPdg = pdg; }
+  void SetPdg (Int_t pdg) { fPdg = pdg; SetMass(); }
   void SetCharge (Int_t charge) { fCharge = charge; }
   void SetMass (Double_t mass = -2.0);
   void AddDaughter (Int_t indx) { fDaughtersInds.push_back(indx); }
@@ -105,6 +106,7 @@ class MpdParticle : public TObject
   void Setq(TMatrixD &matr) { fq = matr; }
   void Setx(TMatrixD &matr) { fx = matr; }
   void SetXY(Double_t x, Double_t y) { fXY0[0] = x; fXY0[1] = y; }
+  void SetFlag(Int_t flag) { fFlag = flag; }
 
  private:
 
@@ -133,6 +135,7 @@ class MpdParticle : public TObject
   TMatrixD fW;                  //! (Bt*G*B)
   Double_t fChi2;               // Chi2 of mother particle
   Double_t fChi2ver;            // Chi2 of particle w.r.t. vertex
+  Int_t fFlag;                  // status flag
 
   ClassDef(MpdParticle,1);
 
