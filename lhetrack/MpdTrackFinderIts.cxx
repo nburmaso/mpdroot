@@ -133,9 +133,19 @@ InitStatus MpdTrackFinderIts::Init()
 	path += jlad;
 	if (!gGeoManager->CheckPath(path)) break;
 	gGeoManager->cd(path);
+	TGeoVolume *ladd = gGeoManager->GetVolume(volName);
+	TGeoBBox *box = (TGeoBBox*) ladd->GetShape();
 	Double_t xyzL[3] = {0}, xyzM[3];
 	gGeoManager->LocalToMaster(xyzL,xyzM);
 	Double_t rad = TMath::Sqrt (xyzM[0] * xyzM[0] + xyzM[1] * xyzM[1]);
+	fRad[2*i] = TMath::Min (fRad[2*i],rad);
+	xyzL[0] = box->GetDX();
+	gGeoManager->LocalToMaster(xyzL,xyzM);
+	rad = TMath::Sqrt (xyzM[0] * xyzM[0] + xyzM[1] * xyzM[1]);
+	fRad[2*i] = TMath::Min (fRad[2*i],rad);
+	xyzL[0] = -box->GetDX();
+	gGeoManager->LocalToMaster(xyzL,xyzM);
+	rad = TMath::Sqrt (xyzM[0] * xyzM[0] + xyzM[1] * xyzM[1]);
 	fRad[2*i] = TMath::Min (fRad[2*i],rad);
       }
       fRad[2*i+1] = fRad[2*i];
@@ -143,10 +153,11 @@ InitStatus MpdTrackFinderIts::Init()
       if (ladd == NULL) { nLay = i; break; }
       TGeoBBox *box = (TGeoBBox*) ladd->GetShape();
       //safety = -box->GetDY();
-      safety = box->GetDY();
+      //safety = box->GetDY();
+      safety = 2 * box->GetDY(); // new
       fRad[2*i] -= safety;
       fRad[2*i+1] -= safety;
-      if (i == 0) { fRad[2*i] -= safety; fRad[2*i+1] -= safety; }
+      //new if (i == 0) { fRad[2*i] -= safety; fRad[2*i+1] -= safety; }
     }
     FillGeoScheme();
   }
@@ -513,6 +524,18 @@ void MpdTrackFinderIts::DoTracking(Int_t iPass)
       //cout << j << " " << h->GetDist() << " " << h->GetLayer() << endl;
     }
     
+    // Reset weight matrix - for debug
+    /*
+    Int_t nHits = track->GetNofTrHits();
+    nHits *= nHits;
+    for (Int_t ii = 0; ii < 5; ++ii) {
+      for (Int_t j = i; j < 5; ++j) {
+	if (j == ii) (*track->GetWeight())(ii,j) /= nHits;
+	else (*track->GetWeight())(ii,j) = (*track->GetWeight())(j,ii) = 0.;
+      }
+    }
+    */
+
     if (fGeo) iok = RunKalmanFilterMod(track, lay0); // modular geometry
     else iok = RunKalmanFilterCyl(track, lay0); // cylindrical geometry
     if (iok == -1) {
@@ -869,6 +892,7 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
       
       // Check for missing layer (2 sides)
       Int_t lastLay = 8, frozen = 0;
+      //Int_t lastLay = 10, frozen = 0;
       MpdKalmanHit *h = (MpdKalmanHit*) curTr->GetHits()->Last();
       if (h) lastLay = h->GetLayer();
       if (TMath::Abs(lay - lastLay) > 2) frozen = 1;
@@ -908,6 +932,7 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
 	  branchTr = &trackBr[trackBrM[hit->GetDetectorID()]];
 	  //cout << branchTr->GetNodeNew() << endl;
 	  Double_t step = branchTr->GetLength() - leng;
+	  //cout << " Step " << step << " " << hit->GetLayer() << endl;
 	  //*
 	  //if (hit->GetLayer() % 2 == 10 && step > 1.e-4) {
 	  if (hit->GetLayer() % 2 == 0 && step > 1.e-4) {
@@ -916,7 +941,8 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
 	    TMatrixDSym *cov = branchTr->Weight2Cov();
 	    Double_t th = branchTr->GetParamNew(3);
 	    Double_t cosTh = TMath::Cos(th);
-	    Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(branchTr, x0, step, mass2);
+	    //Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(branchTr, x0, step, mass2);
+	    Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(branchTr, x0, step*4, mass2);
 	    //cout << " Scat: " << hit->GetLayer() << " " << step << " " << TMath::Sqrt(angle2) << endl;
 	    (*cov)(2,2) += (angle2 / cosTh / cosTh);
 	    (*cov)(3,3) += angle2;
@@ -924,38 +950,43 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
 	    MpdKalmanFilter::Instance()->MnvertLocal(cov->GetMatrixArray(), 5, 5, 5, iok);
 	    branchTr->SetWeight(*cov);
 	  } else if (hit->GetLayer() % 2 != 0 && step > 1.e-4 && fCables[lay/2].size() > 0) {
+	    /*
 	    // Crossing silicon layer - add mult. scat. in the cable
-	    Double_t nCables = 0, x0 = 0.0116 * 2 / 9.36; // in rad. length - 116um cable per side
+	    //Double_t nCables = 0, x0 = 0.0116 * 2 / 9.36; // in rad. length - 116um cable per side
+	    Double_t nCables = 0, x0 = 0.0116 * 2; // in rad. length - 116um cable per side
 	    // Find number of cables crossed
-	    TString path = gGeoManager->GetPath();
+	    TString path = branchTr->GetNodeNew();
 	    if (!path.Contains("sensor") && !path.Contains("sector")) {
 	      cout << " !!! MpdTrackFinderIts::RunKalmanFilter - Outside detector !!! " << endl;
 	      exit(0);
 	    }
+	    gGeoManager->cd(path);
 	    Double_t v7[3] = {branchTr->GetParamNew(0), branchTr->GetPosNew(), branchTr->GetParamNew(1)}, v77[3];
 	    gGeoManager->LocalToMaster(v7,v77);
 	    Double_t zTr = TMath::Abs (v77[2]); // global Z
-	    //cout << zTr << endl;
+	    cout <<  " zTr " << v77[0] << " " << v77[1] << " " << v77[2] << endl;
+	    cout << gGeoManager->GetPath() << " " << branchTr->GetNodeNew() << endl;
 	    map<Double_t,Double_t>::iterator it1;
 	    for (it1 = fCables[lay/2].begin(); it1 != fCables[lay/2].end(); ++it1) {
 	      if (zTr < it1->first || zTr > it1->second) continue;
 	      ++nCables;
 	    }
-	    //cout << " Cables: " << nCables << endl;
+	    cout << " Cables: " << nCables << endl;
 	    if (nCables) {
 	      x0 *= nCables;
 	      TMatrixDSym *cov = branchTr->Weight2Cov();
 	      Double_t th = branchTr->GetParamNew(3);
 	      Double_t cosTh = TMath::Cos(th);
-	      Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(branchTr, x0, mass2);
-	      //cout << " Scat: " << hit->GetLayer() << " " << step << " " << TMath::Sqrt(angle2) << endl;
+	      Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(branchTr, 9.36, x0, mass2);
+	      cout << " Scat: " << hit->GetLayer() << " " << cosTh << " " << TMath::Sqrt(angle2) << endl;
 	      (*cov)(2,2) += (angle2 / cosTh / cosTh);
 	      (*cov)(3,3) += angle2;
 	      Int_t iok = 0;
 	      MpdKalmanFilter::Instance()->MnvertLocal(cov->GetMatrixArray(), 5, 5, 5, iok);
 	      branchTr->SetWeight(*cov);
 	    }
-	  }
+	    */
+	  } 
 	} //if (hit->GetDetectorID() != firstHit)
  
 	if (hit->GetDetectorID() == skipHit) {
@@ -970,6 +1001,7 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
 	//if (TrackID(hit) != track->GetTrackID()) continue;
 
 	Double_t dChi2 = MpdKalmanFilter::Instance()->FilterStripLocal(branchTr,hit,pointWeight,param,posNew);
+	//cout << " Chi2: " << lay << " " << dChi2 << endl;
 	// Add Z-contribution (if track is outside the detector)   
 	Double_t sizeZ = MpdKalmanFilter::Instance()->GetGeo()->Size(hit).Y();
 	//if (TMath::Abs(branchTr->GetParamNew(1)) > sizeZ) {
@@ -977,7 +1009,7 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
 	  // Outside detector
 	  //Double_t dChi2z = (TMath::Abs(branchTr->GetParamNew(1)) - sizeZ) / hit->GetErr(1);
 	  Double_t dChi2z = (TMath::Abs(param(1,0)) - sizeZ) / hit->GetErr(1);
-	  dChi2 += dChi2z * dChi2z;
+	  //AZ!!! dChi2 += dChi2z * dChi2z;
 	}
 	//cout << dChi2 << " " << TrackID(hit) << endl;
 
@@ -1050,9 +1082,10 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
   } // for (Int_t lay = layOK-1; lay >= 0;
 
   // Select the best branch
-  //cout << " Branches: " << nBr << " " << maxInLay << endl;
+  cout << " Branches: " << nBr << " " << maxInLay << endl;
   Int_t ibest = 0;
   for (Int_t i = 1; i < nBr; ++i) {
+    cout << i << " " << branch[i].GetNofHits() << " " << branch[i].GetChi2() << endl;
     if (branch[i].GetNofHits() > branch[ibest].GetNofHits()) ibest = i;
     else if (branch[i].GetNofHits() == branch[ibest].GetNofHits() &&
 	     branch[i].GetChi2() < branch[ibest].GetChi2()) ibest = i;
@@ -1068,14 +1101,32 @@ Bool_t MpdTrackFinderIts::NavigateToLayer(Int_t lay, MpdItsKalmanTrack *curTr, M
 {
   ///< Navigate track to layer in modular geometry
 
-  Double_t posNew = curTr->GetPosNew();
+  const Double_t posCable[4] = {0.08, 0.12, 0.24, 0.40}; // average cable positions (1-4) w.r.t. sensor
+
+  Int_t inode = 0, detID[3] = {-1,-1,-1}, nCables = 0; 
+  TString curPath, nodeNew, mass2 = "0.0194797849"; // pion mass squared
+  Double_t zTr = 0.0, x0 = 0.0, posNew = 0.0;
+  MpdKalmanHit hitTmp;
+  TGeoNode *node = NULL;
   TMatrixD parNew = *curTr->GetParamNew();
-  TString nodeNew = curTr->GetNodeNew();
+  //*
+  if (lay % 2 == 0) {
+    TString path = curTr->GetNodeNew();
+    Int_t last = path.Length() - 1;
+    Int_t ladd = path.Index("ladder") - 5;
+    TString name = path(ladd, last-ladd+1) + "#";
+    name += (lay % 2);
+    detID[0] = MpdKalmanFilter::Instance()->GetGeo()->DetId(name);
+    goto skip;
+  }
+  //*/
+
+  posNew = curTr->GetPosNew();
+  nodeNew = curTr->GetNodeNew();
   //cout << " Nodes: " << nodeNew << " " << curTr->GetNode() << " " << posNew << " " << curTr->GetPos() << endl;
   //curTr->GetParamNew()->Print();
   //curTr->GetParam()->Print();
-  TString curPath = curTr->GetNode();
-  MpdKalmanHit hitTmp;
+  curPath = curTr->GetNode();
   hitTmp.SetType(MpdKalmanHit::kFixedR);
   hitTmp.SetPos(fRad[lay]);
   if (!MpdKalmanFilter::Instance()->PropagateParamR(curTr,&hitTmp,kFALSE)) {
@@ -1094,11 +1145,11 @@ Bool_t MpdTrackFinderIts::NavigateToLayer(Int_t lay, MpdItsKalmanTrack *curTr, M
   curTr->SetNode(curTr->GetNodeNew());
   MpdKalmanFilter::Instance()->SetGeantParamB(curTr, v7, 1);
   //MpdKalmanFilter::Instance()->SetGeantParamB(curTr, v7, -1);
-  TGeoNode *node = gGeoManager->FindNode(v7[0], v7[1], v7[2]);
+  node = gGeoManager->FindNode(v7[0], v7[1], v7[2]);
   //if (!TString(gGeoManager->GetPath()).Contains("sts01")) break; // outside ITS coverage
   if (!TString(gGeoManager->GetPath()).Contains("sts01")) return kFALSE; // outside ITS coverage
+  zTr = v7[2]; 
 
-  Int_t inode = 0, detID[3] = {-1,-1,-1};
   for (Int_t iover = 0; iover < 2; ++iover) {
     // Loop to find first detector
     if (iover == 0) {
@@ -1120,12 +1171,16 @@ Bool_t MpdTrackFinderIts::NavigateToLayer(Int_t lay, MpdItsKalmanTrack *curTr, M
 	    Double_t r2 = v77[3] * v77[3] + v77[4] * v77[4];
 	    v77[3] = 0;
 	    v77[4] = TMath::Sqrt (r2) * TMath::Sign(1.,v77[4]);
+	    //v77[4] = TMath::Sqrt (r2) * TMath::Sign(1.,-v77[4]*v77[0]); // for rotated ladders
 	    gGeoManager->FindNextDaughterBoundary(v77,&v77[3],inode);
 	    if (inode >= 0) {
 	      gGeoManager->CdDown(inode);
 	      for (Int_t i3 = 0; i3 < 3; ++i3) v77[i3] += v77[i3+3] * (gGeoManager->GetStep() + 0.04);
 	      v77[6] = 1;
 	    }
+	    //cout << " ok " << gGeoManager->GetCurrentPoint()[0] << " " <<  gGeoManager->GetCurrentPoint()[1] << " " << gGeoManager->GetCurrentPoint()[2] << " " << gGeoManager->GetStep() << endl;
+	    zTr += (gGeoManager->GetStep() * v77[5]);
+	    //cout << zTr << endl;
 	  }
 	} else break;
       } // for (Int_t i2 = 0; i2 < 2;
@@ -1212,18 +1267,88 @@ Bool_t MpdTrackFinderIts::NavigateToLayer(Int_t lay, MpdItsKalmanTrack *curTr, M
 
   //firstDet = 0;
 
-  // Propagate track to the found detector and look for the overlapping sensors and ladders
+  if (lay % 2 != 0 && fCables[lay/2].size() > 0) {
+    // Find number of cables crossed                                    
+    TString path = gGeoManager->GetPath();
+    if (!path.Contains("sensor") && !path.Contains("sector")) {
+      cout << " !!! MpdTrackFinderIts::RunKalmanFilterMod - Outside detector !!! " << endl;
+      exit(0);
+    }
+    zTr = TMath::Abs (zTr); // global Z
+    map<Double_t,Double_t>::iterator it1;
+    for (it1 = fCables[lay/2].begin(); it1 != fCables[lay/2].end(); ++it1) {
+      if (zTr < it1->first || zTr > it1->second) continue;
+      ++nCables;
+    }
+  }
+  //cout <<  " zTr " << zTr << " " << nCables << endl;    
+  //nCables = 0;
+ 
+  // Crossing silicon layer - add mult. scat. in the cable            
+  //Double_t x0 = 0.0116 * 2 / 9.36 * nCables; // in rad. length - 116um cable per side 
+  x0 = 0.0116 * 2 * nCables; // in rad. length - 116um cable per side 
+  if (fMCTracks) {
+    // Get particle mass - ideal PID
+    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(curTr->GetTrackID());
+    TParticlePDG *pdgP = TDatabasePDG::Instance()->GetParticle(mctrack->GetPdgCode());
+    if (pdgP) {
+      Double_t mass = pdgP->Mass();
+      if (mass < 0.1 || mass > 0.8) {
+	// Electrons or protons (or heavier than protons)
+	mass2 = "";
+	mass2 += mass*mass;
+      }
+    }
+  }
+
+ skip:
+
   Int_t firstBranch = 1;
+
+  // Propagate track to the found detector and look for the overlapping sensors and ladders
   hitTmp.SetType(MpdKalmanHit::kFixedP);
 
   for (Int_t iover = 0; iover < 3; ++iover) {
     if (detID[iover] >= 0) {
       // Already found detector
       hitTmp.SetDetectorID(detID[iover]);
+
+      if (nCables) {
+	// Propagate to average cable position
+	MpdKalmanHit hitCable;
+	hitCable.SetDetectorID(-2); // just some fake detector ID
+	MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
+	TVector3 pos = geo->GlobalPos(&hitTmp);
+	//pos.Print();
+	pos += geo->Normal(&hitTmp) * posCable[nCables-1];
+	//pos.Print();
+	geo->SetGlobalPos(-2, pos, kTRUE);
+	geo->SetNormal(-2, geo->Normal(&hitTmp), kTRUE);
+	geo->SetPath(-2, geo->Path(detID[iover]), kTRUE);
+	if (!MpdKalmanFilter::Instance()->PropagateToHit(&trackBr[iover],&hitCable,kTRUE,kTRUE)) { 
+	  detID[iover] = -1;
+	  continue;
+	}
+	TMatrixDSym *cov = trackBr[iover].Weight2Cov();
+	Double_t th = trackBr[iover].GetParamNew(3);
+	Double_t cosTh = TMath::Cos(th);
+	x0 /= cosTh;
+	Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(&trackBr[iover], 9.36, x0*2, mass2);
+	//cout << TMath::Sqrt(angle2) << " " << cosTh << endl;
+	(*cov)(2,2) += (angle2 / cosTh / cosTh);
+	(*cov)(3,3) += angle2;
+	Int_t iok = 0;
+	MpdKalmanFilter::Instance()->MnvertLocal(cov->GetMatrixArray(), 5, 5, 5, iok);
+	trackBr[iover].SetWeight(*cov);
+      }
+
       if (!MpdKalmanFilter::Instance()->PropagateToHit(&trackBr[iover],&hitTmp,kTRUE,kTRUE)) { 
+	//cout << detID[iover] << " " << MpdKalmanFilter::Instance()->GetGeo()->Path(detID[iover]) << endl;
+	//cout << iover << " " << detID[iover] << " " << trackBr[iover].GetNode() << " " << trackBr[iover].GetNodeNew() << " " << trackBr[iover].GetNofHits() << endl;
 	detID[iover] = -1;
 	continue;
       }
+
       if (firstBranch) {
 	// Try to get the closest neighbours
 	// Check if the track is close to the detector edges

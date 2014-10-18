@@ -129,10 +129,11 @@ void MpdKalmanGeoScheme::SetDetId(TString detName, Int_t detID)
 }
 
 //__________________________________________________________________________
-void MpdKalmanGeoScheme::SetPath(Int_t detID, TString path)
+void MpdKalmanGeoScheme::SetPath(Int_t detID, TString path, Bool_t erase)
 {
   // Store detector path with detID
 
+  if (erase) fPathMap.erase(detID);
   fPathMap.insert(pair<Int_t,TString>(detID,path));
 }
 

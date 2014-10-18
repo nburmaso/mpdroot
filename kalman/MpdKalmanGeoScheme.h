@@ -31,7 +31,7 @@ class MpdKalmanGeoScheme : public TObject
   void SetNormal(Int_t detID, TVector3 norm, Bool_t erase = kFALSE); ///< put detector normal in GeoScheme
   void SetSize(Int_t detID, TVector2 size, Bool_t erase = kFALSE); ///< put detector dimensions in GeoScheme
   void SetDetId(TString detName, Int_t detID); ///< store detector ID with name detName
-  void SetPath(Int_t detID, TString path); ///< store detector path with detID
+  void SetPath(Int_t detID, TString path, Bool_t erase = kFALSE); ///< store detector path with detID
   void Reset(); ///< reset maps
 
  protected:

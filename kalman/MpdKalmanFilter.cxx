@@ -1106,8 +1106,11 @@ Bool_t MpdKalmanFilter::PropagateWeight(MpdKalmanTrack *track, const MpdKalmanHi
   TMatrixD paramNew0 = *tr.GetParamNew();
   Double_t pos0 = tr.GetPosNew();
   Bool_t invert = kTRUE;
+  //if (tr.GetDirection() == MpdKalmanTrack::kInward && 
+  //  tr.GetNode() != "" && tr.GetNodeNew() != "") {
   if (tr.GetDirection() == MpdKalmanTrack::kInward && 
-      tr.GetNode() != "" && tr.GetNodeNew() != "") {
+      tr.GetNode() != "" && tr.GetNodeNew() != "" && 
+      tr.GetNode() != tr.GetNodeNew()) {
     // Change direction
     param0 = *tr.GetParamNew();
     paramNew0 = *tr.GetParam();
