@@ -25,6 +25,46 @@ class TGListTreeItem;
 class FairEventManager : public TEveEventManager
 {
   public:
+    struct structSelectedColoring
+    {
+        TString detector_name;
+        TString detector_color;
+        int detector_transparency;
+        bool isRecursiveColoring;
+
+        structSelectedColoring()
+        {
+        }
+
+        structSelectedColoring(TString det_name, TString det_color, int det_transparency, bool isRecursive)
+        {
+            detector_name = det_name;
+            detector_color = det_color;
+            detector_transparency = det_transparency;
+            isRecursiveColoring = isRecursive;
+        }
+    };
+
+    struct structLevelColoring
+    {
+        TString fill_color;
+        bool isFillLine;
+        bool visibility;
+        int transparency;
+
+        structLevelColoring()
+        {
+        }
+
+        structLevelColoring(TString fill, bool isLine, bool vis, int transp)
+        {
+            fill_color = fill;
+            isFillLine = isLine;
+            visibility = vis;
+            transparency = transp;
+        }
+    };
+
     static FairEventManager* Instance();
     FairEventManager();
     virtual ~FairEventManager();
@@ -73,6 +113,23 @@ class FairEventManager : public TEveEventManager
     // RPhoZ projection in multi-viewer
     TEveViewer* fMultiRhoZView;
 
+    // projection manager for RPhi view
+    TEveProjectionManager* fRPhiMng;
+    // projection manager for RPho view
+    TEveProjectionManager* fRhoZMng;
+    // scene for geometry presentation in RPhi plane
+    TEveScene* fRPhiGeomScene;
+    // scene for geometry presentation in RPhoZ plane
+    TEveScene* fRhoZGeomScene;
+    // scene for event presenation in RPhi plane
+    TEveScene* fRPhiEventScene;
+    // scene for event presenation in RPhoZ plane
+    TEveScene* fRhoZEventScene;
+
+    int background_color;
+
+    TEveElementList* EveMCPoints, *EveMCTracks, *EveRecoPoints, *EveRecoTracks;
+
     ClassDef(FairEventManager,1);
   private:
     FairRootManager* fRootManager; //!
@@ -90,28 +147,24 @@ class FairEventManager : public TEveEventManager
     // maximum energy to cut particles by energy in selected event
     Float_t fEvtMaxEnergy;      //!
 
-    // projection manager for RPhi view
-    TEveProjectionManager* fRPhiMng;
-    // projection manager for RPho view
-    TEveProjectionManager* fRhoZMng;
-    // scene for geometry presentation in RPhi plane
-    TEveScene* fRPhiGeomScene;
-    // scene for geometry presentation in RPhoZ plane
-    TEveScene* fRhoZGeomScene;
-    // scene for event presenation in RPhi plane
-    TEveScene* fRPhiEventScene;
-    // scene for event presenation in RPhoZ plane
-    TEveScene* fRhoZEventScene;
+    static FairEventManager* fgRinstance; //!
 
-    static FairEventManager*    fgRinstance; //!
+    int cntSelectedColoring;
+    structSelectedColoring* arrSelectedColoring; //!
+    int cntLevelColoring;
+    structLevelColoring* arrLevelColoring;       //!
 
     FairEventManager(const FairEventManager&);
     FairEventManager& operator=(const FairEventManager&);
 
-    // changing color and visibility of geometry nodes
-    void ChangeNodeProperty(TGeoNode* node, int level);
     // get color id by color name
     Int_t GetColor(TString colorName);
+
+    // changing color and visibility of geometry nodes
+    void InitColorStructure();
+    void LevelChangeNodeProperty(TGeoNode* node, int level);
+    void SelectedGeometryColoring();
+    void RecursiveChangeNodeProperty(TGeoNode* parentNode, Int_t color, int transparency);
 };
 
 #endif

@@ -241,8 +241,9 @@ void MpdTrackDraw::Reset()
     for (Int_t i = 0; i < fEveTrList->GetEntriesFast(); i++)
     {
         TEveTrackList*  ele = (TEveTrackList*) fEveTrList->At(i);
-        gEve->RemoveElement(ele, fEventManager);
+        gEve->RemoveElement(ele, fEventManager->EveRecoTracks);
     }
+
     fEveTrList->Clear();
 }
 
@@ -269,7 +270,15 @@ TEveTrackList* MpdTrackDraw::GetTrGroup(TParticle* P)
         fTrList = new  TEveTrackList(P->GetName(), fTrPr);
         fTrList->SetMainColor(fEventManager->Color(P->GetPdgCode()));
         fEveTrList->Add(fTrList);
-        gEve->AddElement(fTrList, fEventManager);
+
+        if (fEventManager->EveRecoTracks == NULL)
+        {
+            fEventManager->EveRecoTracks = new TEveElementList("Reco tracks");
+            gEve->AddElement(fEventManager->EveRecoTracks, fEventManager);
+            fEventManager->EveRecoTracks->SetRnrState(kFALSE);
+        }
+
+        gEve->AddElement(fTrList, fEventManager->EveRecoTracks);
         fTrList->SetRnrLine(kTRUE);
     }
 

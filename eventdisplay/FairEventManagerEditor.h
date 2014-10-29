@@ -31,6 +31,12 @@ class FairEventManagerEditor : public TGedFrame
     TGCheckButton*  fVizPri;
     TEveGValuator *fMinEnergy, *fMaxEnergy;
     TGLabel* fEventTime;
+
+    int iCurrentEvent;
+    TGCompositeFrame* title1;
+    TGGroupFrame *groupData;
+    TGCheckButton* fShowMCPoints, *fShowMCTracks, *fShowRecoPoints, *fShowRecoTracks;
+
   public:
     FairEventManagerEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
                            UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -42,6 +48,13 @@ class FairEventManagerEditor : public TGedFrame
     virtual void MaxEnergy();
     virtual void MinEnergy();
     virtual void Init();
+
+    virtual void SwitchBackground(Bool_t is_on);
+    virtual void ShowGeometry(Bool_t is_show);
+    virtual void ShowMCPoints(Bool_t is_show);
+    virtual void ShowMCTracks(Bool_t is_show);
+    virtual void ShowRecoPoints(Bool_t is_show);
+    virtual void ShowRecoTracks(Bool_t is_show);
 
     ClassDef(FairEventManagerEditor, 0); // Specialization of TGedEditor for proper update propagation to TEveManager.
 };

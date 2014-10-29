@@ -13,24 +13,15 @@
 #include "TEveManager.h"                // for TEveManager, gEve
 #include "TGeoManager.h"                // for gGeoManager, TGeoManager
 
-//new
 #include <TGLCameraOverlay.h>
 #include <TGLLightSet.h>
 #include <TEveProjectionAxes.h>
 #include <TEveBrowser.h>
 
-class TGeoNode;
+#include "constants.h"
 
-// number of described detector levels
-#define arr_size 5
-// detector level visibilty (visible or hidden)
-bool arrVisibility[arr_size] = {true, true, true, true, true};
-// detector level transparency
-int arrTransparency[arr_size] = {30, 30, 30, 30, 30};
-// color set: {mpd, tpc, tof, emc, zdc}
-// white, black, gray, blue, red, green, yellow, orange, cyan, magenta, pink, violet, azure, teal, spring
-TString arrColor[arr_size] = {"gray", "cyan", "violet", "azure", "green"};
-//TString arrColor[arr_size] = {"yellow", "magenta", "green", "cyan", "blue"};
+#include <iostream>
+using namespace std;
 
 ClassImp(FairEventManager)
 
@@ -52,7 +43,7 @@ FairEventManager::FairEventManager()
    fMinEnergy(0),
    fMaxEnergy(25),
    fEvtMinEnergy(0),
-   fEvtMaxEnergy(10),
+   fEvtMaxEnergy(12),
    fRPhiMng(0),
    fRhoZMng(0),
    fMulti3DView(0),
@@ -63,35 +54,314 @@ FairEventManager::FairEventManager()
    fRPhiGeomScene(0),
    fRhoZGeomScene(0),
    fRPhiEventScene(0),
-   fRhoZEventScene(0)
+   fRhoZEventScene(0),
+   background_color(1),
+   EveMCPoints(NULL),
+   EveMCTracks(NULL),
+   EveRecoPoints(NULL),
+   EveRecoTracks(NULL)
 {
-  fgRinstance=this;
-  AddParticlesToPdgDataBase();
+    fgRinstance = this;
+
+    AddParticlesToPdgDataBase();
+
+    InitColorStructure();
 }
+
+// COLOR SET:
+// white, black, gray,
+// blue, azure (темно-синий), cyan (морской волны), teal (бирюзовый),
+// green, spring (светло-зеленый), green+2 (темно-зеленый), spring+2 (темно-зеленый), khaki
+// yellow, orange (желтый с оттенком), orange+2 (оранжевый кор.), orange+1 (светло-оранжевый кор.), orange+7 (выделенно-оранжевый)
+// red, violet, magenta (бардовый), magenta-6 (светло-бардовый), pink (темно-розовый)
+void FairEventManager::InitColorStructure()
+{
+    cntSelectedColoring = 0;
+    cntLevelColoring = 0;
+
+    if (gVisualizationColoring == levelColoring)
+    {
+        // number of described detector levels
+        cntLevelColoring = 5;
+        arrLevelColoring = new structLevelColoring[cntLevelColoring];
+
+        // if BM@N
+        if (gCoordinateSystem == sysLaboratory)
+        {
+            // LEVEL 1
+            arrLevelColoring[0].fill_color =    "gray"; //yellow for white background
+            arrLevelColoring[0].isFillLine =    true;
+            arrLevelColoring[0].visibility =    true;
+            arrLevelColoring[0].transparency =  30;
+
+            // LEVEL 2
+            arrLevelColoring[1].fill_color =    "yellow"; //magenta for white background
+            arrLevelColoring[1].isFillLine =    true;
+            arrLevelColoring[1].visibility =    true;
+            arrLevelColoring[1].transparency =  30;
+
+            // LEVEL 3
+            arrLevelColoring[2].fill_color =    "cyan"; //green for white background
+            arrLevelColoring[2].isFillLine =    true;
+            arrLevelColoring[2].visibility =    true;
+            arrLevelColoring[2].transparency =  30;
+
+            // LEVEL 4
+            arrLevelColoring[3].fill_color =    "white"; //cyan for white background
+            arrLevelColoring[3].isFillLine =    true;
+            arrLevelColoring[3].visibility =    true;
+            arrLevelColoring[3].transparency =  30;
+
+            // LEVEL 5
+            arrLevelColoring[4].fill_color =    "green"; //blue for white background
+            arrLevelColoring[4].isFillLine =    true;
+            arrLevelColoring[4].visibility =    true;
+            arrLevelColoring[4].transparency =  30;
+        }
+        // MPD
+        else
+        {
+            // LEVEL 1
+            arrLevelColoring[0].fill_color =    "gray"; //yellow for white background
+            arrLevelColoring[0].isFillLine =    true;
+            arrLevelColoring[0].visibility =    true;
+            arrLevelColoring[0].transparency =  30;
+
+            // LEVEL 2
+            arrLevelColoring[1].fill_color =    "cyan"; //magenta for white background
+            arrLevelColoring[1].isFillLine =    true;
+            arrLevelColoring[1].visibility =    true;
+            arrLevelColoring[1].transparency =  30;
+
+            // LEVEL 3
+            arrLevelColoring[2].fill_color =    "violet"; //green for white background
+            arrLevelColoring[2].isFillLine =    true;
+            arrLevelColoring[2].visibility =    true;
+            arrLevelColoring[2].transparency =  30;
+
+            // LEVEL 4
+            arrLevelColoring[3].fill_color =    "azure"; //cyan for white background
+            arrLevelColoring[3].isFillLine =    true;
+            arrLevelColoring[3].visibility =    true;
+            arrLevelColoring[3].transparency =  30;
+
+            // LEVEL 5
+            arrLevelColoring[4].fill_color =    "green"; //blue for white background
+            arrLevelColoring[4].isFillLine =    true;
+            arrLevelColoring[4].visibility =    true;
+            arrLevelColoring[4].transparency =  30;
+        }
+
+        return;
+    }
+
+    // if BM@N selected coloring
+    if (gCoordinateSystem == sysLaboratory)
+    {
+        int i = 0;
+        cntSelectedColoring = 11;
+        arrSelectedColoring = new structSelectedColoring[cntSelectedColoring];
+
+        // MAGNET color
+        arrSelectedColoring[i].detector_name =          "Magnet";
+        arrSelectedColoring[i].detector_color =         "gray";
+        arrSelectedColoring[i].detector_transparency =  67;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+        // coil of magnet
+        arrSelectedColoring[i].detector_name =          "Coil";
+        arrSelectedColoring[i].detector_color =         "red";
+        arrSelectedColoring[i].detector_transparency =  67;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        // TARGET color
+        arrSelectedColoring[i].detector_name =          "targ";
+        arrSelectedColoring[i].detector_color =         "yellow";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        // PIPE color
+        arrSelectedColoring[i].detector_name =          "pipe1cave";
+        arrSelectedColoring[i].detector_color =         "orange";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        // RECOIL color
+        arrSelectedColoring[i].detector_name =          "recoil01";
+        arrSelectedColoring[i].detector_color =         "khaki";
+        arrSelectedColoring[i].detector_transparency =  67;
+        arrSelectedColoring[i].isRecursiveColoring =  true;
+        i++;
+
+        // GEMS color
+        arrSelectedColoring[i].detector_name =          "GEMS";
+        arrSelectedColoring[i].detector_color =         "cyan";
+        arrSelectedColoring[i].detector_transparency =  15;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        // TOF1 color
+        arrSelectedColoring[i].detector_name =          "tof1";
+        arrSelectedColoring[i].detector_color =         "spring";
+        arrSelectedColoring[i].detector_transparency =  15;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        // DCH1 color
+        arrSelectedColoring[i].detector_name =          "dch1";
+        arrSelectedColoring[i].detector_color =         "orange+7";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        // DCH2 color
+        arrSelectedColoring[i].detector_name =          "dch2";
+        arrSelectedColoring[i].detector_color =         "orange+7";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        // TOF2 color
+        arrSelectedColoring[i].detector_name =          "tof2";
+        arrSelectedColoring[i].detector_color =         "spring";
+        arrSelectedColoring[i].detector_transparency =  15;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+        // inner part of TOF2
+        arrSelectedColoring[i].detector_name =          "t2reg2mod";
+        arrSelectedColoring[i].detector_color =         "spring+2";
+        //arrSelectedColoring[i].detector_transparency =  29;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+
+        /*
+        // ZDC color
+        arrSelectedColoring[i].detector_name =          "VETO";
+        arrSelectedColoring[i].detector_color =         "yellow";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i].isRecursiveColoring =    true;
+        i++;
+        */
+    }
+    // if MPD
+    else
+    {
+        int i = 0;
+        cntSelectedColoring = 13;
+        arrSelectedColoring = new structSelectedColoring[cntSelectedColoring];
+
+        // MAGNET color
+        arrSelectedColoring[i].detector_name =          "ms01yokebarrel";
+        arrSelectedColoring[i].detector_color =         "blue";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+        // cryostat
+        arrSelectedColoring[i].detector_name =          "ms01cryostat";
+        arrSelectedColoring[i].detector_color =         "gray";
+        arrSelectedColoring[i].detector_transparency =  15;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+        // barrel end
+        arrSelectedColoring[i].detector_name =          "ms01yokeendeii";
+        arrSelectedColoring[i].detector_color =         "blue";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+        // barrel end
+        arrSelectedColoring[i].detector_name =          "ms01yokeendeio";
+        arrSelectedColoring[i].detector_color =         "blue";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+        // barrel end
+        arrSelectedColoring[i].detector_name =          "ms01yokeendeim";
+        arrSelectedColoring[i].detector_color =         "blue";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+        // barrel end
+        arrSelectedColoring[i].detector_name =          "ms01yokeendeoi";
+        arrSelectedColoring[i].detector_color =         "blue";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+        // barrel end
+        arrSelectedColoring[i].detector_name =          "ms01yokeendeom";
+        arrSelectedColoring[i].detector_color =         "blue";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+        // barrel end
+        arrSelectedColoring[i].detector_name =          "ms01yokeendeoo";
+        arrSelectedColoring[i].detector_color =         "blue";
+        arrSelectedColoring[i].detector_transparency =  30;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+
+        // PIPE color
+        arrSelectedColoring[i].detector_name =          "pipe1";
+        arrSelectedColoring[i].detector_color =         "orange";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+
+        // TPC color
+        arrSelectedColoring[i].detector_name =          "tpcChamber1";
+        arrSelectedColoring[i].detector_color =         "cyan";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+
+        // TOF color
+        arrSelectedColoring[i].detector_name =          "tof1";
+        arrSelectedColoring[i].detector_color =         "spring";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+
+        // EMC color
+        arrSelectedColoring[i].detector_name =          "emc1Chamber1";
+        arrSelectedColoring[i].detector_color =         "violet";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+
+        // ZDC color
+        arrSelectedColoring[i].detector_name =          "zdc01";
+        arrSelectedColoring[i].detector_color =         "green";
+        arrSelectedColoring[i].detector_transparency =  0;
+        arrSelectedColoring[i++].isRecursiveColoring =  true;
+    }
+
+    return;
+}
+
 //______________________________________________________________________________
 void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
 {
   TEveManager::Create();
   fRunAna->Init();
 
+  // if no gGeoManager in input file - get it from evetest.root directly for BMNRoot and MPDRoot
   if (!gGeoManager)
   {
       std::cout<<"\ngGeoManager is NULL. It's loading manually"<<std::endl;
-      TFile* f = new TFile("$VMCWORKDIR/macro/mpd/evetest.root");
+      TFile* f = NULL;
+      if (gCoordinateSystem == sysLaboratory) //BMNRoot
+          f = new TFile("$VMCWORKDIR/macro/run/evetest.root");
+      else                                    //MPDRoot
+          f = new TFile("$VMCWORKDIR/macro/mpd/evetest.root");
+
       f->Get("FairBaseParSet");
-      //gGeoManager->SetVolumeAttribute("*","colo fill",1);
   }
 
-  TGeoNode* N=  gGeoManager->GetTopNode();
-  TEveGeoTopNode* TNod=new  TEveGeoTopNode(gGeoManager, N, visopt, vislvl, maxvisnds);
+  TGeoNode* N = gGeoManager->GetTopNode();
+  TEveGeoTopNode* TNod = new TEveGeoTopNode(gGeoManager, N, visopt, vislvl, maxvisnds);
 
   // change color and visibility of geometry nodes
-  TNod->SetVisLevel(1);
-  ChangeNodeProperty(N, 0);
+  if (gVisualizationColoring != defaultColoring)
+  {
+    if (gVisualizationColoring == selectedColoring)
+        SelectedGeometryColoring();
+    else
+        LevelChangeNodeProperty(N, 0);
+  }
 
   gEve->AddGlobalElement(TNod);
   gEve->FullRedraw3D(kTRUE);
-  fEvent= gEve->AddEvent(this);
+  fEvent = gEve->AddEvent(this);
 
   // create projection managers
   fRPhiMng = new TEveProjectionManager();
@@ -111,6 +381,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
   // switch off left and right light sources for first window
   gEve->GetDefaultViewer()->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightLeft, false);
   gEve->GetDefaultViewer()->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightRight, false);
+  gEve->GetDefaultViewer()->GetGLViewer()->SetClearColor(background_color);
 
   // add window in EventDisplay for RPhi projection
   TEveWindowSlot *RPhiSlot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
@@ -131,6 +402,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
   fRPhiView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightRight, false);
   fRPhiView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightTop, false);
   fRPhiView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightBottom, false);
+  fRPhiView->GetGLViewer()->SetClearColor(background_color);
   // create scene holding projected geometry for the RPhi view
   fRPhiGeomScene  = gEve->SpawnNewScene("RPhi Geometry", "Scene holding projected geometry for the RPhi view.");
   // add axes for scene of RPhi view
@@ -159,6 +431,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
   fRhoZView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightLeft, false);
   fRhoZView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightRight, false);
   fRhoZView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightFront, false);
+  fRhoZView->GetGLViewer()->SetClearColor(background_color);
   // create scene holding projected geometry for the RhoZ view.
   fRhoZGeomScene  = gEve->SpawnNewScene("RhoZ Geometry", "Scene holding projected geometry for the RhoZ view.");
   // add axes for scene of RPhoZ view
@@ -180,6 +453,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
   // switch off left and right light sources for 3D MultiView
   fMulti3DView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightLeft, false);
   fMulti3DView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightRight, false);
+  fMulti3DView->GetGLViewer()->SetClearColor(background_color);
   // add 3D scenes (first tab) to 3D MultiView
   fMulti3DView->AddScene(gEve->GetGlobalScene());
   fMulti3DView->AddScene(gEve->GetEventScene());
@@ -200,6 +474,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
   fMultiRPhiView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightRight, false);
   fMultiRPhiView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightTop, false);
   fMultiRPhiView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightBottom, false);
+  fMultiRPhiView->GetGLViewer()->SetClearColor(background_color);
   // add RPhi scenes (second tab) to RPhi MultiView
   fMultiRPhiView->AddScene(fRPhiGeomScene);
   fMultiRPhiView->AddScene(fRPhiEventScene);
@@ -217,6 +492,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
   fMultiRhoZView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightLeft, false);
   fMultiRhoZView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightRight, false);
   fMultiRhoZView->GetGLViewer()->GetLightSet()->SetLight(TGLLightSet::kLightFront, false);
+  fMultiRhoZView->GetGLViewer()->SetClearColor(background_color);
   // add RhoZ scenes (second tab) to RhoZ MultiView
   fMultiRhoZView->AddScene(fRhoZGeomScene);
   fMultiRhoZView->AddScene(fRhoZEventScene);
@@ -240,25 +516,84 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
   fMulti3DView->GetGLViewer()->SetResetCamerasOnUpdate(kFALSE);
   fMultiRPhiView->GetGLViewer()->SetResetCamerasOnUpdate(kFALSE);
   fMultiRhoZView->GetGLViewer()->SetResetCamerasOnUpdate(kFALSE);
-
-  // switch from dark to light colorsets
-  //gEve->GetViewers()->SwitchColorSet();
 }
 
-// hierarchical (recursive) changing of nodes' properties: visibility, transparency, fill color and line color
-void FairEventManager::ChangeNodeProperty(TGeoNode* node, int level)
+// changing of geometry color
+void FairEventManager::SelectedGeometryColoring()
 {
-    for(int i = 0; i < node->GetNdaughters(); i++){
+    TGeoVolume* curVolume;
+    for (int i = 0; i < cntSelectedColoring; i++)
+    {
+        curVolume = gGeoManager->GetVolume(arrSelectedColoring[i].detector_name);
+        if (!curVolume)
+        {
+            cout<<"There is no volume with given name: "<< arrSelectedColoring[i].detector_name<<endl;
+            continue;
+        }
+        Int_t curColor = GetColor(arrSelectedColoring[i].detector_color);
+        Int_t curTransparency = arrSelectedColoring[i].detector_transparency;
+
+        curVolume->SetFillColor(curColor);
+        curVolume->SetLineColor(curColor);
+        curVolume->SetTransparency(curTransparency);
+
+        if (arrSelectedColoring[i].isRecursiveColoring)
+        {
+            for (int j = 0; j < curVolume->GetNdaughters(); j++)
+            {
+                TGeoNode* child = curVolume->GetNode(j);
+                TGeoVolume* subVolume = child->GetVolume();
+
+                subVolume->SetFillColor(curColor);
+                subVolume->SetLineColor(curColor);
+                subVolume->SetTransparency(curTransparency);
+
+                if (child->GetNdaughters() != 0)
+                    RecursiveChangeNodeProperty(child, curColor, curTransparency);
+            }
+        }
+    }
+
+    return;
+}
+
+void FairEventManager::RecursiveChangeNodeProperty(TGeoNode* node, Int_t color, int transparency)
+{
+    for(int i = 0; i < node->GetNdaughters(); i++)
+    {
         TGeoNode* child = node->GetDaughter(i);
-        if (level < arr_size){
-            child->GetVolume()->SetVisibility(arrVisibility[level]);
-            child->GetVolume()->SetTransparency(arrTransparency[level]);
-            child->GetVolume()->SetFillColor(GetColor(arrColor[level]));
-            child->GetVolume()->SetLineColor(GetColor(arrColor[level]));
+        TGeoVolume* curVolume = child->GetVolume();
+
+        curVolume->SetFillColor(color);
+        curVolume->SetLineColor(color);
+        curVolume->SetTransparency(transparency);
+
+        if (child->GetNdaughters() != 0)
+            RecursiveChangeNodeProperty(child, color, transparency);
+    }
+}
+
+// hierarchical changing of nodes' properties: visibility, transparency, fill color and line color
+void FairEventManager::LevelChangeNodeProperty(TGeoNode* node, int level)
+{
+    for(int i = 0; i < node->GetNdaughters(); i++)
+    {
+        TGeoNode* child = node->GetDaughter(i);
+        if (level < cntLevelColoring)
+        {
+            TGeoVolume* curVolume = child->GetVolume();
+
+            curVolume->SetVisibility(arrLevelColoring[level].visibility);
+            curVolume->SetTransparency(arrLevelColoring[level].transparency);
+            curVolume->SetFillColor(GetColor(arrLevelColoring[level].fill_color));
+            if (arrLevelColoring[level].isFillLine) curVolume->SetLineColor(GetColor(arrLevelColoring[level].fill_color));
 
             if (child->GetNdaughters() != 0)
-                ChangeNodeProperty(child, ++level);
-        }
+            {
+                level++;
+                LevelChangeNodeProperty(child, level);
+            }
+        }//if (level < arr_size)
     }
 }
 
@@ -288,6 +623,14 @@ Int_t FairEventManager::GetColor(TString colorName)
     else if (colorName == "azure") return 860;
     else if (colorName == "teal") return 840;
     else if (colorName == "spring") return 820;
+
+    else if (colorName == "green+2") return 418;
+    else if (colorName == "spring+2") return 823;
+    else if (colorName == "orange+1") return 801;
+    else if (colorName == "orange+2") return 802;
+    else if (colorName == "orange+7") return 807;
+    else if (colorName == "magenta-6") return 610;
+    else if (colorName == "khaki") return 403;
     else
     {
         std::cout<<colorName<<" not found. Color set to default blue" << std::endl;
@@ -296,40 +639,45 @@ Int_t FairEventManager::GetColor(TString colorName)
 }
 
 //______________________________________________________________________________
-void FairEventManager::SetDepth(Float_t d){
+void FairEventManager::SetDepth(Float_t d)
+{
     fRPhiMng->SetCurrentDepth(d);
     fRhoZMng->SetCurrentDepth(d);
 }
 //______________________________________________________________________________
-void FairEventManager::ImportGeomRPhi(TEveElement* el){
+void FairEventManager::ImportGeomRPhi(TEveElement* el)
+{
     fRPhiMng->ImportElements(el, fRPhiGeomScene);
 }
 //______________________________________________________________________________
-void FairEventManager::ImportGeomRhoZ(TEveElement* el){
+void FairEventManager::ImportGeomRhoZ(TEveElement* el)
+{
     fRhoZMng->ImportElements(el, fRhoZGeomScene);
 }
 //______________________________________________________________________________
-void FairEventManager::ImportEventRPhi(TEveElement* el){
+void FairEventManager::ImportEventRPhi(TEveElement* el)
+{
     fRPhiMng->ImportElements(el, fRPhiEventScene);
 }
 //______________________________________________________________________________
-void FairEventManager::ImportEventRhoZ(TEveElement* el){
+void FairEventManager::ImportEventRhoZ(TEveElement* el)
+{
     fRhoZMng->ImportElements(el, fRhoZEventScene);
 }
 
 //______________________________________________________________________________
 void FairEventManager::UpdateEditor()
 {
-
 }
+
 // FairEventManager destructor (empty now)
 FairEventManager::~FairEventManager()
 {
 }
+
 //______________________________________________________________________________
 void FairEventManager::Open()
 {
-
 }
 
 // go to FairRunAna event with given number for scene data getting
@@ -354,14 +702,12 @@ void FairEventManager::PrevEvent()
 //______________________________________________________________________________
 void FairEventManager::Close()
 {
-
 }
 
 //______________________________________________________________________________
 
 void FairEventManager::DisplaySettings()
 {
-
 }
 
 // return integer value of color for track by particle pdg (default, white)

@@ -17,6 +17,8 @@
 #include "TGeant3.h"
 #include "FairGeanePro.h"
 #include "FairTrajFilter.h"
+#include "TParticlePDG.h"
+#include "TDatabasePDG.h"
 
 using std::cout;
 using std::endl;

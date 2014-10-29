@@ -13,13 +13,19 @@
 #include "TGNumberEntry.h"              // for TGNumberEntry, etc
 #include "TGeoManager.h"                // for TGeoManager, gGeoManager
 #include "TString.h"                    // for TString
+#include "TEveManager.h"                // for TEveManager, gEve
+#include "TEveElement.h"                // for TEveElement
+#include "TPRegexp.h"
 
 #include <stddef.h>                     // for NULL
+
+#include <iostream>
+using namespace std;
 
 class TGWindow;
 class TObject;
 
-#define MAXE 50
+#define MAXE 12
 
 //______________________________________________________________________________
 // FairEventManagerEditor
@@ -40,7 +46,8 @@ FairEventManagerEditor::FairEventManagerEditor(const TGWindow* p, Int_t width, I
    fCurrentPDG(0),
    fVizPri(0),
    fMinEnergy(0),
-   fMaxEnergy(0)
+   fMaxEnergy(0),
+   iCurrentEvent(-1)
 {
   Init();
 }
@@ -55,7 +62,7 @@ void FairEventManagerEditor::Init()
   // create tab for event visualization
   MakeTitle("FairEventManager  Editor");
   TGVerticalFrame*      fInfoFrame= CreateEditorTabSubFrame("Event Info");
-  TGCompositeFrame* title1 = new TGCompositeFrame(fInfoFrame, 250, 10,
+  title1 = new TGCompositeFrame(fInfoFrame, 250, 10,
       kVerticalFrame | kLHintsExpandX |
       kFixedWidth    | kOwnBackground);
 
@@ -148,9 +155,50 @@ void FairEventManagerEditor::Init()
   title1->AddFrame(fMaxEnergy, new TGLayoutHints(kLHintsTop, 1, 1, 1, 0));
   fManager->SetMaxEnergy(MAXE);
 
+  // button: whether show detector geometry or not
+  TGCheckButton* fGeometry = new TGCheckButton(title1, "show geometry");
+  title1->AddFrame(fGeometry, new TGLayoutHints(kLHintsRight | kLHintsExpandX, 5,5,1,1));
+  fGeometry->Connect("Toggled(Bool_t)", "FairEventManagerEditor", this, "ShowGeometry(Bool_t)");
+  fGeometry->SetOn();
+
+  // button for switching from black to white background
+  TGCheckButton* fBackground = new TGCheckButton(title1, "light background");
+  title1->AddFrame(fBackground, new TGLayoutHints(kLHintsRight | kLHintsExpandX, 5,5,1,1));
+  fBackground->Connect("Toggled(Bool_t)", "FairEventManagerEditor", this, "SwitchBackground(Bool_t)");
+
+  // group for displaying simulation and reconstruction data
+  groupData = new TGGroupFrame(title1, "Show MC and reco data");
+  groupData->SetTitlePos(TGGroupFrame::kCenter);
+
+  TGHorizontalFrame* framePointsInfo = new TGHorizontalFrame(groupData);
+  // button for show|hide MC points
+  fShowMCPoints = new TGCheckButton(framePointsInfo, "MC points");
+  framePointsInfo->AddFrame(fShowMCPoints, new TGLayoutHints(kLHintsNormal, 0,0,0,0));
+  fShowMCPoints->Connect("Toggled(Bool_t)", "FairEventManagerEditor", this, "ShowMCPoints(Bool_t)");
+
+  // button for show|hide reconstructed points
+  fShowRecoPoints = new TGCheckButton(framePointsInfo, "Reco points");
+  framePointsInfo->AddFrame(fShowRecoPoints, new TGLayoutHints(kLHintsRight, 0,0,1,0));
+  fShowRecoPoints->Connect("Toggled(Bool_t)", "FairEventManagerEditor", this, "ShowRecoPoints(Bool_t)");
+  groupData->AddFrame(framePointsInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 1,1,5,0));
+
+  TGHorizontalFrame* frameTracksInfo = new TGHorizontalFrame(groupData);
+  // button for show|hide MC tracks
+  fShowMCTracks = new TGCheckButton(frameTracksInfo, "MC tracks");
+  frameTracksInfo->AddFrame(fShowMCTracks, new TGLayoutHints(kLHintsNormal, 0,0,0,0));
+  fShowMCTracks->Connect("Toggled(Bool_t)", "FairEventManagerEditor", this, "ShowMCTracks(Bool_t)");
+
+  // button for show|hide reco tracks
+  fShowRecoTracks = new TGCheckButton(frameTracksInfo, "Reco tracks");
+  frameTracksInfo->AddFrame(fShowRecoTracks, new TGLayoutHints(kLHintsRight, 0,0,1,0));
+  fShowRecoTracks->Connect("Toggled(Bool_t)", "FairEventManagerEditor", this, "ShowRecoTracks(Bool_t)");
+  groupData->AddFrame(frameTracksInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 1,1,5,0));
+
+  title1->AddFrame(groupData, new TGLayoutHints(kLHintsRight | kLHintsExpandX, 3,15,1,1));
+
   // button for update of event visualization
   TGTextButton* fUpdate = new TGTextButton(title1, "Update");
-  title1->AddFrame(fUpdate, new TGLayoutHints(kLHintsRight | kLHintsExpandX, 5,5,1,1));
+  title1->AddFrame(fUpdate, new TGLayoutHints(kLHintsRight | kLHintsExpandX, 3,15,1,1));
   fUpdate->Connect("Clicked()", "FairEventManagerEditor", this, "SelectEvent()");
 
   // add all frame above to "event info" tab
@@ -160,47 +208,71 @@ void FairEventManagerEditor::Init()
 //______________________________________________________________________________
 void FairEventManagerEditor::MaxEnergy()
 {
-  fManager->SetMaxEnergy(fMaxEnergy->GetValue());
+    fManager->SetMaxEnergy(fMaxEnergy->GetValue());
 }
 //______________________________________________________________________________
 void FairEventManagerEditor::MinEnergy()
 {
-  fManager->SetMinEnergy(fMinEnergy->GetValue());
+    fManager->SetMinEnergy(fMinEnergy->GetValue());
 }
 
 //______________________________________________________________________________
 void FairEventManagerEditor::DoVizPri()
 {
-  if (fVizPri->IsOn())
-      fManager->SetPriOnly(kTRUE);
-  else
-      fManager->SetPriOnly(kFALSE);
+    if (fVizPri->IsOn())
+        fManager->SetPriOnly(kTRUE);
+    else
+        fManager->SetPriOnly(kFALSE);
 }
 //______________________________________________________________________________
 void FairEventManagerEditor::SelectPDG()
 {
-  fManager->SelectPDG(fCurrentPDG->GetIntNumber());
+    fManager->SelectPDG(fCurrentPDG->GetIntNumber());
+}
+
+//______________________________________________________________________________
+void FairEventManagerEditor::SetModel(TObject* obj)
+{
+    fObject = obj;
 }
 
 //______________________________________________________________________________
 void FairEventManagerEditor::SelectEvent()
 {
+  int iNewEvent = fCurrentEvent->GetIntNumber();
   // exec event visualization of selected event
-  fManager->GotoEvent(fCurrentEvent->GetIntNumber());
+  fManager->GotoEvent(iNewEvent);
 
-  // display event time
-  TString time;
-  time.Form("%.2f", FairRootManager::Instance()->GetEventTime());
-  time += " ns";
-  fEventTime->SetText(time.Data());
+  if (iCurrentEvent == -1)
+  {
+      if (fManager->EveMCPoints == NULL)
+          fShowMCPoints->SetDisabledAndSelected(kFALSE);
+      if (fManager->EveMCTracks == NULL)
+          fShowMCTracks->SetDisabledAndSelected(kFALSE);
+      if (fManager->EveRecoPoints == NULL)
+          fShowRecoPoints->SetDisabledAndSelected(kFALSE);
+      if (fManager->EveRecoTracks == NULL)
+          fShowRecoTracks->SetDisabledAndSelected(kFALSE);
+  }
 
-  // new min and max energy limits given by event energy range
-  fMinEnergy->SetLimits(fManager->GetEvtMinEnergy(), fManager->GetEvtMaxEnergy(), 100);
-  fMinEnergy->SetValue(fManager->GetEvtMinEnergy());
-  MinEnergy();
-  fMaxEnergy->SetLimits(fManager->GetEvtMinEnergy(), fManager->GetEvtMaxEnergy(), 100);
-  fMaxEnergy->SetValue(fManager->GetEvtMaxEnergy());
-  MaxEnergy();
+  if (iCurrentEvent != iNewEvent)
+  {
+      iCurrentEvent = iNewEvent;
+
+      // display event time
+      TString time;
+      time.Form("%.2f", FairRootManager::Instance()->GetEventTime());
+      time += " ns";
+      fEventTime->SetText(time.Data());
+
+      // new min and max energy limits given by event energy range
+      fMinEnergy->SetLimits(fManager->GetEvtMinEnergy(), fManager->GetEvtMaxEnergy(), 100);
+      fMinEnergy->SetValue(fManager->GetEvtMinEnergy());
+      MinEnergy();
+      fMaxEnergy->SetLimits(fManager->GetEvtMinEnergy(), fManager->GetEvtMaxEnergy(), 100);
+      fMaxEnergy->SetValue(fManager->GetEvtMaxEnergy());
+      MaxEnergy();
+  }
 
   // update tab controls
   Update();
@@ -214,7 +286,88 @@ void FairEventManagerEditor::SelectEvent()
 }
 
 //______________________________________________________________________________
-void FairEventManagerEditor::SetModel(TObject* obj)
+void FairEventManagerEditor::SwitchBackground(Bool_t is_on)
 {
-  fObject = obj;
+    gEve->GetViewers()->SwitchColorSet();
+}
+
+//______________________________________________________________________________
+void FairEventManagerEditor::ShowGeometry(Bool_t is_show)
+{
+    gEve->GetGlobalScene()->SetRnrState(is_show);
+    fManager->fRPhiGeomScene->SetRnrState(is_show);
+    fManager->fRhoZGeomScene->SetRnrState(is_show);
+
+    gEve->Redraw3D();
+}
+
+//______________________________________________________________________________
+void FairEventManagerEditor::ShowMCPoints(Bool_t is_show)
+{
+    /*
+    TEveElement::List_t matches;
+    TPRegexp* regexp = new TPRegexp("(\\w+)Point\\b");
+    Int_t numFound = fManager->FindChildren(matches, *regexp);
+    if (numFound > 0)
+    {
+        for (TEveElement::List_i p = matches.begin(); p != matches.end(); ++p)
+            (*p)->SetRnrState(is_show);
+    }
+    */
+
+    TEveElement* points = fManager->FindChild("MC points");
+    if (points == NULL)
+    {
+        cout<<"There is no information about MC points"<<endl;
+        fShowMCPoints->SetOn(kFALSE);
+        return;
+    }
+
+    points->SetRnrState(is_show);
+    gEve->Redraw3D();
+}
+
+//______________________________________________________________________________
+void FairEventManagerEditor::ShowMCTracks(Bool_t is_show)
+{
+    TEveElement* tracks = fManager->FindChild("MC tracks");
+    if (tracks == NULL)
+    {
+        cout<<"There is no information about MC tracks"<<endl;
+        fShowMCTracks->SetOn(kFALSE);
+        return;
+    }
+
+    tracks->SetRnrState(is_show);
+    gEve->Redraw3D();
+}
+
+//______________________________________________________________________________
+void FairEventManagerEditor::ShowRecoPoints(Bool_t is_show)
+{
+    TEveElement* points = fManager->FindChild("Reco points");
+    if (points == NULL)
+    {
+        cout<<"There is no information about reconstructed points"<<endl;
+        fShowRecoPoints->SetOn(kFALSE);
+        return;
+    }
+
+    points->SetRnrState(is_show);
+    gEve->Redraw3D();
+}
+
+//______________________________________________________________________________
+void FairEventManagerEditor::ShowRecoTracks(Bool_t is_show)
+{
+    TEveElement* tracks = fManager->FindChild("Reco tracks");
+    if (tracks == NULL)
+    {
+        cout<<"There is no information about reconstructed tracks"<<endl;
+        fShowRecoTracks->SetOn(kFALSE);
+        return;
+    }
+
+    tracks->SetRnrState(is_show);
+    gEve->Redraw3D();
 }
