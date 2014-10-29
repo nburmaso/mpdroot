@@ -156,10 +156,15 @@ void FairPointSetDraw::Finish()
 // -------------------------------------------------------------------------
 void FairPointSetDraw::Reset()
 {
-  if(fq!=0)
+  if (fq != 0)
   {
     fq->Reset();
-    gEve->RemoveElement(fq, fEventManager->EveMCPoints);
+
+    FairMCPointDraw* pCheckClass = dynamic_cast<FairMCPointDraw*>(this);
+    if (pCheckClass != NULL)
+        gEve->RemoveElement(fq, fEventManager->EveMCPoints);
+    else
+        gEve->RemoveElement(fq, fEventManager->EveRecoPoints);
   }
 }
 
