@@ -58,7 +58,7 @@ Bool_t
  TString tpc_geometry = "tpc_v6.geo";
  TString tof_geometry = "tof_v3.geo";
  TString etof_geometry = "etof_v43.geo";
- TString emc_geometry = "emc_v1.geo";
+ TString emc_geometry = "emc_tr.geo";
  TString estt_geometry = "ect_v2.geo";    // "straw_60_layers.geo";
  TString zdc_geometry = "zdc_10x10_modules96_layers40_16_4.geo";
  TString bbc_geometry = "bbc.geo";

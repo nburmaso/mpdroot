@@ -57,7 +57,7 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
     fRun->AddModule(eTof);
 
     FairDetector *Emc= new MpdEmc("ECAL", kTRUE);
-    Emc->SetGeometryFileName("emc_v1.geo");
+    Emc->SetGeometryFileName("emc_tr.geo");
     fRun->AddModule(Emc);
 
     FairDetector *straw_ecStt= new MpdStrawendcap("ESTT", kTRUE);

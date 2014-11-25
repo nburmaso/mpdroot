@@ -40,7 +40,7 @@ geometry_stage1(FairRunSim *fRun, Bool_t build)
     fRun->AddModule(Tof);
 
     FairDetector *Emc= new MpdEmc("ECAL", kTRUE);
-    Emc->SetGeometryFileName("emc_v1.geo");
+    Emc->SetGeometryFileName("emc_tr.geo");
     fRun->AddModule(Emc);
 	
     FairDetector *Zdc = new MpdZdc("ZDC",kTRUE );
