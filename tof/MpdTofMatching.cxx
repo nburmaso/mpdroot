@@ -45,8 +45,8 @@ MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, const Mp
 	fTofImpactPoint[0] = est_point_Plane.X(); fTofImpactPoint[1] = est_point_Plane.Y(); fTofImpactPoint[2] = est_point_Plane.Z();
 	fTofImpactPointPhi = est_point_PlanePhi; fTofImpactPointTheta = est_point_PlaneTheta;
 	
-	Double_t beta  = (fLength / 100.)  / (fTime  * 1.e-9) / TMath::C();// [cm/nc] -> m/c
-	Double_t beta2  = beta*beta;	
+	fBeta  = (fLength / 100.)  / (fTime  * 1.e-9) / TMath::C();// [cm/nc] -> m/c
+	Double_t beta2  = fBeta*fBeta;	
 	Double_t gamma2 = 1. / (1. - beta2);			
 	Double_t Mom = GetMomentum().Mag();
 	fMass2 = (Mom * Mom) / ( gamma2 * beta2 );		

@@ -164,6 +164,7 @@ void MpdFillDstTask::Exec(Option_t * option)
     
     		if(matchingDataExist)
     		{
+                track->SetTofBeta(pMatchingData->GetBeta());
       			track->SetTofMass2(pMatchingData->GetMass2());
      			track->SetTofHitIndex(pMatchingData->GetTofHitIndex());
                                       

@@ -29,6 +29,7 @@ class MpdTofMatchingData : public TObject
         Double32_t 	fX, fY, fZ;      		// Position of hit [cm] {TofHit copy}
         Double32_t	fTime;              	// Time since event start [ns]	{TofHit copy}
         Double_t 	fLength;			// [KF]  KF Track length;
+        Double_t    fBeta;          // [TOF] 
         Double_t 	fMass2;			// [TOF]
         Double_t		fPx, fPy, fPz;		// [KF] momentum
         Double_t		fEstPointR[3];		// [KF] Estimated impact point on cylinder(x,y,z).
@@ -55,6 +56,7 @@ public:
 	void		GetHitPosition(TVector3& point)const{ point.SetXYZ(fX, fY, fZ);};	
 	Double32_t	GetTime(void)const{ return fTime;};	
 	Double_t		GetTrackLength(void)const{ return fLength;};	
+    Double_t        GetBeta(void) const { return fBeta;};  
 	Double_t		GetMass2(void)const{ return fMass2;};	
 	Int_t			GetPDGcode(void)const{ return fPDGcode;}; 		// =0 if undefined
 	Int_t			GetKFTrackIndex(void)const{ return fKFTrackIndex;};	

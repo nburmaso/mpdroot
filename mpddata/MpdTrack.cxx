@@ -15,7 +15,7 @@ MpdTrack::MpdTrack():
   TObject(), fPidProbElectron(0.), fPidProbPion(0.),fPidProbKaon(0.), fPidProbProton(0.), 
   fPidTPCProbElectron(0.), fPidTPCProbPion(0.),fPidTPCProbKaon(0.), fPidTPCProbProton(0.), 
   fPidTOFProbElectron(0.), fPidTOFProbPion(0.),fPidTOFProbKaon(0.), fPidTOFProbProton(0.),      
-  fTofMass2(0.), fdEdXTPC(0.), fTofFlag(0)  
+  fTofBeta(0.), fTofMass2(0.), fdEdXTPC(0.), fTofFlag(0)  
 {}
 // -------------------------------------------------------------------
 Float_t MpdTrack::GetPx()

@@ -32,6 +32,7 @@ class MpdTrack : public TObject {
     Float_t   fPidTOFProbKaon;  // [tof] probability
     Float_t   fPidTOFProbProton;  // [tof] probability
        
+    Float_t   fTofBeta;   // [tof] beta
     Float_t   fTofMass2;  // [tof] identified m^2, can be >0, <0 and Nan!
     Float_t   fdEdXTPC;  // [tof]
     Int_t     fTofHitIndex;  // [tof] 
@@ -80,6 +81,7 @@ class MpdTrack : public TObject {
     	fPidTPCProbElectron=n1; fPidTPCProbPion=n2; fPidTPCProbKaon=n3; fPidTPCProbProton=n4; SetTofFlag(flag);}     
     void SetCombPidProb( Float_t n1, Float_t n2, Float_t n3, Float_t n4) {
     	fPidProbElectron=n1; fPidProbPion=n2; fPidProbKaon=n3; fPidProbProton=n4;} 
+    void SetTofBeta(Float_t n) {fTofBeta=n;}  
     void SetTofMass2(Float_t n) {fTofMass2=n;}  
     void SetdEdXTPC(Float_t n) {fdEdXTPC=n;}  
     void SetTofHitIndex(Int_t n) {fTofHitIndex=n;}  
@@ -129,6 +131,7 @@ class MpdTrack : public TObject {
     Float_t   GetPidProbKaon() {return fPidProbKaon;} 
     Float_t   GetPidProbProton() {return fPidProbProton;} 
       
+    Float_t   GetTofBeta() {return fTofBeta;}  
     Float_t   GetTofMass2() {return fTofMass2;}  
     Float_t   GetdEdXTPC() {return fdEdXTPC;}  
     Int_t     GetTofHitIndex() {return fTofHitIndex;};  
