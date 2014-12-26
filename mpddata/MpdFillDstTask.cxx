@@ -168,7 +168,7 @@ void MpdFillDstTask::Exec(Option_t * option)
       			track->SetTofMass2(pMatchingData->GetMass2());
      			track->SetTofHitIndex(pMatchingData->GetTofHitIndex());
                                       
-                        if(!identificator->GetTofProbs(pMatchingData->GetMomentum().Mag(), pMatchingData->GetMass2(), kftrack->GetNofHits(), Ppi, Pk, Pp, Pe, 0)) {
+                        if(!identificator->GetTofProbs(pMatchingData->GetMomentum().Mag(), pMatchingData->GetBeta(), Ppi, Pk, Pp, Pe, 0)) {
                             track->SetTOFpidProb(Pe, Ppi, Pk, Pp, BIT(1));
                         }
     		}

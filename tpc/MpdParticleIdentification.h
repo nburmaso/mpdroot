@@ -28,7 +28,7 @@ public:
   ~MpdParticleIdentification();
   
   Int_t GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi, Float_t& PK, Float_t& Pp, Float_t& Pe, Int_t method);
-  Int_t GetTofProbs(Float_t P, Float_t m2, Int_t nHits, Float_t& Ppi, Float_t& PK, Float_t& Pp, Float_t& Pe, Int_t method);
+  Int_t GetTofProbs(Float_t P, Float_t beta, Float_t& Ppi, Float_t& PK, Float_t& Pp, Float_t& Pe, Int_t method);
   Int_t GetCombinedProbs(Float_t *tofProbs, Float_t *tpcProbs, Float_t *resultProbs, Int_t N);
   
   Float_t HyperbolicFunction(Float_t x, Float_t m2);

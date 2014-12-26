@@ -26,9 +26,11 @@ using namespace TMath;
 
 // Class Member definitions -----------
 
-MpdParticleIdentification::MpdParticleIdentification() {}
+MpdParticleIdentification::MpdParticleIdentification() {
+}
 
-MpdParticleIdentification::~MpdParticleIdentification() {}
+MpdParticleIdentification::~MpdParticleIdentification() {
+}
 
 Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi, Float_t& Pk, Float_t& Pp, Float_t& Pe, Int_t method) {
 
@@ -61,28 +63,44 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
         case 0: //bethe-bloch approximation with "standard" sigmas and equal bayesian coefficients
 
             //parameters were got from Bethe-Bloch approximation for 100000 BOX events
-            ProtonPar   = new Float_t[4];
-            PionPar     = new Float_t[4];
-            KaonPar     = new Float_t[4];
+            ProtonPar = new Float_t[4];
+            PionPar = new Float_t[4];
+            KaonPar = new Float_t[4];
             ElectronPar = new Float_t[4];
-            
-            ProtonPar[0]   = -3.957;  ProtonPar[1]   = 3.525;  ProtonPar[2]   = 16.468;    ProtonPar[3]   = 0.815;  ProtonPar[4]   = 5.247;
-            PionPar[0]     = -0.739;  PionPar[1]     = 7.373;  PionPar[2]     = 3904.790;  PionPar[3]     = 0.274;  PionPar[4]     = 5.497;
-            KaonPar[0]     = -2.590;  KaonPar[1]     = 4.918;  KaonPar[2]     = 79.722;    KaonPar[3]     = 0.357;  KaonPar[4]     = 4.511;
-            ElectronPar[0] = -1.552;  ElectronPar[1] = 1.748;  ElectronPar[2] = 7.425;     ElectronPar[3] = 0.980;  ElectronPar[4] = 1.604;
+
+            ProtonPar[0] = -3.957;
+            ProtonPar[1] = 3.525;
+            ProtonPar[2] = 16.468;
+            ProtonPar[3] = 0.815;
+            ProtonPar[4] = 5.247;
+            PionPar[0] = -0.739;
+            PionPar[1] = 7.373;
+            PionPar[2] = 3904.790;
+            PionPar[3] = 0.274;
+            PionPar[4] = 5.497;
+            KaonPar[0] = -2.590;
+            KaonPar[1] = 4.918;
+            KaonPar[2] = 79.722;
+            KaonPar[3] = 0.357;
+            KaonPar[4] = 4.511;
+            ElectronPar[0] = -1.552;
+            ElectronPar[1] = 1.748;
+            ElectronPar[2] = 7.425;
+            ElectronPar[3] = 0.980;
+            ElectronPar[4] = 1.604;
 
             sigma = 0.07 * dedx;
             sigPi = sigPr = sigKa = sigEl = sigma;
-	    bayesAprioriCoefficients[0] = 1.0;
+            bayesAprioriCoefficients[0] = 1.0;
             bayesAprioriCoefficients[1] = 1.0;
             bayesAprioriCoefficients[2] = 1.0;
             bayesAprioriCoefficients[3] = 1.0;
-            
-            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar),     sigPi, kTRUE);
-            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar),     sigKa, kTRUE);
-            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar),   sigPr, kTRUE);
+
+            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar), sigPi, kTRUE);
+            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar), sigKa, kTRUE);
+            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar), sigPr, kTRUE);
             gausProb[3] = Gaus(dedx, BetheBlochFunction(P, ElectronPar), sigEl, kTRUE);
-            
+
             sum = gausProb[0] + gausProb[1] + gausProb[2] + gausProb[3];
             if (sum == 0.) return 1;
             gausProb[0] /= sum;
@@ -94,16 +112,32 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
         case 1: //bethe-bloch approximation with special different sigmas and byesian coefficients
 
             //parameters were got from Bethe-Bloch approximation for 100000 BOX events
-            ProtonPar   = new Float_t[4];
-            PionPar     = new Float_t[4];
-            KaonPar     = new Float_t[4];
+            ProtonPar = new Float_t[4];
+            PionPar = new Float_t[4];
+            KaonPar = new Float_t[4];
             ElectronPar = new Float_t[4];
-            
-            ProtonPar[0]   = -3.957;  ProtonPar[1]   = 3.525;  ProtonPar[2]   = 16.468;    ProtonPar[3]   = 0.815;  ProtonPar[4]   = 5.247;
-            PionPar[0]     = -0.739;  PionPar[1]     = 7.373;  PionPar[2]     = 3904.790;  PionPar[3]     = 0.274;  PionPar[4]     = 5.497;
-            KaonPar[0]     = -2.590;  KaonPar[1]     = 4.918;  KaonPar[2]     = 79.722;    KaonPar[3]     = 0.357;  KaonPar[4]     = 4.511;
-            ElectronPar[0] = -1.552;  ElectronPar[1] = 1.748;  ElectronPar[2] = 7.425;     ElectronPar[3] = 0.980;  ElectronPar[4] = 1.604;
-            
+
+            ProtonPar[0] = -3.957;
+            ProtonPar[1] = 3.525;
+            ProtonPar[2] = 16.468;
+            ProtonPar[3] = 0.815;
+            ProtonPar[4] = 5.247;
+            PionPar[0] = -0.739;
+            PionPar[1] = 7.373;
+            PionPar[2] = 3904.790;
+            PionPar[3] = 0.274;
+            PionPar[4] = 5.497;
+            KaonPar[0] = -2.590;
+            KaonPar[1] = 4.918;
+            KaonPar[2] = 79.722;
+            KaonPar[3] = 0.357;
+            KaonPar[4] = 4.511;
+            ElectronPar[0] = -1.552;
+            ElectronPar[1] = 1.748;
+            ElectronPar[2] = 7.425;
+            ElectronPar[3] = 0.980;
+            ElectronPar[4] = 1.604;
+
             if (P < 0.3) {
                 bayesAprioriCoefficients[0] = 0.28;
                 bayesAprioriCoefficients[1] = 0.25;
@@ -195,12 +229,12 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
                 sigPr = sigmas[2][9];
                 sigEl = sigmas[3][9];
             }
-            
-            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar),     sigPi, kTRUE);
-            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar),     sigKa, kTRUE);
-            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar),   sigPr, kTRUE);
+
+            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar), sigPi, kTRUE);
+            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar), sigKa, kTRUE);
+            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar), sigPr, kTRUE);
             gausProb[3] = Gaus(dedx, BetheBlochFunction(P, ElectronPar), sigEl, kTRUE);
-            
+
             sum = gausProb[0] + gausProb[1] + gausProb[2] + gausProb[3];
             if (sum == 0.) return 1;
             gausProb[0] /= sum;
@@ -209,22 +243,38 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
             gausProb[3] /= sum;
             break;
 
-	case 2: //bethe-bloch approximation with special different sigmas and byesian coefficients
+        case 2: //bethe-bloch approximation with "standard" sigmas and different byesian coefficients
 
             //parameters were got from Bethe-Bloch approximation for 100000 BOX events
-            ProtonPar   = new Float_t[4];
-            PionPar     = new Float_t[4];
-            KaonPar     = new Float_t[4];
+            ProtonPar = new Float_t[4];
+            PionPar = new Float_t[4];
+            KaonPar = new Float_t[4];
             ElectronPar = new Float_t[4];
-            
-            ProtonPar[0]   = -3.957;  ProtonPar[1]   = 3.525;  ProtonPar[2]   = 16.468;    ProtonPar[3]   = 0.815;  ProtonPar[4]   = 5.247;
-            PionPar[0]     = -0.739;  PionPar[1]     = 7.373;  PionPar[2]     = 3904.790;  PionPar[3]     = 0.274;  PionPar[4]     = 5.497;
-            KaonPar[0]     = -2.590;  KaonPar[1]     = 4.918;  KaonPar[2]     = 79.722;    KaonPar[3]     = 0.357;  KaonPar[4]     = 4.511;
-            ElectronPar[0] = -1.552;  ElectronPar[1] = 1.748;  ElectronPar[2] = 7.425;     ElectronPar[3] = 0.980;  ElectronPar[4] = 1.604;
-            
-	    sigma = 0.07 * dedx;
+
+            ProtonPar[0] = -3.957;
+            ProtonPar[1] = 3.525;
+            ProtonPar[2] = 16.468;
+            ProtonPar[3] = 0.815;
+            ProtonPar[4] = 5.247;
+            PionPar[0] = -0.739;
+            PionPar[1] = 7.373;
+            PionPar[2] = 3904.790;
+            PionPar[3] = 0.274;
+            PionPar[4] = 5.497;
+            KaonPar[0] = -2.590;
+            KaonPar[1] = 4.918;
+            KaonPar[2] = 79.722;
+            KaonPar[3] = 0.357;
+            KaonPar[4] = 4.511;
+            ElectronPar[0] = -1.552;
+            ElectronPar[1] = 1.748;
+            ElectronPar[2] = 7.425;
+            ElectronPar[3] = 0.980;
+            ElectronPar[4] = 1.604;
+
+            sigma = 0.07 * dedx;
             sigPi = sigPr = sigKa = sigEl = sigma;
-	    
+
             if (P < 0.3) {
                 bayesAprioriCoefficients[0] = 0.28;
                 bayesAprioriCoefficients[1] = 0.25;
@@ -276,12 +326,12 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
                 bayesAprioriCoefficients[2] = 0.31;
                 bayesAprioriCoefficients[3] = 0.08;
             }
-            
-            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar),     sigPi, kTRUE);
-            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar),     sigKa, kTRUE);
-            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar),   sigPr, kTRUE);
+
+            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar), sigPi, kTRUE);
+            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar), sigKa, kTRUE);
+            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar), sigPr, kTRUE);
             gausProb[3] = Gaus(dedx, BetheBlochFunction(P, ElectronPar), sigEl, kTRUE);
-            
+
             sum = gausProb[0] + gausProb[1] + gausProb[2] + gausProb[3];
             if (sum == 0.) return 1;
             gausProb[0] /= sum;
@@ -289,20 +339,28 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
             gausProb[2] /= sum;
             gausProb[3] /= sum;
             break;
-	    
+
         case 3: //parabolic approximation
 
             //parameters were got from parabolic approximation function for 2000 UrQMD events
-            ProtonPar[0]   = 0.031;  ProtonPar[1]   = -0.124;  ProtonPar[2]   = 1.412;
-            PionPar[0]     = 0.230;  PionPar[1]     =  0.088;  PionPar[2]     = 1.072;
-            KaonPar[0]     = 0.676;  KaonPar[1]     =  0.621;  KaonPar[2]     = 0.831;
-            ElectronPar[0] = 0.000;  ElectronPar[1] = -0.018;  ElectronPar[2] = 2.055;
+            ProtonPar[0] = 0.031;
+            ProtonPar[1] = -0.124;
+            ProtonPar[2] = 1.412;
+            PionPar[0] = 0.230;
+            PionPar[1] = 0.088;
+            PionPar[2] = 1.072;
+            KaonPar[0] = 0.676;
+            KaonPar[1] = 0.621;
+            KaonPar[2] = 0.831;
+            ElectronPar[0] = 0.000;
+            ElectronPar[1] = -0.018;
+            ElectronPar[2] = 2.055;
 
             Float_t invP = 1.0 / P;
 
-            gausProb[0] = Gaus(dedx, ParabolicFunction(invP, PionPar),     sigPi, kTRUE);
-            gausProb[1] = Gaus(dedx, ParabolicFunction(invP, KaonPar),     sigKa, kTRUE);
-            gausProb[2] = Gaus(dedx, ParabolicFunction(invP, ProtonPar),   sigPr, kTRUE);
+            gausProb[0] = Gaus(dedx, ParabolicFunction(invP, PionPar), sigPi, kTRUE);
+            gausProb[1] = Gaus(dedx, ParabolicFunction(invP, KaonPar), sigKa, kTRUE);
+            gausProb[2] = Gaus(dedx, ParabolicFunction(invP, ProtonPar), sigPr, kTRUE);
             gausProb[3] = Gaus(dedx, ParabolicFunction(invP, ElectronPar), sigEl, kTRUE);
 
             sum = gausProb[0] + gausProb[1] + gausProb[2] + gausProb[3];
@@ -318,21 +376,25 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
     BayesFunction(gausProb, bayesAprioriCoefficients, resultProb, Ntypes);
 
     Ppi = resultProb[0];
-    Pk  = resultProb[1];
-    Pp  = resultProb[2];
-    Pe  = resultProb[3];
+    Pk = resultProb[1];
+    Pp = resultProb[2];
+    Pe = resultProb[3];
 
     return 0;
 }
 
-Int_t MpdParticleIdentification::GetTofProbs(Float_t P, Float_t m2, Int_t nHits, Float_t& Ppi, Float_t& Pk, Float_t& Pp, Float_t& Pe, Int_t method) {
+Int_t MpdParticleIdentification::GetTofProbs(Float_t P, Float_t beta, Float_t& Ppi, Float_t& Pk, Float_t& Pp, Float_t& Pe, Int_t method) {
 
-    const Float_t m_proton   = 0.938;    //mass of proton (GeV)
-    const Float_t m_pion     = 0.139;    //mass of pion (GeV)
-    const Float_t m_kaon     = 0.494;    //mass of kaon (GeV)
-    const Float_t m_electron = 0.000510; //mass of e (GeV)
+    const Float_t m2_proton = 0.938 * 0.938; //square of proton mass (GeV)
+    const Float_t m2_pion = 0.139 * 0.139; //square of pion mass (GeV)
+    const Float_t m2_kaon = 0.494 * 0.494; //square of kaon mass (GeV)
+    const Float_t m2_electron = 0.000511 * 0.000511; //square of e mass (GeV)
 
-    Float_t sigma = 1.0 / TMath::Sqrt(nHits); //for gaussian //FIXME PLEASE, they don't want me to be so strange!!!
+    if (Abs(beta) < 1e-6) return 1;
+    const Float_t oneOverBeta = 1.0 / beta;
+
+    Float_t sigma = 0.07 * oneOverBeta; //for gaussian 
+    //    Float_t sigma = 0.05; //for gaussian 
     Float_t sum = 0.0; // for normalizing
     const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
 
@@ -342,10 +404,10 @@ Int_t MpdParticleIdentification::GetTofProbs(Float_t P, Float_t m2, Int_t nHits,
 
         case 0: //Hyperbolic (1/beta vs p)
 
-            gausProb[0] = Gaus(HyperbolicFunction(P, m2), HyperbolicFunction(P, m_pion * m_pion),         sigma, kTRUE);
-            gausProb[1] = Gaus(HyperbolicFunction(P, m2), HyperbolicFunction(P, m_kaon * m_kaon),         sigma, kTRUE);
-            gausProb[2] = Gaus(HyperbolicFunction(P, m2), HyperbolicFunction(P, m_proton * m_proton),     sigma, kTRUE);
-            gausProb[3] = Gaus(HyperbolicFunction(P, m2), HyperbolicFunction(P, m_electron * m_electron), sigma, kTRUE);
+            gausProb[0] = Gaus(oneOverBeta, HyperbolicFunction(P, m2_pion), sigma, kTRUE);
+            gausProb[1] = Gaus(oneOverBeta, HyperbolicFunction(P, m2_kaon), sigma, kTRUE);
+            gausProb[2] = Gaus(oneOverBeta, HyperbolicFunction(P, m2_proton), sigma, kTRUE);
+            gausProb[3] = Gaus(oneOverBeta, HyperbolicFunction(P, m2_electron), sigma, kTRUE);
             sum = gausProb[0] + gausProb[1] + gausProb[2] + gausProb[3];
             if (sum == 0.) return 1;
             gausProb[0] /= sum;
@@ -358,16 +420,11 @@ Int_t MpdParticleIdentification::GetTofProbs(Float_t P, Float_t m2, Int_t nHits,
 
             break;
     }
-    //    for (Int_t i = 0; i < Ntypes; ++i) {
-    //        if ((gausProb[i] > 1.0) || (gausProb[i] > 1.0)) {
-    //            cout << "ERROR!!!!!! : i = " << i << " sum = " << sum << " prob = " << gausProb[i] << endl;
-    //        }
-    //    }
 
     Ppi = gausProb[0];
-    Pk  = gausProb[1];
-    Pp  = gausProb[2];
-    Pe  = gausProb[3];
+    Pk = gausProb[1];
+    Pp = gausProb[2];
+    Pe = gausProb[3];
 
     return 0;
 }
