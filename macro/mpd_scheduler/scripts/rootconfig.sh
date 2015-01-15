@@ -55,6 +55,14 @@
       PYTHONBUILD=" "
    fi
    
+   if [ "$install_alfasoft" = "yes" ];
+   then
+      VCBUILD=" "
+   else
+      VCBUILD="--enable-vc"
+   fi
+
+   
    #######################################################
       
      pythia6_libdir=$SIMPATH_INSTALL/lib
@@ -72,13 +80,14 @@
 		    --with-pythia8-libdir=$pythia8_libdir \
 		    --with-pythia8-incdir=$pythia8_incdir \
 		    --enable-mysql --enable-pgsql \
+		    --with-xrootd=/opt/fairsoft/xrootd \
+ 		    --with-xrootd-libdir=/opt/fairsoft/xrootd/lib \
+ 		    --with-xrootd-incdir=/opt/fairsoft/xrootd/include/xrootd \
                     --disable-globus \
                     --disable-reflex \
                     --disable-cintex \
-                    --enable-vc --enable-http \
-                    --with-xrootd=/opt/fairsoft/xrootd \
- 		    --with-xrootd-libdir=/opt/fairsoft/xrootd/lib64 \
- 		    --with-xrootd-incdir=/opt/fairsoft/xrootd/include/xrootd \
+                    --disable-cocoa \
+                    $VCBUILD --enable-http \
                     --with-gsl-incdir=$gsl_dir/include \
                     --with-gsl-libdir=$gsl_dir/lib \
                     --with-f77=$FC $root_comp_flag $prefix_string \

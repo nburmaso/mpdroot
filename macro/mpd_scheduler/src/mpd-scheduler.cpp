@@ -59,8 +59,8 @@ struct structThreadPar{
 	string add_args;
 	string logs;
 
-	sem_t sem;
-	pthread_mutex_t mut;
+	sem_t* sem;
+	pthread_mutex_t* mut;
 	int counter;
 };
 
@@ -115,8 +115,8 @@ struct structSubThreadPar{
 	        }
 
 	        Int_t events = chainUnion.GetEntries();
-	        if (mode == 1) cout<<"The Chain witn "<<events<<" event(s) was merged to file \""<<sResultFile<<"\" from following files:"<<endl;
-	        else cout<<"The Chain witn "<<events<<" event(s) was written to file \""<<sResultFile<<"\" to point following files:"<<endl;
+	        if (mode == 1) cout<<"mpd-scheduler$ The Chain witn "<<events<<" event(s) was merged to file \""<<sResultFile<<"\" from following files:"<<endl;
+	        else cout<<"mpd-scheduler$ The Chain witn "<<events<<" event(s) was written to file \""<<sResultFile<<"\" to point following files:"<<endl;
 
 	        TObjArray *fileElements = chainUnion.GetListOfFiles();
 	        TIter next(fileElements);
@@ -132,16 +132,16 @@ struct structSubThreadPar{
 	    chainRead.Add(sResultFile);
 
 	    Int_t events = chainRead.GetEntries();
-	    cout<<"The count of events in test reading is equal "<<events<<endl;
+	    cout<<"mpd-scheduler$ The count of events in test reading is equal "<<events<<endl;
 	}
 }*/
 
 int syscommand(string aCommand, string& result)
 {
     FILE* f;
-    if (!(f = popen( aCommand.c_str(), "r" )))
+    if (!(f = popen(aCommand.c_str(), "r")))
     {
-    	cout << "Can not open file" << endl;
+    	cout << "mpd-scheduler$ ERROR: can't open file" << endl;
         return 1;
     }
 
@@ -176,7 +176,197 @@ string getBundlePath()
     command <<  "readlink /proc/" << procpid << "/exe | sed \"s/\\(\\/" << appName << "\\)$//\"";
     string fRes;
     syscommand(command.str(),fRes);
+
+    // remove '\n' from end of the string and add final '/'
+    fRes = fRes.erase(fRes.length()-1, 1);
+    fRes.push_back('/');
+
     return fRes;
+}
+
+string IntToStr(int number)
+{
+   stringstream ss;
+   ss << number;
+   return ss.str();
+}
+
+bool is_number(const std::string& s)
+{
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+char* p_char_to_lower_new(char* myPointer)
+{
+	if (myPointer == NULL)
+		return NULL;
+
+	const int length = strlen(myPointer);	// get the length of the text
+	char* lower = new char[length + 1];		// allocate 'length' bytes + 1 (for null terminator) and cast to char*
+	lower[length] = 0;						// set the last byte to a null terminator
+
+	// copy all character bytes to the new buffer using tolower
+	for( int i = 0; i < length; i++ )
+	{
+	    lower[i] = tolower(myPointer[i]);
+	}
+
+	return lower;
+}
+
+// clear vector parameters
+void clearVector(vector<structFilePar*>* vecFiles){
+	for (unsigned int i = 0; i < vecFiles->size(); i++){
+		structFilePar* filePar = vecFiles->at(i);
+		delete filePar;
+	}
+
+	vecFiles->clear();
+}
+
+// get file name without extension from path
+string get_file_name(string path){
+	// Remove directory if present.
+	size_t last_slash_idx = path.find_last_of("/");
+	if (string::npos != last_slash_idx)
+	{
+	    path.erase(0, last_slash_idx + 1);
+	}
+
+	// Remove extension if present.
+	size_t period_idx = path.rfind('.');
+	if (std::string::npos != period_idx)
+	{
+	    path.erase(period_idx);
+	}
+
+	return path;
+}
+
+// get file name with extension from path
+string get_file_name_with_ext(string path){
+	// Remove directory if present.
+	size_t last_slash_idx = path.find_last_of("/");
+	if (string::npos != last_slash_idx)
+	{
+	    path.erase(0, last_slash_idx + 1);
+	}
+
+	return path;
+}
+
+// replace string 's' by string 'd' in text
+void replace(string &text, string s, string d)
+{
+	int start = -1;
+
+	do
+	{
+		start = text.find(s, start + 1);
+	    if(start > -1)
+	    	text.replace(start, s.length(), d.c_str());
+	}
+	while(start > -1);
+}
+
+// form output file's name from $ variable
+string form_file_name(string outName, string inName, string strCounter){
+	replace(outName, "${input}", inName);
+	replace(outName, "${file_name}", get_file_name(inName));
+	replace(outName, "${file_name_with_ext}", get_file_name_with_ext(inName));
+	replace(outName, "${counter}", strCounter);
+
+	return outName;
+}
+
+// change tilda symbol on HOME
+string replace_home_symbol(string fileName)
+{
+    size_t np = fileName.find_first_of('~');
+    if (np != string::npos)
+    {
+        bool isNewPath = false;
+        char* pPath = getenv("HOME");
+        if (pPath == NULL)
+        {
+            pPath = new char[2];
+            pPath[0] = '/';
+            pPath[1] = '\0';
+            isNewPath = true;
+        }
+
+        do
+        {
+            fileName.erase(np, 1);
+            fileName.insert(np, pPath);
+            np = fileName.find_first_of('~');
+        } while (np != string::npos);
+
+        if (isNewPath)
+            delete[] pPath;
+    }
+
+    return fileName;
+}
+
+// get maximum available processor count (local - one machine, global - cluster)
+// isGlobal: false - one machine (local), true - cluster scheduler (global)
+int GetProcessorCount(bool isGlobal)
+{
+	int proc_count = 0;
+
+	if (isGlobal){
+		switch (scheduler_name)
+		{
+			case Torque:
+			{
+				// define count of processors for all.q queue
+				string data, strDiff;
+				FILE* stream = popen("qconf -sq all.q | grep slots", "r");
+				while (fgets(buffer, MAX_BUFFER, stream) != NULL)
+					data.append(buffer);
+				pclose(stream);
+
+				size_t found = data.find("="), found2 = string::npos;
+				while (found != string::npos)
+				{
+					found2 = data.find("]", found);
+					strDiff = data.substr(found+1, found2 - found - 1);
+					proc_count += atoi(strDiff.c_str());
+					strDiff.clear();
+
+					found = data.find("=", found2);
+				}
+
+				data.clear();
+
+				break;
+			}//case Torque
+		}//switch (scheduler_name)
+	}//if (isGlobal)
+	else
+	{
+		// define count of machine's cores
+		proc_count = sysconf(_SC_NPROCESSORS_ONLN);
+	}
+
+	return proc_count;
+}
+
+// generate output file name with counter (for partial result)
+string GenerateOutputFilePath(string path, int counter)
+{
+	size_t last_point_idx = path.find_last_of(".");
+
+	string add_string = "__";
+	add_string += IntToStr(counter);
+
+	if (string::npos != last_point_idx)
+		return path.insert(last_point_idx, add_string);
+	else
+		return path.append(add_string);
 }
 
 // event process in working thread
@@ -246,9 +436,9 @@ void* SubThreadProcessFile(void* thread_parameter)
 	myfile.close();
 	sprintf(run_temp, "bash %s", temp_file);
 
-	pthread_mutex_lock(&thread_par->mut);
-	cout<<"Subtask is running:"<<endl<<"input - "<<inFile<<endl<<"output - "<<outFile<<endl<<"start event - "<<start_event<<endl<<"event count - "<<count_event<<endl<<endl;
-	pthread_mutex_unlock(&thread_par->mut);
+	pthread_mutex_lock(thread_par->mut);
+	cout<<"mpd-scheduler$ Subtask is running:"<<endl<<"input - "<<inFile<<endl<<"output - "<<outFile<<endl<<"start event - "<<start_event<<endl<<"event count - "<<count_event<<endl<<endl;
+	pthread_mutex_unlock(thread_par->mut);
 
 	// run task in thread
 	system(run_temp);
@@ -259,7 +449,7 @@ void* SubThreadProcessFile(void* thread_parameter)
 	sprintf(run_temp, "rm %s", temp_file);
 	system(run_temp);
 
-	sem_post(&thread_par->sem);
+	sem_post(thread_par->sem);
 
 	pthread_exit(NULL);
 
@@ -293,7 +483,6 @@ void* ThreadProcessFile(void* thread_parameter)
 		int real_thread_count = 0;
 
 		string sUnion = outFile;
-		int len = sUnion.length();
 		int start = *start_event;
 		int count = *count_event;
 		int rc;
@@ -306,9 +495,7 @@ void* ThreadProcessFile(void* thread_parameter)
 		    	string sOutFile = outFile;
 
 		        // generate output file name
-		        char add_comma[9];
-		        sprintf(add_comma, "%d", real_thread_count);
-		        sOutFile.insert(len, add_comma);
+		    	sOutFile = GenerateOutputFilePath(sOutFile, real_thread_count);
 
 		        structSubThreadPar* par = new structSubThreadPar();
 		        par->thread_parameter = thread_par;
@@ -317,11 +504,11 @@ void* ThreadProcessFile(void* thread_parameter)
 		        par->outFile = sOutFile;
 		        par->counter2 = i+1;
 
-		        sem_wait(&thread_par->sem);
+		        sem_wait(thread_par->sem);
 
 		        rc = pthread_create(&threads[real_thread_count], NULL, SubThreadProcessFile, (void*)par);
 		        if (rc){
-		        	printf("ERROR; return code from sub pthread_create() is %d\n", rc);
+		        	printf("mpd-scheduler$ ERROR: return code from sub pthread_create() is %d\n", rc);
 		            exit(-1);
 		        }
 
@@ -334,14 +521,14 @@ void* ThreadProcessFile(void* thread_parameter)
 		}//for
 
 		// waiting for finishing of the child threads
-		//cout<<"Waiting for "<<real_thread_count<<" subtask(s) to finish..."<<endl;
+		//cout<<"mpd-scheduler$ Waiting for "<<real_thread_count<<" subtask(s) to finish..."<<endl;
 		void **thread_return = NULL;
 		for (int i=0; i < real_thread_count; i++)
 		{
 			pthread_join(threads[i], thread_return);
 
 		    if (thread_return != NULL)
-		    	cout<<"Thread " << i << " failed" << endl;
+		    	cout<<"mpd-scheduler$ ERROR: thread " << i << " failed" << endl;
 		}
 
 		// merge result files or write to single TChain object
@@ -366,7 +553,7 @@ void* ThreadProcessFile(void* thread_parameter)
 		    myfile.close();
 		    sprintf(run_temp, "bash %s", temp_file);
 
-		    cout<<endl<<"Merging the result of subtasks..."<<endl<<endl;
+		    cout<<endl<<"mpd-scheduler$ Merging the result of subtasks..."<<endl<<endl;
 		    system(run_temp);
 
 		    delete [] pcSUB;
@@ -432,9 +619,9 @@ void* ThreadProcessFile(void* thread_parameter)
 		myfile.close();
 		sprintf(run_temp, "bash %s", temp_file);
 
-		pthread_mutex_lock(&thread_par->mut);
-		cout<<"Task is running:"<<endl<<"input - "<<inFile<<endl<<"output - "<<outFile<<endl<<endl;
-		pthread_mutex_unlock(&thread_par->mut);
+		pthread_mutex_lock(thread_par->mut);
+		cout<<"mpd-scheduler$ Task is running:"<<endl<<"input - "<<inFile<<endl<<"output - "<<outFile<<endl<<endl;
+		pthread_mutex_unlock(thread_par->mut);
 
 		// run task in thread
 		system(run_temp);
@@ -445,7 +632,7 @@ void* ThreadProcessFile(void* thread_parameter)
 		sprintf(run_temp, "rm %s", temp_file);
 		system(run_temp);
 
-		sem_post(&thread_par->sem);
+		sem_post(thread_par->sem);
 	}//else
 
 	pthread_exit(NULL);
@@ -453,130 +640,16 @@ void* ThreadProcessFile(void* thread_parameter)
 	return NULL;
 }
 
-string IntToStr(int number)
-{
-   stringstream ss;
-   ss << number;
-   return ss.str();
-}
-
-// clear vector parameters
-void clearVector(vector<structFilePar*>* vecFiles){
-	for (unsigned int i = 0; i < vecFiles->size(); i++){
-		structFilePar* filePar = vecFiles->at(i);
-		delete filePar;
-	}
-}
-
-// get file name without extension from path
-string get_file_name(string path){
-	// Remove directory if present.
-	size_t last_slash_idx = path.find_last_of("/");
-	if (string::npos != last_slash_idx)
-	{
-	    path.erase(0, last_slash_idx + 1);
-	}
-
-	// Remove extension if present.
-	size_t period_idx = path.rfind('.');
-	if (std::string::npos != period_idx)
-	{
-	    path.erase(period_idx);
-	}
-
-	return path;
-}
-
-// get file name with extension from path
-string get_file_name_with_ext(string path){
-	// Remove directory if present.
-	size_t last_slash_idx = path.find_last_of("/");
-	if (string::npos != last_slash_idx)
-	{
-	    path.erase(0, last_slash_idx + 1);
-	}
-
-	return path;
-}
-
-// replace string 's' by string 'd' in text
-void replace(string &text, string s, string d)
-{
-	int start = -1;
-
-	do
-	{
-		start = text.find(s, start + 1);
-	    if(start > -1)
-	    	text.replace(start, s.length(), d.c_str());
-	}
-	while(start > -1);
-}
-
-// form output file's name from $ variable
-string form_file_name(string outName, string inName, string strCounter){
-	replace(outName, "${input}", inName);
-	replace(outName, "${file_name}", get_file_name(inName));
-	replace(outName, "${file_name_with_ext}", get_file_name_with_ext(inName));
-	replace(outName, "${counter}", strCounter);
-
-	return outName;
-}
-
-// get maximum available processor count (local - one machine, global - cluster)
-// isGlobal: false - one machine (local), true - cluster scheduler (global)
-int GetProcessorCount(bool isGlobal)
-{
-	int proc_count = 0;
-
-	if (isGlobal){
-		switch (scheduler_name)
-		{
-			case Torque:
-			{
-				// define count of processors for all.q queue
-				string data, strDiff;
-				FILE* stream = popen("qconf -sq all.q | grep slots", "r");
-				while (fgets(buffer, MAX_BUFFER, stream) != NULL)
-					data.append(buffer);
-				pclose(stream);
-
-				size_t found = data.find("="), found2 = string::npos;
-				while (found != string::npos)
-				{
-					found2 = data.find("]", found);
-					strDiff = data.substr(found+1, found2 - found - 1);
-					proc_count += atoi(strDiff.c_str());
-					strDiff.clear();
-
-					found = data.find("=", found2);
-				}
-
-				data.clear();
-
-				break;
-			}//case Torque
-		}//switch (scheduler_name)
-	}//if (isGlobal)
-	else
-	{
-		// define count of machine's cores
-		proc_count = sysconf(_SC_NPROCESSORS_ONLN);
-	}
-
-	return proc_count;
-}
-
 int main(int argc, char** argv){
 	if (argc < 2){
-		cout << "first parameter: XML file name wasn't set" << endl;
+		cout << "mpd-scheduler$ ERROR: first parameter (XML file name) wasn't set" << endl;
         return 1;
 	}
 
     // pointer to XML document
 	xmlDocPtr doc = xmlReadFile(argv[1], NULL, 0);
 	if(doc == NULL){
-		cout<<"Error open XML file: "<<argv[1]<<endl;
+		cout<<"mpd-scheduler$ ERROR: open XML file: "<<argv[1]<<endl;
 		return 2;
 	}
 
@@ -597,10 +670,13 @@ int main(int argc, char** argv){
 
     // cycle for all jobs
 	xmlNodePtr cur_node = root;
-	while (cur_node){
+	while (cur_node)
+	{
         // if tag means JOB
-        if (cur_node->type == XML_ELEMENT_NODE){
-        	if (strcmp((char*)cur_node->name, "job") == 0){
+        if (cur_node->type == XML_ELEMENT_NODE)
+        {
+        	if (strcmp((char*)cur_node->name, "job") == 0)
+        	{
         		bool isLocal = true, isCommand = false, isError = false;
         		char* macro_name=NULL, *outFile=NULL, *inFile=NULL, *inDB=NULL, *pcStart_event=NULL, *pcCount_event=NULL,
                     *mode=NULL, *sproc_count=NULL, *pcConfig=NULL, *merge=NULL, *parallel_mode=NULL, *add_args=NULL, *command_line=NULL,
@@ -616,7 +692,7 @@ int main(int argc, char** argv){
                 		// COMMAND LINE TAG
                 		if (strcmp((char*)sub_node->name, "command") == 0){
                 			if (command_line != NULL)
-                				cout<<"Warning: command line is reassigned"<<endl;
+                				cout<<"mpd-scheduler$ WARNING: command line is reassigned"<<endl;
 
                 		    command_line = (char*) xmlGetProp(sub_node, (unsigned char*)"line");
                 		    isCommand = true;
@@ -627,7 +703,7 @@ int main(int argc, char** argv){
                 		// MACRO NAME TAG
                         if (strcmp((char*)sub_node->name, "macro") == 0){
                         	if (macro_name != NULL)
-                        		cout<<"Warning: macro's name is reassigned"<<endl;
+                        		cout<<"mpd-scheduler$ WARNING: macro's name is reassigned"<<endl;
 
                         	macro_name = (char*) xmlGetProp(sub_node, (unsigned char*)"name");
 
@@ -639,20 +715,29 @@ int main(int argc, char** argv){
                         		start_event = new int;
                         	    *start_event = atoi(pcStart_event);
                         	}
-                        	else{
+                        	else
+                        	{
                         		start_event = NULL;
                         	}
                         	// check global count parameter
-                        	if (pcCount_event != NULL){
+                        	if (pcCount_event != NULL)
+                        	{
+                        		if (!is_number(pcCount_event))
+                        		{
+                        			isError = true;
+                        			cout<<"mpd-scheduler$ ERROR: event count must be a number!"<<endl;
+                        			break;
+                        		}
                         		count_event = new int;
                         	     *count_event = atoi(pcCount_event);
-                        	     if (*count_event <= 0)
+                        	     if (*count_event < 0)
                         	     {
                         	    	 isError = true;
-                        	         cout<<"Error: event count must be a number greater than zero!"<<endl;
+                        	         cout<<"mpd-scheduler$ ERROR: event count must be a positive number or 0 (for all events)!"<<endl;
 
-                        	         cur_node = cur_node->next;
-                        	         continue;
+                        	         //cur_node = cur_node->next;
+                        	         //continue;
+                        	         break;
                         	     }
                         	}
                         	else{
@@ -673,24 +758,34 @@ int main(int argc, char** argv){
                         	lcCount_event = (char*) xmlGetProp(sub_node, (unsigned char*)"count_event");
 
                         	// check start parameter
-                        	if (lcStart_event != NULL){
+                        	if (lcStart_event != NULL)
+                        	{
                         		lc_start_event = new int;
                         	    *lc_start_event = atoi(lcStart_event);
                         	}
-                        	else{
+                        	else
+                        	{
                         		lc_start_event = NULL;
                         	}
                         	// check count parameter
-                        	if (lcCount_event != NULL){
+                        	if (lcCount_event != NULL)
+                        	{
+                        		if (!is_number(lcCount_event))
+                        		{
+                        			isError = true;
+                        		    cout<<"mpd-scheduler$ ERROR: event count must be a number!"<<endl;
+                        		    break;
+                        		}
                         		lc_count_event = new int;
                         	    *lc_count_event = atoi(lcCount_event);
-                        	    if (*lc_count_event <= 0)
+                        	    if (*lc_count_event < 0)
                         	    {
                         	    	isError = true;
-                        	        cout<<"Error: event count must be a number greater than zero!"<<endl;
+                        	        cout<<"mpd-scheduler$ ERROR: event count must be a positive number or 0 (for all events)!"<<endl;
 
-                        	        cur_node = cur_node->next;
-                        	        continue;
+                        	        //cur_node = cur_node->next;
+                        	        //continue;
+                        	        break;
                         	    }
                         	}
                         	else{
@@ -700,8 +795,14 @@ int main(int argc, char** argv){
                         	// whether doesn't merge files containing result's parts
                         	merge = (char*) xmlGetProp(sub_node, (unsigned char*)"merge");
                         	bool isMerge = true;
-                        	if ((merge != NULL) && (strcmp(merge, "false") == 0))
-                        		isMerge = false;
+                        	if (merge != NULL)
+                        	{
+                        		char* lower_merge = p_char_to_lower_new(merge);
+                        		if (strcmp(lower_merge, "false") == 0)
+                        			isMerge = false;
+
+                        		delete lower_merge;
+                        	}
                         	// whether parallelize event processing
                         	parallel_mode = (char*) xmlGetProp(sub_node, (unsigned char*)"parallel_mode");
 
@@ -803,13 +904,14 @@ int main(int argc, char** argv){
 
                         			//READ PATH FROM DATABASE
                         			TString strConnection = "mysql://" + server_name + "/data4mpd";
-                        			TSQLServer* pSQLServer = TSQLServer::Connect(strConnection, "data4mpd", "data4mpd");
+                        			TSQLServer* pSQLServer = TSQLServer::Connect(strConnection, "data4mpd", "MixedPhase");
                         			if (pSQLServer == 0x00){
-                        				cout<<"Error: connection to database wasn't established!"<<endl;
+                        				cout<<"mpd-scheduler$ ERROR: connection to database wasn't established!"<<endl;
                         				isError = true;
 
-                        				cur_node = cur_node->next;
-                        				continue;
+                        				//cur_node = cur_node->next;
+                        				//continue;
+                        				break;
                         			}
 
                         			TString sql = "select data4mpd_path "
@@ -890,7 +992,7 @@ int main(int argc, char** argv){
 
                         			int nrows = res->GetRowCount();
                         			if (nrows == 0){
-                        				cout<<"There are no records for these parameters"<<endl;
+                        				cout<<"mpd-scheduler$ WARNING: there are no records for these parameters"<<endl;
                         			}
                         			else{
                         				TSQLRow* row;
@@ -929,11 +1031,12 @@ int main(int argc, char** argv){
                         				delete pSQLServer;
                         		}
                         		else{// if (inDB != NULL)
-                        			cout<<"Error: there are no files in <file> tag!"<<endl;
+                        			cout<<"mpd-scheduler$ ERROR: there are no files in <file> tag!"<<endl;
                         			isError = true;
 
-                        			cur_node = cur_node->next;
-                        			continue;
+                        			//cur_node = cur_node->next;
+                        			//continue;
+                        			break;
                         		}
                         	}
 
@@ -962,12 +1065,12 @@ int main(int argc, char** argv){
 
                 // START MAIN EXECUTION AFTER PARSING
                 if ((!isCommand) && (macro_name == NULL)){
-                	cout<<"Error: macro's name is required!"<<endl;
+                	cout<<"mpd-scheduler$ ERROR: macro's name is required!"<<endl;
                 	isError = true;
                 }
 
                 if (isError){
-                	cout<<"This job is skipped!!!"<<endl;
+                	cout<<"mpd-scheduler$ ERROR: This job will be skipped because of errors above!"<<endl;
 
                     clearVector(&vecFiles);
                     cur_node = cur_node->next;
@@ -1007,12 +1110,12 @@ int main(int argc, char** argv){
                 	// define process count for job
                 	int proc_count = 1;
                 	if (sproc_count != NULL){
-                		if ((sproc_count[0] == '*') && (strlen(sproc_count) == 1))
+                		if ((sproc_count[0] == '0') && (strlen(sproc_count) == 1))
                 		{
                 			proc_count = GetProcessorCount(true);
 
                 			if (proc_count == 0){
-                				cout<<"Error: cluster's processors aren't set!"<<endl<<"This job is skipped!!!"<<endl;
+                				cout<<"mpd-scheduler$ ERROR: cluster's processors aren't set!"<<endl<<"This job will be skipped!!!"<<endl;
 
                 				clearVector(&vecFiles);
                 			    cur_node = cur_node->next;
@@ -1024,7 +1127,7 @@ int main(int argc, char** argv){
                 	}
 
                 	if (proc_count == 0){
-                		cout<<"Error: process count can't be equal 0!"<<endl<<"This job is skipped!!!"<<endl;
+                		cout<<"mpd-scheduler$ ERROR: process count can't be equal 0!"<<endl<<"This job will be skipped!!!"<<endl;
 
                 		clearVector(&vecFiles);
                 	    cur_node = cur_node->next;
@@ -1061,24 +1164,8 @@ int main(int argc, char** argv){
                     	// generate output name for temporary file
                     	//fileName = filePar->strFileIn;
                     	long int t = time(NULL);
-                    	sprintf(buffer,"file_list_%d",(int)t);
+						sprintf(buffer, "file_list_%d",(int)t);
                     	fileName = buffer;
-                    	// change tilda symbol on HOME
-                    	//size_t np = fileName.find_first_of('~');
-                    	//if (np != string::npos){
-                    	//	char* pPath = getenv("HOME");
-                    	//    if (pPath == NULL){
-                    	//    	pPath = new char[2];
-                    	//        pPath[0] = '/';
-                    	//        pPath[1] = '\0';
-                    	//    }
-
-                    	//    do{
-                    	//    	fileName.erase(np, 1);
-                    	//        fileName.insert(np, pPath);
-                    	//        np = fileName.find_first_of('~');
-                    	//    } while (np != string::npos);
-                    	//}
 
                     	// write parameters to temporary file
                     	FILE* pFile = fopen(fileName.c_str(), "wt");
@@ -1097,7 +1184,7 @@ int main(int argc, char** argv){
                            	int parallel_mode = filePar->iParallelMode;
                     	    if ((parallel_mode > 1) && ((cur_start_event == NULL) || (cur_count_event == NULL))){
                     	    	parallel_mode = 1;
-                    	    	cout<<"Warning: parallel_mode is used with 'count_event' parameter, paralell_mode is ignored"<<endl;
+                    	    	cout<<"mpd-scheduler$ WARNING: parallel_mode is used with 'count_event' parameter, paralell_mode is ignored"<<endl;
                     	    }
 
                     	    if (parallel_mode > 1){
@@ -1116,9 +1203,7 @@ int main(int argc, char** argv){
                     	                fwrite("\\\"", 2, sizeof(char), pFile);
 
                     	                if (sOutFile != ""){
-                    	                	sOutFile += "_";
-                    	                    string strInt = IntToStr(counter);
-                    	                    sOutFile += strInt;
+                    	                	sOutFile = GenerateOutputFilePath(sOutFile, counter);
 
                     	                    fwrite(" \\\"", 3, sizeof(char), pFile);
                     	                    fwrite(sOutFile.c_str(), sOutFile.length(), sizeof(char), pFile);
@@ -1196,6 +1281,7 @@ int main(int argc, char** argv){
                     			iParallelCount, proc_count, macro_name, fileName.c_str(), sConfig.c_str(), MPDqsub_path.c_str());
                     }
 
+                    // main command
                     //cout<<"COMMAND: "<<pcSUB<<endl;
 
                     stream = popen(pcSUB, "r");
@@ -1203,21 +1289,32 @@ int main(int argc, char** argv){
                     	data.append(buffer);
                     pclose(stream);
 
-                    //cout<<"Task string: "<<pcSUB<<endl;
-
                     delete [] pcSUB;
+
+                    //cout<<"Content of 'data' variable: "<<data<<endl;
 
                     string ID = data;
                     data.clear();
 
-                    int indSymbol = ID.find('.', 15);
+                    size_t indSymbol = ID.find('.', 15);
+                    if (indSymbol == string::npos)
+                    {
+                    	cout<<"mpd-scheduler$ ERROR: 'qsub' command was encountered with some problems, this job will be skipped"<<endl;
+
+                    	clearVector(&vecFiles);
+                    	cur_node = cur_node->next;
+                    	continue;
+                    }
+
                     ID = ID.substr(15,indSymbol-15);
 
-                    cout<<"Job was run with ID: "<<ID<<". Enter 'qstat' command to check status"<<endl;
+                    cout<<"mpd-scheduler$ Job has been started with ID: "<<ID<<". Enter 'qstat' command to check status"<<endl;
 
                     // merge files if required
-                    if (!vecParallelOutputs.empty()){
-                    	for (int i = 0; i < (int)vecParallelOutputs.size(); i++){
+                    if (!vecParallelOutputs.empty())
+                    {
+                    	for (int i = 0; i < (int)vecParallelOutputs.size(); i++)
+                    	{
                     		string par = vecParallelOutputs.at(i);
                     		string UNIONqsub_path = exe_dir + "union.qsub";
                     		pcSUB = new char[100+ID.length()+par.length()+sConfig.length()+UNIONqsub_path.length()];
@@ -1232,7 +1329,7 @@ int main(int argc, char** argv){
                     	    string localID = data;
                     	    int indSymbol = localID.find(' ', 9);
                     	    localID = localID.substr(9,indSymbol-9);
-                    	    cout<<"Task for merging parallel files has ID: "<<localID<<endl;
+                    	    cout<<"mpd-scheduler$ Task for merging parallel files has ID: "<<localID<<endl;
 
                     	    data.clear();
                     	    delete [] pcSUB;
@@ -1245,11 +1342,11 @@ int main(int argc, char** argv){
                 	int proc_count = 1;
                 	if (sproc_count != NULL)
                 	{
-                		if ((sproc_count[0] == '*') && (strlen(sproc_count) == 1)){
+                		if ((sproc_count[0] == '0') && (strlen(sproc_count) == 1)){
                 			proc_count = GetProcessorCount(false);
 
                 			if (proc_count == 0){
-                				cout<<"Error: can't define core number!"<<endl<<"This job is skipped!!!"<<endl;
+                				cout<<"mpd-scheduler$ ERROR: can't define core number!"<<endl<<"This job will be skipped!!!"<<endl;
 
                 				cur_node = cur_node->next;
                 	            continue;
@@ -1260,7 +1357,7 @@ int main(int argc, char** argv){
                 	}
 
                 	if (proc_count == 0){
-                		cout<<"Error: process count can't be equal 0!"<<endl<<"This job is skipped!!!"<<endl;
+                		cout<<"mpd-scheduler$ ERROR: process count can't be equal 0!"<<endl<<"This job will be skipped!!!"<<endl;
 
                 		cur_node = cur_node->next;
                 		continue;
@@ -1319,7 +1416,7 @@ int main(int argc, char** argv){
                 		myfile.close();
                 		sprintf(run_temp, "bash %s", temp_file);
 
-                		cout<<"Task is running:"<<endl<<"command line - "<<command_line<<endl;
+                		cout<<"mpd-scheduler$ Task is running:"<<endl<<"command line - "<<command_line<<endl;
 
                 		// run task
                 		system(run_temp);
@@ -1330,7 +1427,7 @@ int main(int argc, char** argv){
                 		sprintf(run_temp, "rm %s", temp_file);
                 		system(run_temp);
                 	}
-                	// parallelizing macro ROOT on multicore machine
+                	// parallelizing macro ROOT on one multicore machine
                 	else
                 	{
                 		for (unsigned int i=0; i < vecFiles.size(); i++)
@@ -1352,7 +1449,7 @@ int main(int argc, char** argv){
                 			}
                 			if ((filePar->iParallelMode > 1) && ((par->start_event == NULL) || (par->count_event == NULL))){
                 				par->parallel_mode = 1;
-                				cout<<"Warning: parallel_mode is used without 'count_event' parameter, paralell_mode is ignored!"<<endl;
+                				cout<<"mpd-scheduler$ WARNING: parallel_mode is used without 'count_event' parameter, paralell_mode is ignored!"<<endl;
                 			}
                 			else
                 				par->parallel_mode = filePar->iParallelMode;
@@ -1363,37 +1460,46 @@ int main(int argc, char** argv){
                 			if (pcLogs != NULL) par->logs = pcLogs;
                 			else par->logs = "";
 
-                			par->sem = sem;
-                			par->mut = mut;
+                			par->sem = &sem;
+                			par->mut = &mut;
                 			par->counter = i+1;
 
                 			if (par->parallel_mode < 2)
+                			{
+                				//int value;
+                				//sem_getvalue(par->sem, &value);
+                				//cout<<"Thread is waiting: "<<i<<" semaphore value: "<<value<<endl;
                 				sem_wait(&sem);
+                			}
 
                 			// сreate and run threads to parallel processing - function ThreadProcessFile
                 			rc = pthread_create(&threads[i], NULL, ThreadProcessFile, (void*)par);
-                			if (rc){
-                				printf("ERROR; return code from pthread_create() is %d\n", rc);
+                			if (rc)
+                			{
+                				printf("mpd-scheduler$ ERROR: return code from pthread_create() is %d\n", rc);
                 				exit(-1);
                 			}
                 		}
 
                 		// waiting for finishing threads
                 		void **thread_return = NULL;
+                		//cout<<"Waiting for finishing threads "<<vecFiles.size()<<endl;
                 		for (unsigned int i=0; i < vecFiles.size(); i++)
                 		{
                 			pthread_join(threads[i], thread_return);
 
                 		    if (thread_return != NULL)
-                		    	cout<<"Thread " << i << " failed" << endl;
+                		    	cout<<"mpd-scheduler$ ERROR: thread " << i << " failed" << endl;
                 		}
                 	}//else isCommand
 
                 	sem_destroy(&sem);
                 	pthread_mutex_destroy(&mut);
 
-                	cout<<endl<<"Local job was finished"<<endl;
+                	cout<<endl<<"mpd-scheduler$ Local job was finished"<<endl;
                 }//else local scheduling
+
+                clearVector(&vecFiles);
         	}// JOB tag was processed
         }// if tag means JOB
 

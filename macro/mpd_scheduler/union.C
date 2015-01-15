@@ -12,6 +12,51 @@
 using namespace std;
 #endif
 
+// change tilda symbol on HOME
+string replace_home_symbol(string fileName)
+{
+    size_t np = fileName.find_first_of('~');
+    if (np != string::npos)
+    {
+        bool isNewPath = false;
+        char* pPath = getenv("HOME");
+        if (pPath == NULL)
+        {
+            pPath = new char[2];
+            pPath[0] = '/';
+            pPath[1] = '\0';
+            isNewPath = true;
+        }
+
+        do
+        {
+            fileName.erase(np, 1);
+            fileName.insert(np, pPath);
+            np = fileName.find_first_of('~');
+        } while (np != string::npos);
+
+        if (isNewPath)
+            delete[] pPath;
+    }
+
+    return fileName;
+}
+
+/*TString replace_home_symbol(TString fileName)
+{
+    char* pPath = getenv("HOME");
+    if (pPath == NULL)
+    {
+        pPath = new char[2];
+        pPath[0] = '/';
+        pPath[1] = '\0';
+    }
+
+    fileName.ReplaceAll('~', pPath);
+
+    return fileName;
+}*/
+
 //mode: 0 - save only result TChain with 'cbmsim' tree,
 //      1 - merge and delete partitial files
 void union(char* pcFileList, int mode = 1)
@@ -21,7 +66,7 @@ void union(char* pcFileList, int mode = 1)
     mpdloadlibs(kTRUE,kTRUE);       // all libs
 
     Bool_t res;
-    TString sResultFile = "", sFirstFile = "";
+    TString sResultFile = "", sFirstFile = "", sCurrentFile = "";
     int i = 0, beg = 0, countFiles = 0;
 
     // MERGE PARTITIAL FILES
@@ -110,8 +155,11 @@ void union(char* pcFileList, int mode = 1)
                 else
                 {
                     //delete temporary file
+                    sFirstFile = replace_home_symbol(sFirstFile.Data());
                     if (remove(sFirstFile.Data()) != 0)
-                        perror( "Error: deleting temporary file");
+                    {
+                        cout<<"Error: deleting one temporary file "<<sFirstFile.Data()<<endl;
+                    }
                     else
                         cout<<endl<<"Temporary file were successfully removed"<<endl;
                 }
@@ -124,7 +172,10 @@ void union(char* pcFileList, int mode = 1)
                 TString onlyList = "cbmsim";
                 mergerPart.AddObjectNames(onlyList);
                 mergerPart.OutputFile(sResultFile);
+                //cout<<"Result File: "<<sResultFile<<endl;
+
                 res = mergerPart.PartialMerge(TFileMerger::kAll|TFileMerger::kIncremental|TFileMerger::kOnlyListed);
+
                 if (res == kFALSE)
                     cout<<"Error: partial merging to the result file"<<endl;
                 else
@@ -134,10 +185,14 @@ void union(char* pcFileList, int mode = 1)
                     TObjString* url = 0;
                     while (url = (TObjString*)next())
                     {
-                        if (remove(url->GetString().Data()) != 0)
+                        //cout<<"url->GetString(): "<<url->GetString()<<endl;
+
+                        sCurrentFile = replace_home_symbol(url->GetString().Data());
+
+                        if (remove(sCurrentFile.Data()) != 0)
                         {
                             isError = true;
-                            perror( "Error: deleting temporary file");
+                            cout<<"Error: deleting temporary file "<<sCurrentFile.Data()<<endl;
                         }
                     }
                 }
@@ -146,26 +201,29 @@ void union(char* pcFileList, int mode = 1)
                 mergerFull.AddFile(sResultFile);
                 mergerFull.OutputFile(sResultFile);
                 res = mergerFull.Merge();
+
                 if (res == kFALSE)
                     cout<<"Error: full merging to the result file"<<endl;
                 else
                 {
                     //delete first temporary file
+                    sFirstFile = replace_home_symbol(sFirstFile.Data());
                     if (remove(sFirstFile.Data()) != 0)
                     {
                         isError = true;
-                        perror( "Error: deleting first temporary file");
+                        cout<<"Error: deleting first temporary file "<<sFirstFile.Data()<<endl;
                     }
                 }
+
                 mergerFull.Reset();
 
                 if (isError)
                     cout<<"There were errors while temporary files removing"<<endl;
                 else
                     cout<<endl<<"Temporary files were successfully removed"<<endl;
-            }
-        }
-    }
+            }// default: count of partitial files > 1
+        }// switch: merge the files to the result file
+    }// if (mode == 1) : merge partitial files
     // SAVE ONLY TCHAIN
     else
     {
@@ -223,7 +281,7 @@ void union(char* pcFileList, int mode = 1)
                 cout<<pc<<endl;
             }*/
         }
-    }
+    }// else : save only TChain
 
 /*
     //test reading result file

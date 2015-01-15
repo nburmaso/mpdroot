@@ -1,12 +1,12 @@
 #!/bin/bash
 #$ -j y
-#$ -N mpd-union-task
+#$ -N mpd-union
 #$ -cwd
 
 # request Bourne again shell as shell for job
 #$ -S /bin/bash
 
-echo "Start date: `date`"
+echo "Start date: `date` (`hostname`)"
 
 if [ "$config" != "" ]
 then
