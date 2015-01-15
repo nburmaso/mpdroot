@@ -86,6 +86,9 @@ delete_tmp_dir()
    if [ -d "$_TMP_DIR" ]; then
       rm -rf "$_TMP_DIR"
    fi
+   if [ -d "$_G_SOCK_DIR" ]; then
+      rm -rf "$_G_SOCK_DIR"
+   fi
 }
 # ************************************************************************
 # ***** detects pid and port of XPROOFD *****
@@ -281,6 +284,8 @@ get_default_ROOT()
    
    export PATH=$ROOTSYS/bin:$PATH
 
+   #source $ROOTSYS/bin/thisroot.sh
+
    # check binary
    xproofd -h #> /dev/null 2>&1
    if (( $? != 0 )) ; then
@@ -435,11 +440,16 @@ export POD_WN_SUBMIT_TIMESTAMP=0000
 
 # Using eval to force variable substitution
 # changing _G_WRK_DIR to a working directory in the following files:
-eval sed -i.bup 's%_G_WRK_DIR%$WD%g' $XPD_CFG
+#eval sed -i.bup 's%_G_WRK_DIR%$WD%g' $XPD_CFG
+_G_DIR=$(mktemp -d  $TMPDIR/PoDWorker_XXXXXXXXXX)
+eval sed -i.bup 's%_G_WRK_DIR%$_G_DIR%g' $XPD_CFG
 # populating the tmp dir.
-_TMP_DIR=$(mktemp -d /tmp/PoDWorker_XXXXXXXXXX)
+_TMP_DIR=$(mktemp -d $TMPDIR/PoDWorker_XXXXXXXXXX)
+_G_SOCK_DIR=$(mktemp -d  /tmp/PoDWorkerSockets_XXXXXXXXXX)
 chmod 777 $_TMP_DIR
+chmod 777 $_G_SOCK_DIR
 eval sed -i.bup 's%_G_WORKER_TMP_DIR%$_TMP_DIR%g' $XPD_CFG
+eval sed -i.bup 's%_G_WORKER_TMP_SOCK_DIR%$_G_SOCK_DIR%g' $XPD_CFG
 
 # creating an empty proof.conf, so that xproof will be happy
 touch $POD_PROOFCFG_FILE
