@@ -16,9 +16,11 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+
 using namespace std;
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     // help information
     if (argc > 1){
         string first_par = argv[1];
@@ -32,7 +34,7 @@ int main(int argc, char** argv) {
     }
 
     // parse parameter for DB searching
-    bool isGen = false, isEnergy = false, isMaxEnergy = false, isParts = false, isDesc = false, isType = false;
+    bool isGen = false, isEnergy = false, isMinEnergy = false, isMaxEnergy = false, isParts = false, isDesc = false, isType = false;
     string strGen, strParts, strDesc, strType;
     double fEnergy, fMaxEnergy;
     for (int i = 1; i < argc; i++){
@@ -43,40 +45,54 @@ int main(int argc, char** argv) {
         istringstream ss(input);
         string token;
 
+        // parse tokens by comma separated
         while(getline(ss, token, ','))
         {
-            transform(token.begin(), token.end(),token.begin(), ::tolower);
+            // to lowercase
+            transform(token.begin(), token.end(), token.begin(), ::tolower);
+
+            // generator name parsing
             if ((token.length() > 4) && (token.substr(0,4) == "gen=")){
                 isGen = true;
                 strGen = token.substr(4);
                 //cout<<strGen<<endl;
             }
-            else{
-                if ((token.length() > 7) && (token.substr(0,7) == "energy=")){
+            else
+            {
+                // energy parsing
+                if ((token.length() > 7) && (token.substr(0,7) == "energy="))
+                {
                     token = token.substr(7);
-                    int indDash = token.find_first_of('-');
-                    if (indDash > -1){
+
+                    size_t indDash = token.find_first_of('-');
+                    if (indDash != string::npos)
+                    {
                         stringstream stream;
-                        stream << token.substr(0,indDash);
+                        stream << token.substr(0, indDash);
                         double dVal;
                         if (stream >> dVal)
                         {
                             isEnergy = true;
+                            isMinEnergy = true;
                             fEnergy = dVal;
                             //cout<<dVal<<endl;
                         }
-                        if (token.length() > indDash){
+                        if (token.length() > indDash)
+                        {
                             stringstream stream2;
                             stream2 << token.substr(indDash+1);
                             if (stream2 >> dVal)
                             {
+                                isEnergy = true;
                                 isMaxEnergy = true;
                                 fMaxEnergy = dVal;
                                 //cout<<dVal<<endl;
                             }
                         }
                     }//if (indDash > -1)
-                    else{
+                    // if exact energy value
+                    else
+                    {
                         stringstream stream;
                         stream << token;
                         double dVal;
@@ -88,19 +104,25 @@ int main(int argc, char** argv) {
                         }
                     }//else
                 }//if ((token.length() > 7) && (token.substr(0,7) == "energy="))
-                else{
+                else
+                {
+                    // particles' names in collision parsing
                     if ((token.length() > 9) && (token.substr(0,9) == "particle=")){
                         isParts = true;
                         strParts = token.substr(9);
                         //cout<<strParts<<endl;
                     }
-                    else{
+                    else
+                    {
+                        // search text in description string
                         if ((token.length() > 5) && (token.substr(0,5) == "desc=")){
                             isDesc = true;
                             strDesc = token.substr(5);
                             //cout<<strDesc<<endl;
                         }
-                        else{
+                        else
+                        {
+                            // type of data parsing
                             if ((token.length() > 5) && (token.substr(0,5) == "type=")){
                                 isType = true;
                                 strType = token.substr(5);
@@ -114,7 +136,7 @@ int main(int argc, char** argv) {
     }//for (int i = 1; i < argc; i++)
 
     // generate query
-    TSQLServer* pSQLServer = TSQLServer::Connect("mysql://mpd.jinr.ru/data4mpd", "data4mpd", "data4mpd");
+    TSQLServer* pSQLServer = TSQLServer::Connect("mysql://mpd.jinr.ru/data4mpd", "data4mpd", "MixedPhase");
     if (pSQLServer == 0x00){
         cout<<"Connection to database wasn't established"<<endl;
         return 0x00;
@@ -124,70 +146,74 @@ int main(int argc, char** argv) {
                   "from events";
 
     bool isWhere = false;
-    if (isGen == true){
+    // if event generator selection
+    if (isGen == true)
+    {
         if (isWhere){
             sql += TString::Format(" AND data4mpd_generator = '%s'", strGen.data());
         }
-        else{
+        else
+        {
             isWhere = true;
             sql += TString::Format(" "
                                    "where data4mpd_generator = '%s'", strGen.data());
         }
     }
-    if (isEnergy == true){
-        if (isWhere){
-            if (isMaxEnergy)
-                sql += TString::Format(" AND data4mpd_energy >= %f AND data4mpd_energy <= %f", fEnergy, fMaxEnergy);
-            else
-                sql += TString::Format(" AND data4mpd_energy = %f", fEnergy);
-        }
-        else{
+    // if energy selection
+    if (isEnergy == true)
+    {
+        if (isWhere)
+            sql += " AND ";
+        else
+        {
             isWhere = true;
+            sql += " "
+                   "where ";
+        }
+
+        if (isMinEnergy)
+        {
+            sql += TString::Format("data4mpd_energy >= %f", fEnergy);
             if (isMaxEnergy)
-                sql += TString::Format(" "
-                                       "where data4mpd_energy >= %f AND data4mpd_energy <= %f", fEnergy, fMaxEnergy);
-            else
-                sql += TString::Format(" "
-                                       "where data4mpd_energy = %f", fEnergy);
-        }
-    }
-    else{
-        if (isMaxEnergy){
-            if (isWhere){
                 sql += TString::Format(" AND data4mpd_energy <= %f", fMaxEnergy);
-            }
-            else{
-                isWhere = true;
-                sql += TString::Format(" "
-                                       "where data4mpd_energy <= %f", fMaxEnergy);
-            }
+        }
+        else
+        {
+            if (isMaxEnergy)
+                sql += TString::Format("data4mpd_energy <= %f", fMaxEnergy);
+            else
+                sql += TString::Format("data4mpd_energy = %f", fEnergy);
         }
     }
-    if (isParts == true){
-        if (isWhere){
+    // if 'particles in collision' selection
+    if (isParts == true)
+    {
+        if (isWhere)
             sql += TString::Format(" AND data4mpd_collision = '%s'", strParts.data());
-        }
-        else{
+        else
+        {
             isWhere = true;
             sql += TString::Format(" "
                                    "where data4mpd_collision = '%s'", strParts.data());
         }
     }
-    if (isDesc == true){
-        if (isWhere){
+    if (isDesc == true)
+    {
+        if (isWhere)
             sql += TString::Format(" AND data4mpd_description like '%%%s%%'", strDesc.data());
-        }
-        else{
+        else
+        {
             isWhere = true;
             sql += TString::Format(" "
                                    "where data4mpd_description like '%%%s%%'", strDesc.data());
         }
     }
-    if (isType == true){
-        if (isWhere){
+    if (isType == true)
+    {
+        if (isWhere)
             sql += TString::Format(" AND data4mpd_datatype = '%s'", strType.data());
-        }
-        else{
+        else
+        {
             isWhere = true;
             sql += TString::Format(" "
                                    "where data4mpd_datatype = '%s'", strType.data());
@@ -199,12 +225,13 @@ int main(int argc, char** argv) {
     TSQLResult* res = pSQLServer->Query(sql);
 
     int nrows = res->GetRowCount();
-    if (nrows == 0){
+    if (nrows == 0)
         cout<<"There are no records for these parameters"<<endl;
-    }
-    else{
+    else
+    {
         TSQLRow* row;
-        while (row = res->Next()){
+        while (row = res->Next())
+        {
             TString path = row->GetField(0);
             cout<<path<<endl;
 

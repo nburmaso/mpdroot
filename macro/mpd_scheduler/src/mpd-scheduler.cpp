@@ -5,47 +5,39 @@
 // Description : Scheduler for MPDRoot
 //============================================================================
 
+// own headers
+#include "function_set.h"
+
 // ROOT includes for DB work
 #include "TSQLServer.h"
 #include "TSQLResult.h"
 #include "TSQLRow.h"
 
 // C++ includes
-#include "sys/wait.h"
 #include <pthread.h>
 #include <semaphore.h>
-#include <unistd.h>
 #include "libxml/tree.h"
 #include <fstream>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <time.h>
-#include <stdlib.h>
-#include <sstream>
 #include <algorithm>
-
-using namespace std;
 
 enum enumSchedulerName {Torque};
 enumSchedulerName scheduler_name;
 
-const int MAX_BUFFER = 255;
-char buffer[MAX_BUFFER];
-
 // files to process with 'start event', 'event count' and 'parallel_mode' parameters
-struct structFilePar{
+struct structFilePar
+{
 	string strFileIn;
 	string strFileOut;
 	int* start_event;
 	int* count_event;
 	string strParallelMode;
 	int iParallelMode;
-	bool isMerge;
+	int iMerge;
 };
 
 // structure for parameters to transfer for the threads
-struct structThreadPar{
+struct structThreadPar
+{
 	string sConfig;
 	string macro_name;
 
@@ -54,7 +46,7 @@ struct structThreadPar{
 	int* start_event;
 	int* count_event;
 	int parallel_mode;
-	bool isMerge;
+	int iMerge;
 
 	string add_args;
 	string logs;
@@ -65,7 +57,8 @@ struct structThreadPar{
 };
 
 // structure for parameters to transfer for the subthreads
-struct structSubThreadPar{
+struct structSubThreadPar
+{
 	structThreadPar* thread_parameter;
 	int start_event;
 	int count_event;
@@ -136,86 +129,6 @@ struct structSubThreadPar{
 	}
 }*/
 
-int syscommand(string aCommand, string& result)
-{
-    FILE* f;
-    if (!(f = popen(aCommand.c_str(), "r")))
-    {
-    	cout << "mpd-scheduler$ ERROR: can't open file" << endl;
-        return 1;
-    }
-
-    const int BUFSIZE = 4096;
-    char buf[ BUFSIZE ];
-    if (fgets(buf,BUFSIZE,f)!=NULL)
-    	result = buf;
-
-    pclose(f);
-    return 0;
-}
-
-string getBundleName()
-{
-    pid_t procpid = getpid();
-    stringstream toCom;
-    toCom << "cat /proc/" << procpid << "/comm";
-    string fRes="";
-    syscommand(toCom.str(),fRes);
-    size_t last_pos = fRes.find_last_not_of(" \n\r\t") + 1;
-    if (last_pos != string::npos) {
-        fRes.erase(last_pos);
-    }
-    return fRes;
-}
-
-string getBundlePath()
-{
-    pid_t procpid = getpid();
-    string appName = getBundleName();
-    stringstream command;
-    command <<  "readlink /proc/" << procpid << "/exe | sed \"s/\\(\\/" << appName << "\\)$//\"";
-    string fRes;
-    syscommand(command.str(),fRes);
-
-    // remove '\n' from end of the string and add final '/'
-    fRes = fRes.erase(fRes.length()-1, 1);
-    fRes.push_back('/');
-
-    return fRes;
-}
-
-string IntToStr(int number)
-{
-   stringstream ss;
-   ss << number;
-   return ss.str();
-}
-
-bool is_number(const std::string& s)
-{
-    std::string::const_iterator it = s.begin();
-    while (it != s.end() && std::isdigit(*it)) ++it;
-    return !s.empty() && it == s.end();
-}
-
-char* p_char_to_lower_new(char* myPointer)
-{
-	if (myPointer == NULL)
-		return NULL;
-
-	const int length = strlen(myPointer);	// get the length of the text
-	char* lower = new char[length + 1];		// allocate 'length' bytes + 1 (for null terminator) and cast to char*
-	lower[length] = 0;						// set the last byte to a null terminator
-
-	// copy all character bytes to the new buffer using tolower
-	for( int i = 0; i < length; i++ )
-	{
-	    lower[i] = tolower(myPointer[i]);
-	}
-
-	return lower;
-}
-
 // clear vector parameters
 void clearVector(vector<structFilePar*>* vecFiles){
 	for (unsigned int i = 0; i < vecFiles->size(); i++){
@@ -226,133 +139,14 @@ void clearVector(vector<structFilePar*>* vecFiles){
 	vecFiles->clear();
 }
 
-// get file name without extension from path
-string get_file_name(string path){
-	// Remove directory if present.
-	size_t last_slash_idx = path.find_last_of("/");
-	if (string::npos != last_slash_idx)
-	{
-	    path.erase(0, last_slash_idx + 1);
-	}
-
-	// Remove extension if present.
-	size_t period_idx = path.rfind('.');
-	if (std::string::npos != period_idx)
-	{
-	    path.erase(period_idx);
-	}
-
-	return path;
-}
-
-// get file name with extension from path
-string get_file_name_with_ext(string path){
-	// Remove directory if present.
-	size_t last_slash_idx = path.find_last_of("/");
-	if (string::npos != last_slash_idx)
-	{
-	    path.erase(0, last_slash_idx + 1);
-	}
-
-	return path;
-}
-
-// replace string 's' by string 'd' in text
-void replace(string &text, string s, string d)
-{
-	int start = -1;
-
-	do
-	{
-		start = text.find(s, start + 1);
-	    if(start > -1)
-	    	text.replace(start, s.length(), d.c_str());
-	}
-	while(start > -1);
-}
-
 // form output file's name from $ variable
 string form_file_name(string outName, string inName, string strCounter){
-	replace(outName, "${input}", inName);
-	replace(outName, "${file_name}", get_file_name(inName));
-	replace(outName, "${file_name_with_ext}", get_file_name_with_ext(inName));
-	replace(outName, "${counter}", strCounter);
+	replace_string_in_text(outName, "${input}", inName);
+	replace_string_in_text(outName, "${file_name}", get_file_name(inName));
+	replace_string_in_text(outName, "${file_name_with_ext}", get_file_name_with_ext(inName));
+	replace_string_in_text(outName, "${counter}", strCounter);
 
 	return outName;
-}
-
-// change tilda symbol on HOME
-string replace_home_symbol(string fileName)
-{
-    size_t np = fileName.find_first_of('~');
-    if (np != string::npos)
-    {
-        bool isNewPath = false;
-        char* pPath = getenv("HOME");
-        if (pPath == NULL)
-        {
-            pPath = new char[2];
-            pPath[0] = '/';
-            pPath[1] = '\0';
-            isNewPath = true;
-        }
-
-        do
-        {
-            fileName.erase(np, 1);
-            fileName.insert(np, pPath);
-            np = fileName.find_first_of('~');
-        } while (np != string::npos);
-
-        if (isNewPath)
-            delete[] pPath;
-    }
-
-    return fileName;
-}
-
-// get maximum available processor count (local - one machine, global - cluster)
-// isGlobal: false - one machine (local), true - cluster scheduler (global)
-int GetProcessorCount(bool isGlobal)
-{
-	int proc_count = 0;
-
-	if (isGlobal){
-		switch (scheduler_name)
-		{
-			case Torque:
-			{
-				// define count of processors for all.q queue
-				string data, strDiff;
-				FILE* stream = popen("qconf -sq all.q | grep slots", "r");
-				while (fgets(buffer, MAX_BUFFER, stream) != NULL)
-					data.append(buffer);
-				pclose(stream);
-
-				size_t found = data.find("="), found2 = string::npos;
-				while (found != string::npos)
-				{
-					found2 = data.find("]", found);
-					strDiff = data.substr(found+1, found2 - found - 1);
-					proc_count += atoi(strDiff.c_str());
-					strDiff.clear();
-
-					found = data.find("=", found2);
-				}
-
-				data.clear();
-
-				break;
-			}//case Torque
-		}//switch (scheduler_name)
-	}//if (isGlobal)
-	else
-	{
-		// define count of machine's cores
-		proc_count = sysconf(_SC_NPROCESSORS_ONLN);
-	}
-
-	return proc_count;
 }
 
 // generate output file name with counter (for partial result)
@@ -361,7 +155,7 @@ string GenerateOutputFilePath(string path, int counter)
 	size_t last_point_idx = path.find_last_of(".");
 
 	string add_string = "__";
-	add_string += IntToStr(counter);
+	add_string += convert_integer_to_string(counter);
 
 	if (string::npos != last_point_idx)
 		return path.insert(last_point_idx, add_string);
@@ -532,13 +326,13 @@ void* ThreadProcessFile(void* thread_parameter)
 		}
 
 		// merge result files or write to single TChain object
-		if (thread_par->isMerge)
+		if (thread_par->iMerge >= 0)
 		{
-			string exe_dir = getBundlePath();
+			string exe_dir = get_app_dir_linux();
 			string UNIONc_path = exe_dir + "union.C";
 			char* pcSUB = new char[44+sUnion.length()+sConfig.length()+UNIONc_path.length()+logs.length()];
 		    sprintf (pcSUB, "%sroot -b -q \"%s(\\\"%s\\\", %d)\"", sConfig.c_str(), UNIONc_path.c_str(),
-		    		sUnion.c_str(), thread_par->isMerge);
+		    		sUnion.c_str(), thread_par->iMerge);
 
 		    if (logs != "")
 		    	sprintf (pcSUB, "%s >> %s 2>&1", pcSUB, logs.c_str());
@@ -660,13 +454,8 @@ int main(int argc, char** argv){
 	char* pcSUB;
 	string data;
 
-	// variables for DB
-	bool isGen = false, isEnergy = false, isMaxEnergy = false, isParts = false, isDesc = false, isType = false;
-	string strGen, strParts, strDesc, strType;
-	double fEnergy, fMaxEnergy;
-
 	// path to executable's directory ('/' - last char)
-	string exe_dir = getBundlePath();
+	string exe_dir = get_app_dir_linux();
 
     // cycle for all jobs
 	xmlNodePtr cur_node = root;
@@ -722,7 +511,7 @@ int main(int argc, char** argv){
                         	// check global count parameter
                         	if (pcCount_event != NULL)
                         	{
-                        		if (!is_number(pcCount_event))
+                        		if (!is_string_number(pcCount_event))
                         		{
                         			isError = true;
                         			cout<<"mpd-scheduler$ ERROR: event count must be a number!"<<endl;
@@ -770,7 +559,7 @@ int main(int argc, char** argv){
                         	// check count parameter
                         	if (lcCount_event != NULL)
                         	{
-                        		if (!is_number(lcCount_event))
+                        		if (!is_string_number(lcCount_event))
                         		{
                         			isError = true;
                         		    cout<<"mpd-scheduler$ ERROR: event count must be a number!"<<endl;
@@ -794,12 +583,16 @@ int main(int argc, char** argv){
 
                         	// whether doesn't merge files containing result's parts
                         	merge = (char*) xmlGetProp(sub_node, (unsigned char*)"merge");
-                        	bool isMerge = true;
+                        	int iMerge = 1;	//"true"
                         	if (merge != NULL)
                         	{
-                        		char* lower_merge = p_char_to_lower_new(merge);
+                        		char* lower_merge = convert_pchar_to_lowercase_new(merge);
                         		if (strcmp(lower_merge, "false") == 0)
-                        			isMerge = false;
+                        			iMerge = -1;
+                        		if (strcmp(lower_merge, "chain") == 0)
+                        		    iMerge = 0;
+                        		if (strcmp(lower_merge, "nodel") == 0)
+                        			iMerge = 2;
 
                         		delete lower_merge;
                         	}
@@ -808,7 +601,8 @@ int main(int argc, char** argv){
 
                         	inDB = (char*) xmlGetProp(sub_node, (unsigned char*)"db_input");
 
-                        	if (inFile != NULL){
+                        	if (inFile != NULL)
+                        	{
                         		structFilePar* filePar = new structFilePar();
 
                         		// add input file
@@ -820,78 +614,103 @@ int main(int argc, char** argv){
                         		filePar->count_event = lc_count_event;
                         		if (parallel_mode != NULL) filePar->strParallelMode = parallel_mode;
                         		else filePar->strParallelMode = "";
-                        		filePar->isMerge = isMerge;
+                        		filePar->iMerge = iMerge;
 
                         	    vecFiles.push_back(filePar);
                         	}
-                        	else{
-                        		if (inDB != NULL){
+                        	else
+                        	{
+                        		if (inDB != NULL)
+                        		{
                         			// PARSE DATABASE PARAMETERS
                         			string input = inDB;
                         			istringstream ss(input);
                         			string token;
 
-                        			bool isFirst = true;
-                        			string server_name;
+                        			// variables for DB
+                        			bool isFirst = true, isGen = false, isEnergy = false, isMinEnergy = false, isMaxEnergy = false, isParts = false, isDesc = false, isType = false;
+                        			string server_name, strGen, strParts, strDesc, strType;
+                        			double fEnergy, fMaxEnergy;
+                        			// parse tokens by comma separated
                         			while(getline(ss, token, ','))
                         			{
-                        				if (isFirst){
+                        				if (isFirst)
+                        				{
                         					server_name = token;
                         					isFirst = false;
 
                         					continue;
                         				}
 
+                        				// to lowercase
                         				transform(token.begin(), token.end(),token.begin(), ::tolower);
-                        			    if ((token.length() > 4) && (token.substr(0,4) == "gen=")){
+
+                        				// generator name parsing
+                        				if ((token.length() > 4) && (token.substr(0,4) == "gen="))
+                        				{
                         			    	isGen = true;
                         			        strGen = token.substr(4);
                         			    }
-                        			    else{
-                        			    	if ((token.length() > 7) && (token.substr(0,7) == "energy=")){
+                        			    else
+                        			    {
+                        			    	// energy parsing
+                        			    	if ((token.length() > 7) && (token.substr(0,7) == "energy="))
+                        			    	{
                         			    		token = token.substr(7);
-                        			            int indDash = token.find_first_of('-');
-                        			            if (indDash > -1){
-                        			            	stringstream stream;
-                        			                stream << token.substr(0,indDash);
-                        			                double dVal;
-                        			                if (stream >> dVal)
-                        			                {
-                        			                	isEnergy = true;
-                        			                    fEnergy = dVal;
-                        			                }
-                        			                if ((int)token.length() > indDash){
-                        			                	stringstream stream2;
-                        			                    stream2 << token.substr(indDash+1);
-                        			                    if (stream2 >> dVal)
-                        			                    {
-                        			                    	isMaxEnergy = true;
-                        			                        fMaxEnergy = dVal;
-                        			                    }
-                        			                }
-                        			             }//if (indDash > -1)
-                        			             else{
-                        			             stringstream stream;
-                        			             	 stream << token;
-                        			                 double dVal;
-                        			                 if (stream >> dVal)
-                        			                 {
-                        			                	 isEnergy = true;
-                        			                     fEnergy = dVal;
-                        			                 }
-                        			             }//else
+
+                        			    		size_t indDash = token.find_first_of('-');
+                        			    		if (indDash != string::npos)
+                        			    		{
+                        			    			stringstream stream;
+                        			    		    stream << token.substr(0, indDash);
+                        			    		    double dVal;
+                        			    		    if (stream >> dVal)
+                        			    		    {
+                        			    		    	isEnergy = true;
+                        			    		        isMinEnergy = true;
+                        			    		        fEnergy = dVal;
+                        			    		    }
+                        			    		    if (token.length() > indDash)
+                        			    		    {
+                        			    		    	stringstream stream2;
+                        			    		        stream2 << token.substr(indDash+1);
+                        			    		        if (stream2 >> dVal)
+                        			    		        {
+                        			    		        	isEnergy = true;
+                        			    		            isMaxEnergy = true;
+                        			    		            fMaxEnergy = dVal;
+                        			    		        }
+                        			    		    }
+                        			    		}//if (indDash > -1)
+                        			    		// if exact energy value
+                        			    		else
+                        			    		{
+                        			    			stringstream stream;
+                        			    		    stream << token;
+                        			    		    double dVal;
+                        			    		    if (stream >> dVal)
+                        			    		    {
+                        			    		    	isEnergy = true;
+                        			    		        fEnergy = dVal;
+                        			    		    }
+                        			    		 }//else
                         			    	}//if ((token.length() > 7) && (token.substr(0,7) == "energy="))
-                        			        else{
+                        			    	// particles' names in collision parsing
+                        			    	else{
                         			        	if ((token.length() > 9) && (token.substr(0,9) == "particle=")){
                         			        		isParts = true;
                         			                strParts = token.substr(9);
                         			            }
-                        			            else{
+                        			            else
+                        			            {
+                        			            	// search text in description string
                         			            	if ((token.length() > 5) && (token.substr(0,5) == "desc=")){
                         			            		isDesc = true;
                         			            		strDesc = token.substr(5);
                         			            	}
-                        			            	else{
+                        			            	else
+                        			            	{
+                        			            		// type of data parsing
                         			            		if ((token.length() > 5) && (token.substr(0,5) == "type=")){
                         			            			isType = true;
                         			            			strType = token.substr(5);
@@ -905,7 +724,8 @@ int main(int argc, char** argv){
                         			//READ PATH FROM DATABASE
                         			TString strConnection = "mysql://" + server_name + "/data4mpd";
                         			TSQLServer* pSQLServer = TSQLServer::Connect(strConnection, "data4mpd", "MixedPhase");
-                        			if (pSQLServer == 0x00){
+                        			if (pSQLServer == 0x00)
+                        			{
                         				cout<<"mpd-scheduler$ ERROR: connection to database wasn't established!"<<endl;
                         				isError = true;
 
@@ -918,7 +738,9 @@ int main(int argc, char** argv){
                         			              "from events";
 
                         			bool isWhere = false;
-                        			if (isGen == true){
+                        			// if event generator selection
+                        			if (isGen == true)
+                        			{
                         				if (isWhere){
                         					sql += TString::Format(" AND data4mpd_generator = '%s'", strGen.data());
                         			    }
@@ -928,76 +750,78 @@ int main(int argc, char** argv){
                         			                               "where data4mpd_generator = '%s'", strGen.data());
                         			    }
                         			}
-                        			if (isEnergy == true){
-                        				if (isWhere){
-                        					if (isMaxEnergy)
-                        						sql += TString::Format(" AND data4mpd_energy >= %f AND data4mpd_energy <= %f", fEnergy, fMaxEnergy);
-                        			        else
-                        			        	sql += TString::Format(" AND data4mpd_energy = %f", fEnergy);
+                        			// if energy selection
+                        			if (isEnergy == true)
+                        			{
+                        				if (isWhere)
+                        					sql += " AND ";
+                        				else
+                        				{
+                        					isWhere = true;
+                        				    sql += " "
+                        				           "where ";
                         				}
-                        			    else{
+
+                        				if (isMinEnergy)
+                        				{
+                        					sql += TString::Format("data4mpd_energy >= %f", fEnergy);
+                        				    if (isMaxEnergy)
+                        				    	sql += TString::Format(" AND data4mpd_energy <= %f", fMaxEnergy);
+                        				}
+                        				else
+                        				{
+                        					if (isMaxEnergy)
+                        						sql += TString::Format("data4mpd_energy <= %f", fMaxEnergy);
+                        				    else
+                        				        sql += TString::Format("data4mpd_energy = %f", fEnergy);
+                        				}
+                        			}
+                        			// if 'particles in collision' selection
+                        			if (isParts == true)
+                        			{
+                        				if (isWhere)
+                        			            sql += TString::Format(" AND data4mpd_collision = '%s'", strParts.data());
+                        			    else
+                        			    {
                         			    	isWhere = true;
-                        			        if (isMaxEnergy)
-                        			        	sql += TString::Format(" "
-                        			                                   "where data4mpd_energy >= %f AND data4mpd_energy <= %f", fEnergy, fMaxEnergy);
-                        			        else
-                        			        	sql += TString::Format(" "
-                        			                                   "where data4mpd_energy = %f", fEnergy);
+                        			        sql += TString::Format(" "
+                        			                               "where data4mpd_collision = '%s'", strParts.data());
                         			    }
                         			}
-                        			    else{
-                        			        if (isMaxEnergy){
-                        			            if (isWhere){
-                        			                sql += TString::Format(" AND data4mpd_energy <= %f", fMaxEnergy);
-                        			            }
-                        			            else{
-                        			                isWhere = true;
-                        			                sql += TString::Format(" "
-                        			                                       "where data4mpd_energy <= %f", fMaxEnergy);
-                        			            }
-                        			        }
+                        			if (isDesc == true)
+                        			{
+                        				if (isWhere)
+                        					sql += TString::Format(" AND data4mpd_description like '%%%s%%'", strDesc.data());
+                        			    else
+                        			    {
+                        			    	isWhere = true;
+                        			        sql += TString::Format(" "
+                        			                               "where data4mpd_description like '%%%s%%'", strDesc.data());
                         			    }
-                        			    if (isParts == true){
-                        			        if (isWhere){
-                        			            sql += TString::Format(" AND data4mpd_collision = '%s'", strParts.data());
-                        			        }
-                        			        else{
-                        			            isWhere = true;
-                        			            sql += TString::Format(" "
-                        			                                   "where data4mpd_collision = '%s'", strParts.data());
-                        			        }
+                        			}
+                        			if (isType == true)
+                        			{
+                        				if (isWhere)
+                        					sql += TString::Format(" AND data4mpd_datatype = '%s'", strType.data());
+                        			    else
+                        			    {
+                        			    	isWhere = true;
+                        			        sql += TString::Format(" "
+                        			                               "where data4mpd_datatype = '%s'", strType.data());
                         			    }
-                        			    if (isDesc == true){
-                        			        if (isWhere){
-                        			            sql += TString::Format(" AND data4mpd_description like '%%%s%%'", strDesc.data());
-                        			        }
-                        			        else{
-                        			            isWhere = true;
-                        			            sql += TString::Format(" "
-                        			                                   "where data4mpd_description like '%%%s%%'", strDesc.data());
-                        			        }
-                        			    }
-                        			    if (isType == true){
-                        			        if (isWhere){
-                        			            sql += TString::Format(" AND data4mpd_datatype = '%s'", strType.data());
-                        			        }
-                        			        else{
-                        			            isWhere = true;
-                        			            sql += TString::Format(" "
-                        			                                   "where data4mpd_datatype = '%s'", strType.data());
-                        			        }
-                        			    }
+                        			}
 
                         			TSQLResult* res = pSQLServer->Query(sql);
 
                         			int nrows = res->GetRowCount();
-                        			if (nrows == 0){
+                        			if (nrows == 0)
                         				cout<<"mpd-scheduler$ WARNING: there are no records for these parameters"<<endl;
-                        			}
-                        			else{
+                        			else
+                        			{
                         				TSQLRow* row;
                         				int counter = 1;
-                        			    while ((row = res->Next()) != NULL){
+                        			    while ((row = res->Next()) != NULL)
+                        			    {
                         			    	//TString path = row->GetField(0);
                         			    	structFilePar* filePar = new structFilePar();
                         			    	// add input file
@@ -1016,21 +840,22 @@ int main(int argc, char** argv){
                         			    	filePar->count_event = lc_count_event;
                         			    	if (parallel_mode != NULL) filePar->strParallelMode = parallel_mode;
                         			    	else filePar->strParallelMode = "";
-                        			    	filePar->isMerge = isMerge;
+                        			    	filePar->iMerge = iMerge;
 
                         			    	vecFiles.push_back(filePar);
 
                         			    	counter++;
                         			        delete row;
                         			    }//while (row = res->Next())
-                        			}
+                        			}//else nrows > 0
 
                         			delete res;
 
                         			if (pSQLServer)
                         				delete pSQLServer;
                         		}
-                        		else{// if (inDB != NULL)
+                        		else // if (inDB != NULL)
+                        		{
                         			cout<<"mpd-scheduler$ ERROR: there are no files in <file> tag!"<<endl;
                         			isError = true;
 
@@ -1083,9 +908,13 @@ int main(int argc, char** argv){
                 {
                 	structFilePar* filePar = vecFiles.at(i);
                 	if (filePar->strParallelMode != ""){
-                		if (filePar->strParallelMode == "*")
+                		if (filePar->strParallelMode == "0")
                 	    {
-                			filePar->iParallelMode = GetProcessorCount(!isLocal);
+                			if (isLocal)
+                				filePar->iParallelMode = get_linux_processor_count();
+                			else
+                				filePar->iParallelMode = get_sge_processor_count();
+
                 			if (filePar->iParallelMode < 1)
                 				filePar->iParallelMode = 1;
                 	    }
@@ -1109,12 +938,14 @@ int main(int argc, char** argv){
                 {
                 	// define process count for job
                 	int proc_count = 1;
-                	if (sproc_count != NULL){
+                	if (sproc_count != NULL)
+                	{
                 		if ((sproc_count[0] == '0') && (strlen(sproc_count) == 1))
                 		{
-                			proc_count = GetProcessorCount(true);
+                			proc_count = get_sge_processor_count();
 
-                			if (proc_count == 0){
+                			if (proc_count == 0)
+                			{
                 				cout<<"mpd-scheduler$ ERROR: cluster's processors aren't set!"<<endl<<"This job will be skipped!!!"<<endl;
 
                 				clearVector(&vecFiles);
@@ -1125,9 +956,12 @@ int main(int argc, char** argv){
                 		else
                 			proc_count = atoi(sproc_count);
                 	}
+                	else
+                		proc_count = iParallelCount;
 
-                	if (proc_count == 0){
-                		cout<<"mpd-scheduler$ ERROR: process count can't be equal 0!"<<endl<<"This job will be skipped!!!"<<endl;
+                	if (proc_count == 0)
+                	{
+                		cout<<"mpd-scheduler$ ERROR: processor count can't be equal 0!"<<endl<<"This job will be skipped!!!"<<endl;
 
                 		clearVector(&vecFiles);
                 	    cur_node = cur_node->next;
@@ -1154,12 +988,14 @@ int main(int argc, char** argv){
 
                     string fileName = "";
                     vector<string> vecParallelOutputs;
+                    vector<int> vecUnionMode;
                     string sMacroName = "";
                     if (macro_name != NULL)
                     	sMacroName = macro_name;
 
-                    // if there are some files to process then write info to to temporary file for SGE
-                    if (iParallelCount > 0){
+                    // if there are some files to process then write info to temporary file for SGE
+                    if (iParallelCount > 0)
+                    {
                     	//structFilePar* filePar = vecFiles.at(0);
                     	// generate output name for temporary file
                     	//fileName = filePar->strFileIn;
@@ -1187,7 +1023,8 @@ int main(int argc, char** argv){
                     	    	cout<<"mpd-scheduler$ WARNING: parallel_mode is used with 'count_event' parameter, paralell_mode is ignored"<<endl;
                     	    }
 
-                    	    if (parallel_mode > 1){
+                    	    if (parallel_mode > 1)
+                    	    {
                     	    	// generate output name for output parts
                     	        string par = filePar->strFileOut;
 
@@ -1211,10 +1048,10 @@ int main(int argc, char** argv){
                     	                }
 
                     	                fwrite(" ", 1, sizeof(char), pFile);
-                    	                string strInt = IntToStr(start);
+                    	                string strInt = convert_integer_to_string(start);
                     	                fwrite(strInt.c_str(), strInt.length(), sizeof(char), pFile);
                     	                fwrite(" ", 1, sizeof(char), pFile);
-                    	                strInt = IntToStr(event_per_proc);
+                    	                strInt = convert_integer_to_string(event_per_proc);
                     	                fwrite(strInt.c_str(), strInt.length(), sizeof(char), pFile);
 
                     	                if (add_args != NULL){
@@ -1233,8 +1070,11 @@ int main(int argc, char** argv){
                     	            start = start + event_per_proc;
                     	        }//for (int i = 0; i < parallel_mode; i++)
 
-                    	        if ((counter > 1) && (filePar->isMerge))
+                    	        if ((counter > 1) && (filePar->iMerge >= 0))
+                    	        {
                     	        	vecParallelOutputs.push_back(par);
+                    	        	vecUnionMode.push_back(filePar->iMerge);
+                    	        }
                     	    }//if (parallel_mode > 1)
                     	    else{// parallel_mode <= 1
                     	    	fwrite("\\\"", 2, sizeof(char), pFile);
@@ -1249,10 +1089,10 @@ int main(int argc, char** argv){
 
                     	        if (cur_start_event != NULL){
                     	        	fwrite(" ", 1, sizeof(char), pFile);
-                    	            string strInt = IntToStr(*cur_start_event);
+                    	            string strInt = convert_integer_to_string(*cur_start_event);
                     	            fwrite(strInt.c_str(), strInt.length(), sizeof(char), pFile);
                     	            fwrite(" ", 1, sizeof(char), pFile);
-                    	            strInt = IntToStr(*cur_count_event);
+                    	            strInt = convert_integer_to_string(*cur_count_event);
                     	            fwrite(strInt.c_str(), strInt.length(), sizeof(char), pFile);
                     	        }
 
@@ -1318,8 +1158,8 @@ int main(int argc, char** argv){
                     		string par = vecParallelOutputs.at(i);
                     		string UNIONqsub_path = exe_dir + "union.qsub";
                     		pcSUB = new char[100+ID.length()+par.length()+sConfig.length()+UNIONqsub_path.length()];
-                    	    sprintf (pcSUB, "qsub -hold_jid %s -v \"sParameters=%s\",config=\"%s\" %s",
-                    	    		ID.c_str(), par.c_str(), sConfig.c_str(), UNIONqsub_path.c_str());
+                    	    sprintf (pcSUB, "qsub -hold_jid %s -v \"sParameters=%s\",UnionMode=\"%d\",config=\"%s\" %s",
+                    	    		ID.c_str(), par.c_str(), vecUnionMode.at(i), sConfig.c_str(), UNIONqsub_path.c_str());
 
                     	    stream = popen(pcSUB, "r");
                     	    while (fgets(buffer, MAX_BUFFER, stream) != NULL)
@@ -1343,7 +1183,7 @@ int main(int argc, char** argv){
                 	if (sproc_count != NULL)
                 	{
                 		if ((sproc_count[0] == '0') && (strlen(sproc_count) == 1)){
-                			proc_count = GetProcessorCount(false);
+                			proc_count = get_linux_processor_count();
 
                 			if (proc_count == 0){
                 				cout<<"mpd-scheduler$ ERROR: can't define core number!"<<endl<<"This job will be skipped!!!"<<endl;
@@ -1355,6 +1195,8 @@ int main(int argc, char** argv){
                 	    else
                 	    	proc_count = atoi(sproc_count);
                 	}
+                	else
+                		proc_count = iParallelCount;
 
                 	if (proc_count == 0){
                 		cout<<"mpd-scheduler$ ERROR: process count can't be equal 0!"<<endl<<"This job will be skipped!!!"<<endl;
@@ -1453,7 +1295,7 @@ int main(int argc, char** argv){
                 			}
                 			else
                 				par->parallel_mode = filePar->iParallelMode;
-                			par->isMerge = filePar->isMerge;
+                			par->iMerge = filePar->iMerge;
 
                 			if (add_args != NULL) par->add_args = add_args;
                 			else par->add_args = "";

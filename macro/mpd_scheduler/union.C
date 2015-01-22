@@ -36,41 +36,34 @@ string replace_home_symbol(string fileName)
         } while (np != string::npos);
 
         if (isNewPath)
-            delete[] pPath;
+            delete pPath;
     }
 
     return fileName;
 }
 
-/*TString replace_home_symbol(TString fileName)
-{
-    char* pPath = getenv("HOME");
-    if (pPath == NULL)
-    {
-        pPath = new char[2];
-        pPath[0] = '/';
-        pPath[1] = '\0';
-    }
-
-    fileName.ReplaceAll('~', pPath);
-
-    return fileName;
-}*/
-
-//mode: 0 - save only result TChain with 'cbmsim' tree,
+//pcFileList - file list with space delimiter
+//mode: 0 - save only result TChain with 'cbmsim' tree
 //      1 - merge and delete partitial files
+//      2 - merge and not delete partitial files
 void union(char* pcFileList, int mode = 1)
 {
+    if ((mode > 2) || (mode < 0))
+    {
+        cout<<"Second ('mode') parameter can be 0-2 only. It will be assigned to default value (1)."<<endl;
+        mode = 1;
+    }
+
     // Load libraries
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-    mpdloadlibs(kTRUE,kTRUE);       // all libs
+    mpdloadlibs(kTRUE, kTRUE);       // load full set of main libraries
 
     Bool_t res;
     TString sResultFile = "", sFirstFile = "", sCurrentFile = "";
     int i = 0, beg = 0, countFiles = 0;
 
-    // MERGE PARTITIAL FILES
-    if (mode == 1)
+    // MERGE FILES
+    if (mode > 0)
     {
         TFileMerger mergerFull,         // mergerFull for full merging with first file
                     mergerPart;         // mergerPart for merging only 'cbmsim' tree
@@ -88,12 +81,14 @@ void union(char* pcFileList, int mode = 1)
                     // if first file name then it's result file (write to sResultFile string)
                     case 0:
                         sResultFile = &pcFileList[beg];
+
                         break;
                     // if second file name then it's first file to full merge with 'cbmsim' tree and other objects (e.g. FairBaseParSet)
                     case 1:
                     {
                         sFirstFile = &pcFileList[beg];
                         mergerFull.AddFile(&pcFileList[beg]);
+
                         break;
                     }
                     // if other then it's file to merge only 'cbmsim' tree
@@ -145,6 +140,7 @@ void union(char* pcFileList, int mode = 1)
             case 0:
             {
                 cout<<"Only one file name in the input string, nothing was merged"<<endl;
+
                 return;
             }
             case 1:
@@ -154,14 +150,15 @@ void union(char* pcFileList, int mode = 1)
                     cout<<"Error: the first file wasn't copied to the result file"<<endl;
                 else
                 {
-                    //delete temporary file
-                    sFirstFile = replace_home_symbol(sFirstFile.Data());
-                    if (remove(sFirstFile.Data()) != 0)
+                    //delete temporary file if 'mode' parameter is equal 1
+                    if (mode == 1)
                     {
-                        cout<<"Error: deleting one temporary file "<<sFirstFile.Data()<<endl;
+                        sFirstFile = replace_home_symbol(sFirstFile.Data());
+                        if (remove(sFirstFile.Data()) != 0)
+                            cout<<"Error: deleting one temporary file "<<sFirstFile.Data()<<endl;
+                        else
+                            cout<<endl<<"Temporary file were successfully removed"<<endl;
                     }
-                    else
-                        cout<<endl<<"Temporary file were successfully removed"<<endl;
                 }
 
                 break;
@@ -172,7 +169,7 @@ void union(char* pcFileList, int mode = 1)
                 TString onlyList = "cbmsim";
                 mergerPart.AddObjectNames(onlyList);
                 mergerPart.OutputFile(sResultFile);
-                //cout<<"Result File: "<<sResultFile<<endl;
+                //cout<<endl<<"Result File: "<<sResultFile<<endl<<endl;
 
                 res = mergerPart.PartialMerge(TFileMerger::kAll|TFileMerger::kIncremental|TFileMerger::kOnlyListed);
 
@@ -180,19 +177,20 @@ void union(char* pcFileList, int mode = 1)
                     cout<<"Error: partial merging to the result file"<<endl;
                 else
                 {
-                    //delete temporary files
-                    TIter next(mergerPart.GetMergeList());
-                    TObjString* url = 0;
-                    while (url = (TObjString*)next())
+                    //delete temporary files if 'mode' parameter is equal 1
+                    if (mode == 1)
                     {
-                        //cout<<"url->GetString(): "<<url->GetString()<<endl;
-
-                        sCurrentFile = replace_home_symbol(url->GetString().Data());
-
-                        if (remove(sCurrentFile.Data()) != 0)
+                        TIter next(mergerPart.GetMergeList());
+                        TObjString* url = 0;
+                        while (url = (TObjString*)next())
                         {
-                            isError = true;
-                            cout<<"Error: deleting temporary file "<<sCurrentFile.Data()<<endl;
+                            sCurrentFile = replace_home_symbol(url->GetString().Data());
+                            //cout<<endl<<"sCurrentFile: "<<sCurrentFile<<endl<<endl;
+                            if (remove(sCurrentFile.Data()) != 0)
+                            {
+                                isError = true;
+                                cout<<"Error: deleting temporary file "<<sCurrentFile.Data()<<endl;
+                            }
                         }
                     }
                 }
@@ -200,31 +198,39 @@ void union(char* pcFileList, int mode = 1)
 
                 mergerFull.AddFile(sResultFile);
                 mergerFull.OutputFile(sResultFile);
+                //mergerFull.PrintFiles("");
                 res = mergerFull.Merge();
 
                 if (res == kFALSE)
                     cout<<"Error: full merging to the result file"<<endl;
                 else
                 {
-                    //delete first temporary file
-                    sFirstFile = replace_home_symbol(sFirstFile.Data());
-                    if (remove(sFirstFile.Data()) != 0)
+                    //delete first temporary file if 'mode' parameter is equal 1
+                    if (mode == 1)
                     {
-                        isError = true;
-                        cout<<"Error: deleting first temporary file "<<sFirstFile.Data()<<endl;
+                        sFirstFile = replace_home_symbol(sFirstFile.Data());
+                        //cout<<endl<<"sFirstFile: "<<sFirstFile<<endl<<endl;
+                        if (remove(sFirstFile.Data()) != 0)
+                        {
+                            isError = true;
+                            cout<<"Error: deleting first temporary file "<<sFirstFile.Data()<<endl;
+                        }
                     }
                 }
-
                 mergerFull.Reset();
 
-                if (isError)
-                    cout<<"There were errors while temporary files removing"<<endl;
-                else
-                    cout<<endl<<"Temporary files were successfully removed"<<endl;
+                if (mode == 1)
+                {
+                    if (isError)
+                        cout<<"There were errors while temporary files removing"<<endl;
+                    else
+                        cout<<endl<<"Temporary files were successfully removed"<<endl;
+                }
             }// default: count of partitial files > 1
         }// switch: merge the files to the result file
-    }// if (mode == 1) : merge partitial files
-    // SAVE ONLY TCHAIN
+    }// if (mode > 1) : merge partitial files
+
+    // SAVE ONLY TCHAIN if mode is equal 0
     else
     {
         TChain chainUnion("cbmsim");
@@ -272,23 +278,21 @@ void union(char* pcFileList, int mode = 1)
             Int_t events = chainUnion.GetEntries();
             cout<<"The Chain witn "<<events<<" event(s) was written to file \""<<sResultFile<<"\" to point following files:"<<endl;
 
-            /*TObjArray *fileElements = chainUnion.GetListOfFiles();
+            TObjArray *fileElements = chainUnion.GetListOfFiles();
             TIter next(fileElements);
             TChainElement* chEl = 0;
             while (chEl = (TChainElement*)next())
             {
                 char* pc = chEl->GetTitle();
                 cout<<pc<<endl;
-            }*/
+            }
         }
     }// else : save only TChain
 
-/*
     //test reading result file
-    TChain chainRead("cbmsim");
+/*  TChain chainRead("cbmsim");
     chainRead.Add(sResultFile);
 
     Int_t events = chainRead.GetEntries();
-    cout<<"The count of events in test reading is equal "<<events<<endl;
-*/
+    cout<<"The count of events in test reading is equal "<<events<<endl;*/
 }
