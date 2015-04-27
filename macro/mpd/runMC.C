@@ -98,7 +98,10 @@ void runMC (TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$V
 
   if (!CheckFileExist(dataFile)) return;
 
-  FairUrqmdGenerator* urqmdGen = new FairUrqmdGenerator(dataFile);
+  MpdUrqmd23Generator* urqmdGen = new MpdUrqmd23Generator(dataFile);
+  // Don't forget to use appropriate class for reading *.f14 in case of UrQMD34
+  // Header of UrQMD23 is not consisted with UrQMD34 
+  // MpdUrqmd34Generator* urqmdGen = new MpdUrqmd34Generator(dataFile);
   primGen->AddGenerator(urqmdGen);
   if (nStartEvent > 0) urqmdGen->SkipEvents(nStartEvent);
 
