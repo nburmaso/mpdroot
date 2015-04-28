@@ -13,8 +13,8 @@ void basiclibs()
   gSystem->Load("libPythia6");
   gSystem->Load("libPluto");
   gSystem->Load("libPhysics");
-  gSystem->Load("libNet");  
-  gSystem->Load("libTree"); 
+  gSystem->Load("libNet");
+  gSystem->Load("libTree");
   gSystem->Load("libMinuit");
   gSystem->Load("libMathMore");
 
@@ -22,4 +22,6 @@ void basiclibs()
   gSystem->Load("libProofPlayer");
   gSystem->Load("libGX11TTF");
   gSystem->Load("libGX11");
-}  
+
+  gSystem->Load("libGdml");
+}
