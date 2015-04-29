@@ -27,6 +27,7 @@ using namespace std;
 const int MAX_BUFFER = 255;
 char buffer[MAX_BUFFER];
 
+
 /*				*/
 /* OS FUNCTIONS */
 /*				*/
@@ -144,6 +145,7 @@ int get_torque_processor_count()
 		return proc_count;
 }
 
+
 /*								*/
 /* GLOBAL APPLICATION FUNCTIONS */
 /*								*/
@@ -180,6 +182,15 @@ string get_app_dir_linux()
     return fRes;
 }
 
+
+/*					*/
+/* NUMBER FUNCTIONS */
+/*					*/
+
+// check bit in 'variable' at 'position'
+#define CHECK_BIT(variable,position) ((variable) & (1ULL<<(position)))
+
+
 /*					*/
 /* STRING FUNCTIONS */
 /*					*/
@@ -190,6 +201,14 @@ string convert_integer_to_string(int number)
    stringstream ss;
    ss << number;
    return ss.str();
+}
+
+// convert integer (hexadecimal value) to string with hexadecimal presentation without "0x"
+string int_to_hex_string(int int_number)
+{
+  stringstream stream;
+  stream << std::hex << int_number;
+  return stream.str();
 }
 
 // is string a integer number?
@@ -232,6 +251,7 @@ void replace_string_in_text(string &text, string s, string d)
 	}
 	while(start > -1);
 }
+
 
 /*				  */
 /* FILE FUNCTIONS */

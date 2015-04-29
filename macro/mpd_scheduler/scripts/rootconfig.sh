@@ -12,15 +12,27 @@
    else
      debugstring=""
    fi   
+
    ########### Xrootd has problems with gcc4.3.0 and 4.3.1 
-   gcc_major_version=$(gcc -dumpversion | cut -c 1)
-   gcc_minor_version=$(gcc -dumpversion | cut -c 3)
-   if [ $gcc_major_version -ge 4 -a $gcc_minor_version -ge 3 ];
-   then
-      XROOTD="--disable-xrootd"
-   else
-      XROOTD=" "
-    fi
+   ########### Roofit has problems with gcc3.3.5  
+   XROOTD="--with-xrootd=$SIMPATH_INSTALL"
+   ROOFIT="--enable-roofit"
+   if [ "$compiler" = "gcc" ]; then
+     gcc_major_version=$(gcc -dumpversion | cut -c 1)
+     gcc_minor_version=$(gcc -dumpversion | cut -c 3)
+     gcc_sub_version=$(gcc -dumpversion | cut -c 5)
+
+     if [ $gcc_major_version -eq 4 -a $gcc_minor_version -eq 3 ];
+     then
+       XROOTD="--disable-xrootd"
+     fi
+
+     if [ $gcc_major_version -eq 3 -a $gcc_minor_version -eq 3 -a $gcc_sub_version -eq 5 ];
+     then
+       ROOFIT=" "
+     fi
+
+   fi
    #######################################################
 
    OPENGL=" "
@@ -35,18 +47,6 @@
    else
      root_comp_flag="--with-cc=$CC --with-cxx=$CXX --with-ld=$CXX"   
    fi
-
-   ########### Roofit has problems with gcc3.3.5  
-   gcc_major_version=$(gcc -dumpversion | cut -c 1)
-   gcc_minor_version=$(gcc -dumpversion | cut -c 3)
-   gcc_sub_version=$(gcc -dumpversion | cut -c 5)
-   
-   if [ $gcc_major_version -eq 3 -a $gcc_minor_version -eq 3 -a $gcc_sub_version -eq 5 ];
-   then
-      ROOFIT=" "
-   else
-      ROOFIT="--enable-roofit"
-    fi
 
    if [ "$build_python" = "yes" ];
    then
@@ -80,13 +80,11 @@
 		    --with-pythia8-libdir=$pythia8_libdir \
 		    --with-pythia8-incdir=$pythia8_incdir \
 		    --enable-mysql --enable-pgsql \
-		    --with-xrootd=/opt/fairsoft/xrootd \
- 		    --with-xrootd-libdir=/opt/fairsoft/xrootd/lib \
- 		    --with-xrootd-incdir=/opt/fairsoft/xrootd/include/xrootd \
+ 		    --with-xrootd-libdir=$SIMPATH_INSTALL/lib \
+ 		    --with-xrootd-incdir=$SIMPATH_INSTALL/include/xrootd \
                     --disable-globus \
                     --disable-reflex \
                     --disable-cintex \
-                    --disable-cocoa \
                     $VCBUILD --enable-http \
                     --with-gsl-incdir=$gsl_dir/include \
                     --with-gsl-libdir=$gsl_dir/lib \
