@@ -451,7 +451,8 @@ void MpdKfPrimaryVertexFinder::Smooth()
 
   for (Int_t itr = 0; itr < nPrim; ++itr) {
     MpdKalmanTrack *track = (MpdKalmanTrack*) fTracks->UncheckedAt((*ind)[itr]);
-    MpdKalmanTrack *trVert = 
+    MpdKalmanTrack *trVert = NULL;
+    if (fConstrFlag) trVert = 
       new((*fVertTracks)[itr]) MpdTpcKalmanTrack(*(MpdTpcKalmanTrack*)track);
 
     MpdKalmanTrack track1 = *track;
@@ -517,8 +518,8 @@ void MpdKfPrimaryVertexFinder::Smooth()
     par(1,0) = vert.Z(); 
     //track->SetParam(par);
     //track->SetPosNew(rad);
-    trVert->SetParam(par);
-    trVert->SetPosNew(rad);
+    if (trVert) trVert->SetParam(par);
+    if (trVert) trVert->SetPosNew(rad);
 
     // Update track length
     Double_t dLeng = track1.GetLength(); // track length from DCA to last saved position
@@ -529,7 +530,7 @@ void MpdKfPrimaryVertexFinder::Smooth()
     else MpdKalmanFilter::Instance()->PropagateParamP(&track1,&hit,kTRUE,kTRUE);
 
     //track->SetLength (track->GetLength() - dLeng + track1.GetLength());
-    trVert->SetLength (track->GetLength() - dLeng + track1.GetLength());
+    if (trVert) trVert->SetLength (track->GetLength() - dLeng + track1.GetLength());
   } // for (Int_t itr = 0; itr < nPrim;
 }
 
