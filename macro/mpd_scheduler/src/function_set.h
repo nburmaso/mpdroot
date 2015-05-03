@@ -24,9 +24,6 @@
 
 using namespace std;
 
-const int MAX_BUFFER = 255;
-char buffer[MAX_BUFFER];
-
 /*				*/
 /* OS FUNCTIONS */
 /*				*/
@@ -80,6 +77,31 @@ string replace_home_symbol_linux(string path)
     return path;
 }
 
+// change $VMCWORKDIR symbol in linux path
+string replace_vmc_path_linux(string path)
+{
+    char* pPath = getenv("VMCWORKDIR");
+    bool isNewPath = false;
+    if (pPath == NULL)
+    {
+        pPath = new char[2];
+        pPath[0] = '/';
+        pPath[1] = '\0';
+        isNewPath = true;
+    }
+
+    size_t found;
+    while ((found = path.find("$VMCWORKDIR")) != string::npos)
+    {
+        path.replace(found, 11, pPath);
+    }
+
+    if (isNewPath)
+        delete[] pPath;
+
+    return path;
+}
+
 // get processor core count on this machine
 int get_linux_processor_count()
 {
@@ -91,11 +113,14 @@ int get_sge_processor_count()
 {
 	int proc_count = 0;
 
-	// define count of processors for all.q queue
+    const int MAX_BUFFER = 255;
+    char buffer[MAX_BUFFER];
+
+    // define count of processors for all.q queue
 	string data, strDiff;
 	FILE* stream = popen("export SGE_SINGLE_LINE=1; qconf -sq all.q | grep slots", "r");
-	while (fgets(buffer, MAX_BUFFER, stream) != NULL)
-		data.append(buffer);
+    while (fgets(buffer, MAX_BUFFER, stream) != NULL)
+        data.append(buffer);
 	pclose(stream);
 
 	size_t found = data.find("="), found2 = string::npos;
@@ -121,28 +146,32 @@ int get_torque_processor_count()
 {
 	int proc_count = 0;
 
-		// define count of processors for all.q queue
-		string data, strDiff;
-		FILE* stream = popen("qconf -sq all.q | grep slots", "r");
-		while (fgets(buffer, MAX_BUFFER, stream) != NULL)
-			data.append(buffer);
-		pclose(stream);
+    const int MAX_BUFFER = 255;
+    char buffer[MAX_BUFFER];
 
-		size_t found = data.find("="), found2 = string::npos;
-		while (found != string::npos)
-		{
-			found2 = data.find("]", found);
-			strDiff = data.substr(found+1, found2 - found - 1);
-			proc_count += atoi(strDiff.c_str());
-			strDiff.clear();
+    // define count of processors for all.q queue
+    string data, strDiff;
+    FILE* stream = popen("qconf -sq all.q | grep slots", "r");
+    while (fgets(buffer, MAX_BUFFER, stream) != NULL)
+        data.append(buffer);
+    pclose(stream);
 
-			found = data.find("=", found2);
-		}
+    size_t found = data.find("="), found2 = string::npos;
+    while (found != string::npos)
+    {
+        found2 = data.find("]", found);
+        strDiff = data.substr(found+1, found2 - found - 1);
+        proc_count += atoi(strDiff.c_str());
+        strDiff.clear();
 
-		data.clear();
+        found = data.find("=", found2);
+    }
 
-		return proc_count;
+    data.clear();
+
+    return proc_count;
 }
+
 
 /*								*/
 /* GLOBAL APPLICATION FUNCTIONS */
@@ -180,6 +209,15 @@ string get_app_dir_linux()
     return fRes;
 }
 
+
+/*					*/
+/* NUMBER FUNCTIONS */
+/*					*/
+
+// check bit in 'variable' at 'position'
+#define CHECK_BIT(variable,position) ((variable) & (1ULL<<(position)))
+
+
 /*					*/
 /* STRING FUNCTIONS */
 /*					*/
@@ -190,6 +228,14 @@ string convert_integer_to_string(int number)
    stringstream ss;
    ss << number;
    return ss.str();
+}
+
+// convert integer (hexadecimal value) to string with hexadecimal presentation without "0x"
+string int_to_hex_string(int int_number)
+{
+  stringstream stream;
+  stream << std::hex << int_number;
+  return stream.str();
 }
 
 // is string a integer number?
@@ -232,6 +278,7 @@ void replace_string_in_text(string &text, string s, string d)
 	}
 	while(start > -1);
 }
+
 
 /*				  */
 /* FILE FUNCTIONS */
