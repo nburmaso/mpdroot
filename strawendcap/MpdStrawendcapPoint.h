@@ -30,7 +30,7 @@ public:
    **/
   	MpdStrawendcapPoint(Int_t trackID, Int_t detID, TVector3 pos, Double_t radius, TVector3 mom, Double_t tof, 
   	    Double_t length, Double_t eLoss, Int_t isPrimary, Double_t charge, Int_t pdgId, TVector3 trackPos);
-  	MpdStrawendcapPoint(const MpdStrawendcapPoint& point) { *this = point; };
+        MpdStrawendcapPoint(const MpdStrawendcapPoint& point):FairMCPoint(point) { *this = point; };
 
   	MpdStrawendcapPoint();	
   	virtual ~MpdStrawendcapPoint();
