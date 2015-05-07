@@ -57,6 +57,11 @@ namespace TPC {
     Double_t Rib_width_x = 4.0;
     Double_t Rib_width_z = 4.0;
     Double_t Rib_position_z = 6.0; // distance from flanches
+
+    //inner wall extension part in cm
+    Double_t Flange_thickness = 5.0;
+    Double_t ExtPart_length = 20.0;
+    Double_t Flange_width = 2.85;
 }
 
 #endif	/* TPC_GEOM_PAR_H */
