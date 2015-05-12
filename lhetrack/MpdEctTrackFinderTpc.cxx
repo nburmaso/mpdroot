@@ -25,6 +25,8 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 
+#include <TGeoManager.h>
+#include <TGeoTube.h>
 #include "TMath.h"
 #include "TVector2.h"
 #include <TRandom.h>
@@ -70,6 +72,11 @@ InitStatus MpdEctTrackFinderTpc::Init()
 {
   ReInit();
   if (fDetType == 1) InitGeo();
+
+  TGeoVolume *inW = gGeoManager->GetVolume("tpc01InWall");
+  TGeoTube *tube = (TGeoTube*) inW->GetShape();
+  fZtpc = tube->GetDZ();
+
   return kSUCCESS;
 }
 
@@ -658,8 +665,9 @@ void MpdEctTrackFinderTpc::DoTracking(Int_t iPass)
     // Propagate to TPC end-plate
     MpdKalmanHit hit;
     hit.SetType(MpdKalmanHit::kFixedZ);
-    Double_t zEnd = 150.; // get it from geometry !!!
-    hit.SetPos(TMath::Sign(zEnd,track->GetParam(3)));
+    //Double_t zEnd = 150.; // get it from geometry !!!
+    //hit.SetPos(TMath::Sign(zEnd,track->GetParam(3)));
+    hit.SetPos(TMath::Sign(fZtpc,track->GetParam(3)));
     Double_t thick = 0.06; // material thickness in rad. lengths
     MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
     PassWall(track,thick);

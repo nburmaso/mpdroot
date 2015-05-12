@@ -102,8 +102,7 @@ MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx,
 				     //MpdEtofPoint *tof, MpdKalmanHitZ *ect, TVector3 &vert)
 				     MpdEtofHit *tof, MpdKalmanHit *ect, TVector3 &vert)
   : MpdKalmanTrack(tof->GetZ(),vert),
-    //fID(tof->GetTrackID()),
-    fLastLay(ect->GetLayer()),
+    fLastLay(-1),
     fTpcIndex(ectIndx),
     fTofIndex(tofIndx),
     fFlag(0),
@@ -111,10 +110,13 @@ MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx,
     fMisses(0),
     fTrHits(new TClonesArray("MpdKalmanHit"))
 {
-  /// Constructor from ETOF and ECT hits
+  /// Constructor from ETOF and ECT (CPC) hits
 
   // Add first hit
-  fHits->Add(ect);
+  if (ect) {
+    fLastLay = ect->GetLayer();
+    fHits->Add(ect);
+  }
 
   SetType(MpdKalmanTrack::kEndcap);
   SetDirection(MpdKalmanTrack::kInward);

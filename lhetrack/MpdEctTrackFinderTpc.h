@@ -90,6 +90,7 @@ class MpdEctTrackFinderTpc :public FairTask
   Double_t fZplanes[fgkNlays];
   TDirectory *fHistoDir;
   TH1F *fhNBranches;
+  Double_t fZtpc; // Z-edge of TPC
 
   TClonesArray *fEctPoints; //! ECT MC points
   TClonesArray *fEctHits; //! ECT Hits
