@@ -83,12 +83,13 @@ void MpdTpcSectorGeo::Init()
     //fYsec[0] = params->At(5);
     //fYsec[1] = params->At(6);
     fYsec[0] = ((TGeoPgon*)shape)->Rmin(0);
-    fYsec[2] = ((TGeoPgon*)shape)->Rmax(0);
+    //fYsec[2] = ((TGeoPgon*)shape)->Rmax(0);
     fPadH[0] = 1.2; // approx. pad height in inner ROC region
-    fPadH[1] = 1.2; //1.8; //1.2; // approx. pad height in outer ROC region
-    fNrows[0] = 33; //27; //33;
-    fNrows[1] = 33; //26; //33;
+    fPadH[1] = 1.8; //1.2; // approx. pad height in outer ROC region
+    fNrows[0] = 27; //33;
+    fNrows[1] = 26; //33;
     Double_t dy = fPadH[0] * fNrows[0] + fPadH[1] * fNrows[1];
+    fYsec[2] = fYsec[0] + dy;
     Double_t scale = (fYsec[2] - fYsec[0]) / dy;
     fPadH[0] *= scale;
     fPadH[1] *= scale;
