@@ -53,6 +53,7 @@ class MpdTpcKalmanFilter : public FairTask
   void SetSectorGeo(MpdTpcSectorGeo *secGeo) { fSecGeo = secGeo; } ///< set sector geometry
   Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1); ///< refit track using its points for given particle mass and charge
   Int_t GetHitID(MpdKalmanHit *hit); // get hit ID from MC point ID
+  void UseTpcHit(Bool_t useMC = kTRUE) { fUseMCHit = useMC; }; // to use TpcHit branch instead of MpdTpcHit
 
  private:
   // Some constants
@@ -114,6 +115,7 @@ class MpdTpcKalmanFilter : public FairTask
  private:
   // Some constants
   static const Double_t fgkChi2Cut;    // max accepted Chi2 of hit for track
+  Bool_t fUseMCHit; // to use TpcHit branch (hit producer) instead of MpdTpc (clusters)
 
   ClassDef(MpdTpcKalmanFilter,1);
 };
