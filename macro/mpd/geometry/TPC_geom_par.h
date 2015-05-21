@@ -36,15 +36,15 @@ namespace TPC {
     Double_t Section_phi_step = TMath::DegToRad()*Section_step; //radian
 
     //sensitive volume trapezoid in cm
-    Double_t Sens_vol_X = .5*64.16;
-    Double_t Sens_vol_x = .5*21.29;
-    Double_t Sens_vol_Y = .5*80.0;
+    Double_t Sens_vol_X = .5*64.16; //half
+    Double_t Sens_vol_x = .5*21.29; //half
+    Double_t Sens_vol_Y = .5*80.0; //half
     Double_t Sens_vol_Y_center = 80.3;
 
     //pad plane simulation in cm
     Double_t Plane_Pp = 0.3;
     Double_t Plane_G10 = 0.3;
-    Double_t Plane_Al = 0.4;
+    Double_t Plane_Al = 0.5;
 
     //flanches inside chamber_tpc_z in cm
     Double_t OuterFlanch_width = 26.8;
@@ -62,6 +62,25 @@ namespace TPC {
     Double_t Flange_thickness = 5.0;
     Double_t ExtPart_length = 20.0;
     Double_t Flange_width = 2.85;
+
+    //frames im cm
+    Double_t Stiffening_rib_thickness = 1.0;
+    Double_t Frame_big_part_y_width = 35.4;
+    Double_t Frame_small_part_y_width = Sens_vol_Y*2.0 - Frame_big_part_y_width -Stiffening_rib_thickness;
+
+    Double_t xy_frame_common_width = 3.9;
+    Double_t z_frame_common_width = 5.5;
+
+    Double_t xy_frame_out_width = 2.0;
+    Double_t xy_frame_in_width = 1.9;
+
+    Double_t z_frame_in_width = 1.0;
+    Double_t z_frame_out_width = z_frame_common_width - z_frame_in_width;
+
+    //PCB in cm
+    Double_t PCB_thickness = 0.17;
+    Double_t PCB_x_width = 9.5;
+    Double_t PCB_y_width = 16.7;
 }
 
 #endif	/* TPC_GEOM_PAR_H */

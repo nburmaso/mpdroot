@@ -77,6 +77,25 @@ Double_t Flange_thickness = TPC::Flange_thickness;
 Double_t ExtPart_length = TPC::ExtPart_length;
 Double_t Flange_width = TPC::Flange_width;
 
+//frames im cm
+Double_t Stiffening_rib_thickness = TPC::Stiffening_rib_thickness;
+Double_t Frame_big_part_y_width = TPC::Frame_big_part_y_width;
+Double_t Frame_small_part_y_width = TPC::Frame_small_part_y_width;
+
+Double_t xy_frame_common_width = TPC::xy_frame_common_width;
+Double_t z_frame_common_width = TPC::z_frame_common_width;
+
+Double_t xy_frame_out_width = TPC::xy_frame_out_width;
+Double_t xy_frame_in_width = TPC::xy_frame_in_width;
+
+Double_t z_frame_in_width = TPC::z_frame_in_width;
+Double_t z_frame_out_width = TPC::z_frame_out_width;
+
+//PCB in cm
+Double_t PCB_thickness = TPC::PCB_thickness;
+Double_t PCB_x_width = TPC::PCB_x_width;
+Double_t PCB_y_width = TPC::PCB_y_width;
+
 //media
 TGeoMedium *pMedAir = 0;
 TGeoMedium *pMedAluminium = 0;
@@ -89,6 +108,9 @@ TGeoMedium *pMedPolypropylene= 0;
 TGeoMedium *pMedTPCmixture = 0;
 TGeoMedium *pMedG10 = 0;
 TGeoMedium *pMedFiberGlass = 0;
+TGeoMedium *pMedCopper = 0;
+
+TGeoMedium *pMedGold = 0;
 
 class FairGeoMedia;
 class FairGeoBuilder;
@@ -170,6 +192,20 @@ void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild) {
     geoBuild->createMedium(mFiberGlass);
     pMedFiberGlass = gGeoManager->GetMedium("fiberglass");
     if ( ! pMedFiberGlass ) Fatal("Main", "Medium fiberglass not found");
+
+    //copper medium
+    FairGeoMedium* mCopper = geoMedia->getMedium("copper");
+    if ( ! mCopper ) Fatal("Main", "FairMedium copper not found");
+    geoBuild->createMedium(mCopper);
+    pMedCopper = gGeoManager->GetMedium("copper");
+    if ( ! pMedCopper ) Fatal("Main", "Medium copper not found");
+
+    //gold medium
+    FairGeoMedium* mGold = geoMedia->getMedium("gold");
+    if ( ! mGold) Fatal("Main", "FairMedium gold not found");
+    geoBuild->createMedium(mGold);
+    pMedGold = gGeoManager->GetMedium("gold");
+    if ( ! pMedGold ) Fatal("Main", "Medium gold not found");
 }
 
 void create_rootgeom_TPC_v7() {
@@ -722,6 +758,9 @@ void CreateTPCModule(TGeoVolume *mother_volume) {
 
     //make pad planes
     CreatePadPlanes(tpcHalfModuleV, half_width_module);
+
+    //Create frames;
+    CreateFrames(tpcHalfModuleV, half_width_module);
 }
 
 
@@ -810,7 +849,7 @@ void CreateFieldCage(TGeoVolume *mother_volume, Double_t half_module_width) {
 void CreateSensitiveVolume(TGeoVolume *mother_volume, Double_t half_module_width) {
     TString SensitiveVolume_name = "tpc01sv";
 
-    Double_t shift = Plane_Al + Plane_G10 + Plane_Pp;
+    Double_t shift = Plane_Al + Plane_G10 + Plane_Pp + z_frame_common_width;
     Double_t sv_width = half_module_width - shift;
 
     //Solids
@@ -859,7 +898,7 @@ void CreatePadPlanes(TGeoVolume *mother_volume, Double_t half_module_width) {
     for(Int_t isec = 0; isec < Nsections; isec++) {
         TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
         combi_trans->RotateX(-90.0);
-        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - plane_thickness/2);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - plane_thickness/2 - z_frame_common_width);
         combi_trans->RotateZ(isec*Section_step);
 
         mother_volume->AddNode(tpcPlaneV, isec+1, combi_trans);
@@ -903,9 +942,164 @@ void CreatePadLayersInPlane(TGeoVolume *mother_volume, Double_t plane_thickness)
     if(bpAl_medium) tpcbpAlV->SetMedium(bpAl_medium);
     else Fatal("Main", "Invalid medium for pbAl!");
 
-    tpcbpAlV->SetLineColor(TColor::GetColor("#ffdc33"));
+    tpcbpAlV->SetLineColor(TColor::GetColor("#c4c3be"));
 
     mother_volume->AddNode(tpcbpAlV, 0, new TGeoTranslation(0, -plane_thickness/2 + Plane_Al/2, 0));
+}
+
+void CreateFrames(TGeoVolume *mother_volume, Double_t half_width_module) {
+    TString frame_name = "tpcFrame";
+
+    TGeoVolume *FrameAssemblyA = new TGeoVolumeAssembly("tpcFrameAssembly");
+
+    TGeoTrd1 *tpcFrameContainerS = new TGeoTrd1(frame_name, Sens_vol_x, Sens_vol_X, z_frame_common_width/2, Sens_vol_Y);
+    TGeoVolume *tpcFrameContainerV = new TGeoVolume(frame_name, tpcFrameContainerS);
+
+    TGeoMedium *tpcFrameContainer_medium = pMedAir; //set medium
+    if(tpcFrameContainer_medium) {
+        tpcFrameContainerV->SetMedium(tpcFrameContainer_medium);
+        FrameAssemblyA->SetMedium(tpcFrameContainer_medium);
+    }
+    else Fatal("Main", "Invalid medium for tpc frame container!");
+
+    tpcFrameContainerV->SetLineColor(TColor::GetColor("#cccccc"));
+    //tpcFrameContainerV->SetTransparency(0);
+
+    for(Int_t isec = 0; isec < Nsections; isec++) {
+    //for(Int_t isec = 0; isec < 1; isec++) {
+        TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
+        combi_trans->RotateX(-90.0);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_width_module/2 - z_frame_common_width/2);
+        combi_trans->RotateZ(isec*Section_step);
+
+        FrameAssemblyA->AddNode(tpcFrameContainerV, isec+1, combi_trans);
+    }
+
+    mother_volume->AddNode(FrameAssemblyA, 1);
+
+    //Create aluminium structure of frame
+    FillFrames(tpcFrameContainerV);
+
+    //Create PCB
+    CreatePCB(tpcFrameContainerV);
+}
+
+void FillFrames(TGeoVolume *mother_volume) {
+    TString frame_structure_name = "tpcFrameSkeleton";
+
+    const Int_t npoints_structure = 12;
+
+    TGeoXtru *tpcFrameStructureS = new TGeoXtru(2);
+    Double_t x[npoints_structure];
+    Double_t y[npoints_structure];
+
+    x[0] = 0.0; y[0] = Sens_vol_Y;
+    x[1] = Sens_vol_X - xy_frame_out_width; y[1] = Sens_vol_Y;
+    x[2] = Sens_vol_x - xy_frame_out_width; y[2] = -Sens_vol_Y;
+    x[3] = 0.0; y[3] = -Sens_vol_Y;
+    x[4] = 0.0; y[4] = -Sens_vol_Y + xy_frame_in_width;
+
+    Double_t x_shift = xy_frame_in_width/TMath::Tan(52.5*(TMath::DegToRad()));
+
+    x[5] = Sens_vol_x - xy_frame_out_width - x_shift; y[5] = -Sens_vol_Y + xy_frame_in_width;
+
+    Double_t xb = Frame_small_part_y_width/TMath::Tan(75*(TMath::DegToRad()));
+    x_shift = xy_frame_in_width/TMath::Cos(15*TMath::DegToRad());
+
+    x[6] = Sens_vol_x + xb - x_shift - xy_frame_in_width; y[6] = -Sens_vol_Y + Frame_small_part_y_width;
+    x[7] = 0.0; y[7] = -Sens_vol_Y + Frame_small_part_y_width;
+    x[8] = 0.0; y[8] = y[7] + Stiffening_rib_thickness;
+
+    x_shift = TMath::Tan(15*(TMath::DegToRad()))*Stiffening_rib_thickness;
+    x[9] = x[6] + x_shift; y[9] = y[8];
+
+    x_shift = xy_frame_in_width/TMath::Tan(37.5*(TMath::DegToRad()));
+    x[10] = Sens_vol_X - xy_frame_out_width - x_shift; y[10] = Sens_vol_Y - xy_frame_in_width;
+    x[11] = 0.0; y[11] = y[10];
+
+    tpcFrameStructureS->DefinePolygon(npoints_structure, x, y);
+
+    tpcFrameStructureS->DefineSection(0, -z_frame_common_width/2);
+    tpcFrameStructureS->DefineSection(1, z_frame_common_width/2);
+
+    TGeoVolume *tpcFrameStructureV = new TGeoVolume(frame_structure_name, tpcFrameStructureS);
+
+    TGeoMedium *tpcFrameStructure_medium = pMedAluminium; //set medium
+    if(tpcFrameStructure_medium) tpcFrameStructureV->SetMedium(tpcFrameStructure_medium);
+    else Fatal("Main", "Invalid medium for tpc frame structure!");
+
+    tpcFrameStructureV->SetLineColor(TColor::GetColor("#84c3be"));
+
+    TGeoCombiTrans *combi_trans1 = new TGeoCombiTrans();
+    combi_trans1->RotateX(90.0);
+
+    TGeoCombiTrans *combi_trans2 = new TGeoCombiTrans();
+    combi_trans2->RotateX(90.0);
+    combi_trans2->ReflectX(true);
+
+    mother_volume->AddNode(tpcFrameStructureV, 1, combi_trans1);
+    mother_volume->AddNode(tpcFrameStructureV, 2, combi_trans2);
+
+//--------  create frame borders  ----------------------------------------------
+    TString frame_border_name = "tpcFrameBorder";
+    const Int_t npoints_border = 4;
+    TGeoXtru *tpcFrameBorderS = new TGeoXtru(2);
+    Double_t x[npoints_border];
+    Double_t y[npoints_border];
+
+    x[0] = Sens_vol_X - xy_frame_out_width; y[0] = Sens_vol_Y;
+    x[1] = Sens_vol_X; y[1] = y[0];
+    x[2] = Sens_vol_x; y[2] = -Sens_vol_Y;
+    x[3] = Sens_vol_x - xy_frame_out_width; y[3] = y[2];
+
+    tpcFrameBorderS->DefinePolygon(npoints_border, x, y);
+
+    tpcFrameBorderS->DefineSection(0, -z_frame_common_width/2);
+    tpcFrameBorderS->DefineSection(1, -z_frame_common_width/2 + z_frame_in_width);
+
+    TGeoVolume *tpcFrameBorderV = new TGeoVolume(frame_border_name, tpcFrameBorderS);
+
+    TGeoMedium *tpcFrameBorder_medium = pMedAluminium; //set medium
+    if(tpcFrameBorder_medium) tpcFrameBorderV->SetMedium(tpcFrameBorder_medium);
+    else Fatal("Main", "Invalid medium for tpc frame border!");
+
+    tpcFrameBorderV->SetLineColor(TColor::GetColor("#84c3be"));
+
+    TGeoCombiTrans *combi_trans3 = new TGeoCombiTrans();
+    combi_trans3->RotateX(90.0);
+
+    TGeoCombiTrans *combi_trans4 = new TGeoCombiTrans();
+    combi_trans4->RotateX(90.0);
+    combi_trans4->ReflectX(true);
+
+    mother_volume->AddNode(tpcFrameBorderV, 1, combi_trans3);
+    mother_volume->AddNode(tpcFrameBorderV, 2, combi_trans4);
+//------------------------------------------------------------------------------
+}
+
+void CreatePCB(TGeoVolume *mother_volume) {
+    TString pcb_name = "tpcPCB";
+
+    TGeoBBox *tpc_pcbS = new TGeoBBox(pcb_name, PCB_x_width/2, PCB_y_width/2, PCB_thickness/2);
+
+    TGeoVolume *tpc_pcbV = new TGeoVolume(pcb_name, tpc_pcbS);
+
+    TGeoMedium *tpc_pcb_medium = pMedCopper; //set medium
+    if(tpc_pcb_medium) tpc_pcbV->SetMedium(tpc_pcb_medium);
+    else Fatal("Main", "Invalid medium for tpc PCB!");
+
+    tpc_pcbV->SetLineColor(TColor::GetColor("#ed9121"));
+
+    TGeoCombiTrans *combi_trans1 = new TGeoCombiTrans();
+    combi_trans1->RotateX(90.0);
+    combi_trans1->SetTranslation(0, 0, Sens_vol_Y/2);
+
+    TGeoCombiTrans *combi_trans2 = new TGeoCombiTrans();
+    combi_trans2->RotateX(90.0);
+    combi_trans2->SetTranslation(0, 0, -Sens_vol_Y/2);
+
+    mother_volume->AddNode(tpc_pcbV, 1, combi_trans1);
+    mother_volume->AddNode(tpc_pcbV, 2, combi_trans2);
 }
 
 void CreateEndCaps(TGeoVolume *mother_volume) {
