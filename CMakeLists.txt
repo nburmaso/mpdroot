@@ -162,6 +162,7 @@ add_subdirectory (ffd)
 #add_subdirectory (ndet)
 #add_subdirectory (tgem)
 #add_subdirectory (dch)
+add_subdirectory (shield_pack)
 
 Option(BUILD_DOXYGEN "Build Doxygen" OFF)
 if(BUILD_DOXYGEN)
