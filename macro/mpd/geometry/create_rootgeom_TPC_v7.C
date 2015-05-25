@@ -93,8 +93,10 @@ Double_t z_frame_out_width = TPC::z_frame_out_width;
 
 //PCB in cm
 Double_t PCB_thickness = TPC::PCB_thickness;
-Double_t PCB_x_width = TPC::PCB_x_width;
-Double_t PCB_y_width = TPC::PCB_y_width;
+//Double_t PCB_x_width = TPC::PCB_x_width;
+//Double_t PCB_y_width = TPC::PCB_y_width;
+Double_t PCB_Cu_layer_thickness = TPC::PCB_Cu_layer_thickness;
+Double_t PCB_FR_layer_thickness = TPC::PCB_FR_layer_thickness;
 
 //media
 TGeoMedium *pMedAir = 0;
@@ -247,8 +249,9 @@ void create_rootgeom_TPC_v7() {
     // --------------------------------------------------------------------------
 
     // Define TPC Geometry
-    TGeoTube *tpcChamberS = new TGeoTube("tpcChamber1", TpcInnerRadius, TpcOuterRadius, Container_tpc_z/2);
-    TGeoVolume *tpcChamberV = new TGeoVolume("tpcChamber1", tpcChamberS);
+    TString tpc_chamber_name = "tpcChamber1";
+    TGeoTube *tpcChamberS = new TGeoTube(tpc_chamber_name, TpcInnerRadius, TpcOuterRadius, Container_tpc_z/2);
+    TGeoVolume *tpcChamberV = new TGeoVolume(tpc_chamber_name, tpcChamberS);
     tpcChamberV->SetMedium(pMedAir);
     //tpcChamberV->SetVisibility(kTRUE);
     tpcChamberV->SetTransparency(95);
@@ -276,6 +279,7 @@ void create_rootgeom_TPC_v7() {
     gGeoManager->CloseGeometry();
     gGeoManager->CheckOverlaps(0.001);
     gGeoManager->PrintOverlaps();
+
     gGeoManager->Test();
 
     TFile* geoFile = new TFile(geoFileName, "RECREATE");
@@ -761,8 +765,10 @@ void CreateTPCModule(TGeoVolume *mother_volume) {
 
     //Create frames;
     CreateFrames(tpcHalfModuleV, half_width_module);
-}
 
+    //Create PCB FEC
+    CreatePCB(tpcHalfModuleV, half_width_module);
+}
 
 void CreateFieldCage(TGeoVolume *mother_volume, Double_t half_module_width) {
     TString FieldCageOut_name = "tpc01outfc";
@@ -849,7 +855,7 @@ void CreateFieldCage(TGeoVolume *mother_volume, Double_t half_module_width) {
 void CreateSensitiveVolume(TGeoVolume *mother_volume, Double_t half_module_width) {
     TString SensitiveVolume_name = "tpc01sv";
 
-    Double_t shift = Plane_Al + Plane_G10 + Plane_Pp + z_frame_common_width;
+    Double_t shift = Plane_Al + Plane_G10 + Plane_Pp + z_frame_common_width + PCB_thickness;
     Double_t sv_width = half_module_width - shift;
 
     //Solids
@@ -898,7 +904,7 @@ void CreatePadPlanes(TGeoVolume *mother_volume, Double_t half_module_width) {
     for(Int_t isec = 0; isec < Nsections; isec++) {
         TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
         combi_trans->RotateX(-90.0);
-        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - plane_thickness/2 - z_frame_common_width);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - plane_thickness/2 - z_frame_common_width - PCB_thickness);
         combi_trans->RotateZ(isec*Section_step);
 
         mother_volume->AddNode(tpcPlaneV, isec+1, combi_trans);
@@ -969,7 +975,7 @@ void CreateFrames(TGeoVolume *mother_volume, Double_t half_width_module) {
     //for(Int_t isec = 0; isec < 1; isec++) {
         TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
         combi_trans->RotateX(-90.0);
-        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_width_module/2 - z_frame_common_width/2);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_width_module/2 - z_frame_common_width/2 - PCB_thickness);
         combi_trans->RotateZ(isec*Section_step);
 
         FrameAssemblyA->AddNode(tpcFrameContainerV, isec+1, combi_trans);
@@ -979,9 +985,6 @@ void CreateFrames(TGeoVolume *mother_volume, Double_t half_width_module) {
 
     //Create aluminium structure of frame
     FillFrames(tpcFrameContainerV);
-
-    //Create PCB
-    CreatePCB(tpcFrameContainerV);
 }
 
 void FillFrames(TGeoVolume *mother_volume) {
@@ -1077,29 +1080,68 @@ void FillFrames(TGeoVolume *mother_volume) {
 //------------------------------------------------------------------------------
 }
 
-void CreatePCB(TGeoVolume *mother_volume) {
+void CreatePCB(TGeoVolume *mother_volume, Double_t half_module_width) {
     TString pcb_name = "tpcPCB";
 
-    TGeoBBox *tpc_pcbS = new TGeoBBox(pcb_name, PCB_x_width/2, PCB_y_width/2, PCB_thickness/2);
+    TGeoVolume *PCBAssemblyA = new TGeoVolumeAssembly("tpcPCBAssembly");
+
+    TGeoTrd1 *tpc_pcbS = new TGeoTrd1(pcb_name, Sens_vol_x, Sens_vol_X, PCB_thickness/2, Sens_vol_Y);
 
     TGeoVolume *tpc_pcbV = new TGeoVolume(pcb_name, tpc_pcbS);
 
-    TGeoMedium *tpc_pcb_medium = pMedCopper; //set medium
-    if(tpc_pcb_medium) tpc_pcbV->SetMedium(tpc_pcb_medium);
-    else Fatal("Main", "Invalid medium for tpc PCB!");
+    TGeoMedium *pcb_medium = pMedAir; //set medium
+    if(pcb_medium) {
+        tpc_pcbV->SetMedium(pcb_medium);
+        PCBAssemblyA->SetMedium(pcb_medium);
+    }
+    else Fatal("Main", "Invalid medium for PCB plane!");
 
     tpc_pcbV->SetLineColor(TColor::GetColor("#ed9121"));
+    //tpc_pcbV->SetTransparency(0);
 
-    TGeoCombiTrans *combi_trans1 = new TGeoCombiTrans();
-    combi_trans1->RotateX(90.0);
-    combi_trans1->SetTranslation(0, 0, Sens_vol_Y/2);
+    for(Int_t isec = 0; isec < Nsections; isec++) {
+    //for(Int_t isec = 0; isec < 1; isec++) {
+        TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
+        combi_trans->RotateX(-90.0);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - PCB_thickness/2);
+        combi_trans->RotateZ(isec*Section_step);
 
-    TGeoCombiTrans *combi_trans2 = new TGeoCombiTrans();
-    combi_trans2->RotateX(90.0);
-    combi_trans2->SetTranslation(0, 0, -Sens_vol_Y/2);
+        PCBAssemblyA->AddNode(tpc_pcbV, isec+1, combi_trans);
+    }
 
-    mother_volume->AddNode(tpc_pcbV, 1, combi_trans1);
-    mother_volume->AddNode(tpc_pcbV, 2, combi_trans2);
+    mother_volume->AddNode(PCBAssemblyA, 0);
+
+    //Fill PCB with layers
+    FillPCBWithLayers(tpc_pcbV);
+}
+
+void FillPCBWithLayers(TGeoVolume *mother_volume) {
+    TString pcb_cu_name = "PCB_Cu";
+    TString pcb_fr_name = "PCB_FR";
+
+    //create Cu layer
+    TGeoTrd1 *pcbCuS = new TGeoTrd1(pcb_cu_name, Sens_vol_x, Sens_vol_X, PCB_Cu_layer_thickness/2, Sens_vol_Y);
+    TGeoVolume *pcbCuV = new TGeoVolume(pcb_cu_name, pcbCuS);
+
+    TGeoMedium *pcbCu_medium = pMedCopper; //set medium
+    if(pcbCu_medium) pcbCuV->SetMedium(pcbCu_medium);
+    else Fatal("Main", "Invalid medium for PCB Cu layer!");
+
+    pcbCuV->SetLineColor(TColor::GetColor("#ffb841"));
+
+    mother_volume->AddNode(pcbCuV, 0, new TGeoTranslation(0, PCB_thickness/2 - PCB_Cu_layer_thickness/2, 0));
+
+    //create FR layer
+    TGeoTrd1 *pcbFRS = new TGeoTrd1(pcb_fr_name, Sens_vol_x, Sens_vol_X, PCB_FR_layer_thickness/2, Sens_vol_Y);
+    TGeoVolume *pcbFRV = new TGeoVolume(pcb_fr_name, pcbFRS);
+
+    TGeoMedium *pcbFR_medium = pMedFiberGlass; //set medium
+    if(pcbFR_medium) pcbFRV->SetMedium(pcbFR_medium);
+    else Fatal("Main", "Invalid medium for PCB FR layer!");
+
+    pcbFRV->SetLineColor(TColor::GetColor("#ccccff"));
+
+    mother_volume->AddNode(pcbFRV, 0, new TGeoTranslation(0, -PCB_thickness/2 + PCB_FR_layer_thickness/2, 0));
 }
 
 void CreateEndCaps(TGeoVolume *mother_volume) {

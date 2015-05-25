@@ -78,9 +78,11 @@ namespace TPC {
     Double_t z_frame_out_width = z_frame_common_width - z_frame_in_width;
 
     //PCB in cm
-    Double_t PCB_thickness = 0.17;
-    Double_t PCB_x_width = 9.5;
-    Double_t PCB_y_width = 16.7;
+    Double_t PCB_thickness = 0.1716;
+    //Double_t PCB_x_width = 9.5;
+    //Double_t PCB_y_width = 16.7;
+    Double_t PCB_Cu_layer_thickness = 0.0246; //cm
+    Double_t PCB_FR_layer_thickness = PCB_thickness - PCB_Cu_layer_thickness; //cm
 }
 
 #endif	/* TPC_GEOM_PAR_H */
