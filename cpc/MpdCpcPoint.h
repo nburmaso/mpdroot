@@ -28,8 +28,8 @@ public:
    *@param length   Track length since creation [cm]
    *@param eLoss    Energy deposit [GeV]
    **/
-  	MpdCpcPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss);
-  	MpdCpcPoint(const MpdCpcPoint& point) { *this = point; };
+  MpdCpcPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss);
+ MpdCpcPoint(const MpdCpcPoint& point):FairMCPoint(point) { *this = point; }
 
   	MpdCpcPoint();	
   	virtual ~MpdCpcPoint();
