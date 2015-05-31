@@ -71,12 +71,11 @@ Bool_t  MpdCpc::ProcessHits(FairVolume* vol)
 	// Sum energy loss for all steps in the active volume
 	fELoss += gMC->Edep();
 
+	// Create MpdCpcPoint at ENTER of active volume; fELoss INVALID!!!
+	//AZ if(gMC->IsTrackEntering()) 
 
 	// Create MpdCpcPoint at exit of active volume
-//	if(gMC->TrackCharge() != 0 &&  (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()) ) 
-	
-	// Create MpdCpcPoint at ENTER of active volume; fELoss INVALID!!!
-	if(gMC->IsTrackEntering()) 
+	if ((gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()) && fELoss > 0) 
 	{
 		fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
 		Volname = vol->getRealName();         // EL
