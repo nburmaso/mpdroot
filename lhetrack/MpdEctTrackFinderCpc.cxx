@@ -842,7 +842,7 @@ Bool_t MpdEctTrackFinderCpc::EvalParamsCpc(TVector3 cpc, TVector3 tof, Double_t 
   // Evaluate track parameters
   
   const Double_t factor = 0.0015; // 0.3 * 0.5T * 0.01
-  const Double_t dphMax[9] = {0.3, 0.3, 0.1, 0.08, 0.06, 0.04, 0.04, 0.03, 0.03};
+  const Double_t dphMax[9] = {0.3, 0.3, 0.08, 0.06, 0.04, 0.035, 0.03, 0.025};
   Double_t zVert = 0.0;
   if (fPrimVtx) zVert = ((MpdVertex*)fPrimVtx->UncheckedAt(0))->GetZ();
 
@@ -1790,7 +1790,8 @@ void MpdEctTrackFinderCpc::MatchTpc()
     rad = TMath::Sqrt(rad);
     //cout << tr->GetTrackID() << " " << tr->GetPosNew() << " " << tr->GetParamNew(3) << " " << rad << endl;
     //if (rad < 34.) continue; // inner radius of TPC
-    Double_t thick = 0.06; // TPC end-plate material thickness in rad. lengths
+    //Double_t thick = 0.06; // TPC end-plate material thickness in rad. lengths
+    Double_t thick = 0.20; // TPC end-plate material thickness in rad. lengths - v7
     PassWall(tr, thick);
     ectM.insert(pair<Int_t,pair<Double_t,Double_t> > (i,pair<Double_t,Double_t>(tr->GetParamNew(0),tr->GetParamNew(1))));
   }  
@@ -1995,7 +1996,8 @@ void MpdEctTrackFinderCpc::GoToBeamLine()
     Double_t leng = trTmp.GetLength();
     //ok = MpdKalmanFilter::Instance()->PropagateToHit(&trTmp,&hit,kFALSE);
     ok = MpdKalmanFilter::Instance()->PropagateToHit(&trTmp,&hit,kTRUE);
-    if (!ok || TMath::Abs(trTmp.GetParamNew(1)) > 149.9) {
+    //if (!ok || TMath::Abs(trTmp.GetParamNew(1)) > 149.9) {
+    if (!ok || TMath::Abs(trTmp.GetParamNew(1)) > fZtpc - 0.1) {
       fTracks->RemoveAt(i);
       cout << " *** Removing track (not going inward): " << i << " "
 	   << track->GetTrackID() << " " << endl;
@@ -2028,7 +2030,8 @@ void MpdEctTrackFinderCpc::GoToBeamLine()
 	break;
       }
       //continue;
-      if (TMath::Abs(track->GetParamNew(1)) > 150.) continue; // outside TPC Z-dimensions
+      //if (TMath::Abs(track->GetParamNew(1)) > 150.) continue; // outside TPC Z-dimensions
+      if (TMath::Abs(track->GetParamNew(1)) > fZtpc) continue; // outside TPC Z-dimensions
       // Add multiple scattering
       TMatrixDSym *cov = track->Weight2Cov();
       Double_t th = track->GetParamNew(3);
@@ -2160,10 +2163,10 @@ void MpdEctTrackFinderCpc::MergeWithTpc(MpdEctKalmanTrack *track)
   track->GetHits()->Sort();
   track->SetChi2(0.);
   TMatrixDSym *w = track->GetWeight();
-  Int_t nHits = track->GetNofHits();
+  Int_t nHits = track->GetNofHits(), nHits2 = nHits * nHits;
   for (Int_t i = 0; i < 5; ++i) {
     for (Int_t j = i; j < 5; ++j) {
-      if (j == i) (*w)(i,j) /= nHits;
+      if (j == i) (*w)(i,j) /= nHits2;
       else (*w)(i,j) = (*w)(j,i) = 0.;
     }
   }
@@ -2201,17 +2204,19 @@ void MpdEctTrackFinderCpc::MergeWithTpc(MpdEctKalmanTrack *track)
   //hitTmp.SetPos(TMath::Sign(zEnd,track->GetPos()));
   hitTmp.SetPos(TMath::Sign(fZtpc,track->GetParam(3)));
   MpdKalmanFilter::Instance()->PropagateToHit(track, &hitTmp, kFALSE);
-  Double_t thick = 0.06; // material thickness in rad. lengths
+  //Double_t thick = 0.06; // material thickness in rad. lengths
+  Double_t thick = 0.20; // material thickness in rad. lengths - v7
   PassWall(track,thick);
 
-  MpdTpcKalmanTrack *tr = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(track->GetTpcIndex());
-  TClonesArray *hits = tr->GetTrHits();
+  MpdTpcKalmanTrack *trTpc = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(track->GetTpcIndex());
+  TClonesArray *hits = trTpc->GetTrHits();
   /*Int_t*/ nHits = hits->GetEntriesFast();
 
   //TMatrixDSym pointWeight(5);
-  pointWeight = 0.;
   //TMatrixD param(5,1);
-  TClonesArray *oldHits = track->GetTrHits();
+  pointWeight = 0.;
+  MpdEctKalmanTrack *trTmp = new MpdEctKalmanTrack(*track); // temporary track 
+  TClonesArray *oldHits = trTmp->GetTrHits();
   Int_t nOld = oldHits->GetEntriesFast(), nAdd = 0, lay0 = -1, lay = -1; 
   nAcc = nOld;
   map<Int_t,Double_t>& stepMap = track->GetSteps();
@@ -2224,33 +2229,38 @@ void MpdEctTrackFinderCpc::MergeWithTpc(MpdEctKalmanTrack *track)
     Double_t stepBack = -1.0;
     if (stepMap.find(lay) != stepMap.end() && stepMap.find(lay0) != stepMap.end()) 
       stepBack = TMath::Abs (stepMap[lay] - stepMap[lay0]);
-    if (!MpdKalmanFilter::Instance()->PropagateToHit(track,hit,kFALSE,kTRUE,stepBack)) {
-      track->SetNodeNew(track->GetNode()); // restore node
+    if (!MpdKalmanFilter::Instance()->PropagateToHit(trTmp,hit,kFALSE,kTRUE,stepBack)) {
+      trTmp->SetNodeNew(trTmp->GetNode()); // restore node
       continue;
     }
-    Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(track,hit,pointWeight,param);
+    Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(trTmp,hit,pointWeight,param);
     //cout << j << " " << hit->GetDist() << " " << dChi2 << endl;
     if (dChi2 > fgkChi2Cut * 4) continue;
     //track->SetParam(param);
-    track->SetParamNew(param);
-    (*track->GetWeight()) += pointWeight;
-    track->GetHits()->Add(hit);
-    track->SetChi2(track->GetChi2()+dChi2);
+    trTmp->SetParamNew(param);
+    (*trTmp->GetWeight()) += pointWeight;
+    trTmp->GetHits()->Add(hit);
+    trTmp->SetChi2(trTmp->GetChi2()+dChi2);
     new ((*oldHits)[nOld++]) MpdKalmanHit (*hit);
     ++nAdd;
     // Set params at hit
-    track->SetParamAtHit(*track->GetParamNew());
-    track->SetWeightAtHit(*track->GetWeight());
-    track->SetLengAtHit(track->GetLength());
-    track->SetPosAtHit(track->GetPosNew());
+    trTmp->SetParamAtHit(*trTmp->GetParamNew());
+    trTmp->SetWeightAtHit(*trTmp->GetWeight());
+    trTmp->SetLengAtHit(trTmp->GetLength());
+    trTmp->SetPosAtHit(trTmp->GetPosNew());
   }
 
-  if (nAdd == 0) {
-    cout << " Merge TPC: merging failed !!! " << endl;
+  //if (nAdd == 0) {
+  if (1.*nAdd/nHits < 0.4) {
+    cout << " Merge TPC: merging failed !!! " << nAdd << " " << nHits << endl;
     track->SetFlag(track->GetFlag() ^ 1); // clear "From_TPC" flag
+    delete trTmp;
     return;
   }
 
+  track->Reset();
+  *track = *trTmp;
+  delete trTmp;
   /*TClonesArray *oldHits = track->GetTrHits();
   Int_t nAdd = hits->GetEntriesFast(), nOld = oldHits->GetEntriesFast();
   for (Int_t ih = 0; ih < nAdd; ++ih) {
@@ -2258,8 +2268,8 @@ void MpdEctTrackFinderCpc::MergeWithTpc(MpdEctKalmanTrack *track)
     }*/
   track->SetNofHits(track->GetNofTrHits());
   cout << " Merge TPC: " << nHits << " " << nAdd << " " << nAcc << " " << track->GetNofHits() << " " 
-       << track->GetNofTrHits() << " " << tr->GetTrackID() << " " << track->GetTrackID() << " " 
-       << tr->GetParam(3) << " " << track->GetChi2() << endl;
+       << track->GetNofTrHits() << " " << trTpc->GetTrackID() << " " << track->GetTrackID() << " " 
+       << trTpc->GetParam(3) << " " << track->GetParam(3) << " " << track->GetChi2() << endl;
 }
 
 //__________________________________________________________________________
@@ -2304,7 +2314,7 @@ void MpdEctTrackFinderCpc::Smooth()
   vFinder.SetVertices(fPrimVtx);
   vFinder.SetTracks(fTracks);
   vFinder.Chi2Vertex();
-  vFinder.SetSmoothSame();
+  //AZ vFinder.SetSmoothSame();
 
   // Select tracks close to the vertex
   Int_t nTr = fTracks->GetEntriesFast(), nOk = 0;
@@ -2424,7 +2434,8 @@ void MpdEctTrackFinderCpc::GoOutward()
       hitTmp.SetPos(TMath::Sign(fZtpc,track->GetParam(3)));
       //MpdKalmanFilter::Instance()->PropagateToHit(&tr, &hitTmp, kFALSE);
       MpdKalmanFilter::Instance()->PropagateToHit(&tr, &hitTmp, kTRUE);
-      Double_t thick = 0.06; // material thickness in rad. lengths
+      //Double_t thick = 0.06; // material thickness in rad. lengths
+      Double_t thick = 0.20; // material thickness in rad. lengths - v7
       PassWall(&tr,thick);
     }
     if (nEct > 0) {
@@ -2446,8 +2457,17 @@ void MpdEctTrackFinderCpc::GoOutward()
       }
       TMatrixDSym pointWeight(5);
       TMatrixD param(5,1);
+      Bool_t ok = kTRUE;
       for (Int_t jh = nEct - 1; jh >= 0; --jh) {
 	MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(jh);
+	if (tr.GetParam(3) * fZplanes[hit->GetLayer()-1] < 0) {
+	  cout << " *** GoOutward: going in wrong direction - removing track " << tr.GetParam(3) << " " << fZplanes[hit->GetLayer()-1] << endl;
+	  fTracks->RemoveAt(i);
+	  ok = kFALSE;
+	  //cout << hit->GetLayer() << " " << tr.GetParam(4) << endl;
+	  //exit(0);
+	  break;
+	}
 	//if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kFALSE)) continue;
 	if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kTRUE)) continue;
 	PassWall(&tr, 0.001);
@@ -2457,8 +2477,9 @@ void MpdEctTrackFinderCpc::GoOutward()
 	(*tr.GetWeight()) += pointWeight;
 	tr.SetChi2(tr.GetChi2()+dChi2);
       }
+      if (!ok) continue;
     }
-    printf("MpdEctTrackFinderTof::GoOutward(): %6d %2d %2d %10.3f %7.3f %1d \n", tr.GetTrackID(), 
+    printf("MpdEctTrackFinderCpc::GoOutward(): %6d %2d %2d %10.3f %7.3f %1d \n", tr.GetTrackID(), 
 	   nTpc, nEct, tr.GetChi2(), tr.Pt(), ok);
     // Set params at hit
     track->SetParamAtHit(*tr.GetParamNew());
@@ -2526,6 +2547,7 @@ void MpdEctTrackFinderCpc::GoOutward()
     } // if (0)
 
   } //for (Int_t i = 0; i < nReco;
+  fTracks->Compress();
 }
 
 ClassImp(MpdEctTrackFinderCpc);
