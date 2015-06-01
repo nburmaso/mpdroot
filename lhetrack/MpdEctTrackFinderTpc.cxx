@@ -668,7 +668,8 @@ void MpdEctTrackFinderTpc::DoTracking(Int_t iPass)
     //Double_t zEnd = 150.; // get it from geometry !!!
     //hit.SetPos(TMath::Sign(zEnd,track->GetParam(3)));
     hit.SetPos(TMath::Sign(fZtpc,track->GetParam(3)));
-    Double_t thick = 0.06; // material thickness in rad. lengths
+    //Double_t thick = 0.06; // material thickness in rad. lengths
+    Double_t thick = 0.20; // material thickness in rad. lengths - v7
     MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
     PassWall(track,thick);
 
