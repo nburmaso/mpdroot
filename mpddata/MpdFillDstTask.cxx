@@ -134,7 +134,8 @@ void MpdFillDstTask::Exec(Option_t * option)
 	MpdTofMatchingData *pMatchingData;  
 	bool matchingDataExist; 
 
-        MpdParticleIdentification *identificator = new MpdParticleIdentification();
+        //AZ MpdParticleIdentification *identificator = new MpdParticleIdentification();
+        MpdParticleIdentification identificator;
         
 	for(Int_t i = 0; i < nReco; i++)
   	{
@@ -152,7 +153,7 @@ void MpdFillDstTask::Exec(Option_t * option)
     		track->SetNofHits(kftrack->GetNofHits());
                 Float_t Ppi, Pk, Pe, Pp;
                                 
-                if(!identificator->GetTpcProbs(kftrack->Momentum3().Mag(), kftrack->GetPartID(), kftrack->GetNofHits(), Ppi, Pk, Pp, Pe, 1)) {
+                if(!identificator.GetTpcProbs(kftrack->Momentum3().Mag(), kftrack->GetPartID(), kftrack->GetNofHits(), Ppi, Pk, Pp, Pe, 1)) {
                     track->SetTPCpidProb(Pe, Ppi, Pk, Pp, BIT(2));
                 }                
     		matchingDataExist = false;	
@@ -168,14 +169,14 @@ void MpdFillDstTask::Exec(Option_t * option)
       			track->SetTofMass2(pMatchingData->GetMass2());
      			track->SetTofHitIndex(pMatchingData->GetTofHitIndex());
                                       
-                        if(!identificator->GetTofProbs(pMatchingData->GetMomentum().Mag(), pMatchingData->GetBeta(), Ppi, Pk, Pp, Pe, 0)) {
+                        if(!identificator.GetTofProbs(pMatchingData->GetMomentum().Mag(), pMatchingData->GetBeta(), Ppi, Pk, Pp, Pe, 0)) {
                             track->SetTOFpidProb(Pe, Ppi, Pk, Pp, BIT(1));
                         }
     		}
                 Float_t tpcProbs[4] = {track->GetTPCPidProbPion(), track->GetTPCPidProbKaon(), track->GetTPCPidProbProton(), track->GetTPCPidProbElectron()};
                 Float_t tofProbs[4] = {track->GetTOFPidProbPion(), track->GetTOFPidProbKaon(), track->GetTOFPidProbProton(), track->GetTOFPidProbElectron()};
                 Float_t combProbs[4]; //probabilities combined from TOF & TPC
-                identificator->GetCombinedProbs(tofProbs, tpcProbs, combProbs, 4);
+                identificator.GetCombinedProbs(tofProbs, tpcProbs, combProbs, 4);
                 Ppi = combProbs[0];
                 Pk  = combProbs[1];
                 Pp  = combProbs[2];
