@@ -2426,7 +2426,11 @@ void MpdEctTrackFinderCpc::GoOutward()
       for (Int_t jh = nEct; jh < nHits; ++jh) hits->Add(trhits->UncheckedAt(jh));
       //ok = MpdKalmanFilter::Instance()->Refit(&tr,-1,kFALSE);
       ok = MpdKalmanFilter::Instance()->Refit(&tr,-1,kTRUE);
-      if (!ok) cout << " Go outward: refit failed !!!" << endl; 
+      if (!ok) {
+	cout << " Go outward: refit failed !!!" << endl; 
+	fTracks->RemoveAt(i);
+	continue;
+      }
       // Go to TPC end-plate
       MpdKalmanHit hitTmp;
       hitTmp.SetType(MpdKalmanHit::kFixedZ);
@@ -2460,7 +2464,13 @@ void MpdEctTrackFinderCpc::GoOutward()
       Bool_t ok = kTRUE;
       for (Int_t jh = nEct - 1; jh >= 0; --jh) {
 	MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(jh);
-	if (tr.GetParam(3) * fZplanes[hit->GetLayer()-1] < 0) {
+	//if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kFALSE)) continue;
+	if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kTRUE)) continue;
+	PassWall(&tr, 0.001);
+	Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(&tr,hit,pointWeight,param);
+	//tr.SetParam(param);
+	tr.SetParamNew(param);
+	if (tr.GetParamNew(3) * fZplanes[hit->GetLayer()-1] < 0) {
 	  cout << " *** GoOutward: going in wrong direction - removing track " << tr.GetParam(3) << " " << fZplanes[hit->GetLayer()-1] << endl;
 	  fTracks->RemoveAt(i);
 	  ok = kFALSE;
@@ -2468,12 +2478,6 @@ void MpdEctTrackFinderCpc::GoOutward()
 	  //exit(0);
 	  break;
 	}
-	//if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kFALSE)) continue;
-	if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kTRUE)) continue;
-	PassWall(&tr, 0.001);
-	Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(&tr,hit,pointWeight,param);
-	//tr.SetParam(param);
-	tr.SetParamNew(param);
 	(*tr.GetWeight()) += pointWeight;
 	tr.SetChi2(tr.GetChi2()+dChi2);
       }
