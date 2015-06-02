@@ -443,6 +443,9 @@ void MpdTpcHitProducer::ExecModular()
       delete [] times;
       delete [] ys;
       delete [] zs;
+      delete [] xx;
+      delete [] yy;
+      delete [] zz;
       //delete [] hindx;
       //delete [] ord;
 
