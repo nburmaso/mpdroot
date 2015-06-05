@@ -161,8 +161,7 @@ void TpcDetector::Print() const
                 for(Int_t i=0; i<nHits; i++) (*fTpcPointCollection)[i]->Print();
 }
 
-void
-TpcDetector::ConstructGeometry() {
+void TpcDetector::ConstructGeometry() {
     TString fileName = GetGeometryFileName();
 
     if ( fileName.EndsWith(".root") ) {
@@ -190,49 +189,6 @@ TpcDetector::ConstructGeometry() {
              "Geometry format of TPC file %s not supported.",
              fileName.Data());
     }
-
-
- /*
-  std::cout<<" --- Building TPC Geometry ---"<<std::endl;
-
-
-  FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
-  FairGeoInterface* geoFace = geoLoad->getGeoInterface();
-  TpcGeo*       Geo  = new TpcGeo();
-  Geo->setGeomFile(GetGeometryFileName());
-  geoFace->addGeoModule(Geo);
-
-  Bool_t rc = geoFace->readSet(Geo);
-  if (rc) Geo->create(geoLoad->getGeoBuilder());
-  else std::cerr<<"TpcDetector:: geometry could not be read!"<<std::endl;
-
-  TList* volList = Geo->getListOfVolumes();
-
-  // store geo parameter
-  FairRun *fRun = FairRun::Instance();
-  FairRuntimeDb *rtdb= FairRun::Instance()->GetRuntimeDb();
-  TpcGeoPar* par=(TpcGeoPar*)(rtdb->getContainer("TpcGeoPar"));
-  TObjArray *fSensNodes = par->GetGeoSensitiveNodes();
-  TObjArray *fPassNodes = par->GetGeoPassiveNodes();
-
-  TListIter iter(volList);
-  FairGeoNode* node   = NULL;
-  FairGeoVolume *aVol=NULL;
-
-
-  while( (node = (FairGeoNode*)iter.Next()) ) {
-      aVol = dynamic_cast<FairGeoVolume*> ( node );
-       if ( node->isSensitive()  ) {
-           fSensNodes->AddLast( aVol );
-       }else{
-           fPassNodes->AddLast( aVol );
-       }
-  }
-  par->setChanged();
-  par->setInputVersion(fRun->GetRunId(),1);
-
-  ProcessNodes ( volList );
-  */
 }
 
 // -----   ConstructAsciiGeometry   -------------------------------------------
