@@ -112,7 +112,8 @@ void MpdEctTrackFinderTpc::Reset()
   ///
   cout << " MpdEctTrackFinderTpc::Reset  " << endl;
 
-  fKHits->Clear();
+  //fKHits->Clear("C");
+  fKHits->Delete();
   fTracks->Delete();
   fTrackCand->Delete();
   if (fLayPointers) delete [] fLayPointers;
@@ -782,16 +783,18 @@ Int_t MpdEctTrackFinderTpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
   if (track->GetRadNew() > rMax) return -1;
 
   //cout << fHits->GetEntriesFast() << endl;
-  Int_t layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  //Int_t layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  Int_t layMax = fgkNlays2;
   MpdKalmanHit *hitOK = 0x0;
   MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
   //Int_t layBeg = 0, layEnd = -1, dLay = -1, layOK = -1;
   Int_t layEnd = -1, dLay = -1, layOK = -1;
-  if (track->GetPosNew() < 0) layEnd = fgkNlays2;
+  //if (track->GetPosNew() < 0) layEnd = fgkNlays2;
+  if (track->GetPosNew() < 0) layMax = 2*fgkNlays2;
   if (trackDir == MpdKalmanTrack::kOutward) {
     layEnd = layMax + 1;
     dLay = 1;
-    if (track->GetPosNew() > 0 && layMax > fgkNlays2) layEnd -= fgkNlays2;
+    //if (track->GetPosNew() > 0 && layMax > fgkNlays2) layEnd -= fgkNlays2;
   }
   
   //Int_t indxOK = hits->IndexOf(hitOK);
