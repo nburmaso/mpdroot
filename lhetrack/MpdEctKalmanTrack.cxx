@@ -182,7 +182,8 @@ MpdEctKalmanTrack::~MpdEctKalmanTrack()
 {
   /// Destructor
 
-  if (fTrHits) fTrHits->Clear("C");
+  //if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete();
   delete fTrHits;
 }
 
@@ -191,7 +192,8 @@ void MpdEctKalmanTrack::Reset()
 {
   /// Reset track
 
-  if (fTrHits) fTrHits->Clear("C");
+  //if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete();
   delete fTrHits;
   Clear();
 }
@@ -288,8 +290,8 @@ void MpdEctKalmanTrack::Print(Option_t *opt)
   else cout << "(X, Y, Z): " << GetParam(0) << " " << GetParam(1) << " " << GetPos() << endl;
   cout << " Track Pt: " << 1. / GetParam(4) << endl;
   cout << " Track new position ";
-  //if (GetType() == MpdKalmanTrack::kFixedR) 
-  if (GetType() == MpdKalmanTrack::kBarrel) 
+
+  if (fParamNew && GetType() == MpdKalmanTrack::kBarrel) 
     cout << "(R-Phi, Z, R): " << GetParamNew(0) << " " << GetParamNew(1) << " " << GetPosNew() << endl;
   else cout << "(X, Y, Z): " << GetParamNew(0) << " " << GetParamNew(1) << " " << GetPosNew() << endl;
   cout << " Track Pt: " << 1. / GetParamNew(4) << endl;
