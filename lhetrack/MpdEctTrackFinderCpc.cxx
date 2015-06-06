@@ -124,7 +124,7 @@ void MpdEctTrackFinderCpc::Reset()
   //fKHits->Clear();
   //fTracks->Clear("C");
   if (!fTpc) {
-    fKHits->Clear();
+    fKHits->Clear("C");
     fTracks->Delete();
   }
   fTrackCand->Delete();
@@ -752,7 +752,7 @@ void MpdEctTrackFinderCpc::GetTrackSeedsCpc(Int_t iPass)
   /// Build track seeds from TOF, CPC hits and vertex
 
   Int_t tmp[99999] = {0}, idMax = 0, nID = 0;
-  Int_t nTof = fTofHits->GetEntriesFast(), nCpc = fCpcPoints->GetEntriesFast();
+  Int_t nTof = (fTofHits) ? fTofHits->GetEntriesFast() : 0, nCpc = fCpcPoints->GetEntriesFast();
  
   Int_t nCand = 0, layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
   const Double_t dphiMax = 0.3; //0.2; // cut on Phi between CPC1 and CPC2
@@ -826,8 +826,8 @@ void MpdEctTrackFinderCpc::GetTrackSeedsCpc(Int_t iPass)
       if (lun3 && cpc->GetTrackID() == tofP->GetTrackID()) fprintf(lun3,"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \n",track->GetParam(2),MpdKalmanFilter::Instance()->Proxim(track->GetParam(2),pmom.Phi()),track->GetParam(3),MpdKalmanFilter::Instance()->Proxim(track->GetParam(3),TMath::PiOver2()-pmom.Theta()),1./TMath::Sqrt((*track->GetWeight())(2,2)),1./TMath::Sqrt((*track->GetWeight())(3,3)),pmom.Mag(),rTof,pmom.Pt(),ptTr);
 
       //cout << nCand-1 << " " << lay << " " << track->GetTrackID() << " " << tofP->GetTrackID() << endl;
-    } // for (Int_t itof = 0; itof < nTof;
-  } // for (Int_t icpc = 0; icpc < nCpc;
+    } // for (it = fMapCpc[1].begin(); 
+  } // for (it = fMapCpc[0].begin(); 
 
   for (Int_t j = 0; j <= idMax; ++j) if (tmp[j] > 0) ++nID;
   cout << " Number of ECT track candidates: " << nCand << " " << nID << endl;
@@ -1969,8 +1969,10 @@ void MpdEctTrackFinderCpc::GoToBeamLine()
   /// Propagate tracks to the beam line (mult. scat. and energy loss corrections)
 
   const Int_t nR = 7;
-  const Double_t rad[nR] = {27.035, 27.57, 28.105, 30.64, 33.15, 33.665, 34.178};
-  const Double_t dx[nR] = {0.0031, 0.00085, 0.0031, 0.0003, 0.001, 0.00085, 0.001};
+  //const Double_t rad[nR] = {27.035, 27.57, 28.105, 30.64, 33.15, 33.665, 34.178};
+  //const Double_t dx[nR] = {0.0031, 0.00085, 0.0031, 0.0003, 0.001, 0.00085, 0.001};
+  const Double_t rad[nR] = {27.00, 27.01, 27.31, 27.32, 33.82, 33.83, 34.13};
+  const Double_t dx[nR] = {7.8e-4, 1.194e-2, 7.8e-4, 3.3e-4, 7.8e-4, 1.194e-2, 9.6e-4};
   Bool_t ok = 0;
   Int_t nReco = fTracks->GetEntriesFast();
 
@@ -1981,6 +1983,12 @@ void MpdEctTrackFinderCpc::GoToBeamLine()
 
     // Check track radial position
     Double_t rTr = track->GetPosNew();
+    if (track->GetNodeNew() != "") {
+      // TPC local coordinates
+      MpdKalmanHit *hit = (MpdKalmanHit*) track->GetHits()->Last();
+      TVector3 pos = MpdKalmanFilter::Instance()->GetGeo()->GlobalPos(hit);
+      rTr = pos.Pt();
+    }
     if (track->GetType() == MpdKalmanTrack::kEndcap) {
       rTr = track->GetParamNew(0) * track->GetParamNew(0) + track->GetParamNew(1) * track->GetParamNew(1);
       rTr = TMath::Sqrt (rTr);
@@ -2292,7 +2300,8 @@ void MpdEctTrackFinderCpc::Smooth()
   if (vtx == 0x0 || nPart < 20) {
     // Use default vertex
     TMatrixFSym cov(3);
-    cov(0,0) = cov(1,1) = cov(2,2) = 1.e-6;
+    //cov(0,0) = cov(1,1) = cov(2,2) = 1.e-6;
+    cov(0,0) = cov(1,1) = cov(2,2) = 1.e-2;
     MpdVertex vertDef("Def. vertex", "DefVertex", 0, 0, 0, 0, 0, 0, cov);
     if (vtx == 0x0) vtx = new MpdVertex();
     *vtx = vertDef;
@@ -2314,7 +2323,7 @@ void MpdEctTrackFinderCpc::Smooth()
   vFinder.SetVertices(fPrimVtx);
   vFinder.SetTracks(fTracks);
   vFinder.Chi2Vertex();
-  //AZ vFinder.SetSmoothSame();
+  vFinder.SetSmoothSame();
 
   // Select tracks close to the vertex
   Int_t nTr = fTracks->GetEntriesFast(), nOk = 0;
@@ -2322,7 +2331,7 @@ void MpdEctTrackFinderCpc::Smooth()
   Double_t *lengs = new Double_t [nTr];
   for (Int_t itr = 0; itr < nTr; ++itr) {
     MpdKalmanTrack *track = (MpdKalmanTrack*) fTracks->UncheckedAt(itr);
-    cout << " Non-smoothed: " << itr << " " << track->Pt() << " " << track->GetChi2Vertex() << endl;
+    //cout << " Non-smoothed: " << itr << " " << track->GetTrackID() << " " << track->Pt() << " " << track->GetChi2Vertex() << endl;
     lengs[itr] = track->GetLength();
     if (track->GetChi2Vertex() > cutChi2) continue;
     indsNew[nOk++] = itr;
@@ -2335,11 +2344,11 @@ void MpdEctTrackFinderCpc::Smooth()
   // Set lower limit to the track length (distance to ETOF hit)
   for (Int_t itr = 0; itr < nTr; ++itr) {
     MpdEctKalmanTrack *track = (MpdEctKalmanTrack*) fTracks->UncheckedAt(itr);
-    cout << " Smoothed: " << itr << " " << track->Pt() << endl;
+    //cout << " Smoothed: " << itr << " " << track->Pt() << endl;
     if (track->GetChi2Vertex() < cutChi2) track->SetLengAtHit(track->GetLengAtHit() + track->GetLength() - lengs[itr]);
     //if (track->GetChi2Vertex() > cutChi2) continue;
     //if (track->GetTofIndex() < 0) continue;
-    Double_t dist = TMath::Abs (((MpdEtofHit*) fTofHits->First())->GetZ());
+    Double_t dist = fTofHits ? TMath::Abs (((MpdEtofHit*) fTofHits->First())->GetZ()) : 295.2;
     if (track->GetTofIndex() < 0) {
       if (track->GetChi2Vertex() > cutChi2) continue;
     } else {
