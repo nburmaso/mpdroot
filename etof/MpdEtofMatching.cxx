@@ -56,7 +56,7 @@ ClassImp(MpdEtofMatchingData)
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofMatching::MpdEtofMatching(const char *name, Int_t verbose, Bool_t test)
-  : FairTask(name, verbose), fDoTest(test), fMCDataExist(false), fTestFlnm("test.MpdEtofMatching.root"), htCandNmb(NULL), fTofEndCapZ(249.2) // 250.2
+  : FairTask(name, verbose), fDoTest(test), fMCDataExist(false), fTestFlnm("test.MpdEtofMatching.root"), htCandNmb(NULL), fTofEndCapZ(295.2) // 250.2
 {
 	pMatchingFilter = new EtofMatchingFilter;
 	
@@ -138,7 +138,7 @@ void 		MpdEtofMatching::Exec(Option_t *option)
 	TVector3 				Mom, mcPosition, HitPosition, estPoint, estPointR, estPointL, dir, dev;	
 	bool 				CheckLeft, CheckRight, IsInside; Double_t trackLength, deltaR, deltaPhi, dPhi, dR, Z, Pz, dEdX, momentum, eta; 
 	Double_t 		thR, thPhi; 
-	const double 		EndcapRad = 117.5;
+	const double 		EndcapRad =  141.;
 	const double 		threshR_2 = 12.15, threshPhi_2 = 3.24;	// 3 sigma ^2,  [cm*cm] 	  3.5^2=12.15;  1.8^2=3.24	
 
 	// ----------->>> collect eTof points data
