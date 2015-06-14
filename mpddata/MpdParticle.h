@@ -131,7 +131,7 @@ class MpdParticle : public TObject
   TMatrixD fA;                  //! derivatives
   TMatrixD fB;                  //! derivatives
   TMatrixD fC;                  //! covariance cov(xk)
-  TMatrixD fG;                  //! covariance of params
+  TMatrixD fG;                  // covariance of params
   TMatrixD fW;                  //! (Bt*G*B)
   Double_t fChi2;               // Chi2 of mother particle
   Double_t fChi2ver;            // Chi2 of particle w.r.t. vertex
