@@ -15,6 +15,7 @@
 #pragma link C++ class MpdLibZ+;
 #pragma link C++ class MpdGetNumEvents+;
 #pragma link C++ class MpdHistoGenerator+;
+#pragma link C++ class Mpd3fdGenerator+;
 
 #pragma link C++ class map<TString, FairIon*>;
 #endif
