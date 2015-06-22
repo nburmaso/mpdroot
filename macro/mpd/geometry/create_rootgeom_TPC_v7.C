@@ -72,6 +72,32 @@ Double_t Rib_width_x = TPC::Rib_width_x;
 Double_t Rib_width_z = TPC::Rib_width_z;
 Double_t Rib_position_z = TPC::Rib_position_z; // distance from flanches
 
+//inner wall extension part in cm
+Double_t Flange_thickness = TPC::Flange_thickness;
+Double_t ExtPart_length = TPC::ExtPart_length;
+Double_t Flange_width = TPC::Flange_width;
+
+//frames im cm
+Double_t Stiffening_rib_thickness = TPC::Stiffening_rib_thickness;
+Double_t Frame_big_part_y_width = TPC::Frame_big_part_y_width;
+Double_t Frame_small_part_y_width = TPC::Frame_small_part_y_width;
+
+Double_t xy_frame_common_width = TPC::xy_frame_common_width;
+Double_t z_frame_common_width = TPC::z_frame_common_width;
+
+Double_t xy_frame_out_width = TPC::xy_frame_out_width;
+Double_t xy_frame_in_width = TPC::xy_frame_in_width;
+
+Double_t z_frame_in_width = TPC::z_frame_in_width;
+Double_t z_frame_out_width = TPC::z_frame_out_width;
+
+//PCB in cm
+Double_t PCB_thickness = TPC::PCB_thickness;
+//Double_t PCB_x_width = TPC::PCB_x_width;
+//Double_t PCB_y_width = TPC::PCB_y_width;
+Double_t PCB_Cu_layer_thickness = TPC::PCB_Cu_layer_thickness;
+Double_t PCB_FR_layer_thickness = TPC::PCB_FR_layer_thickness;
+
 //media
 TGeoMedium *pMedAir = 0;
 TGeoMedium *pMedAluminium = 0;
@@ -83,6 +109,10 @@ TGeoMedium *pMedRohacellhf71 = 0;
 TGeoMedium *pMedPolypropylene= 0;
 TGeoMedium *pMedTPCmixture = 0;
 TGeoMedium *pMedG10 = 0;
+TGeoMedium *pMedFiberGlass = 0;
+TGeoMedium *pMedCopper = 0;
+
+TGeoMedium *pMedGold = 0;
 
 class FairGeoMedia;
 class FairGeoBuilder;
@@ -157,6 +187,27 @@ void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild) {
     geoBuild->createMedium(mG10);
     pMedG10 = gGeoManager->GetMedium("G10");
     if ( ! pMedG10 ) Fatal("Main", "Medium G10 not found");
+
+    //fiberglass medium
+    FairGeoMedium* mFiberGlass = geoMedia->getMedium("fiberglass");
+    if ( ! mFiberGlass ) Fatal("Main", "FairMedium fiberglass not found");
+    geoBuild->createMedium(mFiberGlass);
+    pMedFiberGlass = gGeoManager->GetMedium("fiberglass");
+    if ( ! pMedFiberGlass ) Fatal("Main", "Medium fiberglass not found");
+
+    //copper medium
+    FairGeoMedium* mCopper = geoMedia->getMedium("copper");
+    if ( ! mCopper ) Fatal("Main", "FairMedium copper not found");
+    geoBuild->createMedium(mCopper);
+    pMedCopper = gGeoManager->GetMedium("copper");
+    if ( ! pMedCopper ) Fatal("Main", "Medium copper not found");
+
+    //gold medium
+    FairGeoMedium* mGold = geoMedia->getMedium("gold");
+    if ( ! mGold) Fatal("Main", "FairMedium gold not found");
+    geoBuild->createMedium(mGold);
+    pMedGold = gGeoManager->GetMedium("gold");
+    if ( ! pMedGold ) Fatal("Main", "Medium gold not found");
 }
 
 void create_rootgeom_TPC_v7() {
@@ -198,8 +249,9 @@ void create_rootgeom_TPC_v7() {
     // --------------------------------------------------------------------------
 
     // Define TPC Geometry
-    TGeoTube *tpcChamberS = new TGeoTube("tpcChamber1", TpcInnerRadius, TpcOuterRadius, Container_tpc_z/2);
-    TGeoVolume *tpcChamberV = new TGeoVolume("tpcChamber1", tpcChamberS);
+    TString tpc_chamber_name = "tpcChamber1";
+    TGeoTube *tpcChamberS = new TGeoTube(tpc_chamber_name, TpcInnerRadius, TpcOuterRadius, Container_tpc_z/2);
+    TGeoVolume *tpcChamberV = new TGeoVolume(tpc_chamber_name, tpcChamberS);
     tpcChamberV->SetMedium(pMedAir);
     //tpcChamberV->SetVisibility(kTRUE);
     tpcChamberV->SetTransparency(95);
@@ -208,8 +260,8 @@ void create_rootgeom_TPC_v7() {
     TGeoTranslation *tpc_position= new TGeoTranslation("tpc_position", TPC_Xpos, TPC_Ypos, TPC_Zpos);
     //tpc_position->RegisterYourself();
 
-    CreateWall(tpcChamberV, "In");
-    CreateWall(tpcChamberV, "Out");
+    CreateOuterWall(tpcChamberV);
+    CreateInnerWall(tpcChamberV);
 
     CreateMembrane(tpcChamberV);
 
@@ -227,24 +279,28 @@ void create_rootgeom_TPC_v7() {
     gGeoManager->CloseGeometry();
     gGeoManager->CheckOverlaps(0.001);
     gGeoManager->PrintOverlaps();
+
     gGeoManager->Test();
 
     TFile* geoFile = new TFile(geoFileName, "RECREATE");
     top->Write();
     geoFile->Close();
+
     top->Draw("ogl");
+    TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
+    v->SetStyle(TGLRnrCtx::kOutline);
     //top->Draw("");
 }
 
-void CreateWall(TGeoVolume* mother_volume, TString which_wall) {
-    TString wall_name = "tpc01" + which_wall + "Wall";
+void CreateOuterWall(TGeoVolume* mother_volume) {
+    TString wall_name = "tpc01OutWall";
 
     Double_t wall_thickness = 0.0;
     Double_t wall_rmin = 0.0;
     Double_t wall_rmax = 0.0;
 
     const Int_t NLayers = 11;
-    Int_t Layer[NLayers]; //in->out
+    Int_t Layer[NLayers]; //rmin->rmax
     enum {Al,Tdl,Kvl,CO2};
     Layer[0] = Al;
     Layer[1] = Tdl;
@@ -271,12 +327,7 @@ void CreateWall(TGeoVolume* mother_volume, TString which_wall) {
                 wall_thickness += Thick_kevlar_layer;
                 break;
             case CO2:
-                if(which_wall == "In") {
-                    wall_thickness += Thick_CO2_inner_layer;
-                }
-                else {
-                    wall_thickness += Thick_CO2_outer_layer;
-                }
+                wall_thickness += Thick_CO2_outer_layer;
                 break;
             default:
                 cout << "unknown layer type!\n";
@@ -284,16 +335,11 @@ void CreateWall(TGeoVolume* mother_volume, TString which_wall) {
         }
     }
 
-    if(which_wall == "In") {
-        wall_rmin = TpcInnerRadius;
-    }
-    if(which_wall == "Out") {
-        wall_rmin = TpcOuterRadius - wall_thickness;
-    }
+    wall_rmin = TpcOuterRadius - wall_thickness;
 
     wall_rmax = wall_rmin + wall_thickness;
 
-    cout << which_wall << " wall thickness = " <<  wall_thickness << "\n";
+    cout << "Outer wall thickness = " <<  wall_thickness << "\n";
 
     //Solids
     TGeoTube *tpcWallS = new TGeoTube(wall_name, wall_rmin, wall_rmax, Chamber_tpc_z/2);
@@ -304,7 +350,7 @@ void CreateWall(TGeoVolume* mother_volume, TString which_wall) {
     //medium
     TGeoMedium *wall_medium = pMedAir; //set medium
     if(wall_medium) tpcWallV->SetMedium(wall_medium);
-    else Fatal("Main", "Invalid medium for wall!");
+    else Fatal("Main", "Invalid medium for outer wall!");
 
     //visual attributes
     tpcWallV->SetLineColor(TColor::GetColor("#b6e1fc"));
@@ -320,7 +366,7 @@ void CreateWall(TGeoVolume* mother_volume, TString which_wall) {
     TGeoMedium *layer_medium = 0;
 
     for(Int_t ilayer = 0; ilayer < NLayers; ilayer++) {
-        TString layer_name = "tpc01" + which_wall + "Sct";
+        TString layer_name = "tpc01InSct";
         layer_name += section;
         switch (Layer[ilayer]) {
             case Al:
@@ -342,12 +388,7 @@ void CreateWall(TGeoVolume* mother_volume, TString which_wall) {
                 layer_medium = pMedKevlar;
                 break;
             case CO2:
-                if(which_wall == "In") {
-                    layer_rmax = layer_rmin + Thick_CO2_inner_layer;
-                }
-                else {
-                    layer_rmax = layer_rmin + Thick_CO2_outer_layer;
-                }
+                layer_rmax = layer_rmin + Thick_CO2_outer_layer;
                 layer_name += "CO2";
                 layer_color = kYellow;
                 layer_medium = pMedCO2;
@@ -378,6 +419,280 @@ void CreateWall(TGeoVolume* mother_volume, TString which_wall) {
     }
 //------------------------------------------------------------------------------
 }
+
+void CreateInnerWall(TGeoVolume* mother_volume) {
+    TString wall_name = "tpc01InWall";
+
+    Double_t wall_thickness = 0.0;
+    Double_t wall_rmin = 0.0;
+    Double_t wall_rmax = 0.0;
+
+    const Int_t NLayers = 11;
+    Int_t Layer[NLayers]; //rmin->rmax
+    enum {Al,Tdl,Kvl,CO2};
+    Layer[0] = Al;
+    Layer[1] = Tdl;
+    Layer[2] = Kvl;
+    Layer[3] = Tdl;
+    Layer[4] = Al;
+    Layer[5] = CO2;
+    Layer[6] = Al;
+    Layer[7] = Tdl;
+    Layer[8] = Kvl;
+    Layer[9] = Tdl;
+    Layer[10] = Al;
+
+    //Calculate wall thickness
+    for(Int_t i = 0; i < NLayers; i++) {
+        switch (Layer[i]) {
+            case Al:
+                wall_thickness += Thick_aluminium_layer;
+                break;
+            case Tdl:
+                wall_thickness += Thick_tedlar_layer;
+                break;
+            case Kvl:
+                wall_thickness += Thick_kevlar_layer;
+                break;
+            case CO2:
+                wall_thickness += Thick_CO2_inner_layer;
+                break;
+            default:
+                cout << "unknown layer type!\n";
+                break;
+        }
+    }
+
+    wall_rmin = TpcInnerRadius;
+    wall_rmax = wall_rmin + wall_thickness;
+
+    cout << "Inner wall thickness = " <<  wall_thickness << "\n";
+
+    //Solids
+    TGeoTube *tpcWallS = new TGeoTube(wall_name, wall_rmin, wall_rmax, Chamber_tpc_z/2);
+
+    //Volumes
+    TGeoVolume *tpcWallV = new TGeoVolume(wall_name, tpcWallS);
+
+    //medium
+    TGeoMedium *wall_medium = pMedCO2; //set medium
+    if(wall_medium) tpcWallV->SetMedium(wall_medium);
+    else Fatal("Main", "Invalid medium for inner wall!");
+
+    //visual attributes
+    tpcWallV->SetLineColor(TColor::GetColor("#b6e1fc"));
+
+    //Attach wall to mother volume
+    mother_volume->AddNode(tpcWallV, 0);
+
+    //Create outer tube in Wall
+    CreateOuterTubeInInnerWall(tpcWallV, wall_rmax);
+
+    //Create inner tube in wall
+    CreateInnerTubeInInnerWall(tpcWallV, wall_rmin);
+
+//------------------------------------------------------------------------------
+}
+
+CreateOuterTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmax) {
+    Double_t outer_layers_thickness = 0.0;
+
+    const Int_t NLayers = 5;
+    Int_t Layer[NLayers]; //rmin->rmax
+    enum {Al,Tdl,Kvl};
+    Layer[0] = Al;
+    Layer[1] = Tdl;
+    Layer[2] = Kvl;
+    Layer[3] = Tdl;
+    Layer[4] = Al;
+
+    //Calculate outer layers thickness
+    for(Int_t i = 0; i < NLayers; i++) {
+        switch (Layer[i]) {
+            case Al:
+                outer_layers_thickness += Thick_aluminium_layer;
+                break;
+            case Tdl:
+                outer_layers_thickness += Thick_tedlar_layer;
+                break;
+            case Kvl:
+                outer_layers_thickness += Thick_kevlar_layer;
+                break;
+            default:
+                cout << "unknown layer type!\n";
+                break;
+        }
+    }
+
+    Double_t tube_rmax = wall_rmax;
+    Double_t tube_rmin = wall_rmax - outer_layers_thickness;
+
+    //Create tube
+    TString tube_name = "tpc01OuterTube";
+    Double_t tube_length = Chamber_tpc_z;
+    TGeoTube *tubeS = new TGeoTube(tube_name, tube_rmin, tube_rmax, tube_length/2);
+
+    TGeoVolume *tubeV = new TGeoVolume(tube_name, tubeS);
+
+    TGeoMedium *tube_medium = pMedAir; //set medium
+    if(tube_medium) tubeV->SetMedium(tube_medium);
+    else Fatal("Main", "Invalid medium for outer tube!");
+
+    tubeV->SetLineColor(TColor::GetColor("#fba0e3"));
+    //tubeV->SetTransparency(0);
+
+    mother_volume->AddNode(tubeV, 0);
+
+    //fill tubs with layers
+    FillTubeWithLayers(tubeV, tube_length, tube_rmin, tube_rmax, 2);
+}
+
+CreateInnerTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmin) {
+
+    Double_t inner_layers_thickness = 0.0;
+
+    const Int_t NLayers = 5;
+    Int_t Layer[NLayers]; //rmin->rmax
+    enum {Al,Tdl,Kvl};
+    Layer[0] = Al;
+    Layer[1] = Tdl;
+    Layer[2] = Kvl;
+    Layer[3] = Tdl;
+    Layer[4] = Al;
+
+    //Calculate outer layers thickness
+    for(Int_t i = 0; i < NLayers; i++) {
+        switch (Layer[i]) {
+            case Al:
+                inner_layers_thickness += Thick_aluminium_layer;
+                break;
+            case Tdl:
+                inner_layers_thickness += Thick_tedlar_layer;
+                break;
+            case Kvl:
+                inner_layers_thickness += Thick_kevlar_layer;
+                break;
+            default:
+                cout << "unknown layer type!\n";
+                break;
+        }
+    }
+
+    Double_t tube_rmin = wall_rmin;
+    Double_t tube_rmax = wall_rmin + inner_layers_thickness;
+
+    //Create tube
+    TString tube_name = "tpc01InnerTube";
+    Double_t tube_length = Chamber_tpc_z;
+    TGeoTube *tubeS = new TGeoTube(tube_name, tube_rmin, tube_rmax, tube_length/2);
+
+    TGeoVolume *tubeV = new TGeoVolume(tube_name, tubeS);
+
+    TGeoMedium *tube_medium = pMedAir; //set medium
+    if(tube_medium) tubeV->SetMedium(tube_medium);
+    else Fatal("Main", "Invalid medium for inner tube!");
+
+    tubeV->SetLineColor(TColor::GetColor("#fba0e3"));
+    //tubeV->SetTransparency(0);
+
+    mother_volume->AddNode(tubeV, 0);
+
+    //fill tubs with layers
+    FillTubeWithLayers(tubeV, tube_length, tube_rmin, tube_rmax, 1);
+
+    //create flanges of inner tubs
+    TString tube_flange_name = "tpc01TubeFlange";
+    Double_t tube_flange_rmin = TpcInnerRadius + inner_layers_thickness;
+    Double_t tube_flange_rmax = tube_flange_rmin + Flange_width;
+
+    TGeoTube * TubeFlangeS = new TGeoTube (tube_flange_name, tube_flange_rmin, tube_flange_rmax, Flange_thickness/2);
+
+    TGeoVolume *TubeFlangeV = new TGeoVolume(tube_flange_name, TubeFlangeS);
+
+    TGeoMedium *tube_flange_medium = pMedFiberGlass; //set medium
+    if(tube_flange_medium) TubeFlangeV->SetMedium(tube_flange_medium);
+    else Fatal("Main", "Invalid medium for inner tube flange!");
+
+    TubeFlangeV->SetLineColor(TColor::GetColor("#c7fcec"));
+
+    //positions
+    Double_t long_tube_length = Chamber_tpc_z - 2*ExtPart_length;
+    Double_t short_tube_length = ExtPart_length;
+    TGeoTranslation *tube_flange_pos1 = new TGeoTranslation("tube_flane_pos1", 0, 0, Flange_thickness/2 + long_tube_length/2 - Flange_thickness);
+    TGeoTranslation *tube_flange_pos2 = new TGeoTranslation("tube_flane_pos2", 0, 0, Flange_thickness/2 + long_tube_length/2);
+    TGeoTranslation *tube_flange_pos3 = new TGeoTranslation("tube_flane_pos3", 0, 0, Flange_thickness/2 + long_tube_length/2 + short_tube_length - Flange_thickness);
+    TGeoTranslation *tube_flange_pos1refl = new TGeoTranslation("tube_flane_pos1", 0, 0, -(Flange_thickness/2 + long_tube_length/2 - Flange_thickness));
+    TGeoTranslation *tube_flange_pos2refl = new TGeoTranslation("tube_flane_pos2", 0, 0, -(Flange_thickness/2 + long_tube_length/2));
+    TGeoTranslation *tube_flange_pos3refl = new TGeoTranslation("tube_flane_pos3", 0, 0, -(Flange_thickness/2 + long_tube_length/2 + short_tube_length - Flange_thickness));
+
+    mother_volume->AddNode(TubeFlangeV, 0, tube_flange_pos1);
+    mother_volume->AddNode(TubeFlangeV, 0, tube_flange_pos2);
+    mother_volume->AddNode(TubeFlangeV, 0, tube_flange_pos3);
+    mother_volume->AddNode(TubeFlangeV, 0, tube_flange_pos1refl);
+    mother_volume->AddNode(TubeFlangeV, 0, tube_flange_pos2refl);
+    mother_volume->AddNode(TubeFlangeV, 0, tube_flange_pos3refl);
+}
+
+void FillTubeWithLayers(TGeoVolume *mother_volume, Double_t tube_length, Double_t tube_rmin, Double_t tube_rmax, Int_t section) {
+    const Int_t NLayers = 5;
+    Int_t Layer[NLayers]; //rmin->rmax
+    enum {Al,Tdl,Kvl};
+    Layer[0] = Al;
+    Layer[1] = Tdl;
+    Layer[2] = Kvl;
+    Layer[3] = Tdl;
+    Layer[4] = Al;
+
+    Double_t layer_rmin = tube_rmin;
+    Double_t layer_rmax = 0.0;
+    EColor layer_color;
+    TGeoMedium *layer_medium = 0;
+
+    for(Int_t ilayer = 0; ilayer < NLayers; ilayer++) {
+        TString layer_name = "tpc01InSct";
+        layer_name += section;
+        switch (Layer[ilayer]) {
+            case Al:
+                layer_rmax = layer_rmin + Thick_aluminium_layer;
+                layer_name += "Al";
+                layer_color = kGray;
+                layer_medium = pMedAluminium;
+                break;
+            case Tdl:
+                layer_rmax = layer_rmin + Thick_tedlar_layer;
+                layer_name += "Tdl";
+                layer_color = kGreen;
+                layer_medium = pMedTedlar;
+                break;
+            case Kvl:
+                layer_rmax = layer_rmin + Thick_kevlar_layer;
+                layer_name += "Kvl";
+                layer_color = kOrange;
+                layer_medium = pMedKevlar;
+                break;
+            default:
+                layer_rmax = layer_rmin;
+                cout << "unknown layer type!\n";
+                layer_name += "Unknown";
+                layer_color = kRed;
+                layer_medium = pMedAir;
+                break;
+        }
+
+        TGeoTube *tpcSctS = new TGeoTube(layer_name, layer_rmin, layer_rmax, tube_length/2);
+        TGeoVolume *tpcSctV = new TGeoVolume(layer_name, tpcSctS);
+
+        if(layer_medium) tpcSctV->SetMedium(layer_medium);
+        else Fatal("Main", "Invalid medium for Sct layer!");
+
+        tpcSctV->SetLineColor(layer_color);
+
+        mother_volume->AddNode(tpcSctV, 0);
+
+        layer_rmin = layer_rmax;
+    }
+}
+
 
 void CreateMembrane(TGeoVolume *mother_volume) {
     TString membrane_name = "tpc01mb";
@@ -447,8 +762,13 @@ void CreateTPCModule(TGeoVolume *mother_volume) {
 
     //make pad planes
     CreatePadPlanes(tpcHalfModuleV, half_width_module);
-}
 
+    //Create frames;
+    CreateFrames(tpcHalfModuleV, half_width_module);
+
+    //Create PCB FEC
+    CreatePCB(tpcHalfModuleV, half_width_module);
+}
 
 void CreateFieldCage(TGeoVolume *mother_volume, Double_t half_module_width) {
     TString FieldCageOut_name = "tpc01outfc";
@@ -535,7 +855,7 @@ void CreateFieldCage(TGeoVolume *mother_volume, Double_t half_module_width) {
 void CreateSensitiveVolume(TGeoVolume *mother_volume, Double_t half_module_width) {
     TString SensitiveVolume_name = "tpc01sv";
 
-    Double_t shift = Plane_Al + Plane_G10 + Plane_Pp;
+    Double_t shift = Plane_Al + Plane_G10 + Plane_Pp + z_frame_common_width + PCB_thickness;
     Double_t sv_width = half_module_width - shift;
 
     //Solids
@@ -584,7 +904,7 @@ void CreatePadPlanes(TGeoVolume *mother_volume, Double_t half_module_width) {
     for(Int_t isec = 0; isec < Nsections; isec++) {
         TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
         combi_trans->RotateX(-90.0);
-        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - plane_thickness/2);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - plane_thickness/2 - z_frame_common_width - PCB_thickness);
         combi_trans->RotateZ(isec*Section_step);
 
         mother_volume->AddNode(tpcPlaneV, isec+1, combi_trans);
@@ -628,9 +948,200 @@ void CreatePadLayersInPlane(TGeoVolume *mother_volume, Double_t plane_thickness)
     if(bpAl_medium) tpcbpAlV->SetMedium(bpAl_medium);
     else Fatal("Main", "Invalid medium for pbAl!");
 
-    tpcbpAlV->SetLineColor(TColor::GetColor("#ffdc33"));
+    tpcbpAlV->SetLineColor(TColor::GetColor("#c4c3be"));
 
     mother_volume->AddNode(tpcbpAlV, 0, new TGeoTranslation(0, -plane_thickness/2 + Plane_Al/2, 0));
+}
+
+void CreateFrames(TGeoVolume *mother_volume, Double_t half_width_module) {
+    TString frame_name = "tpcFrame";
+
+    TGeoVolume *FrameAssemblyA = new TGeoVolumeAssembly("tpcFrameAssembly");
+
+    TGeoTrd1 *tpcFrameContainerS = new TGeoTrd1(frame_name, Sens_vol_x, Sens_vol_X, z_frame_common_width/2, Sens_vol_Y);
+    TGeoVolume *tpcFrameContainerV = new TGeoVolume(frame_name, tpcFrameContainerS);
+
+    TGeoMedium *tpcFrameContainer_medium = pMedAir; //set medium
+    if(tpcFrameContainer_medium) {
+        tpcFrameContainerV->SetMedium(tpcFrameContainer_medium);
+        FrameAssemblyA->SetMedium(tpcFrameContainer_medium);
+    }
+    else Fatal("Main", "Invalid medium for tpc frame container!");
+
+    tpcFrameContainerV->SetLineColor(TColor::GetColor("#cccccc"));
+    //tpcFrameContainerV->SetTransparency(0);
+
+    for(Int_t isec = 0; isec < Nsections; isec++) {
+    //for(Int_t isec = 0; isec < 1; isec++) {
+        TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
+        combi_trans->RotateX(-90.0);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_width_module/2 - z_frame_common_width/2 - PCB_thickness);
+        combi_trans->RotateZ(isec*Section_step);
+
+        FrameAssemblyA->AddNode(tpcFrameContainerV, isec+1, combi_trans);
+    }
+
+    mother_volume->AddNode(FrameAssemblyA, 1);
+
+    //Create aluminium structure of frame
+    FillFrames(tpcFrameContainerV);
+}
+
+void FillFrames(TGeoVolume *mother_volume) {
+    TString frame_structure_name = "tpcFrameSkeleton";
+
+    const Int_t npoints_structure = 12;
+
+    TGeoXtru *tpcFrameStructureS = new TGeoXtru(2);
+    Double_t x[npoints_structure];
+    Double_t y[npoints_structure];
+
+    x[0] = 0.0; y[0] = Sens_vol_Y;
+    x[1] = Sens_vol_X - xy_frame_out_width; y[1] = Sens_vol_Y;
+    x[2] = Sens_vol_x - xy_frame_out_width; y[2] = -Sens_vol_Y;
+    x[3] = 0.0; y[3] = -Sens_vol_Y;
+    x[4] = 0.0; y[4] = -Sens_vol_Y + xy_frame_in_width;
+
+    Double_t x_shift = xy_frame_in_width/TMath::Tan(52.5*(TMath::DegToRad()));
+
+    x[5] = Sens_vol_x - xy_frame_out_width - x_shift; y[5] = -Sens_vol_Y + xy_frame_in_width;
+
+    Double_t xb = Frame_small_part_y_width/TMath::Tan(75*(TMath::DegToRad()));
+    x_shift = xy_frame_in_width/TMath::Cos(15*TMath::DegToRad());
+
+    x[6] = Sens_vol_x + xb - x_shift - xy_frame_in_width; y[6] = -Sens_vol_Y + Frame_small_part_y_width;
+    x[7] = 0.0; y[7] = -Sens_vol_Y + Frame_small_part_y_width;
+    x[8] = 0.0; y[8] = y[7] + Stiffening_rib_thickness;
+
+    x_shift = TMath::Tan(15*(TMath::DegToRad()))*Stiffening_rib_thickness;
+    x[9] = x[6] + x_shift; y[9] = y[8];
+
+    x_shift = xy_frame_in_width/TMath::Tan(37.5*(TMath::DegToRad()));
+    x[10] = Sens_vol_X - xy_frame_out_width - x_shift; y[10] = Sens_vol_Y - xy_frame_in_width;
+    x[11] = 0.0; y[11] = y[10];
+
+    tpcFrameStructureS->DefinePolygon(npoints_structure, x, y);
+
+    tpcFrameStructureS->DefineSection(0, -z_frame_common_width/2);
+    tpcFrameStructureS->DefineSection(1, z_frame_common_width/2);
+
+    TGeoVolume *tpcFrameStructureV = new TGeoVolume(frame_structure_name, tpcFrameStructureS);
+
+    TGeoMedium *tpcFrameStructure_medium = pMedAluminium; //set medium
+    if(tpcFrameStructure_medium) tpcFrameStructureV->SetMedium(tpcFrameStructure_medium);
+    else Fatal("Main", "Invalid medium for tpc frame structure!");
+
+    tpcFrameStructureV->SetLineColor(TColor::GetColor("#84c3be"));
+
+    TGeoCombiTrans *combi_trans1 = new TGeoCombiTrans();
+    combi_trans1->RotateX(90.0);
+
+    TGeoCombiTrans *combi_trans2 = new TGeoCombiTrans();
+    combi_trans2->RotateX(90.0);
+    combi_trans2->ReflectX(true);
+
+    mother_volume->AddNode(tpcFrameStructureV, 1, combi_trans1);
+    mother_volume->AddNode(tpcFrameStructureV, 2, combi_trans2);
+
+//--------  create frame borders  ----------------------------------------------
+    TString frame_border_name = "tpcFrameBorder";
+    const Int_t npoints_border = 4;
+    TGeoXtru *tpcFrameBorderS = new TGeoXtru(2);
+    Double_t x[npoints_border];
+    Double_t y[npoints_border];
+
+    x[0] = Sens_vol_X - xy_frame_out_width; y[0] = Sens_vol_Y;
+    x[1] = Sens_vol_X; y[1] = y[0];
+    x[2] = Sens_vol_x; y[2] = -Sens_vol_Y;
+    x[3] = Sens_vol_x - xy_frame_out_width; y[3] = y[2];
+
+    tpcFrameBorderS->DefinePolygon(npoints_border, x, y);
+
+    tpcFrameBorderS->DefineSection(0, -z_frame_common_width/2);
+    tpcFrameBorderS->DefineSection(1, -z_frame_common_width/2 + z_frame_in_width);
+
+    TGeoVolume *tpcFrameBorderV = new TGeoVolume(frame_border_name, tpcFrameBorderS);
+
+    TGeoMedium *tpcFrameBorder_medium = pMedAluminium; //set medium
+    if(tpcFrameBorder_medium) tpcFrameBorderV->SetMedium(tpcFrameBorder_medium);
+    else Fatal("Main", "Invalid medium for tpc frame border!");
+
+    tpcFrameBorderV->SetLineColor(TColor::GetColor("#84c3be"));
+
+    TGeoCombiTrans *combi_trans3 = new TGeoCombiTrans();
+    combi_trans3->RotateX(90.0);
+
+    TGeoCombiTrans *combi_trans4 = new TGeoCombiTrans();
+    combi_trans4->RotateX(90.0);
+    combi_trans4->ReflectX(true);
+
+    mother_volume->AddNode(tpcFrameBorderV, 1, combi_trans3);
+    mother_volume->AddNode(tpcFrameBorderV, 2, combi_trans4);
+//------------------------------------------------------------------------------
+}
+
+void CreatePCB(TGeoVolume *mother_volume, Double_t half_module_width) {
+    TString pcb_name = "tpcPCB";
+
+    TGeoVolume *PCBAssemblyA = new TGeoVolumeAssembly("tpcPCBAssembly");
+
+    TGeoTrd1 *tpc_pcbS = new TGeoTrd1(pcb_name, Sens_vol_x, Sens_vol_X, PCB_thickness/2, Sens_vol_Y);
+
+    TGeoVolume *tpc_pcbV = new TGeoVolume(pcb_name, tpc_pcbS);
+
+    TGeoMedium *pcb_medium = pMedAir; //set medium
+    if(pcb_medium) {
+        tpc_pcbV->SetMedium(pcb_medium);
+        PCBAssemblyA->SetMedium(pcb_medium);
+    }
+    else Fatal("Main", "Invalid medium for PCB plane!");
+
+    tpc_pcbV->SetLineColor(TColor::GetColor("#ed9121"));
+    //tpc_pcbV->SetTransparency(0);
+
+    for(Int_t isec = 0; isec < Nsections; isec++) {
+    //for(Int_t isec = 0; isec < 1; isec++) {
+        TGeoCombiTrans *combi_trans = new TGeoCombiTrans();
+        combi_trans->RotateX(-90.0);
+        combi_trans->SetTranslation(0, Sens_vol_Y_center, half_module_width/2 - PCB_thickness/2);
+        combi_trans->RotateZ(isec*Section_step);
+
+        PCBAssemblyA->AddNode(tpc_pcbV, isec+1, combi_trans);
+    }
+
+    mother_volume->AddNode(PCBAssemblyA, 0);
+
+    //Fill PCB with layers
+    FillPCBWithLayers(tpc_pcbV);
+}
+
+void FillPCBWithLayers(TGeoVolume *mother_volume) {
+    TString pcb_cu_name = "PCB_Cu";
+    TString pcb_fr_name = "PCB_FR";
+
+    //create Cu layer
+    TGeoTrd1 *pcbCuS = new TGeoTrd1(pcb_cu_name, Sens_vol_x, Sens_vol_X, PCB_Cu_layer_thickness/2, Sens_vol_Y);
+    TGeoVolume *pcbCuV = new TGeoVolume(pcb_cu_name, pcbCuS);
+
+    TGeoMedium *pcbCu_medium = pMedCopper; //set medium
+    if(pcbCu_medium) pcbCuV->SetMedium(pcbCu_medium);
+    else Fatal("Main", "Invalid medium for PCB Cu layer!");
+
+    pcbCuV->SetLineColor(TColor::GetColor("#ffb841"));
+
+    mother_volume->AddNode(pcbCuV, 0, new TGeoTranslation(0, PCB_thickness/2 - PCB_Cu_layer_thickness/2, 0));
+
+    //create FR layer
+    TGeoTrd1 *pcbFRS = new TGeoTrd1(pcb_fr_name, Sens_vol_x, Sens_vol_X, PCB_FR_layer_thickness/2, Sens_vol_Y);
+    TGeoVolume *pcbFRV = new TGeoVolume(pcb_fr_name, pcbFRS);
+
+    TGeoMedium *pcbFR_medium = pMedFiberGlass; //set medium
+    if(pcbFR_medium) pcbFRV->SetMedium(pcbFR_medium);
+    else Fatal("Main", "Invalid medium for PCB FR layer!");
+
+    pcbFRV->SetLineColor(TColor::GetColor("#ccccff"));
+
+    mother_volume->AddNode(pcbFRV, 0, new TGeoTranslation(0, -PCB_thickness/2 + PCB_FR_layer_thickness/2, 0));
 }
 
 void CreateEndCaps(TGeoVolume *mother_volume) {

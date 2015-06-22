@@ -102,8 +102,7 @@ MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx,
 				     //MpdEtofPoint *tof, MpdKalmanHitZ *ect, TVector3 &vert)
 				     MpdEtofHit *tof, MpdKalmanHit *ect, TVector3 &vert)
   : MpdKalmanTrack(tof->GetZ(),vert),
-    //fID(tof->GetTrackID()),
-    fLastLay(ect->GetLayer()),
+    fLastLay(-1),
     fTpcIndex(ectIndx),
     fTofIndex(tofIndx),
     fFlag(0),
@@ -111,10 +110,13 @@ MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx,
     fMisses(0),
     fTrHits(new TClonesArray("MpdKalmanHit"))
 {
-  /// Constructor from ETOF and ECT hits
+  /// Constructor from ETOF and ECT (CPC) hits
 
   // Add first hit
-  fHits->Add(ect);
+  if (ect) {
+    fLastLay = ect->GetLayer();
+    fHits->Add(ect);
+  }
 
   SetType(MpdKalmanTrack::kEndcap);
   SetDirection(MpdKalmanTrack::kInward);
@@ -180,7 +182,8 @@ MpdEctKalmanTrack::~MpdEctKalmanTrack()
 {
   /// Destructor
 
-  if (fTrHits) fTrHits->Clear("C");
+  //if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete();
   delete fTrHits;
 }
 
@@ -189,7 +192,8 @@ void MpdEctKalmanTrack::Reset()
 {
   /// Reset track
 
-  if (fTrHits) fTrHits->Clear("C");
+  //if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete();
   delete fTrHits;
   Clear();
 }
@@ -286,8 +290,8 @@ void MpdEctKalmanTrack::Print(Option_t *opt)
   else cout << "(X, Y, Z): " << GetParam(0) << " " << GetParam(1) << " " << GetPos() << endl;
   cout << " Track Pt: " << 1. / GetParam(4) << endl;
   cout << " Track new position ";
-  //if (GetType() == MpdKalmanTrack::kFixedR) 
-  if (GetType() == MpdKalmanTrack::kBarrel) 
+
+  if (fParamNew && GetType() == MpdKalmanTrack::kBarrel) 
     cout << "(R-Phi, Z, R): " << GetParamNew(0) << " " << GetParamNew(1) << " " << GetPosNew() << endl;
   else cout << "(X, Y, Z): " << GetParamNew(0) << " " << GetParamNew(1) << " " << GetPosNew() << endl;
   cout << " Track Pt: " << 1. / GetParamNew(4) << endl;

@@ -25,6 +25,8 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 
+#include <TGeoManager.h>
+#include <TGeoTube.h>
 #include "TMath.h"
 #include "TVector2.h"
 #include <TRandom.h>
@@ -70,6 +72,11 @@ InitStatus MpdEctTrackFinderTpc::Init()
 {
   ReInit();
   if (fDetType == 1) InitGeo();
+
+  TGeoVolume *inW = gGeoManager->GetVolume("tpc01InWall");
+  TGeoTube *tube = (TGeoTube*) inW->GetShape();
+  fZtpc = tube->GetDZ();
+
   return kSUCCESS;
 }
 
@@ -105,7 +112,8 @@ void MpdEctTrackFinderTpc::Reset()
   ///
   cout << " MpdEctTrackFinderTpc::Reset  " << endl;
 
-  fKHits->Clear();
+  //fKHits->Clear("C");
+  fKHits->Delete();
   fTracks->Delete();
   fTrackCand->Delete();
   if (fLayPointers) delete [] fLayPointers;
@@ -658,9 +666,11 @@ void MpdEctTrackFinderTpc::DoTracking(Int_t iPass)
     // Propagate to TPC end-plate
     MpdKalmanHit hit;
     hit.SetType(MpdKalmanHit::kFixedZ);
-    Double_t zEnd = 150.; // get it from geometry !!!
-    hit.SetPos(TMath::Sign(zEnd,track->GetParam(3)));
-    Double_t thick = 0.06; // material thickness in rad. lengths
+    //Double_t zEnd = 150.; // get it from geometry !!!
+    //hit.SetPos(TMath::Sign(zEnd,track->GetParam(3)));
+    hit.SetPos(TMath::Sign(fZtpc,track->GetParam(3)));
+    //Double_t thick = 0.06; // material thickness in rad. lengths
+    Double_t thick = 0.20; // material thickness in rad. lengths - v7
     MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
     PassWall(track,thick);
 
@@ -773,16 +783,18 @@ Int_t MpdEctTrackFinderTpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
   if (track->GetRadNew() > rMax) return -1;
 
   //cout << fHits->GetEntriesFast() << endl;
-  Int_t layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  //Int_t layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  Int_t layMax = fgkNlays2;
   MpdKalmanHit *hitOK = 0x0;
   MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
   //Int_t layBeg = 0, layEnd = -1, dLay = -1, layOK = -1;
   Int_t layEnd = -1, dLay = -1, layOK = -1;
-  if (track->GetPosNew() < 0) layEnd = fgkNlays2;
+  //if (track->GetPosNew() < 0) layEnd = fgkNlays2;
+  if (track->GetPosNew() < 0) layMax = 2*fgkNlays2;
   if (trackDir == MpdKalmanTrack::kOutward) {
     layEnd = layMax + 1;
     dLay = 1;
-    if (track->GetPosNew() > 0 && layMax > fgkNlays2) layEnd -= fgkNlays2;
+    //if (track->GetPosNew() > 0 && layMax > fgkNlays2) layEnd -= fgkNlays2;
   }
   
   //Int_t indxOK = hits->IndexOf(hitOK);

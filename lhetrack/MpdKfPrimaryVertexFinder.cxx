@@ -41,7 +41,7 @@ FILE *lunVtx = 0x0; //fopen("vtx.dat","w");
 
 //__________________________________________________________________________
 MpdKfPrimaryVertexFinder::MpdKfPrimaryVertexFinder(const char *name, Int_t iVerbose)
-  :FairTask(name, iVerbose), fConstrFlag(0), fVertTracks(NULL)
+  :FairTask(name, iVerbose), fConstrFlag(0), fSmoothSame(0), fVertTracks(NULL)
 {
   fHistoDir = NULL;
   fHist[0] = fHist[1] = fHist[2] = NULL;
@@ -516,10 +516,13 @@ void MpdKfPrimaryVertexFinder::Smooth()
     for (Int_t i = 0; i < 3; ++i) par(i+2,0) = qk(i,0);
     par(0,0) = rad * vert.Phi(); 
     par(1,0) = vert.Z(); 
-    //track->SetParam(par);
-    //track->SetPosNew(rad);
-    if (trVert) trVert->SetParam(par);
-    if (trVert) trVert->SetPosNew(rad);
+    if (trVert) {
+      trVert->SetParam(par);
+      trVert->SetPosNew(rad);
+    } else if (fSmoothSame) {
+      track->SetParam(par);
+      track->SetPosNew(rad);
+    }
 
     // Update track length
     Double_t dLeng = track1.GetLength(); // track length from DCA to last saved position
@@ -529,8 +532,8 @@ void MpdKfPrimaryVertexFinder::Smooth()
     if (track->GetNode() == "") MpdKalmanFilter::Instance()->PropagateParamR(&track1,&hit,kTRUE);
     else MpdKalmanFilter::Instance()->PropagateParamP(&track1,&hit,kTRUE,kTRUE);
 
-    //track->SetLength (track->GetLength() - dLeng + track1.GetLength());
     if (trVert) trVert->SetLength (track->GetLength() - dLeng + track1.GetLength());
+    else if (fSmoothSame) track->SetLength (track->GetLength() - dLeng + track1.GetLength());
   } // for (Int_t itr = 0; itr < nPrim;
 }
 
@@ -732,8 +735,14 @@ void MpdKfPrimaryVertexFinder::Chi2Vertex()
   xk0(1,0) = vert.Y();
   xk0(2,0) = vert.Z();
   //xk(0,0) = xk(1,0) = xk(2,0) = 0.;
-  cov = fCovar;
+  //cov = fCovar;
+  TMatrixFSym covM(3);
+  vtx->CovMatrix(covM);
+  cov = covM;
   cov.Invert();
+
+  //vvv.Print();
+  //fCovar.Print();
 
   for (Int_t itr = 0; itr < nTracks; ++itr) {
     MpdKalmanTrack *track = (MpdKalmanTrack*) fTracks->UncheckedAt(itr);

@@ -14,10 +14,13 @@
 #include "MpdKalmanHit.h"
 #include "MpdTpcDedxTask.h"
 #include "MpdVertexZfinder.h"
+#include "MpdTpcFoundHit.h" //new
+#include "MpdTpcSectorGeo.h" //new
 #include "TpcCluster.h"
 #include "TpcGeoPar.h"
 #include "TpcPoint.h"
 #include "TpcLheTrack.h"
+
 #include "FairEventHeader.h"
 #include "FairField.h"
 #include "FairMCEventHeader.h"
@@ -71,6 +74,7 @@ MpdTpcKalmanFilter::MpdTpcKalmanFilter()
     //fSecGeo(MpdTpcSectorGeo::Instance())
 {
   /// Default constructor
+  fUseMCHit = kTRUE;
 }
 
 //__________________________________________________________________________
@@ -98,13 +102,14 @@ MpdTpcKalmanFilter::MpdTpcKalmanFilter(const char *name,
   /// Constructor
   FairTask *dedx = new MpdTpcDedxTask();
   Add(dedx);
+  fUseMCHit = kTRUE;
 }
 
 //__________________________________________________________________________
 MpdTpcKalmanFilter::~MpdTpcKalmanFilter() 
 {
   /// Destructor
-  delete fHits;
+  //new delete fHits;
   delete fKHits;
   delete fTracks;
   delete fTrackCand;
@@ -122,8 +127,9 @@ InitStatus MpdTpcKalmanFilter::Init() {
 
   fhLays = new TH1F("hLays","TPC layers",150,0,150);
 
-  fHits = (TClonesArray *)manager->GetObject("TpcCluster");
-  if (fHits == 0x0) fHits = (TClonesArray *)manager->GetObject("TpcHit");
+  //fHits = (TClonesArray*) manager->GetObject("TpcCluster");
+  if (fUseMCHit) fHits = (TClonesArray*) manager->GetObject("TpcHit");
+  else fHits = (TClonesArray*) manager->GetObject("MpdTpcHit");
   if ( ! fHits ) {
     cout << "-I- "<< GetName() << "::Init: No MpdTpcHit array!" << endl;
     return kERROR;
@@ -597,6 +603,7 @@ void MpdTpcKalmanFilter::AddHits()
       new (trHits[j]) MpdKalmanHit(*hit);
       MpdTpcHit *p = GetTpcHit(hit);
       Int_t motherID1 = p->GetTrackID();
+      if (!fUseMCHit) motherID1 = p->GetRefIndex();
       // Get point mother ID
       mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(motherID1);
       while (mctrack->GetMotherId() >= 0) {
@@ -896,7 +903,8 @@ void MpdTpcKalmanFilter::MakeKalmanHitsModul()
     //(Int_t detID, Int_t nDim, HitType hitType, Double_t *meas, Double_t *err, Double_t *cosSin, Double_t signal, Double_t dist, Int_t index)
     Double_t err[2] = {hit->GetDx(), hit->GetDz()};
     //Double_t meas[2] = {-hit->GetLocalX()-dX*err[0], hit->GetLocalZ()+dZ*err[1]};
-    Double_t meas[2] = {hit->GetLocalX()+dX*err[0], hit->GetLocalZ()+dZ*err[1]};
+    Double_t meas[2] = {hit->GetLocalX(), hit->GetLocalZ()};
+    if (fUseMCHit) { meas[0] += dX * err[0]; meas[1] += dZ * err[1]; }
     Double_t cossin[2] = {1., 0.};
     Int_t padID = hit->GetDetectorID();
     //TpcPadID padIDobj = TpcPadID::numberToPadID(padID);
@@ -1403,6 +1411,7 @@ Int_t MpdTpcKalmanFilter::RunKalmanFilter(MpdTpcKalmanTrack *track)
 	}
       }	
       if (miss > 1) {
+      //if (miss > 3) {
 	/*
 	track->SetPos(rOK); //
 	track->SetPosNew(rOK); //
@@ -1457,7 +1466,7 @@ Int_t MpdTpcKalmanFilter::GetHitID(MpdKalmanHit *hit)
   /// Get hit ID from MpdTpcHit ID
 
   MpdTpcHit *h = GetTpcHit(hit);
-  return h->GetTrackID();
+  return (fUseMCHit) ? h->GetTrackID() : h->GetRefIndex();
 }
 
 //__________________________________________________________________________

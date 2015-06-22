@@ -17,6 +17,8 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 
+#include <TGeoManager.h>
+#include <TGeoTube.h>
 //#include "Math/Interpolator.h"
 #include <iostream>
 
@@ -117,23 +119,32 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
     }
     ++nLays;
     TObjArray* passNodes = geoPar->GetGeoPassiveNodes();
-    if (sensVol0->getShape() == "PGON") {
-      fModular = 1; // force using modular geometry 
-      FairGeoNode *inWall = (FairGeoNode*) passNodes->FindObject("tpc01InWall");
-      TArrayD* params = inWall->getParameters();
-      fZtpc = params->At(2);
+    if (nSens) {
+      // Old geometry scheme
+      if (sensVol0->getShape() == "PGON") {
+	fModular = 1; // force using modular geometry 
+	FairGeoNode *inWall = (FairGeoNode*) passNodes->FindObject("tpc01InWall");
+	TArrayD* params = inWall->getParameters();
+	fZtpc = params->At(2);
+      } else {
+	FairGeoNode *tpc = (FairGeoNode*) passNodes->FindObject("tpcChamber1");
+	rMax = tpc->getParameters()->At(1);
+	dR = (rMax - rMin) / nLays;
+	fZtpc = sensVol0->getParameters()->At(2);
+	MpdTpcSectorGeo *geo = MpdTpcSectorGeo::Instance();
+	geo->SetNofRows(nLays);
+	geo->SetPadHeight(dR);
+	geo->SetMinY(rMin);
+      }
+      cout << " *** TPC sensitive volume: " << sensVol0->GetName() << " "
+	   << rMin << " " << rMax << " " << fZtpc << " " << nLays << " " << dR << endl;
     } else {
-      FairGeoNode *tpc = (FairGeoNode*) passNodes->FindObject("tpcChamber1");
-      rMax = tpc->getParameters()->At(1);
-      dR = (rMax - rMin) / nLays;
-      fZtpc = sensVol0->getParameters()->At(2);
-      MpdTpcSectorGeo *geo = MpdTpcSectorGeo::Instance();
-      geo->SetNofRows(nLays);
-      geo->SetPadHeight(dR);
-      geo->SetMinY(rMin);
+      // New geometry scheme (ROOT geo)
+      fModular = 1; // force using modular geometry 
+      TGeoVolume *inW = gGeoManager->GetVolume("tpc01InWall");
+      TGeoTube *tube = (TGeoTube*) inW->GetShape();
+      fZtpc = tube->GetDZ();
     }
-    cout << " *** TPC sensitive volume: " << sensVol0->GetName() << " "
-         << rMin << " " << rMax << " " << fZtpc << " " << nLays << " " << dR << endl;
 
     /*
     MpdTofGeoPar *tofPar = (MpdTofGeoPar*) rtdb->getContainer("MpdTofGeoPar");
@@ -432,6 +443,9 @@ void MpdTpcHitProducer::ExecModular()
       delete [] times;
       delete [] ys;
       delete [] zs;
+      delete [] xx;
+      delete [] yy;
+      delete [] zz;
       //delete [] hindx;
       //delete [] ord;
 

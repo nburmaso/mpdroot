@@ -35,11 +35,12 @@ MpdParticleIdentification::~MpdParticleIdentification() {
 Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi, Float_t& Pk, Float_t& Pp, Float_t& Pe, Int_t method) {
 
     /*Parameters for fitting*/
-    Float_t *ProtonPar, *PionPar, *KaonPar, *ElectronPar;
+    //AZ Float_t *ProtonPar, *PionPar, *KaonPar, *ElectronPar;
     /************************/
 
     dedx *= 1000000; // converting to keV/cm
     const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
+    Float_t ProtonPar[9], PionPar[9], KaonPar[9], ElectronPar[9], resultProb[Ntypes]; //AZ
     const Int_t Nintervals = 10;
     Float_t sigmas[Ntypes][Nintervals] = {//array of sigmas for different particles and different intervals of momentum. They were got from 100000 BOX events
         {0.113, 0.107, 0.100, 0.107, 0.097, 0.111, 0.122, 0.105, 0.115, 0.118},
@@ -63,11 +64,12 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
         case 0: //bethe-bloch approximation with "standard" sigmas and equal bayesian coefficients
 
             //parameters were got from Bethe-Bloch approximation for 100000 BOX events
+	  /*AZ
             ProtonPar = new Float_t[4];
             PionPar = new Float_t[4];
             KaonPar = new Float_t[4];
             ElectronPar = new Float_t[4];
-
+	  */
             ProtonPar[0] = -3.957;
             ProtonPar[1] = 3.525;
             ProtonPar[2] = 16.468;
@@ -112,11 +114,12 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
         case 1: //bethe-bloch approximation with special different sigmas and byesian coefficients
 
             //parameters were got from Bethe-Bloch approximation for 100000 BOX events
+	  /*AZ
             ProtonPar = new Float_t[4];
             PionPar = new Float_t[4];
             KaonPar = new Float_t[4];
             ElectronPar = new Float_t[4];
-
+	  */
             ProtonPar[0] = -3.957;
             ProtonPar[1] = 3.525;
             ProtonPar[2] = 16.468;
@@ -246,11 +249,12 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
         case 2: //bethe-bloch approximation with "standard" sigmas and different byesian coefficients
 
             //parameters were got from Bethe-Bloch approximation for 100000 BOX events
+	  /*AZ
             ProtonPar = new Float_t[4];
             PionPar = new Float_t[4];
             KaonPar = new Float_t[4];
             ElectronPar = new Float_t[4];
-
+	  */
             ProtonPar[0] = -3.957;
             ProtonPar[1] = 3.525;
             ProtonPar[2] = 16.468;
@@ -372,7 +376,7 @@ Int_t MpdParticleIdentification::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHit
 
             break;
     }
-    Float_t *resultProb = new Float_t[Ntypes];
+    //AZ Float_t *resultProb = new Float_t[Ntypes];
     BayesFunction(gausProb, bayesAprioriCoefficients, resultProb, Ntypes);
 
     Ppi = resultProb[0];

@@ -194,6 +194,16 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
     if (nEvents == 0)
         nEvents = MpdGetNumEvents::GetNumQGSMEvents(dataFile.Data()) - nStartEvent;
 
+#else
+#ifdef HADGEN
+  THadgen* hadGen = new THadgen();
+  hadGen->SetRandomSeed(clock() + time(0));
+  hadGen->SetParticleFromPdgCode(0, 196.9665, 79);
+  hadGen->SetEnergy(6.5E3);
+  MpdGeneralGenerator* generalHad = new MpdGeneralGenerator(hadGen);
+  primGen->AddGenerator(generalHad);
+
+#endif
 #endif
 #endif
 #endif

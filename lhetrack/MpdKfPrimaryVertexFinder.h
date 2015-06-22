@@ -46,6 +46,7 @@ class MpdKfPrimaryVertexFinder :public FairTask
   void SetVertices(TClonesArray *vertCont) { fVertexCont = vertCont; } // set vertex container
   void SetTracks(TClonesArray *tracks) { fTracks = tracks; } // set track container
   void SetConstrFlag(Int_t flag = 1) { fConstrFlag = flag; } // set vertex constrain flag
+  void SetSmoothSame(Int_t flag = 1) { fSmoothSame = flag; } // smooth original tracks 
   void Smooth(); // smooth (update track momenta and track lengths)
   void Chi2Vertex(); // compute chi2-distance of tracks to primary vertex
 
@@ -61,6 +62,7 @@ class MpdKfPrimaryVertexFinder :public FairTask
   void Writedir2current( TObject *obj );
 
   Int_t fConstrFlag;            // flag for storing tracks with vertex constrain ( if != 0)
+  Int_t fSmoothSame;            // flag for smoothing original tracks (if fConstrFlag == 0)
   Int_t fNPass;                 //
   Double_t fXYZ[3];             // vertex position
   TMatrixD fCovar;              // vertex position covariance matrix

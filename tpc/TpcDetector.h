@@ -35,7 +35,7 @@ class FairVolume;
 class TpcPoint;
 
 
-class TpcDetector : public FairDetector{
+class TpcDetector : public FairDetector {
 public:
   // Constructors/Destructors ---------
   /**      Name :  Detector Name
