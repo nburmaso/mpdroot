@@ -43,7 +43,7 @@ void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
     //gSystem->Load("libCpc");
     //gSystem->Load("libNDet");
     //gSystem->Load("libSft");
-	 gSystem->Load("libStrawECT");
+	gSystem->Load("libStrawECT");
   }
 }
 
