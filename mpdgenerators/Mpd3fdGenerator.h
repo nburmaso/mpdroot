@@ -40,17 +40,17 @@ private:
 
     TFile* fInputFile; //!  Input file
     TString fFileName; //!  Input file name
-    TChain *fDstTree;
-    Double_t fPx[kBatyukConst];
-    Double_t fPy[kBatyukConst];
-    Double_t fPz[kBatyukConst];
-    Double_t fX[kBatyukConst];
-    Double_t fY[kBatyukConst];
-    Double_t fZ[kBatyukConst];
-    Double_t fE[kBatyukConst];
-    Int_t fPID[kBatyukConst];
-    UInt_t fNpart;
-    Int_t fEventNumber;
+    TChain *fDstTree;  //!
+    Double_t fPx[kBatyukConst]; //!
+    Double_t fPy[kBatyukConst]; //!
+    Double_t fPz[kBatyukConst]; //!
+    Double_t fX[kBatyukConst]; //!
+    Double_t fY[kBatyukConst]; //!
+    Double_t fZ[kBatyukConst]; //!
+    Double_t fE[kBatyukConst]; //!
+    Int_t fPID[kBatyukConst]; //!
+    UInt_t fNpart; //!
+    Int_t fEventNumber; //!
 
 
     Mpd3fdGenerator(const Mpd3fdGenerator&);
