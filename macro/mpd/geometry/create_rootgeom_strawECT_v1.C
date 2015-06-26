@@ -8,8 +8,8 @@
 //Detector's construct parameters
 
 //Global dimensions for straw ECT in cm
-Double_t strawECT_InnerRadius = 25.0; // ECT inner radius
-Double_t strawECT_OuterRadius = 121.0; // ECT outer radius
+Double_t strawECT_InnerRadius = 50.0; // ECT inner radius
+Double_t strawECT_OuterRadius = 110.0; // ECT outer radius
 
 //modules
 Double_t strawECT_Module_dz = 30.0; // ECT module length
@@ -22,13 +22,16 @@ Double_t NLayers_in_submodule = 6;
 Double_t Submodule_thickness = strawECT_Module_dz/NSubModules_in_module;
 Double_t layer_thickness = Submodule_thickness/NLayers_in_submodule;
 
+Double_t layer_rot_angle_radial_stereo = 0.141937308; //rotation angle between radial and stereo layer (degrees)
+Double_t layer_rot_angle_stereo_stereo = 0.046357496; //rotation angle between stereo and stereo layer (degrees)
+
 //straw tubes
 Double_t tube_radius = 0.21;
-Double_t gas_radius = 0.02;
+Double_t gas_radius = 0.2;
 Double_t wire_radius = 0.001;
 Double_t tube_length = strawECT_OuterRadius - strawECT_InnerRadius;
 
-Int_t straws_per_layer = 302;
+Int_t straws_per_layer = 600;
 Double_t straw_angle = 360.0/straws_per_layer; //degrees
 
 Double_t straw_stereo_angle = 7.0;
@@ -233,11 +236,10 @@ void create_rootgeom_strawECT_v1() {
     TGeoCombiTrans *ect_left_module2_position = new TGeoCombiTrans(*ect_right_module2_position);
     ect_left_module2_position->ReflectZ(true);
 
-    ectA->AddNode(ectModuleV, 1, ect_right_module1_position);
-    ectA->AddNode(ectModuleV, 2, ect_right_module2_position);
-
-    ectA->AddNode(ectModuleV, 3, ect_left_module1_position);
-    ectA->AddNode(ectModuleV, 4, ect_left_module2_position);
+    ectA->AddNode(ectModuleV, 0, ect_right_module1_position);
+    ectA->AddNode(ectModuleV, 1, ect_right_module2_position);
+    ectA->AddNode(ectModuleV, 2, ect_left_module1_position);
+    ectA->AddNode(ectModuleV, 3, ect_left_module2_position);
 
     //fill module with submodules
     FillModuleWithSubmodules(ectModuleV);
@@ -337,17 +339,38 @@ void FillSubModuleWithLayers(TGeoVolume *mother_volume) {
     //--------------------------------------------------------------------------
 
     Double_t layer_shift = 0.0;
+    Double_t layer_rot_shift = 0.0;
+
+    TGeoCombiTrans *layer_combi;
 
     for(Int_t i = 0; i < NLayers_in_submodule; i+=3) {
     //for(Int_t i = 0; i < 1; i++) {
-        mother_volume->AddNode(radial_layerV, i+0, new TGeoTranslation(0, 0, -Submodule_thickness/2 + layer_thickness/2 + layer_shift));
-        layer_shift += layer_thickness;
 
-        mother_volume->AddNode(rstereo_layerV, i+1, new TGeoTranslation(0, 0, -Submodule_thickness/2 + layer_thickness/2 + layer_shift));
-        layer_shift += layer_thickness;
+        layer_combi = new TGeoCombiTrans();
+        layer_combi->RotateZ(layer_rot_shift);
+        layer_combi->SetTranslation(0, 0, -Submodule_thickness/2 + layer_thickness/2 + layer_shift);
 
-        mother_volume->AddNode(lstereo_layerV, i+2, new TGeoTranslation(0, 0, -Submodule_thickness/2 + layer_thickness/2 + layer_shift));
+        mother_volume->AddNode(radial_layerV, i+0, layer_combi);
         layer_shift += layer_thickness;
+        layer_rot_shift += layer_rot_angle_radial_stereo;
+
+        layer_combi = new TGeoCombiTrans();
+        layer_combi->RotateZ(layer_rot_shift);
+        layer_combi->SetTranslation(0, 0, -Submodule_thickness/2 + layer_thickness/2 + layer_shift);
+
+        //mother_volume->AddNode(radial_layerV, i+1, layer_combi);
+        mother_volume->AddNode(rstereo_layerV, i+1, layer_combi);
+        layer_shift += layer_thickness;
+        layer_rot_shift += layer_rot_angle_stereo_stereo;
+
+        layer_combi = new TGeoCombiTrans();
+        layer_combi->RotateZ(layer_rot_shift);
+        layer_combi->SetTranslation(0, 0, -Submodule_thickness/2 + layer_thickness/2 + layer_shift);
+
+        //mother_volume->AddNode(radial_layerV, i+2, layer_combi);
+        mother_volume->AddNode(lstereo_layerV, i+2, layer_combi);
+        layer_shift += layer_thickness;
+        layer_rot_shift += layer_rot_angle_radial_stereo;
     }
 
     //fill radial layer with straw tubes
@@ -414,11 +437,12 @@ void CreateWireInStrawTube(TGeoVolume *mother_volume) {
 void FillRadialLayerWithTubes(TGeoVolume *mother_volume) {
 
     TGeoVolume *strawTubeV = CreateStrawTube();
+    strawTubeV->SetLineColor(TColor::GetColor("#afdafc"));
 
     Double_t rot_angle_shift = 0.0;
 
     for(Int_t i = 0; i < straws_per_layer; i++) {
-    //for(Int_t i = 0; i < 10; i++) {
+    //for(Int_t i = 0; i < 1; i++) {
         TGeoCombiTrans *tube_combi = new TGeoCombiTrans();
         tube_combi->RotateX(90.0);
         tube_combi->SetTranslation(0, tube_length/2 + strawECT_InnerRadius, 0);
@@ -434,11 +458,12 @@ void FillRadialLayerWithTubes(TGeoVolume *mother_volume) {
 void FillRStereoLayerWithTubes(TGeoVolume *mother_volume) {
 
     TGeoVolume *strawTubeV = CreateStrawTube();
+    strawTubeV->SetLineColor(TColor::GetColor("#f76dd2"));
 
     Double_t rot_angle_shift = 0.0;
 
     for(Int_t i = 0; i < straws_per_layer; i++) {
-    //for(Int_t i = 0; i < 10; i++) {
+    //for(Int_t i = 0; i < 1; i++) {
         TGeoCombiTrans *tube_combi = new TGeoCombiTrans();
         tube_combi->RotateX(90.0);
         tube_combi->RotateZ(straw_stereo_angle);
@@ -453,11 +478,12 @@ void FillRStereoLayerWithTubes(TGeoVolume *mother_volume) {
 
 void FillLStereoLayerWithTubes(TGeoVolume *mother_volume) {
     TGeoVolume *strawTubeV = CreateStrawTube();
+    strawTubeV->SetLineColor(TColor::GetColor("#5ad65a"));
 
     Double_t rot_angle_shift = 0.0;
 
     for(Int_t i = 0; i < straws_per_layer; i++) {
-    //for(Int_t i = 0; i < 10; i++) {
+    //for(Int_t i = 0; i < 1; i++) {
         TGeoCombiTrans *tube_combi = new TGeoCombiTrans();
         tube_combi->RotateX(90.0);
         tube_combi->RotateZ(-straw_stereo_angle);

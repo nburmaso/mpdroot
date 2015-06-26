@@ -286,6 +286,9 @@ void create_rootgeom_TPC_v7() {
     top->Write();
     geoFile->Close();
 
+    //TString gdmlname = gPath + "/geometry/tpc_v7.gdml";
+    //gGeoManager->Export(gdmlname);
+
     top->Draw("ogl");
     TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
     v->SetStyle(TGLRnrCtx::kOutline);
