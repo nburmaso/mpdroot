@@ -54,6 +54,7 @@ class MpdTpcKalmanFilter : public FairTask
   Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1); ///< refit track using its points for given particle mass and charge
   Int_t GetHitID(MpdKalmanHit *hit); // get hit ID from MC point ID
   void UseTpcHit(Bool_t useMC = kTRUE) { fUseMCHit = useMC; }; // to use TpcHit branch instead of MpdTpcHit
+  void FillGeoScheme(); // fill Kalman filter geometry manager info (for modular geometry of r/out chambers)
 
  private:
   // Some constants
@@ -87,7 +88,6 @@ class MpdTpcKalmanFilter : public FairTask
   void SetTrackID(MpdTpcKalmanTrack *track); // set track ID from IDs of its hits
   //TpcPoint* GetPoint(MpdKalmanHit *hit); // get MCPoint pointer for the hit
   MpdTpcHit* GetTpcHit(MpdKalmanHit *hit); // get TpcHit pointer for the Kalman hit
-  void FillGeoScheme(); // fill Kalman filter geometry manager info (for modular geometry of r/out chambers)
   Int_t SectorNo(const char* cpath); // extract sector number from TGeo path
   Double_t CorrectForLoss(Double_t pt, Double_t the, Double_t mass, Int_t charge = 1); ///< energy loss correction
 
