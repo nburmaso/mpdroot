@@ -21,6 +21,7 @@
 class MpdTpc2dCluster : public TObject
 {
  public:
+  MpdTpc2dCluster() {;}
   MpdTpc2dCluster(Int_t row, Int_t sec);
   MpdTpc2dCluster(const MpdTpc2dCluster& cl);
   ~MpdTpc2dCluster();
