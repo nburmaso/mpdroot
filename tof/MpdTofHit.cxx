@@ -49,12 +49,13 @@ bool			MpdTofHit::CheckTrackID(Int_t uid)
 return false;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdTofHit::Print(const Option_t* opt) const
+void MpdTofHit::Print(const char* comment) const
 {
-	cout<<"\n-I- [MpdTofHit]	DetectorID: "<< fDetectorID
-		<<"\n	Position: ("<< fX <<", "<< fY <<", "<< fZ <<") cm"
-       		<<"\n	Position error: ("<< fDx <<", "<< fDy <<", "<< fDz << ") cm"
-		<<"\n	Time: "<<fTime<<" ns"<< ",    Flag: "<<fFlag;
+	cout<<endl;
+	if(comment != nullptr) 	cout<<comment;		
+	
+	cout<<" MpdTofHit UID: "<< fDetectorID<<" Position: ("<< fX <<", "<< fY <<", "<< fZ <<") cm"
+       		<<" Position error: ("<< fDx <<", "<< fDy <<", "<< fDz << ") cm"<<" Time: "<<fTime<<" ns"<< ",    Flag: "<<fFlag;
 }
 //------------------------------------------------------------------------------------------------------------------------
 ClassImp(MpdTofHit)

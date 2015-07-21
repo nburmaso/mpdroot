@@ -7,6 +7,7 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 
+#include "MpdTof.h"
 #include "MpdTofUtils.h"
 
 #include "FairDetector.h"
@@ -16,7 +17,27 @@ class FairVolume;
 //------------------------------------------------------------------------------------------------------------------------
 class MpdEtof : public FairDetector
 {
+	// Track information to be stored until the track leaves the active volume.
+  	Int_t          fTrackID;           //!  track index
+  	Int_t          fVolumeID;          //!  volume id
+  	TLorentzVector fPos;               //!  position
+  	TLorentzVector fMom;               //!  momentum
+  	Double32_t     fTime;              //!  time
+  	Double32_t     fLength;            //!  length
+  	Double32_t     fELoss;             //!  energy loss
+  	
+  	Int_t fPosIndex;                   //!
+  	TClonesArray* aTofHits;      	   //! Hit collection
 
+  	const double	nan;
+  	
+ 	static MpdTof::intervalTreeType		mDetectorsR; //!
+	static MpdTof::intervalTreeType		mDetectorsPhi; //!	 	
+  	static MpdTof::MStripType		mStrips; //!
+  
+  	MpdEtofPoint* 	AddPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss); 
+  	void 		ResetParameters();
+  	  		
 public:
   	MpdEtof(const char* name = "ETOF", Bool_t active = kTRUE);
 	virtual ~MpdEtof();
@@ -30,39 +51,24 @@ public:
  	virtual void CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset);
  	virtual void ConstructGeometry(); 
   
-  	static Bool_t	ParseTGeoManager(MpdTofUtils::RegVec&, MpdTofUtils::ModMMap&, MpdTofUtils::PadMap&);  
-  
-private:
+  	static void		FindNeighborStrips(TH1D* h1 = nullptr, TH2D* h2 = nullptr, bool doTest = false);
+	static void		ParseTGeoManager(TH2D* h1 = nullptr, bool forced = false);
+		
+	static const LStrip*	FindStrip(Int_t UID);
+	static const MpdTof::intervalTreeType*	GetDetR() { return &mDetectorsR; };
+	static const MpdTof::intervalTreeType*	GetDetPhi() { return &mDetectorsPhi; };	
+	static const MpdTof::MStripType*	GetStripMap() { return &mStrips; };
 
-	// Track information to be stored until the track leaves the active volume.
-  	Int_t          fTrackID;           //!  track index
-  	Int_t          fVolumeID;          //!  volume id
-  	TLorentzVector fPos;               //!  position
-  	TLorentzVector fMom;               //!  momentum
-  	Double32_t     fTime;              //!  time
-  	Double32_t     fLength;            //!  length
-  	Double32_t     fELoss;             //!  energy loss
-  	
-  	Int_t fPosIndex;                   //!
-  	TClonesArray* fTofCollection;      //! Hit collection
-
-  	Double_t localPos[3];
-  	Double_t globalPos[3];
-  	
-  	MpdEtofPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss); 
-  	void ResetParameters();
-
-
-  ClassDef(MpdEtof,1) 
+ClassDef(MpdEtof,2) 
 };
 
 //------------------------------------------------------------------------------------------------------------------------
 inline void MpdEtof::ResetParameters() 
 {
 	fTrackID = fVolumeID = 0;
-	fPos.SetXYZM(0.0, 0.0, 0.0, 0.0);
-	fMom.SetXYZM(0.0, 0.0, 0.0, 0.0);
-	fTime = fLength = fELoss = 0;
+	fPos.SetXYZM(nan, nan, nan, nan);
+	fMom.SetXYZM(nan, nan, nan, nan);
+	fTime = fLength = fELoss = nan;
 	fPosIndex = 0;
 };
 //------------------------------------------------------------------------------------------------------------------------

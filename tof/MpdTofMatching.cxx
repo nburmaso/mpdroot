@@ -4,408 +4,575 @@
 /// \brief 
 /// \author Sergei Lobastov (LHE, JINR, Dubna)
 //------------------------------------------------------------------------------------------------------------------------
-
-#include "MpdEctKalmanTrack.h"
-#include "MpdTofPoint.h"
-#include "MpdTof.h"
-#include "MpdTofMatching.h"
-
-#include "FairRootManager.h"
-#include "FairMCTrack.h"
-#include "FairRunAna.h"
-#include "FairLogger.h"
+#include <iostream>
+#include <fstream>
 
 #include <TMath.h>
 #include <TFile.h>
 #include <TRandom3.h>
 #include <TStorage.h>
+#include <TEfficiency.h>
 
-#include <iostream>
-#include <fstream>
+#include "FairRootManager.h"
+#include "FairMCTrack.h"
+#include "FairRunAna.h"
+#include "FairLogger.h" 
+
+#include "MpdEctKalmanTrack.h"
+#include "MpdTofPoint.h" 
+#include "MpdTof.h"
+#include "MpdTofMatching.h"
+#include "MpdKalmanFilter.h"
 
 #ifdef _OPENMP
 #include "omp.h"
-#include <sys/time.h>
+#include <sys/time.h> 
 #endif
 
 using namespace std;
 
-//------------------------------------------------------------------------------------------------------------------------
-MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, const MpdTofHit* hit, Int_t pid, Int_t flag,
-				Double_t length, const TVector3& est_point_R, const TVector3& est_point_Plane, 
-				Double_t est_point_PlanePhi, Double_t est_point_PlaneTheta,  const TVector3& P, Int_t charge)
-:   fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fPDGcode(pid), fFlag(flag), fLength(length)
+
+struct less_by_pointer 
 {
-	fPx = P.Px(); fPy = P.Py(); fPz = P.Pz(); fCharge = charge;
-	fX = hit->GetX(); fY = hit->GetY(); fZ = hit->GetZ();
-	fTime = hit->GetTime();
-	fDetectorUID = hit->GetDetectorID();
-	
-	fEstPointR[0] = est_point_R.X(); fEstPointR[1] = est_point_R.Y(); fEstPointR[2] = est_point_R.Z();
-	fTofImpactPoint[0] = est_point_Plane.X(); fTofImpactPoint[1] = est_point_Plane.Y(); fTofImpactPoint[2] = est_point_Plane.Z();
-	fTofImpactPointPhi = est_point_PlanePhi; fTofImpactPointTheta = est_point_PlaneTheta;
+    inline bool operator() (const MpdTof::intervalType& struct1, const MpdTof::intervalType& struct2)
+    {
+        return (struct1.value < struct2.value);
+    }
+};
+
+
+ClassImp(MpdTofMatchingData)
+//------------------------------------------------------------------------------------------------------------------------
+MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, const TVector3& pointR, const TVector3& pointP, 
+				Double_t pointPPhi, Double_t pointPTheta,  const TVector3& P, Int_t charge)
+ : fX(hit->GetX()), fY(hit->GetY()), fZ(hit->GetZ()), fTime(hit->GetTime()), fPx(P.Px()), fPy(P.Py()), fPz(P.Pz()), fLength(length), 
+	fEstPointPPhi(pointPPhi), fEstPointPTheta(pointPTheta), fDetectorUID(hit->GetDetectorID()), fFlag(flag), fCharge(charge), fPDGcode(pid), fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId)
+{
+	fEstPointR[0] = pointR.X(); fEstPointR[1] = pointR.Y(); fEstPointR[2] = pointR.Z();
+	fEstPointP[0] = pointP.X(); fEstPointP[1] = pointP.Y(); fEstPointP[2] = pointP.Z();
 	
 	fBeta  = (fLength / 100.)  / (fTime  * 1.e-9) / TMath::C();// [cm/nc] -> m/c
 	Double_t beta2  = fBeta*fBeta;	
 	Double_t gamma2 = 1. / (1. - beta2);			
-	Double_t Mom = GetMomentum().Mag();
-	fMass2 = (Mom * Mom) / ( gamma2 * beta2 );		
+	Double_t Mom2 = fPx*fPx + fPy*fPy +fPz*fPz;
+	fMass2 = Mom2 / ( gamma2 * beta2 );		
 } 
+//------------------------------------------------------------------------------------------------------------------------
+MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, const TVector3& pointR, const TVector3& pointP, const TVector3& perp, 
+					const TVector3& P, Int_t charge, Double_t delta)
+ : fX(hit->GetX()), fY(hit->GetY()), fZ(hit->GetZ()), fTime(hit->GetTime()), fPx(P.Px()), fPy(P.Py()), fPz(P.Pz()), fLength(length), fDelta(delta), 
+	fDetectorUID(hit->GetDetectorID()), fFlag(flag), fCharge(charge), fPDGcode(pid), fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fNmbTrHits(nTrHits)
+{
+	fEstPointR[0] = pointR.X(); fEstPointR[1] = pointR.Y(); fEstPointR[2] = pointR.Z();
+	fEstPointP[0] = pointP.X(); fEstPointP[1] = pointP.Y(); fEstPointP[2] = pointP.Z();
+	fStripPerp[0] = perp.X(); fStripPerp[1] = perp.Y(); fStripPerp[2] = perp.Z();	
+	
+	fBeta  = (fLength / 100.)  / (fTime  * 1.e-9) / TMath::C();// [cm/nc] -> m/c
+	Double_t beta2  = fBeta*fBeta;	
+	Double_t gamma2 = 1. / (1. - beta2);			
+	Double_t Mom2 = fPx*fPx + fPy*fPy +fPz*fPz;
+	fMass2 = Mom2 / ( gamma2 * beta2 );
+}
 //------------------------------------------------------------------------------------------------------------------------
 void 	MpdTofMatchingData::Print(void) const
 {
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " PDGcode=%i, UID=%i, flag=%i, P(%f,%f,%f), length=%f", fPDGcode, fDetectorUID, fFlag, fPx, fPy, fPz, fLength);
-}
-//------------------------------------------------------------------------------------------------------------------------	
-ClassImp(MpdTofMatchingData)
-//------------------------------------------------------------------------------------------------------------------------
-void		Convert2barrel(const TVector3& vec3, TVector2& vec2) // [mm]
-{
-	// projecting 3D point(X,Y,Z) to 2D(Z, XY) barrel surface point
-	static const double R = 155.; // [cm]
-	double angle =  TMath::ATan2(vec3.Y(), vec3.X()); // [-pi, pi]
-
-	vec2.Set(vec3.Z(), angle * R); // XY = (angle / 2 pi )  * (2 pi R)
+	cout<<"\n-I- KFTrackIndex= "<<fKFTrackIndex<<", TofHitIndex="<<fTofHitIndex<<", PDGcode="<<fPDGcode<<", UID="<<fDetectorUID<<", flag="<<fFlag
+		<<", Momentum("<<fPx<<","<<fPy<<","<<fPz<<"), Pos("<<fX<<","<<fY<<","<<fZ<<"), length="<<fLength;
 }
 //------------------------------------------------------------------------------------------------------------------------
-bool 	CheckSingularityCrossing(const TVector3& A, const TVector3& B)
-{
-	static const double Pi_2 = 3.14159265358979323846 / 2.;
-	if(A.Phi()*B.Phi() < 0.)
-	if(fabs(A.Phi()) > Pi_2  && fabs(B.Phi()) > Pi_2  )	return true;	// cross singularity
-
-return false; // OK 
-}
+ClassImp(MpdTofMatching)
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatching::MpdTofMatching(const char *name, Int_t verbose, Bool_t test)
-  : FairTask(name, verbose), fDoTest(test), fMCDataExist(false), fTestFlnm("test.MpdTofMatching.root"),  htCandNmb(NULL), fTofBarrelRadius(155.), // [cm]
-    padGrid(NULL), moduleGrid(NULL)
+  : FairTask(name, verbose),  aTofPoints(nullptr), aTofHits(nullptr), aMCTracks(nullptr), aKFTracks(nullptr), aKFectTracks(nullptr), aTofMatching(nullptr),
+  fDoTest(test), fIsMCrun(false), fTestFlnm("test.MpdTofMatching.root"),  htCandNmb(NULL), pKF(nullptr), fTofBarrelRadius(146.2)// [cm]
 {
-	pMatchingFilter = new TofMatchingFilter;
-
-        pKF = NULL, pTofHits = NULL, pMCTracks = NULL, pKFTracks = NULL, pKFectTracks = NULL, pMatchingCollection = NULL;
-	
+	pMF = new LMatchingFilter<MpdTofHit, MpdTofMatchingData>(fVerbose);
+	  
 	if(fDoTest)
     	{
-		htKfMc = MpdTofUtils::Make2D("htKfMc", 1000,0.,100., 1000, 0., 5., &fList, "est KF point on pad <-> TofPoint;#Delta, cm;P, GeV/c");
-	
-		hPads_Theta_Phi = MpdTofUtils::Make2D("pads_Theta_Phi", 1000, 0., 180., 1000, -190., 190., &fList, "Test, pad centers, Theta vs. Phi;#theta, degree;#phi, degree"); 	
-		hTest_C_D = MpdTofUtils::Make2D("test_C_D", 1000, 0., 200., 10, -0.5, 9.5, &fList, ";#Delta, cm;k_side");	
+    		const double Pmax = 5.; // [GeV/c]
+      		const double EtaMax = 5.;
+      				
+    	    	pEfficiencyP = new TEfficiency("EfficiencyP", ";P, GeV/c;Efficiency", 100, 0., Pmax); 							fList.Add(pEfficiencyP);
+    	    	pEfficiencyEta = new TEfficiency("EfficiencyEta", ";#eta;Efficiency", 100, -EtaMax, EtaMax);						fList.Add(pEfficiencyEta);   	    	
+      	    	pEfficiencyEtaP = new TEfficiency("EfficiencyEtaP", ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax); 				fList.Add(pEfficiencyEtaP);  	    		    	
+     	    	pContaminationP = new TEfficiency("ContaminationP", ";P, GeV/c;Contamination", 100, 0., Pmax); 						fList.Add(pContaminationP);
+    	    	pContaminationEta = new TEfficiency("ContaminationEta", ";#eta;Contamination", 100, -EtaMax, EtaMax);					fList.Add(pContaminationEta);   	    	
+      	    	pContaminationEtaP = new TEfficiency("ContaminationEtaP", ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax); 			fList.Add(pContaminationEtaP);   	    	
+    	
+		htMcEst_DeltaP = new TH2D("McEst_DeltaMom", "est. point <-> Mc point;#Delta, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax); 		fList.Add(htMcEst_DeltaP);
+		htMcEst_dZP = new TH2D("McEst_dZMom", "est. point <-> Mc point;#Delta_{Z}, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax);		fList.Add(htMcEst_dZP);		
+		htMcEst_dPhiP = new TH2D("McEst_dPhiMom", "est. point <-> Mc point;#Delta_{#phi}, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax);		fList.Add(htMcEst_dPhiP);
+		htMcEst_dPhidZ = new TH2D("McEst_dPhidZ", "est. point <-> Mc point;#Delta_{#phi}, cm;#Delta_{Z}, cm", 1000, 0., 50., 1000, 0., 50.);	fList.Add(htMcEst_dPhidZ);		
+				
+		htKfMcCyl = new TH2D("htKfMcCyl", "est KF point on cylinder <-> TofPoint;#Delta, cm;P, GeV/c", 1000, 0.,10., 1000, 0., Pmax); 		fList.Add(htKfMcCyl);
 		
-		htTMatch = MpdTofUtils::Make2D("htTMatch", 1000, 0., 5., 1000, -5., 5., &fList, ";P, GeV/c;#eta");
-		htMisMatch = MpdTofUtils::Make2D("htMisMatch", htTMatch, &fList);
-		htKFTrack = MpdTofUtils::Make2D("htKFTrack", htTMatch, &fList);
+		htTMatch = new TH2D("TestTMatch", ";P, GeV/c;#eta", 1000, 0., Pmax, 1000, -EtaMax, EtaMax);						fList.Add(htTMatch);
+		htMisMatch = (TH2D*) htTMatch->Clone("TestMisMatch"); 											fList.Add(htMisMatch);
+		htKFTrack = (TH2D*) htTMatch->Clone("TestKFTrack"); 											fList.Add(htKFTrack);
+		htKFTrackCand = (TH2D*) htTMatch->Clone("TestKFTrackCand");										fList.Add(htKFTrackCand);
+		htKFTrackTrueCand = (TH2D*) htTMatch->Clone("TestKFTrackTrueCand");									fList.Add(htKFTrackTrueCand);			
 
-		htTrackPerEvent = MpdTofUtils::Make2D("htTrackPerEvent", 1000, -0.5, 2999.5, 1000, -0.5,2999.5, &fList, "KF tracks vs KF tracks&point;N_{tracks};N_{tracks&point} ");		
-		htCandNmb = MpdTofUtils::Make2D("htCandNmb", 100, -0.5, 99.5, 1000, -0.5, 999.5, &fList, "Number of candidate hits;N candidates;iteration");	
+		htTrackPerEvent = new TH2D("htTrackPerEvent", "KF tracks vs KF tracks&point;N_{tracks};N_{tracks&point} ", 1000, -0.5, 2999.5, 1000, -0.5,2999.5); fList.Add(htTrackPerEvent);		
+		htCandNmb = new TH2D("htCandNmb",  "Number of candidate hits;N candidates;iteration", 1000, -0.5, 1999.5, 1000, -0.5, 999.5);		fList.Add(htCandNmb);		
+		
+		htTrueDelta = new TH2D("htTrueDelta",  ";#Delta_{Z}, cm;#Delta_{#phi}, cm", 1000, 0., 100., 1000, 0., 100.);				fList.Add(htTrueDelta);
+		htMisDelta = (TH2D*) htTrueDelta->Clone("htMisDelta"); 											fList.Add(htMisDelta);			
 	}
-        else
-            htCandNmb = NULL, htTrackPerEvent = NULL,  htKfMc = NULL,  hPads_Theta_Phi = NULL, 
-                hTest_C_D = NULL, htKFTrack = NULL, htTMatch = NULL, htMisMatch = NULL;
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatching::~MpdTofMatching()
 {
-    	delete pMatchingFilter;
-	if(padGrid) delete padGrid;
-	if(moduleGrid) delete moduleGrid;
+    	delete pMF;
 }
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus	  MpdTofMatching::Init()
 {
-  	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " <MpdTofMatching::Init> Begin etof matching initialization.");
+  	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofMatching::Init] Begin initialization.");
 
 	FairRootManager *ioman = FairRootManager::Instance(); assert(ioman);
-  	pTofPoints = (TClonesArray*) ioman->GetObject("TOFPoint");
-	pTofHits  = (TClonesArray*) ioman->GetObject("TOFHit");
-  	pMCTracks   = (TClonesArray*) ioman->GetObject("MCTrack"); 
-	pKFTracks   = (TClonesArray*) ioman->GetObject("TpcKalmanTrack"); 
-	pKFectTracks   = (TClonesArray*) ioman->GetObject("EctTrack"); 
-	if(pTofPoints && pMCTracks) fMCDataExist = true;
+  	aTofPoints = (TClonesArray*) ioman->GetObject("TOFPoint");
+	aTofHits  = (TClonesArray*) ioman->GetObject("TOFHit");
+  	aMCTracks   = (TClonesArray*) ioman->GetObject("MCTrack"); 
+	aKFTracks   = (TClonesArray*) ioman->GetObject("TpcKalmanTrack"); 
+	aKFectTracks   = (TClonesArray*) ioman->GetObject("EctTrack"); 
 	
-  	if(!pTofHits  || !pKFTracks){ FairLogger::GetLogger()->Error(MESSAGE_ORIGIN, "Branch not found!"); return kERROR; }
-
-	// Read geo parameters 
-	MpdTofUtils::ModMMap	mmapModules; 
-	MpdTofUtils::PadMap 	mapPads;
-	MpdTofUtils::RegVec	vecRegions;
-	TString parFlnm = MpdTofUtils::GetTofParFlnm(fGeoFlNm);
-  	if(!MpdTofUtils::ReadParamFromXML(parFlnm.Data(), vecRegions, mmapModules, mapPads)) // file don't exist
-	{		
-		if(!MpdTof::ParseTGeoManager(hTest_C_D, vecRegions, mmapModules, mapPads)) return kFATAL;
-		MpdTofUtils::WriteParamToXML(parFlnm.Data(), "TOF_parameters", "The MPD TOF geo parameters.", vecRegions, mmapModules, mapPads);		
-	}
+	if(aTofPoints && aMCTracks) fIsMCrun = true;
 	
-	// create spatial grid
-	padGrid = new TGridPad("padGrid", 0.04, 0.05, 2, true);
-	moduleGrid = new TGridModule("moduleGrid", 1., 1., 2, true);	
-	moduleGrid->SetYsizeTo2Pi(fTofBarrelRadius); // R, [cm]-> [mm]
-		
-	// Install module rectangles
-	long UID; MpdTofUtils::modPar moduleData;
-	TVector3  ReperModCenter, ReperModPerp;
-	for(MpdTofUtils::ModIter iter = mmapModules.begin(), iterEnd = mmapModules.end(); iter != iterEnd; iter++)
-	{
-		moduleData = (iter->second);
+  	if(!aTofHits  || !aKFTracks){ FairLogger::GetLogger()->Error(MESSAGE_ORIGIN, "Branch not found!"); return kERROR; }
 
-		if( iter->first ==1 && moduleData.module ==12)
-		{ 
-			ReperModCenter = moduleData.center; // only REPER module processing
-			ReperModPerp = moduleData.perp;
-		}
-
-		UID = moduleGrid->InstallRectangle(moduleData.point[0], moduleData.point[1], moduleData.point[2], moduleData.point[3], Convert2barrel, CheckSingularityCrossing);
-		moduleGrid->ActivateRectangle(UID, moduleData);
-	}
-
-	// Install pad rectangles from one module
-	long padID; MpdTofUtils::padPar *padData;
-	for(MpdTofUtils::PadIter iter = mapPads.begin(), iterEnd = mapPads.end(); iter != iterEnd; iter++)
-	{
-		padData = &(iter->second);
-		padID = padData->pad <<4;
-
-		if(padData->region ==1 && padData->module == 12) 	// only REPER module pads installing
-		padGrid->InstallRectangle(padData->point[0], padData->point[1], padData->point[2], padData->point[3], padID, Convert2barrel, CheckSingularityCrossing); 
-	}
-	
-	// initialize grid
-	padGrid->Init();
-	moduleGrid->Init(); 
-
-	// calc transform from reper module RF to Master RF 	
-	TGeoHMatrix geoReper1;
-	moduleGrid->Transform(&geoReper1, ReperModCenter, ReperModPerp);
-	fGeoReper1_1 = geoReper1.Inverse();
-
-	if(fDoTest)	
-                for(MpdTofUtils::PadIter iter = mapPads.begin(); iter != mapPads.end(); ++iter) 	// cycle by pads
-			hPads_Theta_Phi->Fill((&iter->second)->center.Theta() * TMath::RadToDeg(), (&iter->second)->center.Phi() * TMath::RadToDeg());
-	
   	pKF = MpdKalmanFilter::Instance("KF","KF");
 	
 	// Create and register output array
-  	pMatchingCollection = new TClonesArray("MpdTofMatchingData");
-  	ioman->Register("TOFMatching", "Tof", pMatchingCollection, kTRUE);
+  	aTofMatching = new TClonesArray("MpdTofMatchingData");
+  	ioman->Register("TOFMatching", "Tof", aTofMatching, kTRUE);
+  	
+	pMF->SetContainer(aTofMatching);
+
+	MpdTof::ParseTGeoManager();
+
+	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofMatching::Init] Initialization finished succesfully.");
 
 return kSUCCESS;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 		MpdTofMatching::Exec(Option_t *option)
 {
- 	const double tofMatchingThresh = 2.4; // 3 sigma, [cm] 
- 
-      //struct timeval tvStart, tvEnd;
-        //struct timezone tz;
-        //gettimeofday(&tvStart, &tz);
+	const double threshZ = 1.5, threshPhi = 15.; // smallWindows
+//	const double threshZ = 3., threshPhi = 70.; // [cm]	
 
-        pMatchingCollection->Delete();
-	pMatchingFilter->Reset();
+	// Reset event
+        aTofMatching->Clear();
+	pMF->Reset();
 	
         Int_t nTofPoints = -1, nMCTracks = -1, selectedTracks  = 0;
-	if(fMCDataExist){ nTofPoints = pTofPoints->GetEntriesFast(); nMCTracks = pMCTracks ->GetEntriesFast();}
-	Int_t nTofHits = pTofHits->GetEntriesFast();  	
-	Int_t nKFTracks = pKFTracks->GetEntriesFast();
+	if(fIsMCrun){ nTofPoints = aTofPoints->GetEntriesFast(); nMCTracks = aMCTracks ->GetEntriesFast();}
+	Int_t nTofHits = aTofHits->GetEntriesFast();  	
+	Int_t nKFTracks = aKFTracks->GetEntriesFast();
 	
-	Int_t nKFectTracks = (pKFectTracks) ?  pKFectTracks->GetEntriesFast() : 0;
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " <MpdTofMatching::Exec> %i TofPoints, %i TofHits, %i MCTracks, %i KFTracks for this event.", nTofPoints, nTofHits, nMCTracks, nKFTracks);
-
-	// Check clone tracks into ECT
-	typedef set<Int_t>  trackSet;
-	trackSet EctTrackSet; 
+	Int_t nKFectTracks = (aKFectTracks) ?  aKFectTracks->GetEntriesFast() : 0;
+        if(fVerbose) cout<<" -I- [MpdTofMatching::Exec] points= "<<nTofPoints<<", hits= "<<nTofHits<<", mc tracks= "<<nMCTracks<<", kf tracks= "<<nKFTracks<<endl;
+        
+	// ---------------------------------------------------------------------------------------->>> Check clone tracks into ECT
+	typedef set<Int_t>  		sTIDsTYPE;
+	sTIDsTYPE 			sTIDs; 
+	sTIDsTYPE::const_iterator 	sTIDCiter;	
 	
-	if(pKFectTracks)
+	if(aKFectTracks)
 	for(Int_t index = 0; index < nKFectTracks; index++) // cycle by ECT KF tracks
 	{
-		MpdEctKalmanTrack *KfeTrack = (MpdEctKalmanTrack*) pKFectTracks->UncheckedAt(index);
-		if(KfeTrack->IsFromTpc()) EctTrackSet.insert(trackSet::value_type(KfeTrack->GetTpcIndex()));
+		MpdEctKalmanTrack *KfeTrack = (MpdEctKalmanTrack*) aKFectTracks->UncheckedAt(index);
+		if(KfeTrack->IsFromTpc()) sTIDs.insert(KfeTrack->GetTpcIndex());
 	}
 
-	// Mapping points to MC tracks
-	typedef multimap<Int_t, MpdTofPoint*> mapP2T; // pair< MCtrackID, MpdTofPoint*>
-	mapP2T 			mapPoints2Tracks;
-	if(fMCDataExist)
+	// ---------------------------------------------------------------------------------------->>> Sorting & Mapping points to MC tracks
+	typedef multimap<Int_t, MpdTofPoint*> mmP2TYPE; // pair< MCtrackID, MpdTofPoint*>
+	mmP2TYPE 			mmMCpoints;
+	mmP2TYPE::iterator 		mmMCpointIter;	
+	mmP2TYPE::const_iterator 	mmMCpointCiter;
+		
+	if(fIsMCrun)
 	{
-		MpdTofPoint *mcTofPoint; mapP2T::iterator 	iterP2T;
 		for(Int_t index = 0; index < nTofPoints; index++)  // cycle by MpdTofPoint
 		{
-			mcTofPoint = (MpdTofPoint*) pTofPoints->UncheckedAt(index);
+			MpdTofPoint *mcTofPoint = (MpdTofPoint*) aTofPoints->UncheckedAt(index);
 
 			Int_t trackID = mcTofPoint->GetTrackID();
 			Double_t time = mcTofPoint->GetTime();
 
-			iterP2T = mapPoints2Tracks.find(trackID);
-			if(iterP2T != mapPoints2Tracks.end()) // same trackID already inserted, insert to position (sorting by time)
+			mmMCpointIter = mmMCpoints.find(trackID);
+			if(mmMCpointIter != mmMCpoints.end()) // same trackID already inserted, insert to position (sorting by time)
 			{
-				int count = mapPoints2Tracks.count(trackID);
-				for(int i = 0; i < count; i++, iterP2T++) // cycle by hits with same trackID
+				int count = mmMCpoints.count(trackID);
+				for(int i = 0; i < count; i++, mmMCpointIter++) // cycle by hits with same trackID
 				{
- 					if(time < iterP2T->second->GetTime())
+ 					if(time < mmMCpointIter->second->GetTime())
 					{
-						mapPoints2Tracks.insert(iterP2T, mapP2T::value_type(trackID, mcTofPoint));
+						mmMCpoints.insert(mmMCpointIter, make_pair(trackID, mcTofPoint));
 						break;	
 					}
 
-					if(i == count-1) mapPoints2Tracks.insert(++iterP2T, mapP2T::value_type(trackID, mcTofPoint)); // insert to last		
+					if(i == count-1) mmMCpoints.insert(++mmMCpointIter, make_pair(trackID, mcTofPoint)); // insert to last		
 				}
 			}
-			else mapPoints2Tracks.insert(mapP2T::value_type(trackID, mcTofPoint));
+			else 	mmMCpoints.insert(make_pair(trackID, mcTofPoint));
 
 		} // cycle by MpdTofPoint
 	}
-
-	// Activate pads by hits
-	padGrid->ResetActivation();
-	for(Int_t hitIndex = 0; hitIndex < nTofHits; hitIndex++ ) // cycle by TofHits
-	{			
-		MpdTofHit *TofHit = (MpdTofHit*) pTofHits->UncheckedAt(hitIndex);
-		padGrid->ActivateRectangle(TofHit->GetDetectorID(), hitIndex);
-	}
-
-        #ifdef _OPENMP
-            omp_lock_t coutLock;
-            omp_init_lock(&coutLock);
-        #endif
-
-        #pragma omp parallel
-	{
-          bool 				DoMCTest;
-          Int_t  				flag, mcTrackIndex,  mcPID = 0;
-          TVector3 			div, hitPosition, estPointR, estPointPl, Momentum;
-          MpdTpcKalmanTrack 	*KfTrack;
-          MpdTofPoint 			*mcTofPoint;
-          MpdTofHit 			*TofHit;
+	// ---------------------------------------------------------------------------------------->>> Mapping hits to detectors	
+	typedef multimap<Int_t, pair<MpdTofHit*, Int_t> > 	mmD2HTYPE; // pair< detUID, pair<MpdTofHit*, hitIndex> >
+	mmD2HTYPE::const_iterator	mmHitCiter;
+	mmD2HTYPE 			mmHits;
 	
-        #pragma omp for
-        for(Int_t KfIndex = 0; KfIndex < nKFTracks; KfIndex++) 	// cycle by TPC KF tracks
+	set<int>			sUIDs;
+        for(Int_t hitIndex = 0; hitIndex < nTofHits; hitIndex++) // cycle by tof hits
 	{   
-		flag = 0;
+		MpdTofHit *pTofHit = (MpdTofHit*) aTofHits->At(hitIndex);
+		Int_t volumeUID = pTofHit->GetDetectorID();
 
+//TString comment =" hitIndex="; comment += hitIndex;
+//pTofHit->Print(comment.Data());
+		
+		sUIDs.insert(volumeUID);	
+		mmHits.insert(make_pair( (volumeUID & 0xFFFFFF00), make_pair(pTofHit, hitIndex))); // convert strip volumeUID to detectorUID (reset stripID to 0)
+	}	
+	// ----------------------------------------------------------------------------------------
+	const MpdTof::intervalTreeType*	mDetectorsZ = MpdTof::GetDetZ();
+	const MpdTof::intervalTreeType*	mDetectorsPhi = MpdTof::GetDetPhi();	
+	
+	bool		DoMCTest = fIsMCrun && fDoTest;
+	
+     	TVector3 	hitPosition, estPointR, estPointPl, Momentum;	
+	
+	vector<MpdTof::intervalType> 	segmentZ, segmentPhi, intersect;
+	
+	// The MC run variables (prefix mc). It's valid values only if fIsMCrun = true	
+        Int_t		mcTrackIndex = -1,  mcPID = -1;        
+        TVector3 	mcPosition;			 
+        Int_t		mcNpoints = -1; 			
+        bool		mcTofTouch, mcIsSameIDs, mcHasCand, mcHasTrueCand;
+        Int_t 		mcSector, mcBox, mcDetector, mcStrip;
+     	set<int>	mcTofTouchKfTracks; // index of kf tracks having TOF hit
+     
+//cout<<"\n ------------------------------------------------------------------------------------------------------------->> EVENT";    
+//mDetectorsZ->dump("\n\n ----->>>	mDetectorsZ INTERVALS");
+//mDetectorsPhi->dump("\n\n ----->>>          mDetectorsPhi INTERVALS");
+//	nKFTracks =1;   
+        for(Int_t KfIndex = 0; KfIndex < nKFTracks; KfIndex++) 	// cycle by TPC KF tracks
+	{   	
 		// check clone track into ECT	
-		if(pKFectTracks)
+		if(aKFectTracks)
 		{	
-			trackSet::iterator it = EctTrackSet.find(KfIndex);			
-			if(it != EctTrackSet.end()) continue; // matching with ETof			
+			sTIDCiter = sTIDs.find(KfIndex);			
+			if(sTIDCiter != sTIDs.end()) continue; // matching with ETof			
 		}
 		
-		DoMCTest = fMCDataExist && fDoTest;
-		KfTrack = (MpdTpcKalmanTrack*) pKFTracks->UncheckedAt(KfIndex);	
-                estPointR = EstTrackOnR(KfTrack); 		// Estimate point on cylinder
+		MpdTpcKalmanTrack *pKfTrack = (MpdTpcKalmanTrack*) aKFTracks->UncheckedAt(KfIndex);	
+		
+///cout<<"\n ------------>> KF track  KfIndex="<<KfIndex<<" mcTrackIndex="<<KfTrack->GetTrackID()<<"   P="<<KfTrack->Momentum();	
 
-		if(fMCDataExist)
+                estPointR = EstTrackOnR(pKfTrack); 		// Estimate point on cylinder
+
+		if(fIsMCrun)
 		{
-			mcTrackIndex = KfTrack->GetTrackID();
-			FairMCTrack *mcTrack = (FairMCTrack*) pMCTracks->UncheckedAt(mcTrackIndex);
-                        mcPID = mcTrack->GetPdgCode();	
+			mcTrackIndex = pKfTrack->GetTrackID();
+			FairMCTrack *mcTrack = (FairMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);
+			
+                        mcPID = mcTrack->GetPdgCode();               
+                  	mcNpoints = mmMCpoints.count(mcTrackIndex);
+                  	mcTofTouch = mcTrack->GetNPoints(kTOF);
+                  	
+///if(-1 !=  mcTrack->GetMotherId()) continue; // pass ONLY primary tracks  FIXME:  FOR TEST 
+                  	
+			if(mcTofTouch) mcTofTouchKfTracks.insert(KfIndex);
+			              	
+                  	mmMCpointCiter = mmMCpoints.find(mcTrackIndex); 
+			if(mmMCpointCiter != mmMCpoints.end())
+			{	
+				mmMCpointCiter->second->Position(mcPosition); // update mcPosition
 
-			if(DoMCTest && mcTrack->GetNPoints(kTOF)) // KF track have TOFpoint 
+				Int_t uid = mmMCpointCiter->second->GetDetectorID();
+				mcSector = MpdTofPoint::GetSector(uid);
+				mcBox = MpdTofPoint::GetBox(uid);
+				mcDetector = MpdTofPoint::GetDetector(uid);
+				mcStrip = MpdTofPoint::GetStrip(uid);							
+//cout<<"\n MC POINT sector= "<<mcSector<<" box="<<mcBox<<" detector="<<mcDetector<<" strip="<<mcStrip;
+			}
+			else
 			{
-				selectedTracks++;
-                		#pragma omp critical
-                        	{
-					htKFTrack->Fill(KfTrack->Momentum(), KfTrack->Momentum3().Eta());
-                        	}
+				assert(mcTofTouch == false);           
+			}	
+		}
+		
+//if(! mcTofTouch) continue; // FIXME:  FOR TEST 
+///cout<<"\n pass mcTofTouch KfIndex="<<KfIndex<<" mcTrackIndex="<<mcTrackIndex<<"  touch="<<mcTofTouch<<" nMCpoints="<<mmMCpoints.count(mcTrackIndex);
+		
+		if(DoMCTest)
+		{
+			if(mcNpoints == 1) // only one tof point per MCtrack
+				htKfMcCyl->Fill((mcPosition - estPointR).Mag(), pKfTrack->Momentum()); // mcTofPoint <-> est. KFtrack point	
+				
+		 	if(mcTofTouch) // KF track have TOFpoint 
+			{
+				selectedTracks++; 	
+				htKFTrack->Fill(pKfTrack->Momentum(), pKfTrack->Momentum3().Eta());
 			}
 		}
 
-		MpdTpcKalmanTrack ReFittedTrack(RefitTrack(KfTrack));
+		MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));
+		
+		// ---------------------------------------------------------------------------------------->>> Looking for overlaping of estPointR & detectors
+		double estZ = estPointR.Z(), estPhi = estPointR.Phi();	
 
-		// Looking for modules	
-		TGridModule::linksMAP 	moduleList; Double_t trackLength;  Int_t charge;
-		if(moduleGrid->FindRectangle(estPointR, &moduleList, Convert2barrel, 0, 1,1, 1,1)) // true, if modules found
+		double Zerror = 10.; // [cm] // FIXME:  should be dependent on the parameters of the KFtrack
+		double PhiError = 0.1; // [rads] // FIXME:  should be dependent on the parameters of the KFtrack
+
+		segmentZ.clear();
+		segmentPhi.clear();
+		intersect.clear();
+		
+		mDetectorsZ->findOverlapping(estZ-Zerror,  estZ+Zerror, segmentZ); 	
+		mDetectorsPhi->findOverlapping(estPhi-PhiError, estPhi+PhiError, segmentPhi);
+
+//cout<<"\n <<<--Z-->>>>> ("<<estZ-Zerror<<", "<<estZ+Zerror<<")";
+//MpdTof::intervalTreeType::dumpIntervals(&segmentZ, "\n\n ----->>>	mDetectorsZ findOverlapping");
+
+//cout<<"\n <<<--Phi-->>>>> ("<<estPhi-PhiError<<", "<<estPhi+PhiError<<")";
+//MpdTof::intervalTreeType::dumpIntervals(&segmentPhi, "\n\n ----->>>	mDetectorsPhi findOverlapping");
+
+		// -------------------------------------   bruteforce ------------------------------------------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>
+/*		if(fMCDataExist)
+		if(mcTofTouch)
 		{
-			TGridModule::linksIter modIter; TGridPad::linksIter padIter; TGridPad::linksMAP padList;
-			MpdTofUtils::modPar *moduleData; MpdTofUtils::padPar *padData;
-			TVector3 localPos; long moduleID; Double_t delta;
+			multimap<double, pair<const LStrip*, TVector3> > mEstPoint; // <delta, <LStrip*, estPointPl> >
+			for(MpdTof::MStripCIT it = MpdTof::GetStripMap()->begin(), itEnd = MpdTof::GetStripMap()->end(); it != itEnd; it++) // cycle by all strips
+			{			
+				Int_t 	UIDforce = it->second.volumeUID;
+				if(sUIDs.find(UIDforce) == sUIDs.end()) continue; // pass only strips with hits
+									
+				Int_t charge;
+				Double_t trackLength;	
 
-			for(modIter = moduleList.begin(); modIter != moduleList.end(); modIter++) // cycle by selected modules
-			{
-				moduleData = &(modIter->second);
-				moduleID = (moduleData->region<<24) + (moduleData->module<<14);
 
-				if(EstTrackOnPlane(ReFittedTrack, moduleData->center, moduleData->perp, estPointPl, trackLength, Momentum, charge)) // Estimate point on plane; true, if point exist
+Int_t sector = MpdTofPoint::GetSector(UIDforce);
+Int_t box = MpdTofPoint::GetBox(UIDforce);
+Int_t detector = MpdTofPoint::GetDetector(UIDforce);
+Int_t strip = MpdTofPoint::GetStrip(UIDforce);	
+				
+///cout<<"\n EstTrackOnPlane UID="<<it->second.volumeUID<<", center:("<<it->second.center.X()<<","<<it->second.center.Y()<<","<<it->second.center.Z()<<") perp: ("<<it->second.perp.X()<<","<<it->second.perp.Y()<<","<<it->second.perp.Z()<<")";
+///cout<<"\n  UID="<<UIDforce<<", sector= "<<sector<<" box="<<box<<" detector="<<detector<<" strip="<<strip;	
+					
+				if(EstTrackOnPlane(ReFittedTrack, it->second.center, it->second.perp, estPointPl, trackLength, Momentum, charge)) // Estimate point on plane; true, if point exist
 				{
+					double delta = (mcPosition - estPointPl).Mag();
+					mEstPoint.insert(make_pair(delta, make_pair(&(it->second), estPointPl)));
+					
+///cout<<"\n EstTrackOnPlane OKKK ";					
+				}
+			} // cycle by all strips
+			
+			// -------------------------------------   bruteforce
+			
+cout<<"\n SIZEEEE "<<	MpdTof::GetStripMap()->	size()<<"  "<<mEstPoint.size();
+	
+			int nMaxPrints = 100, nPrint = 0;
+			for(map<double, pair<const LStrip*, TVector3> >::iterator it = mEstPoint.begin(), itEnd = mEstPoint.end(); it != itEnd; it++, nPrint++)
+			{
+Int_t 	UIDforce = it->second.first->volumeUID;
+Int_t sector = MpdTofPoint::GetSector(UIDforce);
+Int_t box = MpdTofPoint::GetBox(UIDforce);
+Int_t detector = MpdTofPoint::GetDetector(UIDforce);
+Int_t strip = MpdTofPoint::GetStrip(UIDforce);	
+		
+				bool HavePoint = false;	
+				for(Int_t index = 0; index < nTofPoints; index++)  // cycle by MpdTofPoint
+				{
+					MpdTofPoint *mcTofPoint = (MpdTofPoint*) aTofPoints->UncheckedAt(index);
+					if(UIDforce == mcTofPoint->GetDetectorID())
+					{
+						HavePoint = true;
+						break;
+					}
+				}
+
+cout<<"\n bruteforce point delta="<<it->first<<" UID="<<UIDforce<<", sector= "<<sector<<" box="<<box<<" detector="<<detector<<" strip="<<strip<<"   HavePoint= "<<HavePoint;	
+		
+				if(nPrint > nMaxPrints)break;
+			}
+
+			cout<<	endl;
+		}
+		// -------------------------------------   bruteforce -------------------------------------------------------------<<<<<<<<<<<<<<<<<<<<<<<<<
+*/
+		
+		if(!segmentZ.empty() && !segmentPhi.empty()) // have overlaped segments both Z and Phi 
+		{
+			// calc. intersection
+			sort(segmentZ.begin(), segmentZ.end(), less_by_pointer());
+    			sort(segmentPhi.begin(), segmentPhi.end(), less_by_pointer());  
+		 	set_intersection(segmentZ.begin(), segmentZ.end(), segmentPhi.begin(), segmentPhi.end(), std::back_inserter(intersect), less_by_pointer());  //FIXME: MAYBE  std::inserter ???? 
+
+			for(vector<MpdTof::intervalType>::const_iterator cit = intersect.begin(), citEnd = intersect.end(); cit != citEnd; cit++) // cycle by the overlaped detectors
+			{
+				Int_t detUID = (*cit).value->volumeUID;
+				Int_t charge;
+				Double_t trackLength;
+				
+				if(EstTrackOnPlane(ReFittedTrack, (*cit).value->center, (*cit).value->perp, estPointPl, trackLength, Momentum, charge)) // Estimate point on detector plane; true, if point exist
+				{		
 					if(DoMCTest)
 					{
-						mapP2T::iterator iter = mapPoints2Tracks.find(mcTrackIndex);
-						if(iter != mapPoints2Tracks.end())
-						if(moduleData->region == iter->second->GetRegion() && moduleData->module == iter->second->GetModule())
+						if(mcNpoints == 1) // only one tof point per MCtrack
 						{
-							TVector3 pos; iter->second->Position(pos);
-		                			#pragma omp critical
-                            				{
-								htKfMc->Fill((pos - estPointPl).Mag(), KfTrack->Momentum()); // mcTofPoint <-> est. KFtrack point 
-							}
-						}
+							double Mom = pKfTrack->Momentum();
+							double dZ = abs(mcPosition.Z() - estPointPl.Z());
+							double delta = (mcPosition - estPointPl).Mag();
+							double dPhi = sqrt(delta*delta - dZ*dZ);
+						
+							htMcEst_DeltaP->Fill(delta, Mom); // mcTofPoint <-> est. KFtrack point	
+							htMcEst_dZP->Fill(dZ, Mom); 
+							htMcEst_dPhiP->Fill(dPhi, Mom); 
+							htMcEst_dPhidZ->Fill(dPhi, dZ); 							
+						}			
 					}
-
-					// Calc. module transform matrix
-					TGeoHMatrix geoReper2;
-					moduleGrid->Transform(&geoReper2, moduleData->center, moduleData->perp); // transform =  translation * rotation, [cm]->[mm]
-					TGeoHMatrix geoRES(geoReper2 * fGeoReper1_1); 
-
-					// Transform the point to reper module
-					moduleGrid->MasterToLocal(estPointPl, localPos, &geoRES ); // [cm]->[mm]
-
-					// Looking for pads
-					if(padGrid->FindRectangle(localPos, &padList, Convert2barrel, moduleID, 60,2, 60,2)) // true, if pads found
+				
+					mmHitCiter = mmHits.find(detUID);
+					if(mmHitCiter != mmHits.end()) // the estimated detector have hits
 					{
-						for(padIter = padList.begin(); padIter != padList.end(); padIter++) // cycle by selected pads
+						int counter = mmHits.count(detUID);
+						for(int hit = 0; hit < counter; hit++, mmHitCiter++) // cycle by hits into the estimated detector
 						{
-							int  hitIndex = padIter->second;	
-							TofHit = (MpdTofHit*) pTofHits->UncheckedAt(hitIndex);
-							flag += TofHit->GetFlag();	
-							TofHit->Position(hitPosition); div = hitPosition - estPointPl; delta = div.Mag();						
-							pMatchingFilter->AddCandidate(mcTrackIndex, KfIndex, hitIndex, TofHit, mcPID, flag, trackLength, estPointR, estPointPl, Momentum, charge, delta);
-						} // cycle by selected pads	
+	 						MpdTofHit *TofHit = mmHitCiter->second.first;
+	 						Int_t hitIndex = mmHitCiter->second.second;
+							TofHit->Position(hitPosition);
+							 
+							double delta = (hitPosition - estPointPl).Mag();						
+							double deltaZ = abs(hitPosition.Z() - estPointPl.Z());
+							double deltaPhi = sqrt(delta*delta - deltaZ*deltaZ);
+							
+//cout<<"\n tTOFWWWhit delta="<<delta<<" point delta="<<(mcPosition - estPointPl).Mag();
+
+							if(DoMCTest)
+							{
+								Int_t uid = TofHit->GetDetectorID();
+								Int_t sector = MpdTofPoint::GetSector(uid);
+								Int_t box = MpdTofPoint::GetBox(uid);
+								Int_t detector = MpdTofPoint::GetDetector(uid);
+								Int_t strip = MpdTofPoint::GetStrip(uid);
+														
+								mcIsSameIDs = (mcSector == sector && mcBox == box && mcDetector == detector && mcStrip == strip) ? true : false;
+//cout<<"\n MC tofHIT sector= "<<sector<<" box="<<box<<" detector="<<detector<<" strip="<<strip<<"  delta="<<delta<<" mcIsSameIDs="<<mcIsSameIDs;
+	
+								if(mcIsSameIDs)	htTrueDelta->Fill(deltaZ, deltaPhi); 
+								else		htMisDelta->Fill(deltaZ, deltaPhi); 
+							}
+							
+							if(deltaZ < threshZ && deltaPhi < threshPhi)	
+							{	
+								if(DoMCTest)
+								{
+									if(mcIsSameIDs) mcHasTrueCand = true;
+									mcHasCand = true;
+								}
+								
+								pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), TofHit, mcPID, TofHit->GetFlag(), trackLength, estPointR, estPointPl, (*cit).value->center, Momentum, charge, delta));
+//cout<<"\n AddCandidate	KfIndex="<<KfIndex<<" hitIndex="<<hitIndex<<" delta="<<delta<<" NmbTrHits="<<NmbTrHits<<"  hasTrueCand="<<hasTrueCand;
+							}
+							
+						} // cycle by hits into the estimated detector
 					}
+		
+				} // Estimate point on plane; true, if point exist
+				
+			} // cycle by the overlaped detectors 
+		
+		} // have overlaped segments both Z and Phi 
 
-				}
-			} // cycle by selected modules
+		if(DoMCTest && mcTofTouch)
+		{ 	
+			if(mcHasCand)		htKFTrackCand->Fill(pKfTrack->Momentum(), pKfTrack->Momentum3().Eta());
+			if(mcHasTrueCand) 	htKFTrackTrueCand->Fill(pKfTrack->Momentum(), pKfTrack->Momentum3().Eta());
 		}
-
+		
 	} // cycle by KF tracks
-        } //pragma omp parallel
 
 	if(fDoTest) htTrackPerEvent->Fill(nKFTracks, selectedTracks);
-//pMatchingFilter->Dump();//debug
 
-	Int_t MatchingOK = pMatchingFilter->Processing(nKFTracks, htCandNmb);
-	pMatchingFilter->FillMatchings(this);
+	double chi2;
+	Int_t MatchingOK = pMF->Processing(nKFTracks, htCandNmb, chi2);	// accept candidates
+	Int_t nEntries = pMF->UpdateContainer(); 			// remove unmatched candidates
 
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " <MpdTofMatching::Exec> MatchingOK = %i ", MatchingOK);	
+assert(nEntries	== MatchingOK);
 
-        //gettimeofday(&tvEnd, &tz);
-        //int dif = 1000000*((int)tvEnd.tv_sec - (int)tvStart.tv_sec) + (tvEnd.tv_usec - tvStart.tv_usec);
-        //cout<<"TOFMatching::Exec "<<dif<<" ns\n";
+	if(DoMCTest) // Fill the matching efficiency histos
+	{	
+		map<int, MpdTofHit*> mMatchings;
+		map<int, MpdTofHit*>::iterator Iter;
+		TVector3 momentum;
+		
+		for(int entry = 0, size = aTofMatching->GetEntriesFast(); entry < size; entry++)  // cycle by the accepted matching candidates
+		{
+			MpdTofMatchingData *pData = (MpdTofMatchingData*) aTofMatching->At(entry);
+			MpdTofHit *hit = (MpdTofHit*) aTofHits->At(pData->GetTofHitIndex());
+			mMatchings.insert(make_pair(pData->GetKFTrackIndex(), hit));	
+		}
+		
+		for(Int_t KfIndex = 0; KfIndex < nKFTracks; KfIndex++) 	// cycle by TPC KF tracks
+		{   	
+			if(aKFectTracks)
+			{	
+				sTIDCiter = sTIDs.find(KfIndex);			
+				if(sTIDCiter != sTIDs.end()) continue; // matching with ETof			
+			}
+		
+			MpdTpcKalmanTrack *pKfTrack = (MpdTpcKalmanTrack*) aKFTracks->UncheckedAt(KfIndex);
+			mcTrackIndex = pKfTrack->GetTrackID();               
+                    	FairMCTrack *pMCtrack = (FairMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);
+                                     
+                  	bool mcTofTouch = pMCtrack->GetNPoints(kTOF);
+	
+//			momentum = pKfTrack->Momentum3(); 	// momentum from KF track	
+			pMCtrack->GetMomentum(momentum); 	// momentum from MC track
+
+			double Eta = momentum.Eta(), P = momentum.Mag();
+			
+			Iter = mMatchings.find(KfIndex);
+			bool IsMatchingExist = (Iter != mMatchings.end());
+			bool IsTrueMatching = false;
+			
+			if(mcTofTouch)
+			{	
+				if(IsMatchingExist)	IsTrueMatching = Iter->second->CheckTrackID(mcTrackIndex);							
+				
+				pEfficiencyP->Fill(IsTrueMatching, P);		
+				pEfficiencyEta->Fill(IsTrueMatching, Eta);	
+				pEfficiencyEtaP->Fill(IsTrueMatching, Eta, P);	
+			}
+						
+			if(IsMatchingExist)
+			{		
+				pContaminationP->Fill( !IsTrueMatching, P);		
+				pContaminationEta->Fill( !IsTrueMatching, Eta);	
+				pContaminationEtaP->Fill( !IsTrueMatching, Eta, P);				
+			}			
+		}
+			
+	} // Fill the matching efficiency histos
+
+	if(fVerbose) cout<<" -I- [MpdTofMatching::Exec] MatchingOK = "<<MatchingOK<<" ("<<chi2/MatchingOK<<")";	
 }
 //------------------------------------------------------------------------------------------------------------------------
 void	MpdTofMatching::Finish()
 {
 	if(fDoTest)
     	{				
-      		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " <MpdTofMatching::Finish> Update  %s file. ", fTestFlnm.Data());
+      		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " [MpdTofMatching::Finish] Update  %s file. ", fTestFlnm.Data());
 		TFile *ptr = gFile;
-
 		TFile file(fTestFlnm.Data(), "RECREATE");
       		fList.Write(); 
       		file.Close();
-
-		padGrid->Write("test.pad.root");
-		moduleGrid->Write("test.module.root");
-
 		gFile = ptr;
     	}
-}
-//------------------------------------------------------------------------------------------------------------------------
-void 	MpdTofMatching::AddEntry(Int_t index, Int_t kfTrackId, Int_t tofHitId, const MpdTofHit* hit, Int_t pid, Int_t flag,
-				Double_t length, const TVector3& est_point_R, const TVector3& est_point_Plane, 
-				Double_t est_point_PlanePhi, Double_t est_point_PlaneTheta,  const TVector3& Mom, Int_t charge)
-{
-	MpdTofMatchingData *data = new  ((*pMatchingCollection)[index]) MpdTofMatchingData(kfTrackId, tofHitId, hit, pid,  flag,
-						length, est_point_R, est_point_Plane, est_point_PlanePhi, est_point_PlaneTheta, Mom, charge);
-	
-	if(fVerbose > 1) data->Print();
 }
 //------------------------------------------------------------------------------------------------------------------------
 TVector3	MpdTofMatching::EstTrackOnR(const MpdTpcKalmanTrack *tr)const
@@ -485,203 +652,4 @@ bool		MpdTofMatching::EstTrackOnPlane(const MpdTpcKalmanTrack& tr, const TVector
 return true;
 }
 //------------------------------------------------------------------------------------------------------------------------
-ClassImp(MpdTofMatching)
-//------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------
-void	TofMatchingFilter::AddCandidate(Int_t mcTrackIndex, Int_t KfIndex, Int_t hitIndex, MpdTofHit *TofHit, Int_t mcPID, Int_t flag, 
-	Double_t trackLength, TVector3 estPointR,  TVector3 estPointPl, TVector3 Momentum, Int_t charge, Double_t delta)
-{										
-	TofMatchingCandidate *ptr;	
-	candIter iterC = InsertCand(KfIndex, ptr = new TofMatchingCandidate(mcTrackIndex, hitIndex, mcPID, flag, charge, Momentum, TofHit, delta, estPointR, estPointPl, trackLength));
-	ptr->iterL = InsertLink(hitIndex, HitData(KfIndex, iterC, delta, -1., -1.));
 
-//cout<<"\n   TofMatchingFilter::AddCandidate "<<ptr<<"  mcTrackIndex= "<<iterC->second->mcTrackIndex<<"  hitIndex="<< iterC->second->hitIndex
-//<<" KfIndex= "<<ptr->iterL->second.KfIndex<<flush;
-}
-//------------------------------------------------------------------------------------------------------------------------
-TofMatchingFilter::candIter TofMatchingFilter::FindClosestTrack(linkIter itLink, Int_t size, Double_t& minDelta)	
-{
-assert(size != 0); // debug
-	candIter		retvalue = mmapCand.end(); // debug
-	
-	Int_t KfIndex;
-	Double_t deltaR, deltaPhi, delta; minDelta = 1.e+10; // big value
-	
-	for(int i=0; i< size; i++) // cycle by concurrent
-	{
-		delta =  itLink->second.delta;	
-		if(delta < minDelta){ retvalue = itLink->second.iterC; minDelta = delta; } // best (closest) candidate		
-		++itLink;
-	}
-assert(retvalue != mmapCand.end()); // debug		
-return retvalue;
-}
-//------------------------------------------------------------------------------------------------------------------------
-TofMatchingFilter::candIter TofMatchingFilter::FindClosestHit(Int_t KfIndex)
-{
-	candIter  retCandIter = mmapCand.end();	// debug
-	
-	candIter itC1 = mmapCand.find(KfIndex);
-	candIter itC2 = mmapCand.upper_bound(KfIndex);
-
-	Double_t deltaR, deltaPhi, delta, minDelta = 1.e+10; // big value	
-	for(candIter itC = itC1; itC != itC2; ++itC) // cycle by candidate hits
-	{
-		delta =((TofMatchingCandidate*) itC->second) ->delta;
-
-		if(delta < minDelta) // best (closest) candidate
-		{ 
-			retCandIter = itC; 
-			minDelta = delta; 	
-		} 
-	}
-assert(retCandIter != mmapCand.end()); // debug
-return retCandIter;
-}		
-//------------------------------------------------------------------------------------------------------------------------
-Int_t 	TofMatchingFilter::Processing(Int_t nKFTracks, TH2D* h2)
-{
-//cout<<"\n  WWWW	TofMatchingFilter::Processing --------------------------------------------------------------"<<flush;
-
-	RecreateCounterMaps(nKFTracks);
-	Int_t MatchingOK = ProcessSimpleTracks(); 	// process only one hit simple tracks
-	RecreateCounterMaps(nKFTracks); 		// update CounterMaps after ProcessSimpleTracks
-
-	TofMatchingCandidate 	*pMatchCand;
-	Int_t counter, iterNmb = 0;	
-	counterIter iter;
-	
-newIteration:
-	iterNmb++;
-
-	if(iterNmb > 5000){ FairLogger::GetLogger()->Warning(MESSAGE_ORIGIN, " <TofMatchingFilter::Processing> Too many tries."); goto end; }
-	
-	if(h2) // fDoTest == true
-	{
-		for(int nCand = 0; nCand < 100; nCand++)
-			if(mmapCounters.find(nCand) != mmapCounters.end()) h2->Fill(nCand, iterNmb);	
-	}
-	
-	// ----------->> Processing tracks with one candidate 
-	iter = mmapCounters.find(1);
-	if(iter != mmapCounters.end())				// exist
-	{
-		Int_t KfIndex = iter->second;		
-
-		candIter itCand = mmapCand.find(KfIndex);	// exist one entry
-assert(itCand != mmapCand.end()); // debug
-
-		Int_t hitIndex = itCand->second->hitIndex;
-		int conNmb  = mmapLinks.count(hitIndex);		// number of concurrent track
-		linkIter itLink = mmapLinks.find(hitIndex);		// iter to first track
-assert(itLink != mmapLinks.end()); // debug
-//cout<<"\n  WWWWT 1 "<<iterNmb<<" track="<<KfIndex<<" hit="<<hitIndex<<"   conNmb="<<conNmb;
-			
-		if(conNmb == 1)		AcceptCandidate(itCand);	// no concurrent track			
-		else if(conNmb>1)
-		{
-			Double_t delta;
-			itCand = FindClosestTrack(itLink, conNmb, delta); 
-			AcceptCandidate(itCand);
-		}	
-	
-		goto newIteration;	// try new iteration after map entries erased
-	
-	} // <<<----------- Processing tracks with one candidate 	
-	
-	// ----------->> Processing tracks with two candidates 	
-	iter = mmapCounters.find(2);
-	if(iter != mmapCounters.end())				// exist	
-	{
-		Int_t KfIndex = iter->second;
-		candIter itCand1 = mmapCand.find(KfIndex);
-assert(itCand1 != mmapCand.end()); // debug
-		Int_t hitIndex = itCand1->second->hitIndex;				// first candidate
-		int conNmb  = mmapLinks.count(hitIndex);				// number of concurrent track
-		linkIter itLink = mmapLinks.find(hitIndex);				// iter to first track
-assert(itLink != mmapLinks.end()); // debug		
-//cout<<"\n  WWWWT 2 "<<iterNmb<<" track="<<KfIndex<<" hit="<<hitIndex;
-							
-		Double_t delta1 = -1., delta2 = -1.;
-		candIter itClosest1, itClosest2;
-		if(conNmb>0) itClosest1 = FindClosestTrack(itLink, conNmb, delta1); 
-			
-		candIter itCand2 = itCand1; itCand2++;
-		hitIndex = itCand2->second->hitIndex;					// second candidate		
-		conNmb  = mmapLinks.count(hitIndex);				// number of concurrent track
-		itLink = mmapLinks.find(hitIndex);						// iter to first track
-//cout<<" hit2="<<hitIndex;
-			
-		if(conNmb>0) itClosest2 = FindClosestTrack(itLink, conNmb, delta2); 
-
-//Commit();		
-//		cout<<"\n  delta1="<<delta1<<"  delta2="<<delta2;
-		if(delta1 > 0. &&  delta2 > 0.)	// both exist
-		{
-			if(delta1 <  delta2)	AcceptCandidate(itClosest1); 
-			else 			AcceptCandidate(itClosest2); 		 
-		}
-		else if(delta1 > 0.) AcceptCandidate(itClosest1); // only 1 exist
-		else if(delta2 > 0.) AcceptCandidate(itClosest2); // only 2 exist
-//Status();						
-		goto newIteration;	// try new iteration after map entries erased			
-	} // <<<----------- Processing tracks with two candidates
-	
-	// ----------->> Processing tracks with 3 candidates 
-	iter = mmapCounters.find(3);
-	if(iter != mmapCounters.end())					
-	{
-//cout<<"\n  WWWWT 3 "<<iterNmb<<" "<<iter->second;
-		Int_t KfIndex = iter->second;
-		AcceptCandidate(FindClosestHit(KfIndex)); 
-		goto newIteration;		
-	} 
-	// <<<----------- Processing tracks with 3 candidates 
-	
-	iter = mmapCounters.find(4);
-	if(iter != mmapCounters.end())					
-	{
-//cout<<"\n  WWWWT 4 "<<iterNmb<<" "<<iter->second;
-		Int_t KfIndex = iter->second;	
-		AcceptCandidate(FindClosestHit(KfIndex)); 
-		goto newIteration;		
-	} 
-
-	iter = mmapCounters.upper_bound(4);
-	if(iter != mmapCounters.end())					
-	{
-//cout<<"\n  WWWWT > 4 "<<iterNmb<<" "<<iter->second;
-		Int_t KfIndex = iter->second;	
-		AcceptCandidate(FindClosestHit(KfIndex)); 
-		goto newIteration;		
-	}
-	
-end:	
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " <TofMatchingFilter::Processing> Finished with  %i iterations.", iterNmb);		
-	
-return 	mmapAccepted.size();
-}	
-//------------------------------------------------------------------------------------------------------------------------
-void	TofMatchingFilter::FillMatchings(MpdTofMatching* ptr)
-{
-	Int_t entryID = 0;
-	TofMatchingCandidate 	*pMatchCand;
-	for(candIter iter = mmapAccepted.begin(); iter != mmapAccepted.end(); ++iter)
-	{
-	//	pMatchCand = dynamic_cast<TofMatchingCandidate*> ( iter->second ); if(pMatchCand == NULL) continue;
-		pMatchCand = (TofMatchingCandidate*) iter->second;
-		
-		// add Entry to collection		
-		ptr->AddEntry(entryID++, iter->first, pMatchCand->hitIndex, pMatchCand->TofHit, pMatchCand->mcPID, pMatchCand->flag, 
-			pMatchCand->trackLength, pMatchCand->estPointR, pMatchCand->estPointPl, 
-			0., 0., pMatchCand->Momentum, pMatchCand->charge);
-		
-		if(ptr->fDoTest)			
-		if(pMatchCand->TofHit->CheckTrackID(pMatchCand->mcTrackIndex))	 // TRUE Matching		
-			ptr->htTMatch->Fill(pMatchCand->Momentum.Mag(), pMatchCand->Momentum.Eta());	
-		else 
-			ptr->htMisMatch->Fill(pMatchCand->Momentum.Mag(), pMatchCand->Momentum.Eta());						
-	}
-}
-//------------------------------------------------------------------------------------------------------------------------	

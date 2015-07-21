@@ -6,13 +6,19 @@
 //------------------------------------------------------------------------------------------------------------------------
 class MpdTofHit : public FairHit
 {
+protected:
+	Double32_t		fTime;              // Time since event start [ns]
+	Int_t			fFlag;              // Flag for general purposes [TDC, event tagging...]
+
+//	Double32_t		fADC[25];
+//	Double32_t		fQAmplitude;
+
 public:
 	MpdTofHit();
 	MpdTofHit(Int_t detectorID, TVector3 pos, TVector3 dpos, Int_t refIndex, Double_t tof, Int_t flag = 0);
-
 	virtual ~MpdTofHit();
 
-	void			Print(const Option_t* opt = 0) const;
+	void			Print(const char* comment = nullptr) const;
 
 	Double_t		GetTime() const { return fTime; };
 	Int_t			GetFlag() const { return fFlag; }; 
@@ -23,13 +29,6 @@ public:
 	
 	bool			CheckVolumeUID(Int_t uid);
 	bool			CheckTrackID(Int_t uid);
-		
-protected:
-	Double32_t		fTime;              // Time since event start [ns]
-	Int_t			fFlag;              // Flag for general purposes [TDC, event tagging...]
-
-//	Double32_t		fADC[25];
-//	Double32_t		fQAmplitude;
 
 ClassDef(MpdTofHit,1)
 };

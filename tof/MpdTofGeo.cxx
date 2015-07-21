@@ -8,7 +8,7 @@ MpdTofGeo::MpdTofGeo()
 {
 	fName="tof";
 	maxSectors=0;
-	maxModules=24;
+	maxModules=124;
 }
 //------------------------------------------------------------------------------------------------------------------------
 const char*		MpdTofGeo::getModuleName(Int_t m) 

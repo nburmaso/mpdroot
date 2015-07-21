@@ -11,12 +11,12 @@
 #pragma link C++ class MpdTof+;
 #pragma link C++ class MpdTofContFact;
 #pragma link C++ class MpdTofHit+;
+#pragma link C++ class MpdTofPoint+;
 #pragma link C++ class MpdTofHitProducer+;
 #pragma link C++ class MpdTofHitProducerIdeal+;
-#pragma link C++ class MpdTofPoint+;
 #pragma link C++ class MpdTofMatching+;
 #pragma link C++ class MpdTofMatchingData+;
-#pragma link C++ class MatchingFilter+;
 #pragma link C++ class MpdTofUtils+;
+
 #endif
 

@@ -35,7 +35,6 @@ MpdTofHitProducerIdeal.cxx
 MpdTofPoint.cxx
 MpdTofUtils.cxx
 MpdTofMatching.cxx
-MatchingFilter.cxx
 )
 
 # fill list of header files from list of source files

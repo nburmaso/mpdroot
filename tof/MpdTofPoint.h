@@ -35,19 +35,44 @@ public:
 	// Output to screen 
   	virtual void Print(const Option_t* opt) const;
 
-	// get  
-  	Int_t GetGap() const    {return (fDetectorID & 15);};
-  	Int_t GetPad() const   {return ((fDetectorID>>4) & 1023);};
-  	Int_t GetModule() const {return ((fDetectorID>>14) & 1023);};
-  	Int_t GetRegion() const {return fDetectorID>>24;};
+ 	// CATION:  MAX_VALUE = 255(0xFF)
+  	// strip 	[1,...,24],	0x000000FF
+  	// detector 	[1,...,6],	0x0000FF00
+  	// box		[1,...,2],	0x00FF0000
+  	// sector 	[1,...,24],	0xFF000000
+  	
+  	//Int_t GetGap() const    {return (fDetectorID & 15);};
+  	Int_t GetSector() const   {		return ((fDetectorID & 0xFF000000) >> 24);};
+  	Int_t GetBox() const {			return ((fDetectorID & 0x00FF0000) >> 16);};
+  	Int_t GetDetector() const {		return ((fDetectorID & 0x0000FF00) >> 8);};
+   	Int_t GetStrip() const {		return ( fDetectorID & 0x000000FF);}; 	
+   	
   	Int_t GetDetectorID() const {return fDetectorID;};
   
-    	static Int_t GetRegion(Int_t uid){ return uid>>24; };
-   	static Int_t GetModule(Int_t uid){ return ((uid>>14) & 1023); };
- 	static Int_t GetPad(Int_t uid){ return ((uid>>4) & 1023); };
-  	static Int_t GetVolumeUID(Int_t regID, Int_t modID, Int_t cellID) { return (regID<<24) + (modID<<14) + (cellID<<4); };
+    	static Int_t GetSector(Int_t uid){ 	return ((uid & 0xFF000000) >> 24);};
+   	static Int_t GetBox(Int_t uid){ 	return ((uid & 0x00FF0000) >> 16);};
+    	static Int_t GetDetector(Int_t uid){ 	return ((uid & 0x0000FF00) >> 8);};  	
+ 	static Int_t GetStrip(Int_t uid){ 	return ( uid & 0x000000FF);};
+
+  	static Int_t GetVolumeUID(Int_t sector, Int_t box, Int_t detector, Int_t strip) 
+  	{ 
+#ifdef DEBUG  	
+ 	Int_t uid =  (sector<<24) + (box<<16) + (detector<<8) + strip; 
+ 	Int_t sectorID = GetSector(uid);
+  	Int_t boxID = GetBox(uid);	
+ 	Int_t detectorID = GetDetector(uid);
+  	Int_t stripID =	GetStrip(uid);	
+assert(sector == sectorID);  
+assert(box == boxID);
+assert(detector == detID); 
+assert(strip == stripID); 	
+	return uid;
+#else 
+  	return (sector<<24) + (box<<16) + (detector<<8) + strip; 
+#endif  	
+  	};
   
-  
+  	
 ClassDef(MpdTofPoint,1)
 };
 

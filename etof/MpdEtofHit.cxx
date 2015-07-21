@@ -13,19 +13,13 @@ MpdEtofHit::MpdEtofHit()
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofHit::MpdEtofHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index, Double_t time, Int_t flag)
-: FairHit(detID, pos, dpos, index)
+: FairHit(detID, pos, dpos, index), fTime(time), fFlag(flag)
 {
-    fTime = time;
-    fFlag = flag;
 }
 //------------------------------------------------------------------------------------------------------------------------
-MpdEtofHit::MpdEtofHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index, Double_t time)
-: FairHit(detID, pos, dpos, index)
-{
-    fTime = time;
+MpdEtofHit::~MpdEtofHit() 
+{ 
 }
-//------------------------------------------------------------------------------------------------------------------------
-MpdEtofHit::~MpdEtofHit() { }
 //------------------------------------------------------------------------------------------------------------------------
 bool			MpdEtofHit::CheckTrackID(Int_t uid)
 {
@@ -41,22 +35,12 @@ bool			MpdEtofHit::CheckTrackID(Int_t uid)
 return false;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdEtofHit::Print(const Option_t* opt) const
+void MpdEtofHit::Print(const char* comment) const
 {
-  cout << "-I- MpdEtofHit" << endl;
-  cout << "    DetectorID: " << fDetectorID << endl;
-  cout << "    Position: (" << fX
-       << ", " << fY
-       << ", " << fZ << ") cm"
-       << endl;
-  cout << "    Position error: (" << fDx
-       << ", " << fDy
-       << ", " << fDz << ") cm"
-       << endl;
-  cout << "    Time: " << fTime << " ns" 
-       << endl;
-  cout << "    Flag: " << fFlag
-       << endl;
+	cout<<"\n -I- MpdEtofHit: "; 
+	if(comment != nullptr) cout<<comment;	
+	cout<<"\tdetectorID= "<<fDetectorID<<" position("<<fX<<", "<<fY<<", "<<fZ
+		<<") cm, position error("<<fDx<<", "<<fDy<<", "<<fDz<<") cm, time= "<<fTime<<" ns, flag: "<<fFlag;
 }
 //------------------------------------------------------------------------------------------------------------------------
 ClassImp(MpdEtofHit)
