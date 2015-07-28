@@ -1,8 +1,8 @@
 // -------------------------------------------------------------------------
-// -----                MpdUrqmd34Generator source file                  -----
+// -----                MpdUrqmdGenerator source file                  -----
 // -----                Created 24/06/04  by V. Friese                 -----
 // -------------------------------------------------------------------------
-#include "MpdUrqmd34Generator.h"
+#include "MpdUrqmdGenerator.h"
 
 #include "FairPrimaryGenerator.h"
 #include "FairMCEventHeader.h"
@@ -32,7 +32,7 @@ using std::endl;
 
 
 // -----   Default constructor   ------------------------------------------
-MpdUrqmd34Generator::MpdUrqmd34Generator()
+MpdUrqmdGenerator::MpdUrqmdGenerator()
   :FairGenerator(),
    fInputFile(NULL),
    fParticleTable(),
@@ -44,16 +44,16 @@ MpdUrqmd34Generator::MpdUrqmd34Generator()
 
 
 // -----   Standard constructor   -----------------------------------------
-MpdUrqmd34Generator::MpdUrqmd34Generator(const char* fileName)
+MpdUrqmdGenerator::MpdUrqmdGenerator(const char* fileName)
   :FairGenerator(),
    fInputFile(NULL),
    fParticleTable(),
    fFileName(fileName)
 {
   //  fFileName = fileName;
-  cout << "-I MpdUrqmd34Generator: Opening input file " << fFileName << endl;
+  cout << "-I MpdUrqmdGenerator: Opening input file " << fFileName << endl;
   fInputFile = gzopen(fFileName, "rb");
-  if ( ! fInputFile ) { Fatal("MpdUrqmd34Generator","Cannot open input file."); exit(1); }
+  if ( ! fInputFile ) { Fatal("MpdUrqmdGenerator","Cannot open input file."); exit(1); }
   ReadConversionTable();
 }
 // ------------------------------------------------------------------------
@@ -61,33 +61,33 @@ MpdUrqmd34Generator::MpdUrqmd34Generator(const char* fileName)
 
 
 // -----   Destructor   ---------------------------------------------------
-MpdUrqmd34Generator::~MpdUrqmd34Generator()
+MpdUrqmdGenerator::~MpdUrqmdGenerator()
 {
-  //  cout<<"Enter Destructor of MpdUrqmd34Generator"<<endl;
+  //  cout<<"Enter Destructor of MpdUrqmdGenerator"<<endl;
   if ( fInputFile ) {
     gzclose(fInputFile);
     fInputFile = NULL;
   }
   fParticleTable.clear();
-  //  cout<<"Leave Destructor of MpdUrqmd34Generator"<<endl;
+  //  cout<<"Leave Destructor of MpdUrqmdGenerator"<<endl;
 }
 // ------------------------------------------------------------------------
 
 
 
 // -----   Public method ReadEvent   --------------------------------------
-Bool_t MpdUrqmd34Generator::ReadEvent(FairPrimaryGenerator* primGen)
+Bool_t MpdUrqmdGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 {
 
   // ---> Check for input file
   if ( ! fInputFile ) {
-    cout << "-E MpdUrqmd34Generator: Input file not open! " << endl;
+    cout << "-E MpdUrqmdGenerator: Input file not open! " << endl;
     return kFALSE;
   }
 
   // ---> Check for primary generator
   if ( ! primGen ) {
-    cout << "-E- MpdUrqmd34Generator::ReadEvent: "
+    cout << "-E- MpdUrqmdGenerator::ReadEvent: "
          << "No PrimaryGenerator!" << endl;
     return kFALSE;
   }
@@ -100,16 +100,20 @@ Bool_t MpdUrqmd34Generator::ReadEvent(FairPrimaryGenerator* primGen)
   float ppx=0., ppy=0., ppz=0., m=0.;
 
   // ---> Read and check first event header line from input file
+  Int_t URQMDVERSION[2] = {20030, 30400};
   char read[200];
   gzgets(fInputFile,read, 200);      // line 1
+  Int_t urqmdVersion = 0;
+  sscanf(read, "UQMD   version:       %d   1000  %d  output_file  14", &urqmdVersion, &urqmdVersion);
+  cout << "URQMD VERSION USED = " << urqmdVersion << endl;
   if ( gzeof(fInputFile) ) {
-    cout << "-I MpdUrqmd34Generator : End of input file reached." << endl;
+    cout << "-I MpdUrqmdGenerator : End of input file reached." << endl;
     gzclose(fInputFile);
     fInputFile = NULL;
     return kFALSE;
   }
   if ( read[0] != 'U' ) {
-    cout << "-E MpdUrqmd34Generator: Wrong event header" << endl;
+    cout << "-E MpdUrqmdGenerator: Wrong event header" << endl;
     return kFALSE;
   }
 
@@ -127,7 +131,10 @@ Bool_t MpdUrqmd34Generator::ReadEvent(FairPrimaryGenerator* primGen)
   gzgets(fInputFile, read, 7);       // line 6
   gzgets(fInputFile, read, 200);     // line 6
   sscanf(read, "%d", &evnr);         // line 6
-  for (int iline=0; iline<11; iline++)  { gzgets(fInputFile, read, 200); } // line 7-17
+  if (urqmdVersion == URQMDVERSION[1])
+      for (int iline=0; iline<11; iline++)  { gzgets(fInputFile, read, 200); } // line 7-17
+  else if (urqmdVersion == URQMDVERSION[0])
+      for (int iline=0; iline<8; iline++)  { gzgets(fInputFile, read, 200); }
   gzgets(fInputFile, read, 200);     // line 18
   sscanf(read,"%d",&ntracks);        // line 18
   gzgets(fInputFile, read, 200);     // line 19
@@ -142,7 +149,7 @@ Bool_t MpdUrqmd34Generator::ReadEvent(FairPrimaryGenerator* primGen)
   Double_t betaCM  = pBeam / (eBeam + kProtonMass);
   Double_t gammaCM = TMath::Sqrt( 1. / ( 1. - betaCM*betaCM) );
 
-  cout << "-I MpdUrqmd34Generator: Event " << evnr << ",  b = " << b
+  cout << "-I MpdUrqmdGenerator: Event " << evnr << ",  b = " << b
        << " fm,  multiplicity " << ntracks  << ", ekin: " << ekin << endl;
 
   // Set event id and impact parameter in MCEvent if not yet done
@@ -168,7 +175,7 @@ Bool_t MpdUrqmd34Generator::ReadEvent(FairPrimaryGenerator* primGen)
 
     // Convert Unique PID into PDG particle code
     if (fParticleTable.find(pid) == fParticleTable.end()) {
-      cout << "-W MpdUrqmd34Generator: PID " << ityp << " charge "
+      cout << "-W MpdUrqmdGenerator: PID " << ityp << " charge "
            << ichg << " not found in table (" << pid << ")" << endl;
       continue;
     }
@@ -202,14 +209,14 @@ Bool_t MpdUrqmd34Generator::ReadEvent(FairPrimaryGenerator* primGen)
 
 
 // -----   Public method ReadEvent   --------------------------------------
-Bool_t MpdUrqmd34Generator::SkipEvents(Int_t count)
+Bool_t MpdUrqmdGenerator::SkipEvents(Int_t count)
 {
   if (count<=0) { return kTRUE; }
 
   for(Int_t ii=0; ii<count; ii++) {
     // ---> Check for input file
     if ( ! fInputFile ) {
-      cout << "-E MpdUrqmd34Generator: Input file not open! " << endl;
+      cout << "-E MpdUrqmdGenerator: Input file not open! " << endl;
       return kFALSE;
     }
 
@@ -221,13 +228,13 @@ Bool_t MpdUrqmd34Generator::SkipEvents(Int_t count)
     char read[200];
     gzgets(fInputFile, read, 200);     // line 1
     if ( gzeof(fInputFile) ) {
-      cout << "-I MpdUrqmd34Generator : End of input file reached." << endl;
+      cout << "-I MpdUrqmdGenerator : End of input file reached." << endl;
       gzclose(fInputFile);
       fInputFile = NULL;
       return kFALSE;
     }
     if ( read[0] != 'U' ) {
-      cout << "-E MpdUrqmd34Generator: Wrong event header" << endl;
+      cout << "-E MpdUrqmdGenerator: Wrong event header" << endl;
       return kFALSE;
     }
 
@@ -250,7 +257,7 @@ Bool_t MpdUrqmd34Generator::SkipEvents(Int_t count)
     sscanf(read,"%d",&ntracks);        // line 15
     gzgets(fInputFile, read, 200);     // line 16
 
-    cout << "-I MpdUrqmd34Generator: Event " << evnr << " skipped!" << endl;
+    cout << "-I MpdUrqmdGenerator: Event " << evnr << " skipped!" << endl;
 
     // ---> Loop over tracks in the current event
     for(int itrack=0; itrack<ntracks; itrack++) {
@@ -264,7 +271,7 @@ Bool_t MpdUrqmd34Generator::SkipEvents(Int_t count)
 // ------------------------------------------------------------------------
 
 // -----   Private method ReadConverisonTable   ---------------------------
-void MpdUrqmd34Generator::ReadConversionTable()
+void MpdUrqmdGenerator::ReadConversionTable()
 {
 
   TString work      = getenv("VMCWORKDIR");
@@ -283,7 +290,7 @@ void MpdUrqmd34Generator::ReadConversionTable()
   pdgconv->close();
   delete pdgconv;
 
-  cout << "-I MpdUrqmd34Generator: Particle table for conversion from "
+  cout << "-I MpdUrqmdGenerator: Particle table for conversion from "
        << "UrQMD loaded" <<  endl;
 
 }
@@ -291,4 +298,4 @@ void MpdUrqmd34Generator::ReadConversionTable()
 
 
 
-ClassImp(MpdUrqmd34Generator);
+ClassImp(MpdUrqmdGenerator);

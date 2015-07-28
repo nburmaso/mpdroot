@@ -42,15 +42,16 @@ using namespace std;
 // flag_store_FairRadLenPoint
 // FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
 
-void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$VMCWORKDIR/macro/mpd/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 1,
+void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14", TString outFile = "$VMCWORKDIR/macro/mpd/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 1,
         Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0) {
-#define URQMD 
+
+#define URQMD
     TStopwatch timer;
     timer.Start();
-  gDebug=0;
+    gDebug = 0;
 
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-  mpdloadlibs(1,1);                 // load main libraries
+    mpdloadlibs(1, 1); // load main libraries
 
     //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
@@ -62,7 +63,7 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
     // fRun->SetName("TGeant4");
     // fRun->SetGeoModel("G3Native");
 
-  geometry_stage1(fRun, kTRUE);    // load mpd geometry
+    geometry_stage1(fRun, kTRUE); // load mpd geometry
 
     // Use the experiment specific MC Event header instead of the default one                                                     
     // This one stores additional information about the reaction plane                                                           
@@ -87,9 +88,9 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
 
     if (inFile.Contains("/"))
         dataFile = inFile;
-  else{
-    dataFile=find_path_to_URQMD_files();
-    if ((hostname=="lxmpd-ui.jinr.ru")||(hostname=="lxmpd-ui"))  
+    else {
+        dataFile = find_path_to_URQMD_files();
+        if ((hostname == "lxmpd-ui.jinr.ru") || (hostname == "lxmpd-ui"))
             dataFile += "auau.09gev.mbias.10k.f14";
         else
             dataFile += inFile;
@@ -97,10 +98,7 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
 
     if (!CheckFileExist(dataFile)) return;
 
-    MpdUrqmd23Generator* urqmdGen = new MpdUrqmd23Generator(dataFile);
-    // Don't forget to use appropriate class for reading *.f14 in case of UrQMD34
-    // Header of UrQMD23 is not consisted with UrQMD34 
-    // MpdUrqmd34Generator* urqmdGen = new MpdUrqmd34Generator(dataFile);
+    MpdUrqmdGenerator* urqmdGen = new MpdUrqmdGenerator(dataFile);
     primGen->AddGenerator(urqmdGen);
     if (nStartEvent > 0) urqmdGen->SkipEvents(nStartEvent);
 
@@ -110,17 +108,15 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
 
 #else
 #ifdef FLUID
-    
+
     Mpd3fdGenerator* fluidGen = new Mpd3fdGenerator(inFile);
-    // Don't forget to use appropriate class for reading *.f14 in case of UrQMD34
-    // Header of UrQMD23 is not consisted with UrQMD34 
-    // MpdUrqmd34Generator* urqmdGen = new MpdUrqmd34Generator(dataFile);
+    fluidGen->SkipEvents(0);
     primGen->AddGenerator(fluidGen);
     //if (nStartEvent > 0) urqmdGen->SkipEvents(nStartEvent);
 
     // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
-//    if (nEvents == 0)
-//        nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
+    //    if (nEvents == 0)
+    //        nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
 
 #else
 
@@ -134,18 +130,18 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
 #ifdef ION
     // ------- Ion Generator
     FairIonGenerator *fIongen =
-          new FairIonGenerator(79, 197,79,1, 0.,0., 25, 0.,0.,-1.);
+            new FairIonGenerator(79, 197, 79, 1, 0., 0., 25, 0., 0., -1.);
     primGen->AddGenerator(fIongen);
 
 #else
 #ifdef BOX
-  gRandom->SetSeed(0);
+    gRandom->SetSeed(0);
     // ------- Box Generator
     FairBoxGenerator* boxGen = new
-    FairBoxGenerator(13, 1); // 13 = muon; 1 = multipl.
-  boxGen->SetPRange(0.25,2.5); // GeV/c //setPRange vs setPtRange
+            FairBoxGenerator(13, 1); // 13 = muon; 1 = multipl.
+    boxGen->SetPRange(0.25, 2.5); // GeV/c //setPRange vs setPtRange
     boxGen->SetPhiRange(0, 360); // Azimuth angle range [degree]
-  boxGen->SetThetaRange(0, 180); // Polar angle in lab system range [degree]
+    boxGen->SetThetaRange(0, 180); // Polar angle in lab system range [degree]
     boxGen->SetXYZ(0., 0., 0.); // mm o cm ??
     primGen->AddGenerator(boxGen);
 
@@ -155,9 +151,9 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
     TString dataFile;
     if (inFile.Contains("/"))
         dataFile = inFile;
-  else{
+    else {
         dataFile = find_path_to_URQMD_files();
-    dataFile += "/../../HSD/";           //  nc-farm
+        dataFile += "/../../HSD/"; //  nc-farm
         dataFile += inFile;
     }
 
@@ -178,15 +174,15 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
     TString dataFile;
     if (inFile.Contains("/"))
         dataFile = inFile;
-  else{
+    else {
         dataFile = find_path_to_URQMD_files();
-    dataFile += "/../../QGSM/";           //  nc-farm
+        dataFile += "/../../QGSM/"; //  nc-farm
         dataFile += inFile;
     }
 
     if (!CheckFileExist(dataFile)) return;
 
-  MpdLAQGSMGenerator* guGen= new MpdLAQGSMGenerator(dataFile.Data());
+    MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(dataFile.Data());
     primGen->AddGenerator(guGen);
     if (nStartEvent > 0) guGen->SkipEvents(nStartEvent);
 
@@ -196,13 +192,14 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
 
 #else
 #ifdef HADGEN
-  THadgen* hadGen = new THadgen();
-  hadGen->SetRandomSeed(clock() + time(0));
-  hadGen->SetParticleFromPdgCode(0, 196.9665, 79);
-  hadGen->SetEnergy(6.5E3);
-  MpdGeneralGenerator* generalHad = new MpdGeneralGenerator(hadGen);
-  primGen->AddGenerator(generalHad);
+    THadgen* hadGen = new THadgen();
+    hadGen->SetRandomSeed(clock() + time(0));
+    hadGen->SetParticleFromPdgCode(0, 196.9665, 79);
+    hadGen->SetEnergy(6.5E3);
+    MpdGeneralGenerator* generalHad = new MpdGeneralGenerator(hadGen);
+    primGen->AddGenerator(generalHad);
 
+#endif
 #endif
 #endif
 #endif
@@ -215,7 +212,7 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
 
     // Magnetic Field Map - for proper use in the analysis MultiField is necessary here
     // --------------------
-  MpdMultiField *fField= new MpdMultiField();
+    MpdMultiField *fField = new MpdMultiField();
 
     if (FieldSwitcher == 0) {
         MpdConstField *fMagField = new MpdConstField();
@@ -223,24 +220,23 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
         fMagField->SetFieldRegion(-230, 230, -230, 230, -375, 375);
         fField->AddField(fMagField);
         fRun->SetField(fField);
-    cout<<"FIELD at (0., 0., 0.) = ("<<
-      fMagField->GetBx(0.,0.,0.)<<"; "<<fMagField->GetBy(0.,0.,0.)<<"; "<<fMagField->GetBz(0.,0.,0.)<<")"<<endl;
-  }
-  else if (FieldSwitcher == 1) {
+        cout << "FIELD at (0., 0., 0.) = (" <<
+                fMagField->GetBx(0., 0., 0.) << "; " << fMagField->GetBy(0., 0., 0.) << "; " << fMagField->GetBz(0., 0., 0.) << ")" << endl;
+    } else if (FieldSwitcher == 1) {
         MpdFieldMap* fMagField = new MpdFieldMap("B-field_v2", "A");
         fMagField->Init();
         fField->AddField(fMagField);
         fRun->SetField(fField);
-    cout<<"FIELD at (0., 0., 0.) = ("<<
-      fMagField->GetBx(0.,0.,0.)<<"; "<<fMagField->GetBy(0.,0.,0.)<<"; "<<fMagField->GetBz(0.,0.,0.)<<")"<<endl;
+        cout << "FIELD at (0., 0., 0.) = (" <<
+                fMagField->GetBx(0., 0., 0.) << "; " << fMagField->GetBy(0., 0., 0.) << "; " << fMagField->GetBz(0., 0., 0.) << ")" << endl;
     }
 
     fRun->SetStoreTraj(kTRUE);
     fRun->SetRadLenRegister(flag_store_FairRadLenPoint); // radiation length manager
 
-//  MpdTpcDigitizerTask* tpcDigitizer = new MpdTpcDigitizerTask();
+    //  MpdTpcDigitizerTask* tpcDigitizer = new MpdTpcDigitizerTask();
     //  tpcDigitizer->SetOnlyPrimary(kTRUE); /// Digitize only primary track
-//  tpcDigitizer->SetMakeQA(kTRUE);  /// SetMakeQA(kTRUE) prepares Quality Assurance Histograms  
+    //  tpcDigitizer->SetMakeQA(kTRUE);  /// SetMakeQA(kTRUE) prepares Quality Assurance Histograms  
     //  tpcDigitizer->SetDiffuse(kFALSE);
     //  tpcDigitizer->SetDebug(kFALSE);
     //  tpcDigitizer->SetDistort(kFALSE);
@@ -266,10 +262,10 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
     // Fill the Parameter containers for this run
     //-------------------------------------------
 
-  FairRuntimeDb *rtdb=fRun->GetRuntimeDb();
+    FairRuntimeDb *rtdb = fRun->GetRuntimeDb();
 
-  Bool_t kParameterMerged=kTRUE;
-  FairParRootFileIo* output=new FairParRootFileIo(kParameterMerged);
+    Bool_t kParameterMerged = kTRUE;
+    FairParRootFileIo* output = new FairParRootFileIo(kParameterMerged);
     //AZ output->open(parFile.Data());
     output->open(gFile);
     rtdb->setOutput(output);
@@ -277,7 +273,7 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
     MpdMultiFieldPar* Par = (MpdMultiFieldPar*) rtdb->getContainer("MpdMultiFieldPar");
     if (fField)
         Par->SetParameters(fField);
-  Par->setInputVersion(fRun->GetRunId(),1);
+    Par->setInputVersion(fRun->GetRunId(), 1);
     Par->setChanged();
     // Par->printParams();
 
@@ -296,7 +292,7 @@ void runMC(TString inFile = "auau.11gev.0-3fm.11k.f14.gz", TString outFile = "$V
     Bool_t file = fRun->GetWriteRunInfoFile();
     timer.Stop();
     Double_t rtime = timer.RealTime(), ctime = timer.CpuTime();
-  printf("RealTime=%f seconds, CpuTime=%f seconds\n",rtime,ctime);
+    printf("RealTime=%f seconds, CpuTime=%f seconds\n", rtime, ctime);
 
     cout << "Macro finished succesfully." << endl;
 

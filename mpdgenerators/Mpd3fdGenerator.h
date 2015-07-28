@@ -36,11 +36,15 @@ public:
 
     Bool_t ReadEvent(FairPrimaryGenerator* primGen);
 
+    void SkipEvents(Int_t ev) {
+        fEventNumber = ev;
+    }
+
 private:
 
     TFile* fInputFile; //!  Input file
     TString fFileName; //!  Input file name
-    TChain *fDstTree;  //!
+    TChain *fDstTree; //!
     Double_t fPx[kBatyukConst]; //!
     Double_t fPy[kBatyukConst]; //!
     Double_t fPz[kBatyukConst]; //!
