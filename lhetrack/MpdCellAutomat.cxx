@@ -55,8 +55,8 @@ using std::endl;
 
 const Double_t MpdCellAutomat::fgkChi2Cut = 20; //20; //100; 
 
-//FILE *lunErr = 0x0; //fopen("error1.dat","w");
-FILE* lunErr= fopen ("file.txt","w");
+FILE *lunErr = 0x0; //fopen("error1.dat","w");
+//FILE* lunErr= fopen ("file.txt","w");
 //__________________________________________________________________________
 MpdCellAutomat::MpdCellAutomat(const char *name, Int_t iVerbose ) 
  :FairTask(name, iVerbose),
