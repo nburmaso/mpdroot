@@ -14,9 +14,10 @@
 
 #include <TSQLServer.h>
 
-enum MpdConnectionType{MPD_DB, MPD_GEO};
+enum MpdConnectionType{MPD_DB, MPD_GEO, UNIFIED_DB};
 
-class MpdDbConnection{
+class MpdDbConnection
+{
  private:
     static const char* pcDBName;
     static const char* pcUID;

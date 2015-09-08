@@ -18,18 +18,23 @@ MpdDbConnection* MpdDbConnection::Open(MpdConnectionType database_type)
 {
     TSQLServer* pSQLServer = 0x00;
 
-    switch (database_type){
+    switch (database_type)
+    {
         case MPD_DB:
             pSQLServer = TSQLServer::Connect("pgsql://nc11.jinr.ru/mpd_db", "mpd", "cbmsoft");
             break;
         case MPD_GEO:
             pSQLServer = TSQLServer::Connect("pgsql://nc11.jinr.ru/mpd_geo", "mpd", "cbmsoft");
             break;
+        case UNIFIED_DB:
+            pSQLServer = TSQLServer::Connect("pgsql://nc13.jinr.ru/mpd_db", "mpd", "mpdsoft");
+            break;
         default:
             cout<<"Incorrect database connection type!"<<endl;
     }
 
-    if (pSQLServer == 0x00){
+    if (pSQLServer == 0x00)
+    {
         cout<<"Connection wasn't established"<<endl;
         return 0x00;
     }
@@ -43,7 +48,8 @@ MpdDbConnection* MpdDbConnection::Open(MpdConnectionType database_type)
 MpdDbConnection* MpdDbConnection::Open(TString strDBName, TString strUID, TString strPassword)
 {
     TSQLServer* pSQLServer = TSQLServer::Connect(strDBName, strUID, strPassword);
-    if (pSQLServer == 0x00){
+    if (pSQLServer == 0x00)
+    {
         cout<<"Connection wasn't established"<<endl;
         return 0x00;
     }

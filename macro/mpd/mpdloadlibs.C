@@ -16,6 +16,7 @@ void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
   gSystem->Load("libMpdBase");
   gSystem->Load("libMpdData");
   gSystem->Load("libMpdgenerators");
+  gSystem->Load("libMpdDb");
 
   gSystem->Load("libHADGEN.so");
   gSystem->Load("libTHadgen.so");

@@ -28,15 +28,25 @@ link_directories( ${LINK_DIRECTORIES})
 
 set(MPDDB_SRCS
 MpdDbConnection.cxx
-MpdDbDetector.cxx
-MpdDbComponent.cxx
-MpdDbMedia.cxx
-MpdDbGeoShape.cxx
-MpdDbComponentType.cxx
-MpdDbManufacturer.cxx
-MpdDbGeoPoint.cxx
-MpdDbGeoParameter.cxx
-MpdGeoParameter.cxx
+MpdDbGeoConverter.cxx
+MpdDbGenerateClasses.cxx
+MpdDbRunData.cxx
+db_classes/MpdDbExperimentSession.cxx
+db_classes/MpdDbComponent.cxx
+db_classes/MpdDbSessionComponent.cxx
+db_classes/MpdDbComponentMap.cxx
+db_classes/MpdDbMap1dim.cxx
+db_classes/MpdDbMap2dim.cxx
+db_classes/MpdDbRun.cxx
+db_classes/MpdDbRunGeometry.cxx
+db_classes/MpdDbRunParameter.cxx
+db_classes/MpdDbComponentParameter.cxx
+db_classes/MpdDbParameterValue.cxx
+db_classes/MpdDbIntValue.cxx
+db_classes/MpdDbDoubleValue.cxx
+db_classes/MpdDbStringValue.cxx
+db_classes/MpdDbShift.cxx
+db_classes/MpdDbSimulationFile.cxx
 )
 
 # fill list of header files from list of source files

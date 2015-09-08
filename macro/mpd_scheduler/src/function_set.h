@@ -6,21 +6,14 @@
 //============================================================================
 
 // C++ includes
-//#include "sys/wait.h"
-//#include <pthread.h>
-//#include <semaphore.h>
 #include <unistd.h>
-//#include "libxml/tree.h"
-//#include <fstream>
 #include <iostream>
-//#include <vector>
 #include <cstring>
 #include <string>
-//#include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sstream>
-//#include <algorithm>
+#include <ctime>
 
 using namespace std;
 
@@ -192,7 +185,7 @@ string get_app_name_linux()
     return fRes;
 }
 
-// get aaplication directory (path without file name) in linux
+// get aplication directory (path without file name) in linux
 string get_app_dir_linux()
 {
     pid_t procpid = getpid();
@@ -310,4 +303,25 @@ string get_file_name_with_ext(string path){
 	}
 
 	return path;
+}
+
+
+/*				  */
+/* TIME FUNCTIONS */
+/*				  */
+
+// get current date as string
+string get_current_date()
+{
+    time_t rawtime;
+    time(&rawtime);
+
+    struct tm* timeinfo;
+    timeinfo = localtime(&rawtime);
+
+    char buffer[80];
+    strftime(buffer, 80, "%d-%m-%Y", timeinfo);
+    string str(buffer);
+
+    return str;
 }

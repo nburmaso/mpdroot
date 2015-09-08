@@ -1,0 +1,76 @@
+// ----------------------------------------------------------------------
+//                    MpdDbSimulationFile header file 
+//                      Generated 07-09-2015 
+// ----------------------------------------------------------------------
+
+/** db_classes/MpdDbSimulationFile.h 
+ ** Class for the table: simulation_file 
+ **/ 
+
+#ifndef MPDDBSIMULATIONFILE_H 
+#define MPDDBSIMULATIONFILE_H 1 
+
+#include "TString.h" 
+#include "TDatime.h" 
+
+#include "MpdDbConnection.h" 
+
+class MpdDbSimulationFile
+{
+ private:
+	MpdDbConnection* connectionUniDb;
+
+	int i_file_id;
+	TString str_file_path;
+	TString str_generator_name;
+	TString str_beam_particle;
+	TString* str_target_particle;
+	double* d_energy;
+	TString str_centrality;
+	int* i_event_count;
+	TString* str_file_desc;
+	double* d_file_size_kb;
+
+	//Constructor
+	MpdDbSimulationFile(MpdDbConnection* connUniDb, int file_id, TString file_path, TString generator_name, TString beam_particle, TString* target_particle, double* energy, TString centrality, int* event_count, TString* file_desc, double* file_size_kb);
+
+ public:
+	virtual ~MpdDbSimulationFile(); // Destructor
+
+	// static class functions
+	static MpdDbSimulationFile* CreateSimulationFile(TString file_path, TString generator_name, TString beam_particle, TString* target_particle, double* energy, TString centrality, int* event_count, TString* file_desc, double* file_size_kb);
+	static MpdDbSimulationFile* GetSimulationFile(int file_id);
+	static MpdDbSimulationFile* GetSimulationFile(TString file_path);
+	static int DeleteSimulationFile(int file_id);
+	static int DeleteSimulationFile(TString file_path);
+	static int PrintAll();
+
+	// Getters
+	int GetFileId(){return i_file_id;}
+	TString GetFilePath(){return str_file_path;}
+	TString GetGeneratorName(){return str_generator_name;}
+	TString GetBeamParticle(){return str_beam_particle;}
+	TString* GetTargetParticle(){return str_target_particle;}
+	double* GetEnergy(){return d_energy;}
+	TString GetCentrality(){return str_centrality;}
+	int* GetEventCount(){return i_event_count;}
+	TString* GetFileDesc(){return str_file_desc;}
+	double* GetFileSizeKb(){return d_file_size_kb;}
+
+	// Setters
+	int SetFileId(int file_id);
+	int SetFilePath(TString file_path);
+	int SetGeneratorName(TString generator_name);
+	int SetBeamParticle(TString beam_particle);
+	int SetTargetParticle(TString* target_particle);
+	int SetEnergy(double* energy);
+	int SetCentrality(TString centrality);
+	int SetEventCount(int* event_count);
+	int SetFileDesc(TString* file_desc);
+	int SetFileSizeKb(double* file_size_kb);
+	void Print();
+
+ ClassDef(MpdDbSimulationFile,1);
+};
+
+#endif
