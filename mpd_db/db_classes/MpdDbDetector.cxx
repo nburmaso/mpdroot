@@ -1,29 +1,30 @@
 // ----------------------------------------------------------------------
-//                    MpdDbComponent cxx file 
-//                      Generated 07-09-2015 
+//                    MpdDbDetector cxx file 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
-#include "TSQLServer.h" 
-#include "TSQLStatement.h" 
+#include "TSQLServer.h"
+#include "TSQLStatement.h"
 
-#include "MpdDbComponent.h" 
+#include "MpdDbDetector.h"
 
 #include <iostream>
 using namespace std;
 
+/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 // -----   Constructor with database connection   -----------------------
-MpdDbComponent::MpdDbComponent(MpdDbConnection* connUniDb, TString component_name, TString* manufacturer_name, TString* responsible_person, TString* description)
+MpdDbDetector::MpdDbDetector(MpdDbConnection* connUniDb, TString detector_name, TString* manufacturer_name, TString* responsible_person, TString* description)
 {
 	connectionUniDb = connUniDb;
 
-	str_component_name = component_name;
+	str_detector_name = detector_name;
 	str_manufacturer_name = manufacturer_name;
 	str_responsible_person = responsible_person;
 	str_description = description;
 }
 
 // -----   Destructor   -------------------------------------------------
-MpdDbComponent::~MpdDbComponent()
+MpdDbDetector::~MpdDbDetector()
 {
 	if (connectionUniDb)
 		delete connectionUniDb;
@@ -36,7 +37,7 @@ MpdDbComponent::~MpdDbComponent()
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbComponent* MpdDbComponent::CreateComponent(TString component_name, TString* manufacturer_name, TString* responsible_person, TString* description)
+MpdDbDetector* MpdDbDetector::CreateDetector(TString detector_name, TString* manufacturer_name, TString* responsible_person, TString* description)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -44,12 +45,12 @@ MpdDbComponent* MpdDbComponent::CreateComponent(TString component_name, TString*
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"insert into component(component_name, manufacturer_name, responsible_person, description) "
+		"insert into detector_(detector_name, manufacturer_name, responsible_person, description) "
 		"values ($1, $2, $3, $4)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetString(0, component_name);
+	stmt->SetString(0, detector_name);
 	if (manufacturer_name == NULL)
 		stmt->SetNull(1);
 	else
@@ -74,11 +75,11 @@ MpdDbComponent* MpdDbComponent::CreateComponent(TString component_name, TString*
 
 	delete stmt;
 
-	return new MpdDbComponent(connUniDb, component_name, manufacturer_name, responsible_person, description);
+	return new MpdDbDetector(connUniDb, detector_name, manufacturer_name, responsible_person, description);
 }
 
 // -----   Get table record from database ---------------------------
-MpdDbComponent* MpdDbComponent::GetComponent(TString component_name)
+MpdDbDetector* MpdDbDetector::GetDetector(TString detector_name)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -86,13 +87,10 @@ MpdDbComponent* MpdDbComponent::GetComponent(TString component_name)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select component_name, manufacturer_name, responsible_person, description "
-		"from component "
-		"where lower(component_name) = lower($1)");
+		"select detector_name, manufacturer_name, responsible_person, description "
+		"from detector_ "
+		"where lower(detector_name) = lower('%s')", detector_name.Data());
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetString(0, component_name);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -117,8 +115,8 @@ MpdDbComponent* MpdDbComponent::GetComponent(TString component_name)
 		return 0x00;
 	}
 
-	TString tmp_component_name;
-	tmp_component_name = stmt->GetString(0);
+	TString tmp_detector_name;
+	tmp_detector_name = stmt->GetString(0);
 	TString* tmp_manufacturer_name;
 	if (stmt->IsNull(1)) tmp_manufacturer_name = NULL;
 	else
@@ -134,11 +132,11 @@ MpdDbComponent* MpdDbComponent::GetComponent(TString component_name)
 
 	delete stmt;
 
-	return new MpdDbComponent(connUniDb, tmp_component_name, tmp_manufacturer_name, tmp_responsible_person, tmp_description);
+	return new MpdDbDetector(connUniDb, tmp_detector_name, tmp_manufacturer_name, tmp_responsible_person, tmp_description);
 }
 
 // -----   Delete record from class table ---------------------------
-int MpdDbComponent::DeleteComponent(TString component_name)
+int MpdDbDetector::DeleteDetector(TString detector_name)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -146,12 +144,12 @@ int MpdDbComponent::DeleteComponent(TString component_name)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"delete from component "
-		"where lower(component_name) = lower($1)");
+		"delete from detector_ "
+		"where lower(detector_name) = lower($1)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetString(0, component_name);
+	stmt->SetString(0, detector_name);
 
 	// delete table record from DB
 	if (!stmt->Process())
@@ -169,7 +167,7 @@ int MpdDbComponent::DeleteComponent(TString component_name)
 }
 
 // -----   Print all table records ---------------------------------
-int MpdDbComponent::PrintAll()
+int MpdDbDetector::PrintAll()
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -177,8 +175,8 @@ int MpdDbComponent::PrintAll()
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select component_name, manufacturer_name, responsible_person, description "
-		"from component");
+		"select detector_name, manufacturer_name, responsible_person, description "
+		"from detector_");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	// get table record from DB
@@ -197,8 +195,8 @@ int MpdDbComponent::PrintAll()
 	// print rows
 	while (stmt->NextResultRow())
 	{
-		TString tmp_component_name;
-		tmp_component_name = stmt->GetString(0);
+		TString tmp_detector_name;
+		tmp_detector_name = stmt->GetString(0);
 		TString* tmp_manufacturer_name;
 		if (stmt->IsNull(1)) tmp_manufacturer_name = NULL;
 		else
@@ -212,8 +210,8 @@ int MpdDbComponent::PrintAll()
 		else
 			tmp_description = new TString(stmt->GetString(3));
 
-		cout<<"Table 'component'";
-		cout<<". component_name: "<<tmp_component_name<<". manufacturer_name: "<<(*tmp_manufacturer_name)<<". responsible_person: "<<(*tmp_responsible_person)<<". description: "<<(*tmp_description)<<endl;
+		cout<<"Table 'detector_'";
+		cout<<". detector_name: "<<tmp_detector_name<<". manufacturer_name: "<<(*tmp_manufacturer_name)<<". responsible_person: "<<(*tmp_responsible_person)<<". description: "<<(*tmp_description)<<endl;
 	}
 
 	delete stmt;
@@ -224,7 +222,7 @@ int MpdDbComponent::PrintAll()
 
 
 // Setters functions
-int MpdDbComponent::SetComponentName(TString component_name)
+int MpdDbDetector::SetDetectorName(TString detector_name)
 {
 	if (!connectionUniDb)
 	{
@@ -235,14 +233,14 @@ int MpdDbComponent::SetComponentName(TString component_name)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update component "
-		"set component_name = $1 "
-		"where component_name = $2");
+		"update detector_ "
+		"set detector_name = $1 "
+		"where detector_name = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetString(0, component_name);
-	stmt->SetString(1, str_component_name);
+	stmt->SetString(0, detector_name);
+	stmt->SetString(1, str_detector_name);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -253,13 +251,13 @@ int MpdDbComponent::SetComponentName(TString component_name)
 		return -2;
 	}
 
-	str_component_name = component_name;
+	str_detector_name = detector_name;
 
 	delete stmt;
 	return 0;
 }
 
-int MpdDbComponent::SetManufacturerName(TString* manufacturer_name)
+int MpdDbDetector::SetManufacturerName(TString* manufacturer_name)
 {
 	if (!connectionUniDb)
 	{
@@ -270,9 +268,9 @@ int MpdDbComponent::SetManufacturerName(TString* manufacturer_name)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update component "
+		"update detector_ "
 		"set manufacturer_name = $1 "
-		"where component_name = $2");
+		"where detector_name = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
@@ -280,7 +278,7 @@ int MpdDbComponent::SetManufacturerName(TString* manufacturer_name)
 		stmt->SetNull(0);
 	else
 		stmt->SetString(0, *manufacturer_name);
-	stmt->SetString(1, str_component_name);
+	stmt->SetString(1, str_detector_name);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -299,7 +297,7 @@ int MpdDbComponent::SetManufacturerName(TString* manufacturer_name)
 	return 0;
 }
 
-int MpdDbComponent::SetResponsiblePerson(TString* responsible_person)
+int MpdDbDetector::SetResponsiblePerson(TString* responsible_person)
 {
 	if (!connectionUniDb)
 	{
@@ -310,9 +308,9 @@ int MpdDbComponent::SetResponsiblePerson(TString* responsible_person)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update component "
+		"update detector_ "
 		"set responsible_person = $1 "
-		"where component_name = $2");
+		"where detector_name = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
@@ -320,7 +318,7 @@ int MpdDbComponent::SetResponsiblePerson(TString* responsible_person)
 		stmt->SetNull(0);
 	else
 		stmt->SetString(0, *responsible_person);
-	stmt->SetString(1, str_component_name);
+	stmt->SetString(1, str_detector_name);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -339,7 +337,7 @@ int MpdDbComponent::SetResponsiblePerson(TString* responsible_person)
 	return 0;
 }
 
-int MpdDbComponent::SetDescription(TString* description)
+int MpdDbDetector::SetDescription(TString* description)
 {
 	if (!connectionUniDb)
 	{
@@ -350,9 +348,9 @@ int MpdDbComponent::SetDescription(TString* description)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update component "
+		"update detector_ "
 		"set description = $1 "
-		"where component_name = $2");
+		"where detector_name = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
@@ -360,7 +358,7 @@ int MpdDbComponent::SetDescription(TString* description)
 		stmt->SetNull(0);
 	else
 		stmt->SetString(0, *description);
-	stmt->SetString(1, str_component_name);
+	stmt->SetString(1, str_detector_name);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -380,13 +378,14 @@ int MpdDbComponent::SetDescription(TString* description)
 }
 
 // -----   Print current record ---------------------------------------
-void MpdDbComponent::Print()
+void MpdDbDetector::Print()
 {
-	cout<<"Table 'component'";
-	cout<<". component_name: "<<str_component_name<<". manufacturer_name: "<<(*str_manufacturer_name)<<". responsible_person: "<<(*str_responsible_person)<<". description: "<<(*str_description)<<endl;
+	cout<<"Table 'detector_'";
+	cout<<". detector_name: "<<str_detector_name<<". manufacturer_name: "<<(str_manufacturer_name == NULL? "NULL": *str_manufacturer_name)<<". responsible_person: "<<(str_responsible_person == NULL? "NULL": *str_responsible_person)<<". description: "<<(str_description == NULL? "NULL": *str_description)<<endl;
 
 	return;
 }
+/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */
 
 // -------------------------------------------------------------------
-ClassImp(MpdDbComponent);
+ClassImp(MpdDbDetector);

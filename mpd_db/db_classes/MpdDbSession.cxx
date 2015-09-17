@@ -1,34 +1,38 @@
 // ----------------------------------------------------------------------
-//                    MpdDbStringValue cxx file 
-//                      Generated 07-09-2015 
+//                    MpdDbSession cxx file 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
-#include "TSQLServer.h" 
-#include "TSQLStatement.h" 
+#include "TSQLServer.h"
+#include "TSQLStatement.h"
 
-#include "MpdDbStringValue.h" 
+#include "MpdDbSession.h"
 
 #include <iostream>
 using namespace std;
 
+/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 // -----   Constructor with database connection   -----------------------
-MpdDbStringValue::MpdDbStringValue(MpdDbConnection* connUniDb, int value_id, TString par_value)
+MpdDbSession::MpdDbSession(MpdDbConnection* connUniDb, int session_number, TDatime start_datetime, TDatime* end_datetime)
 {
 	connectionUniDb = connUniDb;
 
-	i_value_id = value_id;
-	str_par_value = par_value;
+	i_session_number = session_number;
+	dt_start_datetime = start_datetime;
+	dt_end_datetime = end_datetime;
 }
 
 // -----   Destructor   -------------------------------------------------
-MpdDbStringValue::~MpdDbStringValue()
+MpdDbSession::~MpdDbSession()
 {
 	if (connectionUniDb)
 		delete connectionUniDb;
+	if (dt_end_datetime)
+		delete dt_end_datetime;
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbStringValue* MpdDbStringValue::CreateStringValue(int value_id, TString par_value)
+MpdDbSession* MpdDbSession::CreateSession(int session_number, TDatime start_datetime, TDatime* end_datetime)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -36,13 +40,17 @@ MpdDbStringValue* MpdDbStringValue::CreateStringValue(int value_id, TString par_
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"insert into string_value(value_id, par_value) "
-		"values ($1, $2)");
+		"insert into session_(session_number, start_datetime, end_datetime) "
+		"values ($1, $2, $3)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetInt(0, value_id);
-	stmt->SetString(1, par_value);
+	stmt->SetInt(0, session_number);
+	stmt->SetDatime(1, start_datetime);
+	if (end_datetime == NULL)
+		stmt->SetNull(2);
+	else
+		stmt->SetDatime(2, *end_datetime);
 
 	// inserting new record to DB
 	if (!stmt->Process())
@@ -55,11 +63,11 @@ MpdDbStringValue* MpdDbStringValue::CreateStringValue(int value_id, TString par_
 
 	delete stmt;
 
-	return new MpdDbStringValue(connUniDb, value_id, par_value);
+	return new MpdDbSession(connUniDb, session_number, start_datetime, end_datetime);
 }
 
 // -----   Get table record from database ---------------------------
-MpdDbStringValue* MpdDbStringValue::GetStringValue(int value_id)
+MpdDbSession* MpdDbSession::GetSession(int session_number)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -67,13 +75,10 @@ MpdDbStringValue* MpdDbStringValue::GetStringValue(int value_id)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select value_id, par_value "
-		"from string_value "
-		"where value_id = $1");
+		"select session_number, start_datetime, end_datetime "
+		"from session_ "
+		"where session_number = %d", session_number);
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetInt(0, value_id);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -98,18 +103,22 @@ MpdDbStringValue* MpdDbStringValue::GetStringValue(int value_id)
 		return 0x00;
 	}
 
-	int tmp_value_id;
-	tmp_value_id = stmt->GetInt(0);
-	TString tmp_par_value;
-	tmp_par_value = stmt->GetString(1);
+	int tmp_session_number;
+	tmp_session_number = stmt->GetInt(0);
+	TDatime tmp_start_datetime;
+	tmp_start_datetime = stmt->GetDatime(1);
+	TDatime* tmp_end_datetime;
+	if (stmt->IsNull(2)) tmp_end_datetime = NULL;
+	else
+		tmp_end_datetime = new TDatime(stmt->GetDatime(2));
 
 	delete stmt;
 
-	return new MpdDbStringValue(connUniDb, tmp_value_id, tmp_par_value);
+	return new MpdDbSession(connUniDb, tmp_session_number, tmp_start_datetime, tmp_end_datetime);
 }
 
 // -----   Delete record from class table ---------------------------
-int MpdDbStringValue::DeleteStringValue(int value_id)
+int MpdDbSession::DeleteSession(int session_number)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -117,12 +126,12 @@ int MpdDbStringValue::DeleteStringValue(int value_id)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"delete from string_value "
-		"where value_id = $1");
+		"delete from session_ "
+		"where session_number = $1");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetInt(0, value_id);
+	stmt->SetInt(0, session_number);
 
 	// delete table record from DB
 	if (!stmt->Process())
@@ -140,7 +149,7 @@ int MpdDbStringValue::DeleteStringValue(int value_id)
 }
 
 // -----   Print all table records ---------------------------------
-int MpdDbStringValue::PrintAll()
+int MpdDbSession::PrintAll()
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -148,8 +157,8 @@ int MpdDbStringValue::PrintAll()
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select value_id, par_value "
-		"from string_value");
+		"select session_number, start_datetime, end_datetime "
+		"from session_");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	// get table record from DB
@@ -168,13 +177,17 @@ int MpdDbStringValue::PrintAll()
 	// print rows
 	while (stmt->NextResultRow())
 	{
-		int tmp_value_id;
-		tmp_value_id = stmt->GetInt(0);
-		TString tmp_par_value;
-		tmp_par_value = stmt->GetString(1);
+		int tmp_session_number;
+		tmp_session_number = stmt->GetInt(0);
+		TDatime tmp_start_datetime;
+		tmp_start_datetime = stmt->GetDatime(1);
+		TDatime* tmp_end_datetime;
+		if (stmt->IsNull(2)) tmp_end_datetime = NULL;
+		else
+			tmp_end_datetime = new TDatime(stmt->GetDatime(2));
 
-		cout<<"Table 'string_value'";
-		cout<<". value_id: "<<tmp_value_id<<". par_value: "<<tmp_par_value<<endl;
+		cout<<"Table 'session_'";
+		cout<<". session_number: "<<tmp_session_number<<". start_datetime: "<<tmp_start_datetime.AsSQLString()<<". end_datetime: "<<(*tmp_end_datetime).AsSQLString()<<endl;
 	}
 
 	delete stmt;
@@ -185,7 +198,7 @@ int MpdDbStringValue::PrintAll()
 
 
 // Setters functions
-int MpdDbStringValue::SetValueId(int value_id)
+int MpdDbSession::SetSessionNumber(int session_number)
 {
 	if (!connectionUniDb)
 	{
@@ -196,14 +209,14 @@ int MpdDbStringValue::SetValueId(int value_id)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update string_value "
-		"set value_id = $1 "
-		"where value_id = $2");
+		"update session_ "
+		"set session_number = $1 "
+		"where session_number = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetInt(0, value_id);
-	stmt->SetInt(1, i_value_id);
+	stmt->SetInt(0, session_number);
+	stmt->SetInt(1, i_session_number);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -214,13 +227,13 @@ int MpdDbStringValue::SetValueId(int value_id)
 		return -2;
 	}
 
-	i_value_id = value_id;
+	i_session_number = session_number;
 
 	delete stmt;
 	return 0;
 }
 
-int MpdDbStringValue::SetParValue(TString par_value)
+int MpdDbSession::SetStartDatetime(TDatime start_datetime)
 {
 	if (!connectionUniDb)
 	{
@@ -231,14 +244,14 @@ int MpdDbStringValue::SetParValue(TString par_value)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update string_value "
-		"set par_value = $1 "
-		"where value_id = $2");
+		"update session_ "
+		"set start_datetime = $1 "
+		"where session_number = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetString(0, par_value);
-	stmt->SetInt(1, i_value_id);
+	stmt->SetDatime(0, start_datetime);
+	stmt->SetInt(1, i_session_number);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -249,20 +262,61 @@ int MpdDbStringValue::SetParValue(TString par_value)
 		return -2;
 	}
 
-	str_par_value = par_value;
+	dt_start_datetime = start_datetime;
+
+	delete stmt;
+	return 0;
+}
+
+int MpdDbSession::SetEndDatetime(TDatime* end_datetime)
+{
+	if (!connectionUniDb)
+	{
+		cout<<"Connection object is null"<<endl;
+		return -1;
+	}
+
+	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
+
+	TString sql = TString::Format(
+		"update session_ "
+		"set end_datetime = $1 "
+		"where session_number = $2");
+	TSQLStatement* stmt = uni_db->Statement(sql);
+
+	stmt->NextIteration();
+	if (end_datetime == NULL)
+		stmt->SetNull(0);
+	else
+		stmt->SetDatime(0, *end_datetime);
+	stmt->SetInt(1, i_session_number);
+
+	// write new value to database
+	if (!stmt->Process())
+	{
+		cout<<"Error: updating the record has been failed"<<endl;
+
+		delete stmt;
+		return -2;
+	}
+
+	if (end_datetime)
+		delete end_datetime;
+	dt_end_datetime = end_datetime;
 
 	delete stmt;
 	return 0;
 }
 
 // -----   Print current record ---------------------------------------
-void MpdDbStringValue::Print()
+void MpdDbSession::Print()
 {
-	cout<<"Table 'string_value'";
-	cout<<". value_id: "<<i_value_id<<". par_value: "<<str_par_value<<endl;
+	cout<<"Table 'session_'";
+	cout<<". session_number: "<<i_session_number<<". start_datetime: "<<dt_start_datetime.AsSQLString()<<". end_datetime: "<<(dt_end_datetime == NULL? "NULL": (*dt_end_datetime).AsSQLString())<<endl;
 
 	return;
 }
+/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */
 
 // -------------------------------------------------------------------
-ClassImp(MpdDbStringValue);
+ClassImp(MpdDbSession);

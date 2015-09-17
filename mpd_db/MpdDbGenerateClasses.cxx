@@ -26,7 +26,7 @@ MpdDbGenerateClasses::MpdDbGenerateClasses()
 // -------------------------------------------------------------------------
 
 // -----  generate C++ classess - wrappers for DB tables  -------------------------------
-int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString class_prefix)
+int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString class_prefix, bool isOnlyUpdate)
 {
     MpdDbConnection* connectionUniDb;
     if (connection_string == "")
@@ -104,13 +104,14 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         hFile<<(TString::Format("#ifndef %s_H \n", strClassNameUpper.Data())).Data();
         hFile<<(TString::Format("#define %s_H 1 \n\n", strClassNameUpper.Data())).Data();
 
-        hFile<<"#include \"TString.h\" \n";
-        hFile<<"#include \"TDatime.h\" \n";
-        hFile<<"\n#include \"MpdDbConnection.h\" \n\n";
+        hFile<<"#include \"TString.h\"\n";
+        hFile<<"#include \"TDatime.h\"\n";
+        hFile<<"\n#include \"MpdDbConnection.h\"\n\n";
 
         hFile<<(TString::Format("class %s\n", strClassName.Data())).Data();
         hFile<<"{\n";
         hFile<<" private:\n";
+        hFile<<"\t/* GENERATED PRIVATE MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */\n";
         hFile<<"\tMpdDbConnection* connectionUniDb;\n\n";
 
         // GET LIST OF COLUMNS FOR THE CURRENT TABLE
@@ -125,7 +126,6 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             cout<<"Parsing column: "<<strColumnName<<endl;
             TSQLColumnInfo* pColumnInfo = pTableInfo->FindColumn(strColumnName);
         }*/
-
 
         if (curDBMS == MySQL)
         {
@@ -151,6 +151,10 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 sColumnInfo->strColumnName = strColumnName;
                 sColumnInfo->isBinary = false;
 
+                // remove last '_'
+                TString strColumnNameWO = strColumnName;
+                if (strColumnNameWO[strColumnNameWO.Length()-1] == '_') strColumnNameWO = strColumnNameWO.Remove(strColumnNameWO.Length()-1);
+
                 TSQLColumnInfo* pColumnInfo = pTableInfo->FindColumn(strColumnName);
                 switch (pColumnInfo->GetSQLType())
                 {
@@ -158,7 +162,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "TString";
                         sColumnInfo->strStatementType = "String";
-                        sColumnInfo->strVariableName = "str_"+strColumnName;
+                        sColumnInfo->strPrintfType = "s";
+                        sColumnInfo->strVariableName = "str_"+strColumnNameWO;
 
                         break;
                     }
@@ -166,7 +171,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "int";
                         sColumnInfo->strStatementType = "Int";
-                        sColumnInfo->strVariableName = "i_"+strColumnName;
+                        sColumnInfo->strPrintfType = "d";
+                        sColumnInfo->strVariableName = "i_"+strColumnNameWO;
 
                         break;
                     }
@@ -174,7 +180,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "float";
                         sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strVariableName = "f_"+strColumnName;
+                        sColumnInfo->strPrintfType = "f";
+                        sColumnInfo->strVariableName = "f_"+strColumnNameWO;
 
                         break;
                     }
@@ -182,15 +189,17 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "double";
                         sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strVariableName = "d_"+strColumnName;
+                        sColumnInfo->strPrintfType = "f";
+                        sColumnInfo->strVariableName = "d_"+strColumnNameWO;
 
                         break;
                     }
                     case TSQLServer::kSQL_BINARY:
                     {
-                        sColumnInfo->strVariableType = "void*";
-                        sColumnInfo->strStatementType = "Binary";
-                        sColumnInfo->strVariableName = "blob_"+strColumnName;
+                        sColumnInfo->strVariableType = "unsigned char*";
+                        sColumnInfo->strStatementType = "LargeObject";
+                        sColumnInfo->strPrintfType = "p";
+                        sColumnInfo->strVariableName = "blob_"+strColumnNameWO;
                         sColumnInfo->isBinary = true;
 
                         break;
@@ -199,7 +208,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "TDatime";
                         sColumnInfo->strStatementType = "Datime";
-                        sColumnInfo->strVariableName = "dt_"+strColumnName;
+                        sColumnInfo->strPrintfType = "s";
+                        sColumnInfo->strVariableName = "dt_"+strColumnNameWO;
                         sColumnInfo->isDateTime = true;
 
                         break;
@@ -211,13 +221,15 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                         {
                             sColumnInfo->strVariableType = "bool";
                             sColumnInfo->strStatementType = "Int";
-                            sColumnInfo->strVariableName = "b_"+strColumnName;
+                            sColumnInfo->strPrintfType = "d";
+                            sColumnInfo->strVariableName = "b_"+strColumnNameWO;
                         }
                         else if (strDataType == "datetime")
                         {
                             sColumnInfo->strVariableType = "TDatime";
                             sColumnInfo->strStatementType = "Datime";
-                            sColumnInfo->strVariableName = "dt_"+strColumnName;
+                            sColumnInfo->strPrintfType = "s";
+                            sColumnInfo->strVariableName = "dt_"+strColumnNameWO;
                             sColumnInfo->isDateTime = true;
                         }
                         else
@@ -229,7 +241,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 }// switch (pColumnInfo->GetSQLType())
 
                 // form short variable name (e.g. ComponentName for component_name column)
-                TString strShortVar = strColumnName;
+                TString strShortVar = strColumnNameWO;
                 strShortVar = strShortVar.Replace(0, 1, toupper(strShortVar[0]));
                 Ssiz_t char_under;
                 while ((char_under = strShortVar.First('_')) != kNPOS)
@@ -245,25 +257,25 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 sColumnInfo->isPrimary = ((row->GetField(5))[0] == '1');
                 sColumnInfo->isUnique = ((row->GetField(6))[0] == '1');
 
-                sColumnInfo->strTempVariableName = "tmp_" + sColumnInfo->strColumnName;
+                sColumnInfo->strTempVariableName = "tmp_" + strColumnNameWO;
                 sColumnInfo->strVariableTypePointer = sColumnInfo->strVariableType;
                 if ((sColumnInfo->isNullable) && (!sColumnInfo->isBinary))
                 {
                     sColumnInfo->strVariableType += "*";
-                    sColumnInfo->strColumnValue = "*" + sColumnInfo->strColumnName;
+                    sColumnInfo->strColumnValue = "*" + strColumnNameWO;
                 }
                 else
-                    sColumnInfo->strColumnValue = sColumnInfo->strColumnName;
+                    sColumnInfo->strColumnValue = strColumnNameWO;
 
                 vecColumns.push_back(sColumnInfo);
 
                 if (sColumnInfo->isBinary)
                 {
                     structColumnInfo* sColumnInfoBinary = new structColumnInfo();
-                    sColumnInfoBinary->strVariableName = "sz_" + sColumnInfo->strColumnName;
-                    sColumnInfoBinary->strTempVariableName = "tmp_sz_" + sColumnInfo->strColumnName;
+                    sColumnInfoBinary->strVariableName = "sz_" + strColumnNameWO;
+                    sColumnInfoBinary->strTempVariableName = "tmp_sz_" + strColumnNameWO;
                     sColumnInfoBinary->strVariableType = "Long_t";
-                    sColumnInfoBinary->strColumnName = "size_" + sColumnInfo->strColumnName;
+                    sColumnInfoBinary->strColumnName = "size_" + strColumnNameWO;
                     sColumnInfoBinary->strShortVariableName = sColumnInfo->strShortVariableName + "Size";
                     sColumnInfoBinary->strStatementType = "";
 
@@ -279,7 +291,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             TString sql = TString::Format("SELECT DISTINCT a.attnum as ordinal_position, a.attname as column_name, format_type(a.atttypid, a.atttypmod) as data_type, "
                                           "a.attnotnull as is_nullable, def.adsrc as is_default, coalesce(i.indisprimary, false) as is_primary, coalesce(i.indisunique, false) as is_unique "
                                           "FROM pg_attribute a JOIN pg_class pgc ON pgc.oid = a.attrelid "
-                                          "LEFT JOIN pg_index i ON (pgc.oid = i.indrelid AND i.indkey[0] = a.attnum) "
+                                          "LEFT JOIN pg_index i ON (pgc.oid = i.indrelid AND a.attnum = ANY(i.indkey)) "
                                           "LEFT JOIN pg_description com on (pgc.oid = com.objoid AND a.attnum = com.objsubid) "
                                           "LEFT JOIN pg_attrdef def ON (a.attrelid = def.adrelid AND a.attnum = def.adnum) "
                                           "WHERE a.attnum > 0 AND pgc.oid = a.attrelid AND pg_table_is_visible(pgc.oid) "
@@ -303,6 +315,10 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 sColumnInfo->isBinary = false;
                 sColumnInfo->isDateTime = false;
 
+                // remove last '_'
+                TString strColumnNameWO = strColumnName;
+                if (strColumnNameWO[strColumnNameWO.Length()-1] == '_') strColumnNameWO = strColumnNameWO.Remove(strColumnNameWO.Length()-1);
+
                 TSQLColumnInfo* pColumnInfo = pTableInfo->FindColumn(strColumnName);
                 switch (pColumnInfo->GetSQLType())
                 {
@@ -310,7 +326,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "TString";
                         sColumnInfo->strStatementType = "String";
-                        sColumnInfo->strVariableName = "str_"+strColumnName;
+                        sColumnInfo->strPrintfType = "s";
+                        sColumnInfo->strVariableName = "str_"+strColumnNameWO;
 
                         break;
                     }
@@ -318,7 +335,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "int";
                         sColumnInfo->strStatementType = "Int";
-                        sColumnInfo->strVariableName = "i_"+strColumnName;
+                        sColumnInfo->strPrintfType = "d";
+                        sColumnInfo->strVariableName = "i_"+strColumnNameWO;
 
                         break;
                     }
@@ -326,7 +344,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "float";
                         sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strVariableName = "f_"+strColumnName;
+                        sColumnInfo->strPrintfType = "f";
+                        sColumnInfo->strVariableName = "f_"+strColumnNameWO;
 
                         break;
                     }
@@ -334,15 +353,17 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "double";
                         sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strVariableName = "d_"+strColumnName;
+                        sColumnInfo->strPrintfType = "f";
+                        sColumnInfo->strVariableName = "d_"+strColumnNameWO;
 
                         break;
                     }
                     case TSQLServer::kSQL_BINARY:
                     {
-                        sColumnInfo->strVariableType = "void*";
-                        sColumnInfo->strStatementType = "Binary";
-                        sColumnInfo->strVariableName = "blob_"+strColumnName;
+                        sColumnInfo->strVariableType = "unsigned char*";
+                        sColumnInfo->strStatementType = "LargeObject";
+                        sColumnInfo->strPrintfType = "p";
+                        sColumnInfo->strVariableName = "blob_"+strColumnNameWO;
                         sColumnInfo->isBinary = true;
 
                         break;
@@ -351,7 +372,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         sColumnInfo->strVariableType = "TDatime";
                         sColumnInfo->strStatementType = "Datime";
-                        sColumnInfo->strVariableName = "dt_"+strColumnName;
+                        sColumnInfo->strPrintfType = "s";
+                        sColumnInfo->strVariableName = "dt_"+strColumnNameWO;
                         sColumnInfo->isDateTime = true;
 
                         break;
@@ -363,7 +385,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                         {
                             sColumnInfo->strVariableType = "bool";
                             sColumnInfo->strStatementType = "Int";
-                            sColumnInfo->strVariableName = "b_"+strColumnName;
+                            sColumnInfo->strPrintfType = "d";
+                            sColumnInfo->strVariableName = "b_"+strColumnNameWO;
                         }
                         else
                         {
@@ -374,7 +397,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 }// switch (pColumnInfo->GetSQLType())
 
                 // form short variable name (e.g. ComponentName for component_name column)
-                TString strShortVar = strColumnName;
+                TString strShortVar = strColumnNameWO;
                 strShortVar = strShortVar.Replace(0, 1, toupper(strShortVar[0]));
                 Ssiz_t char_under;
                 while ((char_under = strShortVar.First('_')) != kNPOS)
@@ -393,25 +416,25 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 else
                     sColumnInfo->isUnique = ((row->GetField(6))[0] == 't');
 
-                sColumnInfo->strTempVariableName = "tmp_" + sColumnInfo->strColumnName;
+                sColumnInfo->strTempVariableName = "tmp_" + strColumnNameWO;
                 sColumnInfo->strVariableTypePointer = sColumnInfo->strVariableType;
                 if ((sColumnInfo->isNullable) && (!sColumnInfo->isBinary))
                 {
                     sColumnInfo->strVariableType += "*";
-                    sColumnInfo->strColumnValue = "*" + sColumnInfo->strColumnName;
+                    sColumnInfo->strColumnValue = "*" + strColumnNameWO;
                 }
                 else
-                    sColumnInfo->strColumnValue = sColumnInfo->strColumnName;
+                    sColumnInfo->strColumnValue = strColumnNameWO;
 
                 vecColumns.push_back(sColumnInfo);
 
                 if (sColumnInfo->isBinary)
                 {\
                     structColumnInfo* sColumnInfoBinary = new structColumnInfo();
-                    sColumnInfoBinary->strVariableName = "sz_" + sColumnInfo->strColumnName;
-                    sColumnInfoBinary->strTempVariableName = "tmp_sz_" + sColumnInfo->strColumnName;
+                    sColumnInfoBinary->strVariableName = "sz_" + strColumnNameWO;
+                    sColumnInfoBinary->strTempVariableName = "tmp_sz_" + strColumnNameWO;
                     sColumnInfoBinary->strVariableType = "Long_t";
-                    sColumnInfoBinary->strColumnName = "size_" + sColumnInfo->strColumnName;
+                    sColumnInfoBinary->strColumnName = "size_" + strColumnNameWO;
                     sColumnInfoBinary->strShortVariableName = sColumnInfo->strShortVariableName + "Size";
                     sColumnInfoBinary->strStatementType = "";
 
@@ -436,9 +459,11 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             structColumnInfo* cur_col= *it;
             hFile<<(TString::Format(", %s %s", cur_col->strVariableType.Data(), cur_col->strColumnName.Data())).Data();
         }
-        hFile<<");\n\n";
+        hFile<<");\n";
+        hFile<<"\t/* END OF PRIVATE GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */\n";
 
-        hFile<<" public:\n";
+        hFile<<"\n public:\n";
+        hFile<<"\t/* GENERATED PUBLIC MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */\n";
         hFile<<(TString::Format("\tvirtual ~%s(); // Destructor\n\n", strClassName.Data())).Data();
 
         hFile<<"\t// static class functions\n";
@@ -459,6 +484,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         }
         hFile<<");\n";
 
+        // // GET RECORD - DECLARATION
         hFile<<(TString::Format("\tstatic %s* Get%s(", strClassName.Data(), strShortTableName.Data())).Data();
         count = 0;
         bool is_flag = false;
@@ -527,7 +553,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         // PRINT ALL ROWS -DECLARATION
         hFile<<"\tstatic int PrintAll();\n";
 
-        // GETTER FUNCTIONS -DECLARATION
+        // GETTERS FUNCTIONS -DECLARATION
         hFile<<"\n\t// Getters\n";
         for (vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
         {
@@ -552,7 +578,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
 
         // PRINT VALUES -DECLARATION
         hFile<<"\tvoid Print();\n";
-
+        hFile<<"\t/* END OF PUBLIC GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */\n";
         hFile<<(TString::Format("\n ClassDef(%s,1);\n", strClassName.Data())).Data();
         hFile<<"};\n";
         hFile<<"\n#endif\n";
@@ -575,12 +601,14 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         cxxFile<<(TString::Format("//                      Generated %s \n", get_current_date().c_str())).Data();
         cxxFile<<"// ----------------------------------------------------------------------\n\n";
 
-        cxxFile<<"#include \"TSQLServer.h\" \n";
-        cxxFile<<"#include \"TSQLStatement.h\" \n";
-        cxxFile<<(TString::Format("\n#include \"%s.h\" \n\n", strClassName.Data())).Data();
+        cxxFile<<"#include \"TSQLServer.h\"\n";
+        cxxFile<<"#include \"TSQLStatement.h\"\n";
+        cxxFile<<(TString::Format("\n#include \"%s.h\"\n\n", strClassName.Data())).Data();
 
         cxxFile<<"#include <iostream>\n";
         cxxFile<<"using namespace std;\n\n";
+
+        cxxFile<<"/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */\n";
 
         cxxFile<<"// -----   Constructor with database connection   -----------------------\n";
         cxxFile<<(TString::Format("%s::%s(MpdDbConnection* connUniDb", strClassName.Data(), strClassName.Data())).Data();
@@ -609,6 +637,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
 
             if (cur_col->isNullable)
                 cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete %s;\n", cur_col->strVariableName.Data(), cur_col->strVariableName.Data())).Data();
+            if (cur_col->isBinary)
+                cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete [] %s;\n", cur_col->strVariableName.Data(), cur_col->strVariableName.Data())).Data();
         }
         cxxFile<<"}\n\n";
 
@@ -786,6 +816,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 cxxFile<<(TString::Format(", %s", cur_col->strColumnName.Data())).Data();
 
             count++;
+            if (cur_col->isBinary)
+                ++it;
         }
         cxxFile<<(TString::Format(" \"\n\t\t\"from %s \"\n\t\t\"where", strTableName.Data())).Data();
         count = 0;
@@ -795,44 +827,33 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             if (!cur_col->isPrimary)
                 continue;
 
-            if (curDBMS == MySQL)
-            {
-                if (count > 0)
-                    cxxFile<<" and";
+            if (count > 0)
+                cxxFile<<" and";
 
-                if (cur_col->strStatementType == "String")
-                    cxxFile<<(TString::Format(" lower(%s) = lower(?)", cur_col->strColumnName.Data())).Data();
-                else
-                    cxxFile<<(TString::Format(" %s = ?", cur_col->strColumnName.Data())).Data();
-            }
-            else if (curDBMS == PgSQL)
-            {
-                if (count > 0)
-                    cxxFile<<" and";
 
-                if (cur_col->strStatementType == "String")
-                    cxxFile<<(TString::Format(" lower(%s) = lower($%d)", cur_col->strColumnName.Data(), count+1)).Data();
-                else
-                   cxxFile<<(TString::Format(" %s = $%d", cur_col->strColumnName.Data(), count+1)).Data();
-            }
+            if (cur_col->strStatementType == "String")
+                cxxFile<<(TString::Format(" lower(%s) = lower('%%%s')", cur_col->strColumnName.Data(), cur_col->strPrintfType.Data())).Data();
+            else
+                cxxFile<<(TString::Format(" %s = %%%s", cur_col->strColumnName.Data(), cur_col->strPrintfType.Data())).Data();
 
             count++;
         }
-        cxxFile<<"\");\n";
 
-        cxxFile<<"\tTSQLStatement* stmt = uni_db->Statement(sql);\n\n";
-
-        cxxFile<<"\tstmt->NextIteration();\n";
-        count = 0;
+        cxxFile<<"\"";
         for (vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
         {
             structColumnInfo* cur_col= *it;
             if (!cur_col->isPrimary)
                 continue;
 
-            cxxFile<<(TString::Format("\tstmt->Set%s(%d, %s);\n", cur_col->strStatementType.Data(), count, cur_col->strColumnName.Data())).Data();
-            count++;
+            if (cur_col->strStatementType == "String")
+                cxxFile<<(TString::Format(", %s.Data()", cur_col->strColumnName.Data())).Data();
+            else
+                cxxFile<<(TString::Format(", %s", cur_col->strColumnName.Data())).Data();
         }
+        cxxFile<<");\n";
+
+        cxxFile<<"\tTSQLStatement* stmt = uni_db->Statement(sql);\n";
 
         cxxFile<<"\n\t// get table record from DB\n";
         cxxFile<<"\tif (!stmt->Process())\n\t{\n";
@@ -864,10 +885,11 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 cxxFile<<(TString::Format("\tif (stmt->IsNull(%d)) %s = NULL;\n\telse\n\t", count, TempVar.Data())).Data();
                 if (cur_col->isBinary)
                 {
+                    cxxFile<<(TString::Format("\t{\n\t\t%s = NULL;\n", TempVar.Data())).Data();
                     ++it;
                     cur_col= *it;
-                    cxxFile<<(TString::Format("\t{\n\t\t%s %s;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
-                    cxxFile<<(TString::Format("\t\tstmt->Get%s(%d, %s, %s);\n\t}\n", StatementType.Data(), count,
+                    cxxFile<<(TString::Format("\t\t%s %s = 0;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\tstmt->Get%s(%d, (void*&)%s, %s);\n\t}\n", StatementType.Data(), count,
                                                TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
                 }
                 else
@@ -877,10 +899,11 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             {
                 if (cur_col->isBinary)
                 {
+                    cxxFile<<(TString::Format("\t%s = NULL;\n", TempVar.Data())).Data();
                     ++it;
                     cur_col= *it;
-                    cxxFile<<(TString::Format("\t%s %s;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
-                    cxxFile<<(TString::Format("\tstmt->Get%s(%d, %s, %s);\n", StatementType.Data(), count,
+                    cxxFile<<(TString::Format("\t%s %s = 0;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\tstmt->Get%s(%d, (void*&)%s, %s);\n", StatementType.Data(), count,
                                            TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
                 }
                 else
@@ -938,25 +961,15 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     if (current_col->isBinary)
                         ++it_inner;
                 }
-                if (curDBMS == MySQL)
-                {
-                    if (cur_col->strStatementType == "String")
-                        cxxFile<<(TString::Format(" \"\n\t\t\"from %s \"\n\t\t\"where lower(%s) = lower(?)\");\n", strTableName.Data(), cur_col->strColumnName.Data())).Data();
-                    else
-                        cxxFile<<(TString::Format(" \"\n\t\t\"from %s \"\n\t\t\"where %s = ?\");\n", strTableName.Data(), cur_col->strColumnName.Data())).Data();
-                }
-                else if (curDBMS == PgSQL)
-                {
-                    if (cur_col->strStatementType == "String")
-                        cxxFile<<(TString::Format(" \"\n\t\t\"from %s \"\n\t\t\"where lower(%s) = lower($1)\");\n", strTableName.Data(), cur_col->strColumnName.Data())).Data();
-                    else
-                        cxxFile<<(TString::Format(" \"\n\t\t\"from %s \"\n\t\t\"where %s = $1\");\n", strTableName.Data(), cur_col->strColumnName.Data())).Data();
-                }
 
-                cxxFile<<"\tTSQLStatement* stmt = uni_db->Statement(sql);\n\n";
+                if (cur_col->strStatementType == "String")
+                    cxxFile<<(TString::Format(" \"\n\t\t\"from %s \"\n\t\t\"where lower(%s) = lower('%%%s')\", %s.Data());\n",
+                                              strTableName.Data(), cur_col->strColumnName.Data(), cur_col->strPrintfType.Data(), cur_col->strColumnName.Data())).Data();
+                else
+                    cxxFile<<(TString::Format(" \"\n\t\t\"from %s \"\n\t\t\"where %s = %%%s\", %s);\n",
+                                              strTableName.Data(), cur_col->strColumnName.Data(), cur_col->strPrintfType.Data(), cur_col->strColumnName.Data())).Data();
 
-                cxxFile<<"\tstmt->NextIteration();\n";
-                cxxFile<<(TString::Format("\tstmt->Set%s(0, %s);\n", cur_col->strStatementType.Data(), cur_col->strColumnName.Data())).Data();
+                cxxFile<<"\tTSQLStatement* stmt = uni_db->Statement(sql);\n";
 
                 cxxFile<<"\n\t// get table record from DB\n";
                 cxxFile<<"\tif (!stmt->Process())\n\t{\n";
@@ -989,10 +1002,11 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                         cxxFile<<(TString::Format("\tif (stmt->IsNull(%d)) %s = NULL;\n\telse\n\t", count, TempVar.Data())).Data();
                         if (current_col->isBinary)
                         {
+                            cxxFile<<(TString::Format("\t{\n\t\t%s = NULL;\n", TempVar.Data())).Data();
                             ++it_inner;
                             current_col= *it_inner;
-                            cxxFile<<(TString::Format("\t{\n\t\t%s %s;\n", current_col->strVariableType.Data(), current_col->strTempVariableName.Data())).Data();
-                            cxxFile<<(TString::Format("\t\tstmt->Get%s(%d, %s, %s);\n\t}\n", StatementType.Data(), count,
+                            cxxFile<<(TString::Format("\t\t%s %s = 0;\n", current_col->strVariableType.Data(), current_col->strTempVariableName.Data())).Data();
+                            cxxFile<<(TString::Format("\t\tstmt->Get%s(%d, (void*&)%s, %s);\n\t}\n", StatementType.Data(), count,
                                                        TempVar.Data(), current_col->strTempVariableName.Data())).Data();
                         }
                         else
@@ -1003,10 +1017,11 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     {
                         if (current_col->isBinary)
                         {
+                            cxxFile<<(TString::Format("\t%s = NULL;\n", TempVar.Data())).Data();
                             ++it_inner;
                             current_col= *it_inner;
-                            cxxFile<<(TString::Format("\t%s %s;\n", current_col->strVariableType.Data(), current_col->strTempVariableName.Data())).Data();
-                            cxxFile<<(TString::Format("\tstmt->Get%s(%d, %s, %s);\n", StatementType.Data(), count,
+                            cxxFile<<(TString::Format("\t%s %s = 0;\n", current_col->strVariableType.Data(), current_col->strTempVariableName.Data())).Data();
+                            cxxFile<<(TString::Format("\tstmt->Get%s(%d, (void*&)%s, %s);\n", StatementType.Data(), count,
                                                    TempVar.Data(), current_col->strTempVariableName.Data())).Data();
                         }
                         else
@@ -1186,6 +1201,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 cxxFile<<(TString::Format(", %s", cur_col->strColumnName.Data())).Data();
 
             count++;
+            if (cur_col->isBinary)
+                ++it;
         }
         cxxFile<<(TString::Format(" \"\n\t\t\"from %s\");\n", strTableName.Data())).Data();
 
@@ -1216,10 +1233,11 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 cxxFile<<(TString::Format("\t\tif (stmt->IsNull(%d)) %s = NULL;\n\t\telse\n\t", count, TempVar.Data())).Data();
                 if (cur_col->isBinary)
                 {
+                    cxxFile<<(TString::Format("\t\t{\n\t\t\t%s = NULL;\n", TempVar.Data())).Data();
                     ++it;
                     cur_col= *it;
-                    cxxFile<<(TString::Format("\t\t{\n\t\t\t%s %s;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
-                    cxxFile<<(TString::Format("\t\t\tstmt->Get%s(%d, %s, %s);\n\t\t}\n", StatementType.Data(), count,
+                    cxxFile<<(TString::Format("\t\t\t%s %s=0;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\t\tstmt->Get%s(%d, (void*&)%s, %s);\n\t\t}\n", StatementType.Data(), count,
                                                TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
                 }
                 else
@@ -1229,10 +1247,11 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             {
                 if (cur_col->isBinary)
                 {
+                    cxxFile<<(TString::Format("\t\t%s = NULL;\n", TempVar.Data())).Data();
                     ++it;
                     cur_col= *it;
-                    cxxFile<<(TString::Format("\t\t%s %s;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
-                    cxxFile<<(TString::Format("\t\tstmt->Get%s(%d, %s, %s);\n", StatementType.Data(), count,
+                    cxxFile<<(TString::Format("\t\t%s %s=0;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\tstmt->Get%s(%d, (void*&)%s, %s);\n", StatementType.Data(), count,
                                            TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
                 }
                 else
@@ -1246,19 +1265,22 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         {
             structColumnInfo* cur_col= *it;
 
-            if (cur_col->isNullable)
-                cxxFile<<(TString::Format("<<\". %s: \"<<(*%s)", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
-            else
-                cxxFile<<(TString::Format("<<\". %s: \"<<%s", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
-
-            if (cur_col->isDateTime)
-                cxxFile<<".AsSQLString()";
-
             if (cur_col->isBinary)
             {
+                cxxFile<<(TString::Format("<<\". %s: \"<<(void*)%s", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
                 ++it;
                 cur_col= *it;
-                cxxFile<<(TString::Format("<<\" Binary size: \"<<%s", cur_col->strTempVariableName.Data())).Data();
+                cxxFile<<(TString::Format("<<\", binary size: \"<<%s", cur_col->strTempVariableName.Data())).Data();
+            }
+            else
+            {
+                if (cur_col->isNullable)
+                    cxxFile<<(TString::Format("<<\". %s: \"<<(*%s)", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
+                else
+                    cxxFile<<(TString::Format("<<\". %s: \"<<%s", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
+
+                if (cur_col->isDateTime)
+                    cxxFile<<".AsSQLString()";
             }
         }
         cxxFile<<"<<endl;\n\t}\n\n";
@@ -1358,6 +1380,8 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
 
             if (cur_col->isNullable)
                 cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete %s;\n", cur_col->strColumnName.Data(), cur_col->strColumnName.Data())).Data();
+            if (cur_col->isBinary)
+                cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete [] %s;\n", cur_col->strColumnName.Data(), cur_col->strColumnName.Data())).Data();
 
             cxxFile<<(TString::Format("\t%s = %s;\n", cur_col->strVariableName.Data(), cur_col->strColumnName.Data())).Data();
             if (cur_col->isBinary)
@@ -1376,26 +1400,44 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         {
             structColumnInfo* cur_col= *it;
 
-            if (cur_col->isNullable)
-                cxxFile<<(TString::Format("<<\". %s: \"<<(*%s)", cur_col->strColumnName.Data(), cur_col->strVariableName.Data())).Data();
-            else
-                cxxFile<<(TString::Format("<<\". %s: \"<<%s", cur_col->strColumnName.Data(), cur_col->strVariableName.Data())).Data();
-
-            if (cur_col->isDateTime)
-                cxxFile<<".AsSQLString()";
-
             if (cur_col->isBinary)
             {
+                cxxFile<<(TString::Format("<<\". %s: \"<<(void*)%s", cur_col->strColumnName.Data(), cur_col->strVariableName.Data())).Data();
                 ++it;
                 cur_col= *it;
-                cxxFile<<(TString::Format("<<\" Binary size: \"<<%s", cur_col->strVariableName.Data())).Data();
+                cxxFile<<(TString::Format("<<\", binary size: \"<<%s", cur_col->strVariableName.Data())).Data();
+            }
+            else
+            {
+                if (cur_col->isNullable)
+                {
+                    if (cur_col->isDateTime)
+                        cxxFile<<(TString::Format("<<\". %s: \"<<(%s == NULL? \"NULL\": (*%s).AsSQLString())",
+                                                  cur_col->strColumnName.Data(), cur_col->strVariableName.Data(), cur_col->strVariableName.Data())).Data();
+                    else
+                    {
+                        if (cur_col->strPrintfType == "s")
+                            cxxFile<<(TString::Format("<<\". %s: \"<<(%s == NULL? \"NULL\": *%s)",
+                                                      cur_col->strColumnName.Data(), cur_col->strVariableName.Data(), cur_col->strVariableName.Data())).Data();
+                        else
+                            cxxFile<<(TString::Format("<<\". %s: \"<<(%s == NULL? \"NULL\": TString::Format(\"%%%s\", *%s))",
+                                              cur_col->strColumnName.Data(), cur_col->strVariableName.Data(), cur_col->strPrintfType.Data(), cur_col->strVariableName.Data())).Data();
+                    }
+                }
+                else
+                {
+                    cxxFile<<(TString::Format("<<\". %s: \"<<%s", cur_col->strColumnName.Data(), cur_col->strVariableName.Data())).Data();
+                    if (cur_col->isDateTime)
+                        cxxFile<<".AsSQLString()";
+                }
             }
         }
         cxxFile<<"<<endl;\n\n";
 
-        cxxFile<<"\treturn;\n}\n\n";
+        cxxFile<<"\treturn;\n}\n";
+        cxxFile<<"/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */\n";
 
-        cxxFile<<"// -------------------------------------------------------------------\n";
+        cxxFile<<"\n// -------------------------------------------------------------------\n";
         cxxFile<<(TString::Format("ClassImp(%s);\n", strClassName.Data())).Data();
 
         cxxFile.close();

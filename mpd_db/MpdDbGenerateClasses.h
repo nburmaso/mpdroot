@@ -23,6 +23,7 @@ struct structColumnInfo
     // the same as strVariableType, except pointers: strVariableType without '*' at the end
     TString strVariableTypePointer;
     TString strStatementType;
+    TString strPrintfType;
     TString strVariableName;
     TString strTempVariableName;
     TString strShortVariableName;
@@ -42,7 +43,7 @@ class MpdDbGenerateClasses
     virtual ~MpdDbGenerateClasses();    // Destructor
 
     // generate C++ classess - wrappers for DB tables
-    int GenerateClasses(TString connection_string = "", TString class_prefix = "MpdDb");
+    int GenerateClasses(TString connection_string = "", TString class_prefix = "MpdDb", bool isOnlyUpdate = false);
 
   ClassDef(MpdDbGenerateClasses,1);
 };

@@ -1,16 +1,17 @@
 // ----------------------------------------------------------------------
 //                    MpdDbSimulationFile cxx file 
-//                      Generated 07-09-2015 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
-#include "TSQLServer.h" 
-#include "TSQLStatement.h" 
+#include "TSQLServer.h"
+#include "TSQLStatement.h"
 
-#include "MpdDbSimulationFile.h" 
+#include "MpdDbSimulationFile.h"
 
 #include <iostream>
 using namespace std;
 
+/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 // -----   Constructor with database connection   -----------------------
 MpdDbSimulationFile::MpdDbSimulationFile(MpdDbConnection* connUniDb, int file_id, TString file_path, TString generator_name, TString beam_particle, TString* target_particle, double* energy, TString centrality, int* event_count, TString* file_desc, double* file_size_kb)
 {
@@ -139,11 +140,8 @@ MpdDbSimulationFile* MpdDbSimulationFile::GetSimulationFile(int file_id)
 	TString sql = TString::Format(
 		"select file_id, file_path, generator_name, beam_particle, target_particle, energy, centrality, event_count, file_desc, file_size_kb "
 		"from simulation_file "
-		"where file_id = $1");
+		"where file_id = %d", file_id);
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetInt(0, file_id);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -215,11 +213,8 @@ MpdDbSimulationFile* MpdDbSimulationFile::GetSimulationFile(TString file_path)
 	TString sql = TString::Format(
 		"select file_id, file_path, generator_name, beam_particle, target_particle, energy, centrality, event_count, file_desc, file_size_kb "
 		"from simulation_file "
-		"where lower(file_path) = lower($1)");
+		"where lower(file_path) = lower('%s')", file_path.Data());
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetString(0, file_path);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -757,10 +752,11 @@ int MpdDbSimulationFile::SetFileSizeKb(double* file_size_kb)
 void MpdDbSimulationFile::Print()
 {
 	cout<<"Table 'simulation_file'";
-	cout<<". file_id: "<<i_file_id<<". file_path: "<<str_file_path<<". generator_name: "<<str_generator_name<<". beam_particle: "<<str_beam_particle<<". target_particle: "<<(*str_target_particle)<<". energy: "<<(*d_energy)<<". centrality: "<<str_centrality<<". event_count: "<<(*i_event_count)<<". file_desc: "<<(*str_file_desc)<<". file_size_kb: "<<(*d_file_size_kb)<<endl;
+	cout<<". file_id: "<<i_file_id<<". file_path: "<<str_file_path<<". generator_name: "<<str_generator_name<<". beam_particle: "<<str_beam_particle<<". target_particle: "<<(str_target_particle == NULL? "NULL": *str_target_particle)<<". energy: "<<(d_energy == NULL? "NULL": TString::Format("%f", *d_energy))<<". centrality: "<<str_centrality<<". event_count: "<<(i_event_count == NULL? "NULL": TString::Format("%d", *i_event_count))<<". file_desc: "<<(str_file_desc == NULL? "NULL": *str_file_desc)<<". file_size_kb: "<<(d_file_size_kb == NULL? "NULL": TString::Format("%f", *d_file_size_kb))<<endl;
 
 	return;
 }
+/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */
 
 // -------------------------------------------------------------------
 ClassImp(MpdDbSimulationFile);

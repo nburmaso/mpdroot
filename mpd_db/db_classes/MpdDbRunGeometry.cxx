@@ -1,18 +1,19 @@
 // ----------------------------------------------------------------------
 //                    MpdDbRunGeometry cxx file 
-//                      Generated 07-09-2015 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
-#include "TSQLServer.h" 
-#include "TSQLStatement.h" 
+#include "TSQLServer.h"
+#include "TSQLStatement.h"
 
-#include "MpdDbRunGeometry.h" 
+#include "MpdDbRunGeometry.h"
 
 #include <iostream>
 using namespace std;
 
+/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 // -----   Constructor with database connection   -----------------------
-MpdDbRunGeometry::MpdDbRunGeometry(MpdDbConnection* connUniDb, int geometry_id, void* root_geometry, Long_t size_root_geometry)
+MpdDbRunGeometry::MpdDbRunGeometry(MpdDbConnection* connUniDb, int geometry_id, unsigned char* root_geometry, Long_t size_root_geometry)
 {
 	connectionUniDb = connUniDb;
 
@@ -26,10 +27,12 @@ MpdDbRunGeometry::~MpdDbRunGeometry()
 {
 	if (connectionUniDb)
 		delete connectionUniDb;
+	if (blob_root_geometry)
+		delete [] blob_root_geometry;
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbRunGeometry* MpdDbRunGeometry::CreateRunGeometry(void* root_geometry, Long_t size_root_geometry)
+MpdDbRunGeometry* MpdDbRunGeometry::CreateRunGeometry(unsigned char* root_geometry, Long_t size_root_geometry)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -42,7 +45,7 @@ MpdDbRunGeometry* MpdDbRunGeometry::CreateRunGeometry(void* root_geometry, Long_
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetBinary(0, root_geometry, size_root_geometry, 0x4000000);
+	stmt->SetLargeObject(0, root_geometry, size_root_geometry, 0x4000000);
 
 	// inserting new record to DB
 	if (!stmt->Process())
@@ -97,13 +100,10 @@ MpdDbRunGeometry* MpdDbRunGeometry::GetRunGeometry(int geometry_id)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select geometry_id, root_geometry, size_root_geometry "
+		"select geometry_id, root_geometry "
 		"from run_geometry "
-		"where geometry_id = $1");
+		"where geometry_id = %d", geometry_id);
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetInt(0, geometry_id);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -130,9 +130,10 @@ MpdDbRunGeometry* MpdDbRunGeometry::GetRunGeometry(int geometry_id)
 
 	int tmp_geometry_id;
 	tmp_geometry_id = stmt->GetInt(0);
-	void* tmp_root_geometry;
-	Long_t tmp_sz_root_geometry;
-	stmt->GetBinary(1, tmp_root_geometry, tmp_sz_root_geometry);
+	unsigned char* tmp_root_geometry;
+	tmp_root_geometry = NULL;
+	Long_t tmp_sz_root_geometry = 0;
+	stmt->GetLargeObject(1, (void*&)tmp_root_geometry, tmp_sz_root_geometry);
 
 	delete stmt;
 
@@ -179,7 +180,7 @@ int MpdDbRunGeometry::PrintAll()
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select geometry_id, root_geometry, size_root_geometry "
+		"select geometry_id, root_geometry "
 		"from run_geometry");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
@@ -201,12 +202,13 @@ int MpdDbRunGeometry::PrintAll()
 	{
 		int tmp_geometry_id;
 		tmp_geometry_id = stmt->GetInt(0);
-		void* tmp_root_geometry;
-		Long_t tmp_sz_root_geometry;
-		stmt->GetBinary(1, tmp_root_geometry, tmp_sz_root_geometry);
+		unsigned char* tmp_root_geometry;
+		tmp_root_geometry = NULL;
+		Long_t tmp_sz_root_geometry=0;
+		stmt->GetLargeObject(1, (void*&)tmp_root_geometry, tmp_sz_root_geometry);
 
 		cout<<"Table 'run_geometry'";
-		cout<<". geometry_id: "<<tmp_geometry_id<<". root_geometry: "<<tmp_root_geometry<<" Binary size: "<<tmp_sz_root_geometry<<endl;
+		cout<<". geometry_id: "<<tmp_geometry_id<<". root_geometry: "<<(void*)tmp_root_geometry<<", binary size: "<<tmp_sz_root_geometry<<endl;
 	}
 
 	delete stmt;
@@ -217,7 +219,7 @@ int MpdDbRunGeometry::PrintAll()
 
 
 // Setters functions
-int MpdDbRunGeometry::SetRootGeometry(void* root_geometry, Long_t size_root_geometry)
+int MpdDbRunGeometry::SetRootGeometry(unsigned char* root_geometry, Long_t size_root_geometry)
 {
 	if (!connectionUniDb)
 	{
@@ -234,7 +236,7 @@ int MpdDbRunGeometry::SetRootGeometry(void* root_geometry, Long_t size_root_geom
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetBinary(0, root_geometry, size_root_geometry, 0x4000000);
+	stmt->SetLargeObject(0, root_geometry, size_root_geometry, 0x4000000);
 	stmt->SetInt(1, i_geometry_id);
 
 	// write new value to database
@@ -246,6 +248,8 @@ int MpdDbRunGeometry::SetRootGeometry(void* root_geometry, Long_t size_root_geom
 		return -2;
 	}
 
+	if (root_geometry)
+		delete [] root_geometry;
 	blob_root_geometry = root_geometry;
 	sz_root_geometry = size_root_geometry;
 
@@ -257,10 +261,11 @@ int MpdDbRunGeometry::SetRootGeometry(void* root_geometry, Long_t size_root_geom
 void MpdDbRunGeometry::Print()
 {
 	cout<<"Table 'run_geometry'";
-	cout<<". geometry_id: "<<i_geometry_id<<". root_geometry: "<<blob_root_geometry<<" Binary size: "<<sz_root_geometry<<endl;
+	cout<<". geometry_id: "<<i_geometry_id<<". root_geometry: "<<(void*)blob_root_geometry<<", binary size: "<<sz_root_geometry<<endl;
 
 	return;
 }
+/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */
 
 // -------------------------------------------------------------------
 ClassImp(MpdDbRunGeometry);

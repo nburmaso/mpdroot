@@ -1,37 +1,38 @@
 // ----------------------------------------------------------------------
-//                    MpdDbExperimentSession cxx file 
-//                      Generated 07-09-2015 
+//                    MpdDbSessionDetector cxx file 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
-#include "TSQLServer.h" 
-#include "TSQLStatement.h" 
+#include "TSQLServer.h"
+#include "TSQLStatement.h"
 
-#include "MpdDbExperimentSession.h" 
+#include "MpdDbSessionDetector.h"
 
 #include <iostream>
 using namespace std;
 
+/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 // -----   Constructor with database connection   -----------------------
-MpdDbExperimentSession::MpdDbExperimentSession(MpdDbConnection* connUniDb, int session_number, TDatime start_date, TDatime* end_date)
+MpdDbSessionDetector::MpdDbSessionDetector(MpdDbConnection* connUniDb, int session_number, TString detector_name, int* map_id)
 {
 	connectionUniDb = connUniDb;
 
 	i_session_number = session_number;
-	dt_start_date = start_date;
-	dt_end_date = end_date;
+	str_detector_name = detector_name;
+	i_map_id = map_id;
 }
 
 // -----   Destructor   -------------------------------------------------
-MpdDbExperimentSession::~MpdDbExperimentSession()
+MpdDbSessionDetector::~MpdDbSessionDetector()
 {
 	if (connectionUniDb)
 		delete connectionUniDb;
-	if (dt_end_date)
-		delete dt_end_date;
+	if (i_map_id)
+		delete i_map_id;
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbExperimentSession* MpdDbExperimentSession::CreateExperimentSession(int session_number, TDatime start_date, TDatime* end_date)
+MpdDbSessionDetector* MpdDbSessionDetector::CreateSessionDetector(int session_number, TString detector_name, int* map_id)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -39,17 +40,17 @@ MpdDbExperimentSession* MpdDbExperimentSession::CreateExperimentSession(int sess
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"insert into experiment_session(session_number, start_date, end_date) "
+		"insert into session_detector(session_number, detector_name, map_id) "
 		"values ($1, $2, $3)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
 	stmt->SetInt(0, session_number);
-	stmt->SetDatime(1, start_date);
-	if (end_date == NULL)
+	stmt->SetString(1, detector_name);
+	if (map_id == NULL)
 		stmt->SetNull(2);
 	else
-		stmt->SetDatime(2, *end_date);
+		stmt->SetInt(2, *map_id);
 
 	// inserting new record to DB
 	if (!stmt->Process())
@@ -62,11 +63,11 @@ MpdDbExperimentSession* MpdDbExperimentSession::CreateExperimentSession(int sess
 
 	delete stmt;
 
-	return new MpdDbExperimentSession(connUniDb, session_number, start_date, end_date);
+	return new MpdDbSessionDetector(connUniDb, session_number, detector_name, map_id);
 }
 
 // -----   Get table record from database ---------------------------
-MpdDbExperimentSession* MpdDbExperimentSession::GetExperimentSession(int session_number)
+MpdDbSessionDetector* MpdDbSessionDetector::GetSessionDetector(int session_number, TString detector_name)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -74,13 +75,10 @@ MpdDbExperimentSession* MpdDbExperimentSession::GetExperimentSession(int session
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select session_number, start_date, end_date "
-		"from experiment_session "
-		"where session_number = $1");
+		"select session_number, detector_name, map_id "
+		"from session_detector "
+		"where session_number = %d and lower(detector_name) = lower('%s')", session_number, detector_name.Data());
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetInt(0, session_number);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -107,20 +105,20 @@ MpdDbExperimentSession* MpdDbExperimentSession::GetExperimentSession(int session
 
 	int tmp_session_number;
 	tmp_session_number = stmt->GetInt(0);
-	TDatime tmp_start_date;
-	tmp_start_date = stmt->GetDatime(1);
-	TDatime* tmp_end_date;
-	if (stmt->IsNull(2)) tmp_end_date = NULL;
+	TString tmp_detector_name;
+	tmp_detector_name = stmt->GetString(1);
+	int* tmp_map_id;
+	if (stmt->IsNull(2)) tmp_map_id = NULL;
 	else
-		tmp_end_date = new TDatime(stmt->GetDatime(2));
+		tmp_map_id = new int(stmt->GetInt(2));
 
 	delete stmt;
 
-	return new MpdDbExperimentSession(connUniDb, tmp_session_number, tmp_start_date, tmp_end_date);
+	return new MpdDbSessionDetector(connUniDb, tmp_session_number, tmp_detector_name, tmp_map_id);
 }
 
 // -----   Delete record from class table ---------------------------
-int MpdDbExperimentSession::DeleteExperimentSession(int session_number)
+int MpdDbSessionDetector::DeleteSessionDetector(int session_number, TString detector_name)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -128,12 +126,13 @@ int MpdDbExperimentSession::DeleteExperimentSession(int session_number)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"delete from experiment_session "
-		"where session_number = $1");
+		"delete from session_detector "
+		"where session_number = $1 and lower(detector_name) = lower($2)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
 	stmt->SetInt(0, session_number);
+	stmt->SetString(1, detector_name);
 
 	// delete table record from DB
 	if (!stmt->Process())
@@ -151,7 +150,7 @@ int MpdDbExperimentSession::DeleteExperimentSession(int session_number)
 }
 
 // -----   Print all table records ---------------------------------
-int MpdDbExperimentSession::PrintAll()
+int MpdDbSessionDetector::PrintAll()
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -159,8 +158,8 @@ int MpdDbExperimentSession::PrintAll()
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"select session_number, start_date, end_date "
-		"from experiment_session");
+		"select session_number, detector_name, map_id "
+		"from session_detector");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	// get table record from DB
@@ -181,15 +180,15 @@ int MpdDbExperimentSession::PrintAll()
 	{
 		int tmp_session_number;
 		tmp_session_number = stmt->GetInt(0);
-		TDatime tmp_start_date;
-		tmp_start_date = stmt->GetDatime(1);
-		TDatime* tmp_end_date;
-		if (stmt->IsNull(2)) tmp_end_date = NULL;
+		TString tmp_detector_name;
+		tmp_detector_name = stmt->GetString(1);
+		int* tmp_map_id;
+		if (stmt->IsNull(2)) tmp_map_id = NULL;
 		else
-			tmp_end_date = new TDatime(stmt->GetDatime(2));
+			tmp_map_id = new int(stmt->GetInt(2));
 
-		cout<<"Table 'experiment_session'";
-		cout<<". session_number: "<<tmp_session_number<<". start_date: "<<tmp_start_date.AsSQLString()<<". end_date: "<<(*tmp_end_date).AsSQLString()<<endl;
+		cout<<"Table 'session_detector'";
+		cout<<". session_number: "<<tmp_session_number<<". detector_name: "<<tmp_detector_name<<". map_id: "<<(*tmp_map_id)<<endl;
 	}
 
 	delete stmt;
@@ -200,7 +199,7 @@ int MpdDbExperimentSession::PrintAll()
 
 
 // Setters functions
-int MpdDbExperimentSession::SetSessionNumber(int session_number)
+int MpdDbSessionDetector::SetSessionNumber(int session_number)
 {
 	if (!connectionUniDb)
 	{
@@ -211,14 +210,15 @@ int MpdDbExperimentSession::SetSessionNumber(int session_number)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update experiment_session "
+		"update session_detector "
 		"set session_number = $1 "
-		"where session_number = $2");
+		"where session_number = $2 and detector_name = $3");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
 	stmt->SetInt(0, session_number);
 	stmt->SetInt(1, i_session_number);
+	stmt->SetString(2, str_detector_name);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -235,7 +235,7 @@ int MpdDbExperimentSession::SetSessionNumber(int session_number)
 	return 0;
 }
 
-int MpdDbExperimentSession::SetStartDate(TDatime start_date)
+int MpdDbSessionDetector::SetDetectorName(TString detector_name)
 {
 	if (!connectionUniDb)
 	{
@@ -246,14 +246,15 @@ int MpdDbExperimentSession::SetStartDate(TDatime start_date)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update experiment_session "
-		"set start_date = $1 "
-		"where session_number = $2");
+		"update session_detector "
+		"set detector_name = $1 "
+		"where session_number = $2 and detector_name = $3");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	stmt->SetDatime(0, start_date);
+	stmt->SetString(0, detector_name);
 	stmt->SetInt(1, i_session_number);
+	stmt->SetString(2, str_detector_name);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -264,13 +265,13 @@ int MpdDbExperimentSession::SetStartDate(TDatime start_date)
 		return -2;
 	}
 
-	dt_start_date = start_date;
+	str_detector_name = detector_name;
 
 	delete stmt;
 	return 0;
 }
 
-int MpdDbExperimentSession::SetEndDate(TDatime* end_date)
+int MpdDbSessionDetector::SetMapId(int* map_id)
 {
 	if (!connectionUniDb)
 	{
@@ -281,17 +282,18 @@ int MpdDbExperimentSession::SetEndDate(TDatime* end_date)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update experiment_session "
-		"set end_date = $1 "
-		"where session_number = $2");
+		"update session_detector "
+		"set map_id = $1 "
+		"where session_number = $2 and detector_name = $3");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
-	if (end_date == NULL)
+	if (map_id == NULL)
 		stmt->SetNull(0);
 	else
-		stmt->SetDatime(0, *end_date);
+		stmt->SetInt(0, *map_id);
 	stmt->SetInt(1, i_session_number);
+	stmt->SetString(2, str_detector_name);
 
 	// write new value to database
 	if (!stmt->Process())
@@ -302,22 +304,23 @@ int MpdDbExperimentSession::SetEndDate(TDatime* end_date)
 		return -2;
 	}
 
-	if (end_date)
-		delete end_date;
-	dt_end_date = end_date;
+	if (map_id)
+		delete map_id;
+	i_map_id = map_id;
 
 	delete stmt;
 	return 0;
 }
 
 // -----   Print current record ---------------------------------------
-void MpdDbExperimentSession::Print()
+void MpdDbSessionDetector::Print()
 {
-	cout<<"Table 'experiment_session'";
-	cout<<". session_number: "<<i_session_number<<". start_date: "<<dt_start_date.AsSQLString()<<". end_date: "<<(*dt_end_date).AsSQLString()<<endl;
+	cout<<"Table 'session_detector'";
+	cout<<". session_number: "<<i_session_number<<". detector_name: "<<str_detector_name<<". map_id: "<<(i_map_id == NULL? "NULL": TString::Format("%d", *i_map_id))<<endl;
 
 	return;
 }
+/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */
 
 // -------------------------------------------------------------------
-ClassImp(MpdDbExperimentSession);
+ClassImp(MpdDbSessionDetector);

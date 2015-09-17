@@ -1,18 +1,16 @@
 // ----------------------------------------------------------------------
-//                    MpdDbComponentParameter cxx file 
-//                      Generated 07-09-2015 
+//                    MpdDbParameter cxx file 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
-#include "TSQLServer.h" 
-#include "TSQLStatement.h" 
+#include "TSQLServer.h"
+#include "TSQLStatement.h"
 
-#include "MpdDbComponentParameter.h" 
+#include "MpdDbParameter.h"
 
-#include <iostream>
-using namespace std;
-
+/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 // -----   Constructor with database connection   -----------------------
-MpdDbComponentParameter::MpdDbComponentParameter(MpdDbConnection* connUniDb, int parameter_id, TString parameter_name, int parameter_type)
+MpdDbParameter::MpdDbParameter(MpdDbConnection* connUniDb, int parameter_id, TString parameter_name, int parameter_type)
 {
 	connectionUniDb = connUniDb;
 
@@ -22,14 +20,14 @@ MpdDbComponentParameter::MpdDbComponentParameter(MpdDbConnection* connUniDb, int
 }
 
 // -----   Destructor   -------------------------------------------------
-MpdDbComponentParameter::~MpdDbComponentParameter()
+MpdDbParameter::~MpdDbParameter()
 {
 	if (connectionUniDb)
 		delete connectionUniDb;
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbComponentParameter* MpdDbComponentParameter::CreateComponentParameter(TString parameter_name, int parameter_type)
+MpdDbParameter* MpdDbParameter::CreateParameter(TString parameter_name, int parameter_type)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -37,7 +35,7 @@ MpdDbComponentParameter* MpdDbComponentParameter::CreateComponentParameter(TStri
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"insert into component_parameter(parameter_name, parameter_type) "
+		"insert into parameter_(parameter_name, parameter_type) "
 		"values ($1, $2)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
@@ -58,7 +56,7 @@ MpdDbComponentParameter* MpdDbComponentParameter::CreateComponentParameter(TStri
 
 	// getting last inserted ID
 	int parameter_id;
-	TSQLStatement* stmt_last = uni_db->Statement("SELECT currval(pg_get_serial_sequence('component_parameter','parameter_id'))");
+	TSQLStatement* stmt_last = uni_db->Statement("SELECT currval(pg_get_serial_sequence('parameter_','parameter_id'))");
 
 	// process getting last id
 	if (stmt_last->Process())
@@ -86,11 +84,11 @@ MpdDbComponentParameter* MpdDbComponentParameter::CreateComponentParameter(TStri
 		return 0x00;
 	}
 
-	return new MpdDbComponentParameter(connUniDb, parameter_id, parameter_name, parameter_type);
+	return new MpdDbParameter(connUniDb, parameter_id, parameter_name, parameter_type);
 }
 
 // -----   Get table record from database ---------------------------
-MpdDbComponentParameter* MpdDbComponentParameter::GetComponentParameter(int parameter_id)
+MpdDbParameter* MpdDbParameter::GetParameter(int parameter_id)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -99,12 +97,9 @@ MpdDbComponentParameter* MpdDbComponentParameter::GetComponentParameter(int para
 
 	TString sql = TString::Format(
 		"select parameter_id, parameter_name, parameter_type "
-		"from component_parameter "
-		"where parameter_id = $1");
+		"from parameter_ "
+		"where parameter_id = %d", parameter_id);
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetInt(0, parameter_id);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -138,11 +133,11 @@ MpdDbComponentParameter* MpdDbComponentParameter::GetComponentParameter(int para
 
 	delete stmt;
 
-	return new MpdDbComponentParameter(connUniDb, tmp_parameter_id, tmp_parameter_name, tmp_parameter_type);
+	return new MpdDbParameter(connUniDb, tmp_parameter_id, tmp_parameter_name, tmp_parameter_type);
 }
 
 // -----   Get table record from database for unique key--------------
-MpdDbComponentParameter* MpdDbComponentParameter::GetComponentParameter(TString parameter_name)
+MpdDbParameter* MpdDbParameter::GetParameter(TString parameter_name)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -151,12 +146,9 @@ MpdDbComponentParameter* MpdDbComponentParameter::GetComponentParameter(TString 
 
 	TString sql = TString::Format(
 		"select parameter_id, parameter_name, parameter_type "
-		"from component_parameter "
-		"where lower(parameter_name) = lower($1)");
+		"from parameter_ "
+		"where lower(parameter_name) = lower('%s')", parameter_name.Data());
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetString(0, parameter_name);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -189,11 +181,11 @@ MpdDbComponentParameter* MpdDbComponentParameter::GetComponentParameter(TString 
 	tmp_parameter_type = stmt->GetInt(2);
 	delete stmt;
 
-	return new MpdDbComponentParameter(connUniDb, tmp_parameter_id, tmp_parameter_name, tmp_parameter_type);
+	return new MpdDbParameter(connUniDb, tmp_parameter_id, tmp_parameter_name, tmp_parameter_type);
 }
 
 // -----   Delete record from class table ---------------------------
-int MpdDbComponentParameter::DeleteComponentParameter(int parameter_id)
+int MpdDbParameter::DeleteParameter(int parameter_id)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -201,7 +193,7 @@ int MpdDbComponentParameter::DeleteComponentParameter(int parameter_id)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"delete from component_parameter "
+		"delete from parameter_ "
 		"where parameter_id = $1");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
@@ -224,7 +216,7 @@ int MpdDbComponentParameter::DeleteComponentParameter(int parameter_id)
 }
 
 // -----   Delete table record from database for unique key--------------
-int MpdDbComponentParameter::DeleteComponentParameter(TString parameter_name)
+int MpdDbParameter::DeleteParameter(TString parameter_name)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -232,7 +224,7 @@ int MpdDbComponentParameter::DeleteComponentParameter(TString parameter_name)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"delete from component_parameter "
+		"delete from parameter_ "
 		"where lower(parameter_name) = lower($1)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
@@ -255,7 +247,7 @@ int MpdDbComponentParameter::DeleteComponentParameter(TString parameter_name)
 }
 
 // -----   Print all table records ---------------------------------
-int MpdDbComponentParameter::PrintAll()
+int MpdDbParameter::PrintAll()
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -264,7 +256,7 @@ int MpdDbComponentParameter::PrintAll()
 
 	TString sql = TString::Format(
 		"select parameter_id, parameter_name, parameter_type "
-		"from component_parameter");
+		"from parameter_");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	// get table record from DB
@@ -290,7 +282,7 @@ int MpdDbComponentParameter::PrintAll()
 		int tmp_parameter_type;
 		tmp_parameter_type = stmt->GetInt(2);
 
-		cout<<"Table 'component_parameter'";
+		cout<<"Table 'parameter_'";
 		cout<<". parameter_id: "<<tmp_parameter_id<<". parameter_name: "<<tmp_parameter_name<<". parameter_type: "<<tmp_parameter_type<<endl;
 	}
 
@@ -302,7 +294,7 @@ int MpdDbComponentParameter::PrintAll()
 
 
 // Setters functions
-int MpdDbComponentParameter::SetParameterName(TString parameter_name)
+int MpdDbParameter::SetParameterName(TString parameter_name)
 {
 	if (!connectionUniDb)
 	{
@@ -313,7 +305,7 @@ int MpdDbComponentParameter::SetParameterName(TString parameter_name)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update component_parameter "
+		"update parameter_ "
 		"set parameter_name = $1 "
 		"where parameter_id = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
@@ -337,7 +329,7 @@ int MpdDbComponentParameter::SetParameterName(TString parameter_name)
 	return 0;
 }
 
-int MpdDbComponentParameter::SetParameterType(int parameter_type)
+int MpdDbParameter::SetParameterType(int parameter_type)
 {
 	if (!connectionUniDb)
 	{
@@ -348,7 +340,7 @@ int MpdDbComponentParameter::SetParameterType(int parameter_type)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update component_parameter "
+		"update parameter_ "
 		"set parameter_type = $1 "
 		"where parameter_id = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
@@ -373,13 +365,14 @@ int MpdDbComponentParameter::SetParameterType(int parameter_type)
 }
 
 // -----   Print current record ---------------------------------------
-void MpdDbComponentParameter::Print()
+void MpdDbParameter::Print()
 {
-	cout<<"Table 'component_parameter'";
+	cout<<"Table 'parameter_'";
 	cout<<". parameter_id: "<<i_parameter_id<<". parameter_name: "<<str_parameter_name<<". parameter_type: "<<i_parameter_type<<endl;
 
 	return;
 }
+/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */
 
 // -------------------------------------------------------------------
-ClassImp(MpdDbComponentParameter);
+ClassImp(MpdDbParameter);

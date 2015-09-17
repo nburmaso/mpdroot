@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------
 //                    MpdDbSimulationFile header file 
-//                      Generated 07-09-2015 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
 /** db_classes/MpdDbSimulationFile.h 
@@ -10,14 +10,15 @@
 #ifndef MPDDBSIMULATIONFILE_H 
 #define MPDDBSIMULATIONFILE_H 1 
 
-#include "TString.h" 
-#include "TDatime.h" 
+#include "TString.h"
+#include "TDatime.h"
 
-#include "MpdDbConnection.h" 
+#include "MpdDbConnection.h"
 
 class MpdDbSimulationFile
 {
  private:
+	/* GENERATED PRIVATE MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 	MpdDbConnection* connectionUniDb;
 
 	int i_file_id;
@@ -33,8 +34,10 @@ class MpdDbSimulationFile
 
 	//Constructor
 	MpdDbSimulationFile(MpdDbConnection* connUniDb, int file_id, TString file_path, TString generator_name, TString beam_particle, TString* target_particle, double* energy, TString centrality, int* event_count, TString* file_desc, double* file_size_kb);
+	/* END OF PRIVATE GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */
 
  public:
+	/* GENERATED PUBLIC MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 	virtual ~MpdDbSimulationFile(); // Destructor
 
 	// static class functions
@@ -69,6 +72,7 @@ class MpdDbSimulationFile
 	int SetFileDesc(TString* file_desc);
 	int SetFileSizeKb(double* file_size_kb);
 	void Print();
+	/* END OF PUBLIC GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */
 
  ClassDef(MpdDbSimulationFile,1);
 };

@@ -1,18 +1,19 @@
 // ----------------------------------------------------------------------
-//                    MpdDbComponentMap cxx file 
-//                      Generated 07-09-2015 
+//                    MpdDbMapping cxx file 
+//                      Generated 15-09-2015 
 // ----------------------------------------------------------------------
 
-#include "TSQLServer.h" 
-#include "TSQLStatement.h" 
+#include "TSQLServer.h"
+#include "TSQLStatement.h"
 
-#include "MpdDbComponentMap.h" 
+#include "MpdDbMapping.h"
 
 #include <iostream>
 using namespace std;
 
+/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */
 // -----   Constructor with database connection   -----------------------
-MpdDbComponentMap::MpdDbComponentMap(MpdDbConnection* connUniDb, int map_id, int map_type)
+MpdDbMapping::MpdDbMapping(MpdDbConnection* connUniDb, int map_id, int map_type)
 {
 	connectionUniDb = connUniDb;
 
@@ -21,14 +22,14 @@ MpdDbComponentMap::MpdDbComponentMap(MpdDbConnection* connUniDb, int map_id, int
 }
 
 // -----   Destructor   -------------------------------------------------
-MpdDbComponentMap::~MpdDbComponentMap()
+MpdDbMapping::~MpdDbMapping()
 {
 	if (connectionUniDb)
 		delete connectionUniDb;
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbComponentMap* MpdDbComponentMap::CreateComponentMap(int map_type)
+MpdDbMapping* MpdDbMapping::CreateMapping(int map_type)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -36,7 +37,7 @@ MpdDbComponentMap* MpdDbComponentMap::CreateComponentMap(int map_type)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"insert into component_map(map_type) "
+		"insert into mapping_(map_type) "
 		"values ($1)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
@@ -56,7 +57,7 @@ MpdDbComponentMap* MpdDbComponentMap::CreateComponentMap(int map_type)
 
 	// getting last inserted ID
 	int map_id;
-	TSQLStatement* stmt_last = uni_db->Statement("SELECT currval(pg_get_serial_sequence('component_map','map_id'))");
+	TSQLStatement* stmt_last = uni_db->Statement("SELECT currval(pg_get_serial_sequence('mapping_','map_id'))");
 
 	// process getting last id
 	if (stmt_last->Process())
@@ -84,11 +85,11 @@ MpdDbComponentMap* MpdDbComponentMap::CreateComponentMap(int map_type)
 		return 0x00;
 	}
 
-	return new MpdDbComponentMap(connUniDb, map_id, map_type);
+	return new MpdDbMapping(connUniDb, map_id, map_type);
 }
 
 // -----   Get table record from database ---------------------------
-MpdDbComponentMap* MpdDbComponentMap::GetComponentMap(int map_id)
+MpdDbMapping* MpdDbMapping::GetMapping(int map_id)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -97,12 +98,9 @@ MpdDbComponentMap* MpdDbComponentMap::GetComponentMap(int map_id)
 
 	TString sql = TString::Format(
 		"select map_id, map_type "
-		"from component_map "
-		"where map_id = $1");
+		"from mapping_ "
+		"where map_id = %d", map_id);
 	TSQLStatement* stmt = uni_db->Statement(sql);
-
-	stmt->NextIteration();
-	stmt->SetInt(0, map_id);
 
 	// get table record from DB
 	if (!stmt->Process())
@@ -134,11 +132,11 @@ MpdDbComponentMap* MpdDbComponentMap::GetComponentMap(int map_id)
 
 	delete stmt;
 
-	return new MpdDbComponentMap(connUniDb, tmp_map_id, tmp_map_type);
+	return new MpdDbMapping(connUniDb, tmp_map_id, tmp_map_type);
 }
 
 // -----   Delete record from class table ---------------------------
-int MpdDbComponentMap::DeleteComponentMap(int map_id)
+int MpdDbMapping::DeleteMapping(int map_id)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -146,7 +144,7 @@ int MpdDbComponentMap::DeleteComponentMap(int map_id)
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"delete from component_map "
+		"delete from mapping_ "
 		"where map_id = $1");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
@@ -169,7 +167,7 @@ int MpdDbComponentMap::DeleteComponentMap(int map_id)
 }
 
 // -----   Print all table records ---------------------------------
-int MpdDbComponentMap::PrintAll()
+int MpdDbMapping::PrintAll()
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -178,7 +176,7 @@ int MpdDbComponentMap::PrintAll()
 
 	TString sql = TString::Format(
 		"select map_id, map_type "
-		"from component_map");
+		"from mapping_");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	// get table record from DB
@@ -202,7 +200,7 @@ int MpdDbComponentMap::PrintAll()
 		int tmp_map_type;
 		tmp_map_type = stmt->GetInt(1);
 
-		cout<<"Table 'component_map'";
+		cout<<"Table 'mapping_'";
 		cout<<". map_id: "<<tmp_map_id<<". map_type: "<<tmp_map_type<<endl;
 	}
 
@@ -214,7 +212,7 @@ int MpdDbComponentMap::PrintAll()
 
 
 // Setters functions
-int MpdDbComponentMap::SetMapType(int map_type)
+int MpdDbMapping::SetMapType(int map_type)
 {
 	if (!connectionUniDb)
 	{
@@ -225,7 +223,7 @@ int MpdDbComponentMap::SetMapType(int map_type)
 	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"update component_map "
+		"update mapping_ "
 		"set map_type = $1 "
 		"where map_id = $2");
 	TSQLStatement* stmt = uni_db->Statement(sql);
@@ -250,13 +248,14 @@ int MpdDbComponentMap::SetMapType(int map_type)
 }
 
 // -----   Print current record ---------------------------------------
-void MpdDbComponentMap::Print()
+void MpdDbMapping::Print()
 {
-	cout<<"Table 'component_map'";
+	cout<<"Table 'mapping_'";
 	cout<<". map_id: "<<i_map_id<<". map_type: "<<i_map_type<<endl;
 
 	return;
 }
+/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */
 
 // -------------------------------------------------------------------
-ClassImp(MpdDbComponentMap);
+ClassImp(MpdDbMapping);
