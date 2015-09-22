@@ -18,7 +18,7 @@ void get_parameter_value()
     else
         cout<<"Detector DCH1 was turned off in run №77"<<endl;
 
-    //clean memory after work
+    // clean memory after work
     delete pDetectorParameter;
 
     cout << "\nMacro finished successfully" << endl;

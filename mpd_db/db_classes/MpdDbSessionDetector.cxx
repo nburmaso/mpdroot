@@ -63,7 +63,16 @@ MpdDbSessionDetector* MpdDbSessionDetector::CreateSessionDetector(int session_nu
 
 	delete stmt;
 
-	return new MpdDbSessionDetector(connUniDb, session_number, detector_name, map_id);
+	int tmp_session_number;
+	tmp_session_number = session_number;
+	TString tmp_detector_name;
+	tmp_detector_name = detector_name;
+	int* tmp_map_id;
+	if (map_id == NULL) tmp_map_id = NULL;
+	else
+		tmp_map_id = new int(*map_id);
+
+	return new MpdDbSessionDetector(connUniDb, tmp_session_number, tmp_detector_name, tmp_map_id);
 }
 
 // -----   Get table record from database ---------------------------
@@ -176,19 +185,18 @@ int MpdDbSessionDetector::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'session_detector'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_session_number;
-		tmp_session_number = stmt->GetInt(0);
-		TString tmp_detector_name;
-		tmp_detector_name = stmt->GetString(1);
-		int* tmp_map_id;
-		if (stmt->IsNull(2)) tmp_map_id = NULL;
+		cout<<". session_number: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". detector_name: ";
+		cout<<(stmt->GetString(1));
+		cout<<". map_id: ";
+		if (stmt->IsNull(2)) cout<<"NULL";
 		else
-			tmp_map_id = new int(stmt->GetInt(2));
-
-		cout<<"Table 'session_detector'";
-		cout<<". session_number: "<<tmp_session_number<<". detector_name: "<<tmp_detector_name<<". map_id: "<<(*tmp_map_id)<<endl;
+			cout<<stmt->GetInt(2);
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -304,9 +312,11 @@ int MpdDbSessionDetector::SetMapId(int* map_id)
 		return -2;
 	}
 
-	if (map_id)
-		delete map_id;
-	i_map_id = map_id;
+	if (i_map_id)
+		delete i_map_id;
+	if (map_id == NULL) i_map_id = NULL;
+	else
+		i_map_id = new int(*map_id);
 
 	delete stmt;
 	return 0;

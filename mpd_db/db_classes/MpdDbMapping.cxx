@@ -85,7 +85,12 @@ MpdDbMapping* MpdDbMapping::CreateMapping(int map_type)
 		return 0x00;
 	}
 
-	return new MpdDbMapping(connUniDb, map_id, map_type);
+	int tmp_map_id;
+	tmp_map_id = map_id;
+	int tmp_map_type;
+	tmp_map_type = map_type;
+
+	return new MpdDbMapping(connUniDb, tmp_map_id, tmp_map_type);
 }
 
 // -----   Get table record from database ---------------------------
@@ -193,15 +198,14 @@ int MpdDbMapping::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'mapping_'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_map_id;
-		tmp_map_id = stmt->GetInt(0);
-		int tmp_map_type;
-		tmp_map_type = stmt->GetInt(1);
-
-		cout<<"Table 'mapping_'";
-		cout<<". map_id: "<<tmp_map_id<<". map_type: "<<tmp_map_type<<endl;
+		cout<<". map_id: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". map_type: ";
+		cout<<(stmt->GetInt(1));
+		cout<<endl;
 	}
 
 	delete stmt;

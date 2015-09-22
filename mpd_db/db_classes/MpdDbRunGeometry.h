@@ -40,9 +40,9 @@ class MpdDbRunGeometry
 	static int PrintAll();
 
 	// Getters
-	int GetGeometryId(){return i_geometry_id;}
-	unsigned char* GetRootGeometry(){return blob_root_geometry;}
-	Long_t GetRootGeometrySize(){return sz_root_geometry;}
+	int GetGeometryId() {return i_geometry_id;}
+	unsigned char* GetRootGeometry() {unsigned char* tmp_root_geometry = new unsigned char[sz_root_geometry]; memcpy(tmp_root_geometry, blob_root_geometry, sz_root_geometry); return tmp_root_geometry;}
+	Long_t GetRootGeometrySize() {return sz_root_geometry;}
 
 	// Setters
 	int SetGeometryId(int geometry_id);

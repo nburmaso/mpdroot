@@ -43,12 +43,12 @@ class MpdDbShift
 	static int PrintAll();
 
 	// Getters
-	int GetShiftId(){return i_shift_id;}
-	int GetSessionNumber(){return i_session_number;}
-	TString GetFio(){return str_fio;}
-	TDatime GetStartDatetime(){return dt_start_datetime;}
-	TDatime GetEndDatetime(){return dt_end_datetime;}
-	TString* GetResponsibility(){return str_responsibility;}
+	int GetShiftId() {return i_shift_id;}
+	int GetSessionNumber() {return i_session_number;}
+	TString GetFio() {return str_fio;}
+	TDatime GetStartDatetime() {return dt_start_datetime;}
+	TDatime GetEndDatetime() {return dt_end_datetime;}
+	TString* GetResponsibility() {if (str_responsibility == NULL) return NULL; else return new TString(*str_responsibility);}
 
 	// Setters
 	int SetShiftId(int shift_id);

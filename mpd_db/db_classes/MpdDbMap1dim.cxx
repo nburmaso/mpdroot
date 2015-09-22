@@ -35,7 +35,7 @@ MpdDbMap1dim::~MpdDbMap1dim()
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbMap1dim* MpdDbMap1dim::CreateMap1dim(int map_id, TString serial_hex, int plane, int map_group, int slot, int channel_low, int channel_high)
+MpdDbMap1dim* MpdDbMap1dim::CreateMap1dim(int map_id, int map_row, TString serial_hex, int plane, int map_group, int slot, int channel_low, int channel_high)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -43,18 +43,19 @@ MpdDbMap1dim* MpdDbMap1dim::CreateMap1dim(int map_id, TString serial_hex, int pl
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"insert into map_1dim(map_id, serial_hex, plane, map_group, slot, channel_low, channel_high) "
-		"values ($1, $2, $3, $4, $5, $6, $7)");
+		"insert into map_1dim(map_id, map_row, serial_hex, plane, map_group, slot, channel_low, channel_high) "
+		"values ($1, $2, $3, $4, $5, $6, $7, $8)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
 	stmt->SetInt(0, map_id);
-	stmt->SetString(1, serial_hex);
-	stmt->SetInt(2, plane);
-	stmt->SetInt(3, map_group);
-	stmt->SetInt(4, slot);
-	stmt->SetInt(5, channel_low);
-	stmt->SetInt(6, channel_high);
+	stmt->SetInt(1, map_row);
+	stmt->SetString(2, serial_hex);
+	stmt->SetInt(3, plane);
+	stmt->SetInt(4, map_group);
+	stmt->SetInt(5, slot);
+	stmt->SetInt(6, channel_low);
+	stmt->SetInt(7, channel_high);
 
 	// inserting new record to DB
 	if (!stmt->Process())
@@ -67,37 +68,24 @@ MpdDbMap1dim* MpdDbMap1dim::CreateMap1dim(int map_id, TString serial_hex, int pl
 
 	delete stmt;
 
-	// getting last inserted ID
-	int map_row;
-	TSQLStatement* stmt_last = uni_db->Statement("SELECT currval(pg_get_serial_sequence('map_1dim','map_row'))");
+	int tmp_map_id;
+	tmp_map_id = map_id;
+	int tmp_map_row;
+	tmp_map_row = map_row;
+	TString tmp_serial_hex;
+	tmp_serial_hex = serial_hex;
+	int tmp_plane;
+	tmp_plane = plane;
+	int tmp_map_group;
+	tmp_map_group = map_group;
+	int tmp_slot;
+	tmp_slot = slot;
+	int tmp_channel_low;
+	tmp_channel_low = channel_low;
+	int tmp_channel_high;
+	tmp_channel_high = channel_high;
 
-	// process getting last id
-	if (stmt_last->Process())
-	{
-		// store result of statement in buffer
-		stmt_last->StoreResult();
-
-		// if there is no last id then exit with error
-		if (!stmt_last->NextResultRow())
-		{
-			cout<<"Error: no last ID in DB!"<<endl;
-			delete stmt_last;
-			return 0x00;
-		}
-		else
-		{
-			map_row = stmt_last->GetInt(0);
-			delete stmt_last;
-		}
-	}
-	else
-	{
-		cout<<"Error: getting last ID has been failed!"<<endl;
-		delete stmt_last;
-		return 0x00;
-	}
-
-	return new MpdDbMap1dim(connUniDb, map_id, map_row, serial_hex, plane, map_group, slot, channel_low, channel_high);
+	return new MpdDbMap1dim(connUniDb, tmp_map_id, tmp_map_row, tmp_serial_hex, tmp_plane, tmp_map_group, tmp_slot, tmp_channel_low, tmp_channel_high);
 }
 
 // -----   Get table record from database ---------------------------
@@ -218,27 +206,26 @@ int MpdDbMap1dim::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'map_1dim'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_map_id;
-		tmp_map_id = stmt->GetInt(0);
-		int tmp_map_row;
-		tmp_map_row = stmt->GetInt(1);
-		TString tmp_serial_hex;
-		tmp_serial_hex = stmt->GetString(2);
-		int tmp_plane;
-		tmp_plane = stmt->GetInt(3);
-		int tmp_map_group;
-		tmp_map_group = stmt->GetInt(4);
-		int tmp_slot;
-		tmp_slot = stmt->GetInt(5);
-		int tmp_channel_low;
-		tmp_channel_low = stmt->GetInt(6);
-		int tmp_channel_high;
-		tmp_channel_high = stmt->GetInt(7);
-
-		cout<<"Table 'map_1dim'";
-		cout<<". map_id: "<<tmp_map_id<<". map_row: "<<tmp_map_row<<". serial_hex: "<<tmp_serial_hex<<". plane: "<<tmp_plane<<". map_group: "<<tmp_map_group<<". slot: "<<tmp_slot<<". channel_low: "<<tmp_channel_low<<". channel_high: "<<tmp_channel_high<<endl;
+		cout<<". map_id: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". map_row: ";
+		cout<<(stmt->GetInt(1));
+		cout<<". serial_hex: ";
+		cout<<(stmt->GetString(2));
+		cout<<". plane: ";
+		cout<<(stmt->GetInt(3));
+		cout<<". map_group: ";
+		cout<<(stmt->GetInt(4));
+		cout<<". slot: ";
+		cout<<(stmt->GetInt(5));
+		cout<<". channel_low: ";
+		cout<<(stmt->GetInt(6));
+		cout<<". channel_high: ";
+		cout<<(stmt->GetInt(7));
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -280,6 +267,42 @@ int MpdDbMap1dim::SetMapId(int map_id)
 	}
 
 	i_map_id = map_id;
+
+	delete stmt;
+	return 0;
+}
+
+int MpdDbMap1dim::SetMapRow(int map_row)
+{
+	if (!connectionUniDb)
+	{
+		cout<<"Connection object is null"<<endl;
+		return -1;
+	}
+
+	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
+
+	TString sql = TString::Format(
+		"update map_1dim "
+		"set map_row = $1 "
+		"where map_id = $2 and map_row = $3");
+	TSQLStatement* stmt = uni_db->Statement(sql);
+
+	stmt->NextIteration();
+	stmt->SetInt(0, map_row);
+	stmt->SetInt(1, i_map_id);
+	stmt->SetInt(2, i_map_row);
+
+	// write new value to database
+	if (!stmt->Process())
+	{
+		cout<<"Error: updating the record has been failed"<<endl;
+
+		delete stmt;
+		return -2;
+	}
+
+	i_map_row = map_row;
 
 	delete stmt;
 	return 0;

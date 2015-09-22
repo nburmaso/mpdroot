@@ -16,6 +16,7 @@
 
 struct structColumnInfo
 {
+    // column name
     TString strColumnName;
     // the same as strColumnName, except pointers: *strColumnName
     TString strColumnValue;
@@ -23,8 +24,11 @@ struct structColumnInfo
     // the same as strVariableType, except pointers: strVariableType without '*' at the end
     TString strVariableTypePointer;
     TString strStatementType;
+    // symbol corresponding variable type as it presented in printf (or TString::Format)
     TString strPrintfType;
+    // member class variable name corresponding table column
     TString strVariableName;
+    // temp variable name for tempopary copy this variable
     TString strTempVariableName;
     TString strShortVariableName;
     bool isIdentity;

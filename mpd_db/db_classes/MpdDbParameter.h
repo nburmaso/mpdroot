@@ -55,9 +55,9 @@ class MpdDbParameter
 	static int PrintAll();
 
 	// Getters
-	int GetParameterId(){return i_parameter_id;}
-	TString GetParameterName(){return str_parameter_name;}
-	int GetParameterType(){return i_parameter_type;}
+	int GetParameterId() {return i_parameter_id;}
+	TString GetParameterName() {return str_parameter_name;}
+	int GetParameterType() {return i_parameter_type;}
 
 	// Setters
 	int SetParameterId(int parameter_id);

@@ -41,10 +41,10 @@ class MpdDbDetector
 	static int PrintAll();
 
 	// Getters
-	TString GetDetectorName(){return str_detector_name;}
-	TString* GetManufacturerName(){return str_manufacturer_name;}
-	TString* GetResponsiblePerson(){return str_responsible_person;}
-	TString* GetDescription(){return str_description;}
+	TString GetDetectorName() {return str_detector_name;}
+	TString* GetManufacturerName() {if (str_manufacturer_name == NULL) return NULL; else return new TString(*str_manufacturer_name);}
+	TString* GetResponsiblePerson() {if (str_responsible_person == NULL) return NULL; else return new TString(*str_responsible_person);}
+	TString* GetDescription() {if (str_description == NULL) return NULL; else return new TString(*str_description);}
 
 	// Setters
 	int SetDetectorName(TString detector_name);

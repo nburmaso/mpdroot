@@ -40,9 +40,9 @@ class MpdDbSessionDetector
 	static int PrintAll();
 
 	// Getters
-	int GetSessionNumber(){return i_session_number;}
-	TString GetDetectorName(){return str_detector_name;}
-	int* GetMapId(){return i_map_id;}
+	int GetSessionNumber() {return i_session_number;}
+	TString GetDetectorName() {return str_detector_name;}
+	int* GetMapId() {if (i_map_id == NULL) return NULL; else return new int(*i_map_id);}
 
 	// Setters
 	int SetSessionNumber(int session_number);

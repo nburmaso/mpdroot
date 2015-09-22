@@ -35,7 +35,7 @@ void add_complex_parameter_value()
     if (pDetectorParameter == NULL)
         return_error = true;
 
-    //clean memory after work
+    // clean memory after work
     delete [] pValues;
     if (pDetectorParameter)
         delete pDetectorParameter;

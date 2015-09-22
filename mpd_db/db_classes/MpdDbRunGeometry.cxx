@@ -88,7 +88,14 @@ MpdDbRunGeometry* MpdDbRunGeometry::CreateRunGeometry(unsigned char* root_geomet
 		return 0x00;
 	}
 
-	return new MpdDbRunGeometry(connUniDb, geometry_id, root_geometry, size_root_geometry);
+	int tmp_geometry_id;
+	tmp_geometry_id = geometry_id;
+	unsigned char* tmp_root_geometry;
+	Long_t tmp_sz_root_geometry = size_root_geometry;
+	tmp_root_geometry = new unsigned char[tmp_sz_root_geometry];
+	memcpy(tmp_root_geometry, root_geometry, tmp_sz_root_geometry);
+
+	return new MpdDbRunGeometry(connUniDb, tmp_geometry_id, tmp_root_geometry, tmp_sz_root_geometry);
 }
 
 // -----   Get table record from database ---------------------------
@@ -198,17 +205,17 @@ int MpdDbRunGeometry::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'run_geometry'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_geometry_id;
-		tmp_geometry_id = stmt->GetInt(0);
-		unsigned char* tmp_root_geometry;
-		tmp_root_geometry = NULL;
+		cout<<". geometry_id: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". root_geometry: ";
+		unsigned char* tmp_root_geometry = NULL;
 		Long_t tmp_sz_root_geometry=0;
 		stmt->GetLargeObject(1, (void*&)tmp_root_geometry, tmp_sz_root_geometry);
-
-		cout<<"Table 'run_geometry'";
-		cout<<". geometry_id: "<<tmp_geometry_id<<". root_geometry: "<<(void*)tmp_root_geometry<<", binary size: "<<tmp_sz_root_geometry<<endl;
+		cout<<(void*)tmp_root_geometry<<", binary size: "<<tmp_sz_root_geometry;
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -248,10 +255,11 @@ int MpdDbRunGeometry::SetRootGeometry(unsigned char* root_geometry, Long_t size_
 		return -2;
 	}
 
-	if (root_geometry)
-		delete [] root_geometry;
-	blob_root_geometry = root_geometry;
+	if (blob_root_geometry)
+		delete [] blob_root_geometry;
 	sz_root_geometry = size_root_geometry;
+	blob_root_geometry = new unsigned char[sz_root_geometry];
+	memcpy(blob_root_geometry, root_geometry, sz_root_geometry);
 
 	delete stmt;
 	return 0;

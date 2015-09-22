@@ -40,21 +40,21 @@ class MpdDbMap2dim
 	virtual ~MpdDbMap2dim(); // Destructor
 
 	// static class functions
-	static MpdDbMap2dim* CreateMap2dim(int map_id, TString serial_hex, int channel, int f_channel, int channel_size, int x, int y, int is_connected);
+	static MpdDbMap2dim* CreateMap2dim(int map_id, int map_row, TString serial_hex, int channel, int f_channel, int channel_size, int x, int y, int is_connected);
 	static MpdDbMap2dim* GetMap2dim(int map_id, int map_row);
 	static int DeleteMap2dim(int map_id, int map_row);
 	static int PrintAll();
 
 	// Getters
-	int GetMapId(){return i_map_id;}
-	int GetMapRow(){return i_map_row;}
-	TString GetSerialHex(){return str_serial_hex;}
-	int GetChannel(){return i_channel;}
-	int GetFChannel(){return i_f_channel;}
-	int GetChannelSize(){return i_channel_size;}
-	int GetX(){return i_x;}
-	int GetY(){return i_y;}
-	int GetIsConnected(){return i_is_connected;}
+	int GetMapId() {return i_map_id;}
+	int GetMapRow() {return i_map_row;}
+	TString GetSerialHex() {return str_serial_hex;}
+	int GetChannel() {return i_channel;}
+	int GetFChannel() {return i_f_channel;}
+	int GetChannelSize() {return i_channel_size;}
+	int GetX() {return i_x;}
+	int GetY() {return i_y;}
+	int GetIsConnected() {return i_is_connected;}
 
 	// Setters
 	int SetMapId(int map_id);

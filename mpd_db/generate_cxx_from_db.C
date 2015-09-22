@@ -9,7 +9,7 @@ void generate_cxx_from_db()
     mpdloadlibs(1, 1); // load main libraries
 
     MpdDbGenerateClasses gen;
-    int res = gen.GenerateClasses();
+    int res = gen.GenerateClasses("", "MpdDb", true);
 
     if (res == 0)
         cout<<"\nGenerating C++ classes has completed successfully"<<endl;

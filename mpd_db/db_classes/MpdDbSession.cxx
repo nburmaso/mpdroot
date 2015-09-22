@@ -44,11 +44,11 @@ MpdDbSession* MpdDbSession::CreateSession(int session_number, TDatime start_date
 		"values ($1, $2, $3)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
-	stmt->NextIteration();
+    stmt->NextIteration();
 	stmt->SetInt(0, session_number);
 	stmt->SetDatime(1, start_datetime);
-	if (end_datetime == NULL)
-		stmt->SetNull(2);
+    if (end_datetime == NULL)
+        stmt->SetNull(2);
 	else
 		stmt->SetDatime(2, *end_datetime);
 
@@ -63,7 +63,16 @@ MpdDbSession* MpdDbSession::CreateSession(int session_number, TDatime start_date
 
 	delete stmt;
 
-	return new MpdDbSession(connUniDb, session_number, start_datetime, end_datetime);
+	int tmp_session_number;
+	tmp_session_number = session_number;
+	TDatime tmp_start_datetime;
+	tmp_start_datetime = start_datetime;
+	TDatime* tmp_end_datetime;
+	if (end_datetime == NULL) tmp_end_datetime = NULL;
+	else
+		tmp_end_datetime = new TDatime(*end_datetime);
+
+	return new MpdDbSession(connUniDb, tmp_session_number, tmp_start_datetime, tmp_end_datetime);
 }
 
 // -----   Get table record from database ---------------------------
@@ -175,19 +184,18 @@ int MpdDbSession::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'session_'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_session_number;
-		tmp_session_number = stmt->GetInt(0);
-		TDatime tmp_start_datetime;
-		tmp_start_datetime = stmt->GetDatime(1);
-		TDatime* tmp_end_datetime;
-		if (stmt->IsNull(2)) tmp_end_datetime = NULL;
+		cout<<". session_number: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". start_datetime: ";
+		cout<<(stmt->GetDatime(1)).AsSQLString();
+		cout<<". end_datetime: ";
+		if (stmt->IsNull(2)) cout<<"NULL";
 		else
-			tmp_end_datetime = new TDatime(stmt->GetDatime(2));
-
-		cout<<"Table 'session_'";
-		cout<<". session_number: "<<tmp_session_number<<". start_datetime: "<<tmp_start_datetime.AsSQLString()<<". end_datetime: "<<(*tmp_end_datetime).AsSQLString()<<endl;
+			cout<<stmt->GetDatime(2).AsSQLString();
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -300,9 +308,11 @@ int MpdDbSession::SetEndDatetime(TDatime* end_datetime)
 		return -2;
 	}
 
-	if (end_datetime)
-		delete end_datetime;
-	dt_end_datetime = end_datetime;
+	if (dt_end_datetime)
+		delete dt_end_datetime;
+	if (end_datetime == NULL) dt_end_datetime = NULL;
+	else
+		dt_end_datetime = new TDatime(*end_datetime);
 
 	delete stmt;
 	return 0;

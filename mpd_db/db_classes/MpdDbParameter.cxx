@@ -84,7 +84,14 @@ MpdDbParameter* MpdDbParameter::CreateParameter(TString parameter_name, int para
 		return 0x00;
 	}
 
-	return new MpdDbParameter(connUniDb, parameter_id, parameter_name, parameter_type);
+	int tmp_parameter_id;
+	tmp_parameter_id = parameter_id;
+	TString tmp_parameter_name;
+	tmp_parameter_name = parameter_name;
+	int tmp_parameter_type;
+	tmp_parameter_type = parameter_type;
+
+	return new MpdDbParameter(connUniDb, tmp_parameter_id, tmp_parameter_name, tmp_parameter_type);
 }
 
 // -----   Get table record from database ---------------------------
@@ -179,6 +186,7 @@ MpdDbParameter* MpdDbParameter::GetParameter(TString parameter_name)
 	tmp_parameter_name = stmt->GetString(1);
 	int tmp_parameter_type;
 	tmp_parameter_type = stmt->GetInt(2);
+
 	delete stmt;
 
 	return new MpdDbParameter(connUniDb, tmp_parameter_id, tmp_parameter_name, tmp_parameter_type);
@@ -273,17 +281,16 @@ int MpdDbParameter::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'parameter_'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_parameter_id;
-		tmp_parameter_id = stmt->GetInt(0);
-		TString tmp_parameter_name;
-		tmp_parameter_name = stmt->GetString(1);
-		int tmp_parameter_type;
-		tmp_parameter_type = stmt->GetInt(2);
-
-		cout<<"Table 'parameter_'";
-		cout<<". parameter_id: "<<tmp_parameter_id<<". parameter_name: "<<tmp_parameter_name<<". parameter_type: "<<tmp_parameter_type<<endl;
+		cout<<". parameter_id: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". parameter_name: ";
+		cout<<(stmt->GetString(1));
+		cout<<". parameter_type: ";
+		cout<<(stmt->GetInt(2));
+		cout<<endl;
 	}
 
 	delete stmt;

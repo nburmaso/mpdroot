@@ -51,10 +51,11 @@ create table mapping_
  map_type int not null
 );
 
+-- drop table map_1dim
 create table map_1dim
 (
  map_id int not null references mapping_(map_id) on update cascade on delete cascade,
- map_row serial,
+ map_row int not null,
  serial_hex varchar(20) not null,
  plane int not null,
  map_group int not null,
@@ -65,10 +66,11 @@ create table map_1dim
  check (channel_high > channel_low)
 );
 
+-- drop table map_2dim
 create table map_2dim
 (
  map_id int not null references mapping_(map_id) on update cascade on delete cascade,
- map_row serial,
+ map_row int not null,
  serial_hex varchar(20) not null,
  channel int not null,
  f_channel int not null,
@@ -106,8 +108,8 @@ create table run_
  start_datetime timestamp not null,
  end_datetime timestamp null,
  event_count int null check (event_count >= 0),
- field_current_a int null check (field_current_a >= 0),
- file_size_kb float null check (file_size_kb > 0),
+ field_current int null check (field_current >= 0),
+ file_size float null check (file_size > 0),
  geometry_id int null references run_geometry(geometry_id) on update cascade
 );
 
@@ -127,7 +129,7 @@ create table simulation_file
 );
 
 -- COMPONENT PARAMETERS
--- parameter_type: 0 - bool, 1-int, 2 - double, 3 - string, 4 - int+int
+-- parameter_type: 0 - bool, 1-int, 2 - double, 3 - string, 4 - int+int array
 create table parameter_
 (
  parameter_id serial primary key,
@@ -307,9 +309,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER unlink_large_object_parameter
-AFTER DELETE ON detector_parameter FOR EACH ROW EXECUTE PROCEDURE unlink_lo_parameter();
+AFTER UPDATE OR DELETE ON detector_parameter FOR EACH ROW EXECUTE PROCEDURE unlink_lo_parameter();
 
--- DROP TRIGGER unlink_large_object_parameter ON detector_parameter;
+-- DROP TRIGGER unlink_large_object_geometry ON run_geometry;
+CREATE OR REPLACE FUNCTION unlink_lo_geometry() RETURNS TRIGGER AS $$
+DECLARE
+  objID integer;
+BEGIN
+  objID = OLD.root_geometry;
+  PERFORM lo_unlink(objID);
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER unlink_large_object_geometry
+AFTER UPDATE OR DELETE ON run_geometry FOR EACH ROW EXECUTE PROCEDURE unlink_lo_geometry();
 
 -- output bytea as string
 CREATE OR REPLACE FUNCTION ConvertBytea2String(par_value bytea, par_type integer, is_little_endian boolean) RETURNS text AS $$
@@ -395,15 +408,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select run_number, detector_name, parameter_name, ConvertBytea2String(parameter_value, p.parameter_type, true)
-from detector_parameter dp join parameter_ p on dp.parameter_id = p.parameter_id
-
-select *
-from detector_parameter;
-select * from pg_largeobject;
-select lo_unlink(17358);
-delete from detector_parameter where run_number = 77;
-
 insert into session_(session_number, start_datetime, end_datetime)
 values (1, '2015-02-22 15:55:12', '2015-02-25 01:11:57');
 insert into session_(session_number, start_datetime, end_datetime)
@@ -422,23 +426,23 @@ values ('TOF2');
 insert into detector_(detector_name)
 values ('ZDC');
 
-insert into session_detector(session_number, detector_name)
-values (1, 'DCH1');
-insert into session_detector(session_number, detector_name)
-values (1, 'DCH2');
-insert into session_detector(session_number, detector_name)
-values (1, 'TOF1');
-insert into session_detector(session_number, detector_name)
-values (1, 'TOF2');
-insert into session_detector(session_number, detector_name)
-values (1, 'ZDC');
-
-insert into run_(run_number, session_number, file_path, beam_particle, target_particle, energy, start_datetime, end_datetime, event_count)
-values (12, 1, 'run012.data', 'd', null, 3.5, '2015-02-22 15:55:12', '2015-02-22 15:55:13', 156);
-insert into run_(run_number, session_number, file_path, beam_particle, target_particle, energy, start_datetime, end_datetime, event_count)
-values (13, 1, 'run013.data', 'd', null, 3.5, '2015-02-22 16:01:04', '2015-02-22 16:02:56', 5720);
-
+-- insert into session_detector(session_number, detector_name)
+-- values (1, 'DCH1');
+-- insert into session_detector(session_number, detector_name)
+-- values (1, 'DCH2');
+-- insert into session_detector(session_number, detector_name)
+-- values (1, 'TOF1');
+-- insert into session_detector(session_number, detector_name)
+-- values (1, 'TOF2');
+-- insert into session_detector(session_number, detector_name)
+-- values (1, 'ZDC');
+-- 
+-- insert into run_(run_number, session_number, file_path, beam_particle, target_particle, energy, start_datetime, end_datetime, event_count)
+-- values (12, 1, 'run012.data', 'd', null, 3.5, '2015-02-22 15:55:12', '2015-02-22 15:55:13', 156);
+-- insert into run_(run_number, session_number, file_path, beam_particle, target_particle, energy, start_datetime, end_datetime, event_count)
+-- values (13, 1, 'run013.data', 'd', null, 3.5, '2015-02-22 16:01:04', '2015-02-22 16:02:56', 5720);
+-- 
 insert into parameter_(parameter_name, parameter_type)
 values ('on', 0);
-insert into parameter_(parameter_name, parameter_type)
-values ('noise', 4);
+-- insert into parameter_(parameter_name, parameter_type)
+-- values ('noise', 4);

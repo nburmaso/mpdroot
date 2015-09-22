@@ -39,8 +39,8 @@ class MpdDbMapping
 	static int PrintAll();
 
 	// Getters
-	int GetMapId(){return i_map_id;}
-	int GetMapType(){return i_map_type;}
+	int GetMapId() {return i_map_id;}
+	int GetMapType() {return i_map_type;}
 
 	// Setters
 	int SetMapId(int map_id);

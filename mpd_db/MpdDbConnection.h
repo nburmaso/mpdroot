@@ -14,7 +14,7 @@
 
 #include <TSQLServer.h>
 
-enum MpdConnectionType{MPD_DB, MPD_GEO, UNIFIED_DB};
+enum MpdConnectionType{UNIFIED_DB};
 
 class MpdDbConnection
 {

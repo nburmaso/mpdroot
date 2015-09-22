@@ -3,6 +3,7 @@
 // -----                  Created 28/01/13  by K. Gertsenberger        -----
 // -------------------------------------------------------------------------
 #include "MpdDbConnection.h"
+#include "db_settings.h"
 
 #include <iostream>
 using namespace std;
@@ -20,14 +21,8 @@ MpdDbConnection* MpdDbConnection::Open(MpdConnectionType database_type)
 
     switch (database_type)
     {
-        case MPD_DB:
-            pSQLServer = TSQLServer::Connect("pgsql://nc11.jinr.ru/mpd_db", "mpd", "cbmsoft");
-            break;
-        case MPD_GEO:
-            pSQLServer = TSQLServer::Connect("pgsql://nc11.jinr.ru/mpd_geo", "mpd", "cbmsoft");
-            break;
         case UNIFIED_DB:
-            pSQLServer = TSQLServer::Connect("pgsql://nc13.jinr.ru/mpd_db", "mpd", "mpdsoft");
+            pSQLServer = TSQLServer::Connect("pgsql://nc13.jinr.ru/mpd_db", UNIFIED_DB_USERNAME, UNIFIED_DB_PASSWORD);
             break;
         default:
             cout<<"Incorrect database connection type!"<<endl;

@@ -43,11 +43,11 @@ class MpdDbDetectorParameter
 	static int PrintAll();
 
 	// Getters
-	int GetRunNumber(){return i_run_number;}
-	TString GetDetectorName(){return str_detector_name;}
-	int GetParameterId(){return i_parameter_id;}
-	unsigned char* GetParameterValue(){return blob_parameter_value;}
-	Long_t GetParameterValueSize(){return sz_parameter_value;}
+	int GetRunNumber() {return i_run_number;}
+	TString GetDetectorName() {return str_detector_name;}
+	int GetParameterId() {return i_parameter_id;}
+	unsigned char* GetParameterValue() {unsigned char* tmp_parameter_value = new unsigned char[sz_parameter_value]; memcpy(tmp_parameter_value, blob_parameter_value, sz_parameter_value); return tmp_parameter_value;}
+	Long_t GetParameterValueSize() {return sz_parameter_value;}
 
 	// Setters
 	int SetRunNumber(int run_number);

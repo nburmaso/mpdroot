@@ -75,7 +75,22 @@ MpdDbDetector* MpdDbDetector::CreateDetector(TString detector_name, TString* man
 
 	delete stmt;
 
-	return new MpdDbDetector(connUniDb, detector_name, manufacturer_name, responsible_person, description);
+	TString tmp_detector_name;
+	tmp_detector_name = detector_name;
+	TString* tmp_manufacturer_name;
+	if (manufacturer_name == NULL) tmp_manufacturer_name = NULL;
+	else
+		tmp_manufacturer_name = new TString(*manufacturer_name);
+	TString* tmp_responsible_person;
+	if (responsible_person == NULL) tmp_responsible_person = NULL;
+	else
+		tmp_responsible_person = new TString(*responsible_person);
+	TString* tmp_description;
+	if (description == NULL) tmp_description = NULL;
+	else
+		tmp_description = new TString(*description);
+
+	return new MpdDbDetector(connUniDb, tmp_detector_name, tmp_manufacturer_name, tmp_responsible_person, tmp_description);
 }
 
 // -----   Get table record from database ---------------------------
@@ -193,25 +208,24 @@ int MpdDbDetector::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'detector_'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		TString tmp_detector_name;
-		tmp_detector_name = stmt->GetString(0);
-		TString* tmp_manufacturer_name;
-		if (stmt->IsNull(1)) tmp_manufacturer_name = NULL;
+		cout<<". detector_name: ";
+		cout<<(stmt->GetString(0));
+		cout<<". manufacturer_name: ";
+		if (stmt->IsNull(1)) cout<<"NULL";
 		else
-			tmp_manufacturer_name = new TString(stmt->GetString(1));
-		TString* tmp_responsible_person;
-		if (stmt->IsNull(2)) tmp_responsible_person = NULL;
+			cout<<stmt->GetString(1);
+		cout<<". responsible_person: ";
+		if (stmt->IsNull(2)) cout<<"NULL";
 		else
-			tmp_responsible_person = new TString(stmt->GetString(2));
-		TString* tmp_description;
-		if (stmt->IsNull(3)) tmp_description = NULL;
+			cout<<stmt->GetString(2);
+		cout<<". description: ";
+		if (stmt->IsNull(3)) cout<<"NULL";
 		else
-			tmp_description = new TString(stmt->GetString(3));
-
-		cout<<"Table 'detector_'";
-		cout<<". detector_name: "<<tmp_detector_name<<". manufacturer_name: "<<(*tmp_manufacturer_name)<<". responsible_person: "<<(*tmp_responsible_person)<<". description: "<<(*tmp_description)<<endl;
+			cout<<stmt->GetString(3);
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -289,9 +303,11 @@ int MpdDbDetector::SetManufacturerName(TString* manufacturer_name)
 		return -2;
 	}
 
-	if (manufacturer_name)
-		delete manufacturer_name;
-	str_manufacturer_name = manufacturer_name;
+	if (str_manufacturer_name)
+		delete str_manufacturer_name;
+	if (manufacturer_name == NULL) str_manufacturer_name = NULL;
+	else
+		str_manufacturer_name = new TString(*manufacturer_name);
 
 	delete stmt;
 	return 0;
@@ -329,9 +345,11 @@ int MpdDbDetector::SetResponsiblePerson(TString* responsible_person)
 		return -2;
 	}
 
-	if (responsible_person)
-		delete responsible_person;
-	str_responsible_person = responsible_person;
+	if (str_responsible_person)
+		delete str_responsible_person;
+	if (responsible_person == NULL) str_responsible_person = NULL;
+	else
+		str_responsible_person = new TString(*responsible_person);
 
 	delete stmt;
 	return 0;
@@ -369,9 +387,11 @@ int MpdDbDetector::SetDescription(TString* description)
 		return -2;
 	}
 
-	if (description)
-		delete description;
-	str_description = description;
+	if (str_description)
+		delete str_description;
+	if (description == NULL) str_description = NULL;
+	else
+		str_description = new TString(*description);
 
 	delete stmt;
 	return 0;

@@ -30,12 +30,12 @@ class MpdDbRun
 	TDatime dt_start_datetime;
 	TDatime* dt_end_datetime;
 	int* i_event_count;
-	int* i_field_current_a;
-	double* d_file_size_kb;
+	int* i_field_current;
+	double* d_file_size;
 	int* i_geometry_id;
 
 	//Constructor
-	MpdDbRun(MpdDbConnection* connUniDb, int run_number, int* session_number, TString file_path, TString beam_particle, TString* target_particle, double* energy, TDatime start_datetime, TDatime* end_datetime, int* event_count, int* field_current_a, double* file_size_kb, int* geometry_id);
+	MpdDbRun(MpdDbConnection* connUniDb, int run_number, int* session_number, TString file_path, TString beam_particle, TString* target_particle, double* energy, TDatime start_datetime, TDatime* end_datetime, int* event_count, int* field_current, double* file_size, int* geometry_id);
 	/* END OF PRIVATE GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */
 
  public:
@@ -43,7 +43,7 @@ class MpdDbRun
 	virtual ~MpdDbRun(); // Destructor
 
 	// static class functions
-	static MpdDbRun* CreateRun(int run_number, int* session_number, TString file_path, TString beam_particle, TString* target_particle, double* energy, TDatime start_datetime, TDatime* end_datetime, int* event_count, int* field_current_a, double* file_size_kb, int* geometry_id);
+	static MpdDbRun* CreateRun(int run_number, int* session_number, TString file_path, TString beam_particle, TString* target_particle, double* energy, TDatime start_datetime, TDatime* end_datetime, int* event_count, int* field_current, double* file_size, int* geometry_id);
 	static MpdDbRun* GetRun(int run_number);
 	static MpdDbRun* GetRun(TString file_path);
 	static int DeleteRun(int run_number);
@@ -51,18 +51,18 @@ class MpdDbRun
 	static int PrintAll();
 
 	// Getters
-	int GetRunNumber(){return i_run_number;}
-	int* GetSessionNumber(){return i_session_number;}
-	TString GetFilePath(){return str_file_path;}
-	TString GetBeamParticle(){return str_beam_particle;}
-	TString* GetTargetParticle(){return str_target_particle;}
-	double* GetEnergy(){return d_energy;}
-	TDatime GetStartDatetime(){return dt_start_datetime;}
-	TDatime* GetEndDatetime(){return dt_end_datetime;}
-	int* GetEventCount(){return i_event_count;}
-	int* GetFieldCurrentA(){return i_field_current_a;}
-	double* GetFileSizeKb(){return d_file_size_kb;}
-	int* GetGeometryId(){return i_geometry_id;}
+	int GetRunNumber() {return i_run_number;}
+	int* GetSessionNumber() {if (i_session_number == NULL) return NULL; else return new int(*i_session_number);}
+	TString GetFilePath() {return str_file_path;}
+	TString GetBeamParticle() {return str_beam_particle;}
+	TString* GetTargetParticle() {if (str_target_particle == NULL) return NULL; else return new TString(*str_target_particle);}
+	double* GetEnergy() {if (d_energy == NULL) return NULL; else return new double(*d_energy);}
+	TDatime GetStartDatetime() {return dt_start_datetime;}
+	TDatime* GetEndDatetime() {if (dt_end_datetime == NULL) return NULL; else return new TDatime(*dt_end_datetime);}
+	int* GetEventCount() {if (i_event_count == NULL) return NULL; else return new int(*i_event_count);}
+	int* GetFieldCurrent() {if (i_field_current == NULL) return NULL; else return new int(*i_field_current);}
+	double* GetFileSize() {if (d_file_size == NULL) return NULL; else return new double(*d_file_size);}
+	int* GetGeometryId() {if (i_geometry_id == NULL) return NULL; else return new int(*i_geometry_id);}
 
 	// Setters
 	int SetRunNumber(int run_number);
@@ -74,11 +74,15 @@ class MpdDbRun
 	int SetStartDatetime(TDatime start_datetime);
 	int SetEndDatetime(TDatime* end_datetime);
 	int SetEventCount(int* event_count);
-	int SetFieldCurrentA(int* field_current_a);
-	int SetFileSizeKb(double* file_size_kb);
+	int SetFieldCurrent(int* field_current);
+	int SetFileSize(double* file_size);
 	int SetGeometryId(int* geometry_id);
 	void Print();
 	/* END OF PUBLIC GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */
+
+    // static class functions (added by user request)
+    // add geometry data (geometry file's data) for runs from start_run_number to end_run_number
+    static int SetRootGeometry(int start_run_number, int end_run_number, unsigned char* root_geometry, Long_t size_root_geometry);
 
  ClassDef(MpdDbRun,1);
 };

@@ -98,7 +98,22 @@ MpdDbShift* MpdDbShift::CreateShift(int session_number, TString fio, TDatime sta
 		return 0x00;
 	}
 
-	return new MpdDbShift(connUniDb, shift_id, session_number, fio, start_datetime, end_datetime, responsibility);
+	int tmp_shift_id;
+	tmp_shift_id = shift_id;
+	int tmp_session_number;
+	tmp_session_number = session_number;
+	TString tmp_fio;
+	tmp_fio = fio;
+	TDatime tmp_start_datetime;
+	tmp_start_datetime = start_datetime;
+	TDatime tmp_end_datetime;
+	tmp_end_datetime = end_datetime;
+	TString* tmp_responsibility;
+	if (responsibility == NULL) tmp_responsibility = NULL;
+	else
+		tmp_responsibility = new TString(*responsibility);
+
+	return new MpdDbShift(connUniDb, tmp_shift_id, tmp_session_number, tmp_fio, tmp_start_datetime, tmp_end_datetime, tmp_responsibility);
 }
 
 // -----   Get table record from database ---------------------------
@@ -216,25 +231,24 @@ int MpdDbShift::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'shift_'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_shift_id;
-		tmp_shift_id = stmt->GetInt(0);
-		int tmp_session_number;
-		tmp_session_number = stmt->GetInt(1);
-		TString tmp_fio;
-		tmp_fio = stmt->GetString(2);
-		TDatime tmp_start_datetime;
-		tmp_start_datetime = stmt->GetDatime(3);
-		TDatime tmp_end_datetime;
-		tmp_end_datetime = stmt->GetDatime(4);
-		TString* tmp_responsibility;
-		if (stmt->IsNull(5)) tmp_responsibility = NULL;
+		cout<<". shift_id: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". session_number: ";
+		cout<<(stmt->GetInt(1));
+		cout<<". fio: ";
+		cout<<(stmt->GetString(2));
+		cout<<". start_datetime: ";
+		cout<<(stmt->GetDatime(3)).AsSQLString();
+		cout<<". end_datetime: ";
+		cout<<(stmt->GetDatime(4)).AsSQLString();
+		cout<<". responsibility: ";
+		if (stmt->IsNull(5)) cout<<"NULL";
 		else
-			tmp_responsibility = new TString(stmt->GetString(5));
-
-		cout<<"Table 'shift_'";
-		cout<<". shift_id: "<<tmp_shift_id<<". session_number: "<<tmp_session_number<<". fio: "<<tmp_fio<<". start_datetime: "<<tmp_start_datetime.AsSQLString()<<". end_datetime: "<<tmp_end_datetime.AsSQLString()<<". responsibility: "<<(*tmp_responsibility)<<endl;
+			cout<<stmt->GetString(5);
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -417,9 +431,11 @@ int MpdDbShift::SetResponsibility(TString* responsibility)
 		return -2;
 	}
 
-	if (responsibility)
-		delete responsibility;
-	str_responsibility = responsibility;
+	if (str_responsibility)
+		delete str_responsibility;
+	if (responsibility == NULL) str_responsibility = NULL;
+	else
+		str_responsibility = new TString(*responsibility);
 
 	delete stmt;
 	return 0;

@@ -36,7 +36,7 @@ MpdDbMap2dim::~MpdDbMap2dim()
 }
 
 // -----   Creating new record in class table ---------------------------
-MpdDbMap2dim* MpdDbMap2dim::CreateMap2dim(int map_id, TString serial_hex, int channel, int f_channel, int channel_size, int x, int y, int is_connected)
+MpdDbMap2dim* MpdDbMap2dim::CreateMap2dim(int map_id, int map_row, TString serial_hex, int channel, int f_channel, int channel_size, int x, int y, int is_connected)
 {
 	MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
 	if (connUniDb == 0x00) return 0x00;
@@ -44,19 +44,20 @@ MpdDbMap2dim* MpdDbMap2dim::CreateMap2dim(int map_id, TString serial_hex, int ch
 	TSQLServer* uni_db = connUniDb->GetSQLServer();
 
 	TString sql = TString::Format(
-		"insert into map_2dim(map_id, serial_hex, channel, f_channel, channel_size, x, y, is_connected) "
-		"values ($1, $2, $3, $4, $5, $6, $7, $8)");
+		"insert into map_2dim(map_id, map_row, serial_hex, channel, f_channel, channel_size, x, y, is_connected) "
+		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9)");
 	TSQLStatement* stmt = uni_db->Statement(sql);
 
 	stmt->NextIteration();
 	stmt->SetInt(0, map_id);
-	stmt->SetString(1, serial_hex);
-	stmt->SetInt(2, channel);
-	stmt->SetInt(3, f_channel);
-	stmt->SetInt(4, channel_size);
-	stmt->SetInt(5, x);
-	stmt->SetInt(6, y);
-	stmt->SetInt(7, is_connected);
+	stmt->SetInt(1, map_row);
+	stmt->SetString(2, serial_hex);
+	stmt->SetInt(3, channel);
+	stmt->SetInt(4, f_channel);
+	stmt->SetInt(5, channel_size);
+	stmt->SetInt(6, x);
+	stmt->SetInt(7, y);
+	stmt->SetInt(8, is_connected);
 
 	// inserting new record to DB
 	if (!stmt->Process())
@@ -69,37 +70,26 @@ MpdDbMap2dim* MpdDbMap2dim::CreateMap2dim(int map_id, TString serial_hex, int ch
 
 	delete stmt;
 
-	// getting last inserted ID
-	int map_row;
-	TSQLStatement* stmt_last = uni_db->Statement("SELECT currval(pg_get_serial_sequence('map_2dim','map_row'))");
+	int tmp_map_id;
+	tmp_map_id = map_id;
+	int tmp_map_row;
+	tmp_map_row = map_row;
+	TString tmp_serial_hex;
+	tmp_serial_hex = serial_hex;
+	int tmp_channel;
+	tmp_channel = channel;
+	int tmp_f_channel;
+	tmp_f_channel = f_channel;
+	int tmp_channel_size;
+	tmp_channel_size = channel_size;
+	int tmp_x;
+	tmp_x = x;
+	int tmp_y;
+	tmp_y = y;
+	int tmp_is_connected;
+	tmp_is_connected = is_connected;
 
-	// process getting last id
-	if (stmt_last->Process())
-	{
-		// store result of statement in buffer
-		stmt_last->StoreResult();
-
-		// if there is no last id then exit with error
-		if (!stmt_last->NextResultRow())
-		{
-			cout<<"Error: no last ID in DB!"<<endl;
-			delete stmt_last;
-			return 0x00;
-		}
-		else
-		{
-			map_row = stmt_last->GetInt(0);
-			delete stmt_last;
-		}
-	}
-	else
-	{
-		cout<<"Error: getting last ID has been failed!"<<endl;
-		delete stmt_last;
-		return 0x00;
-	}
-
-	return new MpdDbMap2dim(connUniDb, map_id, map_row, serial_hex, channel, f_channel, channel_size, x, y, is_connected);
+	return new MpdDbMap2dim(connUniDb, tmp_map_id, tmp_map_row, tmp_serial_hex, tmp_channel, tmp_f_channel, tmp_channel_size, tmp_x, tmp_y, tmp_is_connected);
 }
 
 // -----   Get table record from database ---------------------------
@@ -222,29 +212,28 @@ int MpdDbMap2dim::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'map_2dim'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_map_id;
-		tmp_map_id = stmt->GetInt(0);
-		int tmp_map_row;
-		tmp_map_row = stmt->GetInt(1);
-		TString tmp_serial_hex;
-		tmp_serial_hex = stmt->GetString(2);
-		int tmp_channel;
-		tmp_channel = stmt->GetInt(3);
-		int tmp_f_channel;
-		tmp_f_channel = stmt->GetInt(4);
-		int tmp_channel_size;
-		tmp_channel_size = stmt->GetInt(5);
-		int tmp_x;
-		tmp_x = stmt->GetInt(6);
-		int tmp_y;
-		tmp_y = stmt->GetInt(7);
-		int tmp_is_connected;
-		tmp_is_connected = stmt->GetInt(8);
-
-		cout<<"Table 'map_2dim'";
-		cout<<". map_id: "<<tmp_map_id<<". map_row: "<<tmp_map_row<<". serial_hex: "<<tmp_serial_hex<<". channel: "<<tmp_channel<<". f_channel: "<<tmp_f_channel<<". channel_size: "<<tmp_channel_size<<". x: "<<tmp_x<<". y: "<<tmp_y<<". is_connected: "<<tmp_is_connected<<endl;
+		cout<<". map_id: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". map_row: ";
+		cout<<(stmt->GetInt(1));
+		cout<<". serial_hex: ";
+		cout<<(stmt->GetString(2));
+		cout<<". channel: ";
+		cout<<(stmt->GetInt(3));
+		cout<<". f_channel: ";
+		cout<<(stmt->GetInt(4));
+		cout<<". channel_size: ";
+		cout<<(stmt->GetInt(5));
+		cout<<". x: ";
+		cout<<(stmt->GetInt(6));
+		cout<<". y: ";
+		cout<<(stmt->GetInt(7));
+		cout<<". is_connected: ";
+		cout<<(stmt->GetInt(8));
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -286,6 +275,42 @@ int MpdDbMap2dim::SetMapId(int map_id)
 	}
 
 	i_map_id = map_id;
+
+	delete stmt;
+	return 0;
+}
+
+int MpdDbMap2dim::SetMapRow(int map_row)
+{
+	if (!connectionUniDb)
+	{
+		cout<<"Connection object is null"<<endl;
+		return -1;
+	}
+
+	TSQLServer* uni_db = connectionUniDb->GetSQLServer();
+
+	TString sql = TString::Format(
+		"update map_2dim "
+		"set map_row = $1 "
+		"where map_id = $2 and map_row = $3");
+	TSQLStatement* stmt = uni_db->Statement(sql);
+
+	stmt->NextIteration();
+	stmt->SetInt(0, map_row);
+	stmt->SetInt(1, i_map_id);
+	stmt->SetInt(2, i_map_row);
+
+	// write new value to database
+	if (!stmt->Process())
+	{
+		cout<<"Error: updating the record has been failed"<<endl;
+
+		delete stmt;
+		return -2;
+	}
+
+	i_map_row = map_row;
 
 	delete stmt;
 	return 0;

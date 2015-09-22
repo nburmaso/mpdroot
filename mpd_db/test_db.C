@@ -7,7 +7,7 @@ void test_db()
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
     mpdloadlibs(1, 1); // load main libraries
 
-    MpdDbConnection* connectionUniDb = MpdDbConnection::Open(2);
+    MpdDbConnection* connectionUniDb = MpdDbConnection::Open(0);
 
     if (connectionUniDb == 0x00)
     {

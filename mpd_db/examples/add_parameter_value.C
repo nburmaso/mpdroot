@@ -12,7 +12,7 @@ void add_parameter_value()
         return;
     }
 
-    //clean memory after work
+    // clean memory after work
     delete pDetectorParameter;
 
     cout << "\nMacro finished successfully" << endl;

@@ -19,7 +19,7 @@ void get_complex_parameter_value()
         for (int i = 0; i < element_count; i++)
             cout<<"Slot:Channel "<<pValues[i].int_1<<":"<<pValues[i].int_2<<endl;
 
-        //clean memory after work
+        // clean memory after work
         delete pValues;
         if (pDetectorParameter)
             delete pDetectorParameter;

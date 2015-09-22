@@ -42,12 +42,13 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
 
     TSQLServer* uni_db = connectionUniDb->GetSQLServer();
 
+    // define DBMS: MySQL or Postgres
     enumDBMS curDBMS;
     if (strcmp(uni_db->GetDBMS(), "MySQL") == 0) curDBMS = MySQL;
     else if (strcmp(uni_db->GetDBMS(), "PgSQL") == 0) curDBMS = PgSQL;
     else
     {
-        cout<<"Error: this type of DBMS doesn't support: "<<uni_db->GetDBMS()<<endl;
+        cout<<"Error: this type of DBMS isn't supported: "<<uni_db->GetDBMS()<<endl;
         return -2;
     }
 
@@ -59,60 +60,15 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
     // cycle for all database tables
     while (obj = next())
     {
+        // define current table name
         TString strTableName = obj->GetName();
 
+        // exclude system tables
         if ((curDBMS == PgSQL) && (strTableName.BeginsWith("pg_") || strTableName.BeginsWith("sql_")))
             continue;
 
         cout<<"Parsing table: "<<strTableName<<endl;
         TSQLTableInfo* pTableInfo = uni_db->GetTableInfo(strTableName);
-
-        // CREATING HEADER FILE
-        TString strClassName = strTableName;
-        strClassName = strClassName.Replace(0, 1, toupper(strClassName[0]));
-        Ssiz_t char_under;
-        while ((char_under = strClassName.First('_')) != kNPOS)
-        {
-            strClassName = strClassName.Remove(char_under,1);
-            if (strClassName.Length() > char_under)
-                strClassName = strClassName.Replace(char_under, 1, toupper(strClassName[char_under]));
-        }
-        TString strShortTableName = strClassName;
-        strClassName = class_prefix + strClassName;
-
-        TString strFileName = "db_classes/" + strClassName + ".h";
-        // open file for writing
-        ofstream hFile;
-        hFile.open(strFileName, ios::out);
-        if (!hFile.is_open())
-        {
-            cout<<"Error: could not create header file: "<<strFileName<<endl;
-            return -3;
-        }
-
-        hFile<<"// ----------------------------------------------------------------------\n";
-        hFile<<(TString::Format("//                    %s header file \n", strClassName.Data())).Data();
-        hFile<<(TString::Format("//                      Generated %s \n", get_current_date().c_str())).Data();
-        hFile<<"// ----------------------------------------------------------------------\n\n";
-
-        hFile<<TString::Format("/** %s \n", strFileName.Data());
-        hFile<<(TString::Format(" ** Class for the table: %s \n", strTableName.Data())).Data();
-        hFile<<" **/ \n\n";
-
-        TString strClassNameUpper = strClassName;
-        strClassNameUpper.ToUpper();
-        hFile<<(TString::Format("#ifndef %s_H \n", strClassNameUpper.Data())).Data();
-        hFile<<(TString::Format("#define %s_H 1 \n\n", strClassNameUpper.Data())).Data();
-
-        hFile<<"#include \"TString.h\"\n";
-        hFile<<"#include \"TDatime.h\"\n";
-        hFile<<"\n#include \"MpdDbConnection.h\"\n\n";
-
-        hFile<<(TString::Format("class %s\n", strClassName.Data())).Data();
-        hFile<<"{\n";
-        hFile<<" private:\n";
-        hFile<<"\t/* GENERATED PRIVATE MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */\n";
-        hFile<<"\tMpdDbConnection* connectionUniDb;\n\n";
 
         // GET LIST OF COLUMNS FOR THE CURRENT TABLE
         vector<structColumnInfo*> vecColumns;
@@ -127,287 +83,158 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             TSQLColumnInfo* pColumnInfo = pTableInfo->FindColumn(strColumnName);
         }*/
 
+        TString sql;
         if (curDBMS == MySQL)
         {
-            TString sql = TString::Format("SELECT ordinal_position, column_name, data_type, (is_nullable = 'YES') AS is_nullable, "
-                                          "(extra = 'auto_increment') AS is_identity, (column_key = 'PRI') AS is_primary, (column_key = 'UNI') AS is_unique "
-                                          "FROM INFORMATION_SCHEMA.COLUMNS "
-                                          "WHERE table_name = '%s' "
-                                          "ORDER BY ordinal_position", strTableName.Data());
+            sql = TString::Format("SELECT ordinal_position, column_name, data_type, (is_nullable = 'YES') AS is_nullable, "
+                                  "(extra = 'auto_increment') AS is_identity, (column_key = 'PRI') AS is_primary, (column_key = 'UNI') AS is_unique "
+                                  "FROM INFORMATION_SCHEMA.COLUMNS "
+                                  "WHERE table_name = '%s' "
+                                  "ORDER BY ordinal_position", strTableName.Data());
+        }
+        else if (curDBMS == PgSQL)
+        {
+            sql = TString::Format("SELECT DISTINCT a.attnum as ordinal_position, a.attname as column_name, format_type(a.atttypid, a.atttypmod) as data_type, "
+                                  "a.attnotnull as is_nullable, def.adsrc as is_default, coalesce(i.indisprimary, false) as is_primary, coalesce(i.indisunique, false) as is_unique "
+                                  "FROM pg_attribute a JOIN pg_class pgc ON pgc.oid = a.attrelid "
+                                  "LEFT JOIN pg_index i ON (pgc.oid = i.indrelid AND a.attnum = ANY(i.indkey)) "
+                                  "LEFT JOIN pg_description com on (pgc.oid = com.objoid AND a.attnum = com.objsubid) "
+                                  "LEFT JOIN pg_attrdef def ON (a.attrelid = def.adrelid AND a.attnum = def.adnum) "
+                                  "WHERE a.attnum > 0 AND pgc.oid = a.attrelid AND pg_table_is_visible(pgc.oid) "
+                                  "AND NOT a.attisdropped AND pgc.relname = '%s' "
+                                  "ORDER BY a.attnum;", strTableName.Data());
+        }
 
-            TSQLResult* res = uni_db->Query(sql);
-            int nrows = res->GetRowCount();
-            if (nrows == 0)
+        TSQLResult* res = uni_db->Query(sql);
+        int nrows = res->GetRowCount();
+        if (nrows == 0)
+        {
+            cout<<"Critical error: table with no rows was found: "<<strTableName<<endl;
+            return -3;
+        }
+
+        // parse all columns in current table in cycle
+        TSQLRow* row;
+        while (row = res->Next())
+        {
+            structColumnInfo* sColumnInfo = new structColumnInfo();
+            TString strColumnName = row->GetField(1);
+            sColumnInfo->strColumnName = strColumnName;
+            sColumnInfo->isBinary = false;
+            sColumnInfo->isDateTime = false;
+
+            // remove last '_'
+            TString strColumnNameWO = strColumnName;
+            if (strColumnNameWO[strColumnNameWO.Length()-1] == '_')
+                strColumnNameWO = strColumnNameWO.Remove(strColumnNameWO.Length()-1);
+
+            // define column properties depended on column type
+            TSQLColumnInfo* pColumnInfo = pTableInfo->FindColumn(strColumnName);
+            switch (pColumnInfo->GetSQLType())
             {
-                cout<<"Error: table with no rows was found: "<<strTableName<<endl;
-                return -4;
-            }
-
-            TSQLRow* row;
-            while (row = res->Next())
-            {
-                structColumnInfo* sColumnInfo = new structColumnInfo();
-                TString strColumnName = row->GetField(1);
-                sColumnInfo->strColumnName = strColumnName;
-                sColumnInfo->isBinary = false;
-
-                // remove last '_'
-                TString strColumnNameWO = strColumnName;
-                if (strColumnNameWO[strColumnNameWO.Length()-1] == '_') strColumnNameWO = strColumnNameWO.Remove(strColumnNameWO.Length()-1);
-
-                TSQLColumnInfo* pColumnInfo = pTableInfo->FindColumn(strColumnName);
-                switch (pColumnInfo->GetSQLType())
+                case TSQLServer::kSQL_VARCHAR:
                 {
-                    case TSQLServer::kSQL_VARCHAR:
-                    {
-                        sColumnInfo->strVariableType = "TString";
-                        sColumnInfo->strStatementType = "String";
-                        sColumnInfo->strPrintfType = "s";
-                        sColumnInfo->strVariableName = "str_"+strColumnNameWO;
+                    sColumnInfo->strVariableType = "TString";
+                    sColumnInfo->strStatementType = "String";
+                    sColumnInfo->strPrintfType = "s";
+                    sColumnInfo->strVariableName = "str_"+strColumnNameWO;
 
-                        break;
-                    }
-                    case TSQLServer::kSQL_INTEGER:
+                    break;
+                }
+                case TSQLServer::kSQL_INTEGER:
+                {
+                    sColumnInfo->strVariableType = "int";
+                    sColumnInfo->strStatementType = "Int";
+                    sColumnInfo->strPrintfType = "d";
+                    sColumnInfo->strVariableName = "i_"+strColumnNameWO;
+
+                    break;
+                }
+                case TSQLServer::kSQL_FLOAT:
+                {
+                    sColumnInfo->strVariableType = "float";
+                    sColumnInfo->strStatementType = "Double";
+                    sColumnInfo->strPrintfType = "f";
+                    sColumnInfo->strVariableName = "f_"+strColumnNameWO;
+
+                    break;
+                }
+                case TSQLServer::kSQL_DOUBLE:
+                {
+                    sColumnInfo->strVariableType = "double";
+                    sColumnInfo->strStatementType = "Double";
+                    sColumnInfo->strPrintfType = "f";
+                    sColumnInfo->strVariableName = "d_"+strColumnNameWO;
+
+                    break;
+                }
+                case TSQLServer::kSQL_BINARY:
+                {
+                    sColumnInfo->strVariableType = "unsigned char";
+                    sColumnInfo->strStatementType = "LargeObject";
+                    sColumnInfo->strPrintfType = "p";
+                    sColumnInfo->strVariableName = "blob_"+strColumnNameWO;
+                    sColumnInfo->isBinary = true;
+
+                    break;
+                }
+                case TSQLServer::kSQL_TIMESTAMP:
+                {
+                    sColumnInfo->strVariableType = "TDatime";
+                    sColumnInfo->strStatementType = "Datime";
+                    sColumnInfo->strPrintfType = "s";
+                    sColumnInfo->strVariableName = "dt_"+strColumnNameWO;
+                    sColumnInfo->isDateTime = true;
+
+                    break;
+                }
+                default:
+                {
+                    TString strDataType = row->GetField(2);
+                    if (strDataType == "bit")
                     {
-                        sColumnInfo->strVariableType = "int";
+                        sColumnInfo->strVariableType = "bool";
                         sColumnInfo->strStatementType = "Int";
                         sColumnInfo->strPrintfType = "d";
-                        sColumnInfo->strVariableName = "i_"+strColumnNameWO;
-
-                        break;
+                        sColumnInfo->strVariableName = "b_"+strColumnNameWO;
                     }
-                    case TSQLServer::kSQL_FLOAT:
-                    {
-                        sColumnInfo->strVariableType = "float";
-                        sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strPrintfType = "f";
-                        sColumnInfo->strVariableName = "f_"+strColumnNameWO;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_DOUBLE:
-                    {
-                        sColumnInfo->strVariableType = "double";
-                        sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strPrintfType = "f";
-                        sColumnInfo->strVariableName = "d_"+strColumnNameWO;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_BINARY:
-                    {
-                        sColumnInfo->strVariableType = "unsigned char*";
-                        sColumnInfo->strStatementType = "LargeObject";
-                        sColumnInfo->strPrintfType = "p";
-                        sColumnInfo->strVariableName = "blob_"+strColumnNameWO;
-                        sColumnInfo->isBinary = true;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_TIMESTAMP:
+                    else if (strDataType == "datetime")
                     {
                         sColumnInfo->strVariableType = "TDatime";
                         sColumnInfo->strStatementType = "Datime";
                         sColumnInfo->strPrintfType = "s";
                         sColumnInfo->strVariableName = "dt_"+strColumnNameWO;
                         sColumnInfo->isDateTime = true;
-
-                        break;
                     }
-                    default:
+                    else
                     {
-                        TString strDataType = row->GetField(2);
-                        if (strDataType == "bit")
-                        {
-                            sColumnInfo->strVariableType = "bool";
-                            sColumnInfo->strStatementType = "Int";
-                            sColumnInfo->strPrintfType = "d";
-                            sColumnInfo->strVariableName = "b_"+strColumnNameWO;
-                        }
-                        else if (strDataType == "datetime")
-                        {
-                            sColumnInfo->strVariableType = "TDatime";
-                            sColumnInfo->strStatementType = "Datime";
-                            sColumnInfo->strPrintfType = "s";
-                            sColumnInfo->strVariableName = "dt_"+strColumnNameWO;
-                            sColumnInfo->isDateTime = true;
-                        }
-                        else
-                        {
-                            cout<<"Error: no corresponding column type: "<<row->GetField(2)<<". SQLType: "<<pColumnInfo->GetSQLType()<<endl;
-                            return -5;
-                        }
+                        cout<<"Error: no corresponding column type: "<<row->GetField(2)<<". SQLType: "<<pColumnInfo->GetSQLType()<<endl;
+                        return -4;
                     }
-                }// switch (pColumnInfo->GetSQLType())
-
-                // form short variable name (e.g. ComponentName for component_name column)
-                TString strShortVar = strColumnNameWO;
-                strShortVar = strShortVar.Replace(0, 1, toupper(strShortVar[0]));
-                Ssiz_t char_under;
-                while ((char_under = strShortVar.First('_')) != kNPOS)
-                {
-                    strShortVar = strShortVar.Remove(char_under,1);
-                    if (strShortVar.Length() > char_under)
-                        strShortVar = strShortVar.Replace(char_under, 1, toupper(strShortVar[char_under]));
                 }
-                sColumnInfo->strShortVariableName = strShortVar;
+            }// switch (pColumnInfo->GetSQLType())
 
+            // form short variable name (e.g. ComponentName for 'component_name' column)
+            TString strShortVar = strColumnNameWO;
+            strShortVar = strShortVar.Replace(0, 1, toupper(strShortVar[0]));
+            Ssiz_t char_under;
+            while ((char_under = strShortVar.First('_')) != kNPOS)
+            {
+                strShortVar = strShortVar.Remove(char_under,1);
+                if (strShortVar.Length() > char_under)
+                    strShortVar = strShortVar.Replace(char_under, 1, toupper(strShortVar[char_under]));
+            }
+            sColumnInfo->strShortVariableName = strShortVar;
+
+            if (curDBMS == MySQL)
+            {
                 sColumnInfo->isNullable = ((row->GetField(3))[0] == '1');
                 sColumnInfo->isIdentity = ((row->GetField(4))[0] == '1');
                 sColumnInfo->isPrimary = ((row->GetField(5))[0] == '1');
                 sColumnInfo->isUnique = ((row->GetField(6))[0] == '1');
-
-                sColumnInfo->strTempVariableName = "tmp_" + strColumnNameWO;
-                sColumnInfo->strVariableTypePointer = sColumnInfo->strVariableType;
-                if ((sColumnInfo->isNullable) && (!sColumnInfo->isBinary))
-                {
-                    sColumnInfo->strVariableType += "*";
-                    sColumnInfo->strColumnValue = "*" + strColumnNameWO;
-                }
-                else
-                    sColumnInfo->strColumnValue = strColumnNameWO;
-
-                vecColumns.push_back(sColumnInfo);
-
-                if (sColumnInfo->isBinary)
-                {
-                    structColumnInfo* sColumnInfoBinary = new structColumnInfo();
-                    sColumnInfoBinary->strVariableName = "sz_" + strColumnNameWO;
-                    sColumnInfoBinary->strTempVariableName = "tmp_sz_" + strColumnNameWO;
-                    sColumnInfoBinary->strVariableType = "Long_t";
-                    sColumnInfoBinary->strColumnName = "size_" + strColumnNameWO;
-                    sColumnInfoBinary->strShortVariableName = sColumnInfo->strShortVariableName + "Size";
-                    sColumnInfoBinary->strStatementType = "";
-
-                    vecColumns.push_back(sColumnInfoBinary);
-                }
-            }// cycle for all columns
-
-            delete row;
-            delete res;
-        }
-        else if (curDBMS == PgSQL)
-        {
-            TString sql = TString::Format("SELECT DISTINCT a.attnum as ordinal_position, a.attname as column_name, format_type(a.atttypid, a.atttypmod) as data_type, "
-                                          "a.attnotnull as is_nullable, def.adsrc as is_default, coalesce(i.indisprimary, false) as is_primary, coalesce(i.indisunique, false) as is_unique "
-                                          "FROM pg_attribute a JOIN pg_class pgc ON pgc.oid = a.attrelid "
-                                          "LEFT JOIN pg_index i ON (pgc.oid = i.indrelid AND a.attnum = ANY(i.indkey)) "
-                                          "LEFT JOIN pg_description com on (pgc.oid = com.objoid AND a.attnum = com.objsubid) "
-                                          "LEFT JOIN pg_attrdef def ON (a.attrelid = def.adrelid AND a.attnum = def.adnum) "
-                                          "WHERE a.attnum > 0 AND pgc.oid = a.attrelid AND pg_table_is_visible(pgc.oid) "
-                                          "AND NOT a.attisdropped AND pgc.relname = '%s' "
-                                          "ORDER BY a.attnum;", strTableName.Data());
-
-            TSQLResult* res = uni_db->Query(sql);
-            int nrows = res->GetRowCount();
-            if (nrows == 0)
-            {
-                cout<<"Error: table with no rows was found: "<<strTableName<<endl;
-                return -4;
             }
-
-            TSQLRow* row;
-            while (row = res->Next())
+            else if (curDBMS == PgSQL)
             {
-                structColumnInfo* sColumnInfo = new structColumnInfo();
-                TString strColumnName = row->GetField(1);
-                sColumnInfo->strColumnName = strColumnName;
-                sColumnInfo->isBinary = false;
-                sColumnInfo->isDateTime = false;
-
-                // remove last '_'
-                TString strColumnNameWO = strColumnName;
-                if (strColumnNameWO[strColumnNameWO.Length()-1] == '_') strColumnNameWO = strColumnNameWO.Remove(strColumnNameWO.Length()-1);
-
-                TSQLColumnInfo* pColumnInfo = pTableInfo->FindColumn(strColumnName);
-                switch (pColumnInfo->GetSQLType())
-                {
-                    case TSQLServer::kSQL_VARCHAR:
-                    {
-                        sColumnInfo->strVariableType = "TString";
-                        sColumnInfo->strStatementType = "String";
-                        sColumnInfo->strPrintfType = "s";
-                        sColumnInfo->strVariableName = "str_"+strColumnNameWO;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_INTEGER:
-                    {
-                        sColumnInfo->strVariableType = "int";
-                        sColumnInfo->strStatementType = "Int";
-                        sColumnInfo->strPrintfType = "d";
-                        sColumnInfo->strVariableName = "i_"+strColumnNameWO;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_FLOAT:
-                    {
-                        sColumnInfo->strVariableType = "float";
-                        sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strPrintfType = "f";
-                        sColumnInfo->strVariableName = "f_"+strColumnNameWO;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_DOUBLE:
-                    {
-                        sColumnInfo->strVariableType = "double";
-                        sColumnInfo->strStatementType = "Double";
-                        sColumnInfo->strPrintfType = "f";
-                        sColumnInfo->strVariableName = "d_"+strColumnNameWO;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_BINARY:
-                    {
-                        sColumnInfo->strVariableType = "unsigned char*";
-                        sColumnInfo->strStatementType = "LargeObject";
-                        sColumnInfo->strPrintfType = "p";
-                        sColumnInfo->strVariableName = "blob_"+strColumnNameWO;
-                        sColumnInfo->isBinary = true;
-
-                        break;
-                    }
-                    case TSQLServer::kSQL_TIMESTAMP:
-                    {
-                        sColumnInfo->strVariableType = "TDatime";
-                        sColumnInfo->strStatementType = "Datime";
-                        sColumnInfo->strPrintfType = "s";
-                        sColumnInfo->strVariableName = "dt_"+strColumnNameWO;
-                        sColumnInfo->isDateTime = true;
-
-                        break;
-                    }
-                    default:
-                    {
-                        TString strDataType = row->GetField(2);
-                        if (strDataType == "bit")
-                        {
-                            sColumnInfo->strVariableType = "bool";
-                            sColumnInfo->strStatementType = "Int";
-                            sColumnInfo->strPrintfType = "d";
-                            sColumnInfo->strVariableName = "b_"+strColumnNameWO;
-                        }
-                        else
-                        {
-                            cout<<"Error: no corresponding column type: "<<row->GetField(2)<<". SQLType: "<<pColumnInfo->GetSQLType()<<endl;
-                            return -5;
-                        }
-                    }
-                }// switch (pColumnInfo->GetSQLType())
-
-                // form short variable name (e.g. ComponentName for component_name column)
-                TString strShortVar = strColumnNameWO;
-                strShortVar = strShortVar.Replace(0, 1, toupper(strShortVar[0]));
-                Ssiz_t char_under;
-                while ((char_under = strShortVar.First('_')) != kNPOS)
-                {
-                    strShortVar = strShortVar.Remove(char_under,1);
-                    if (strShortVar.Length() > char_under)
-                        strShortVar = strShortVar.Replace(char_under, 1, toupper(strShortVar[char_under]));
-                }
-                sColumnInfo->strShortVariableName = strShortVar;
-
                 sColumnInfo->isNullable = ((row->GetField(3))[0] == 'f');
                 sColumnInfo->isIdentity = ((row->GetField(4))[0] == 'n');
                 sColumnInfo->isPrimary = ((row->GetField(5))[0] == 't');
@@ -415,37 +242,119 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     sColumnInfo->isUnique = false;
                 else
                     sColumnInfo->isUnique = ((row->GetField(6))[0] == 't');
+            }
 
-                sColumnInfo->strTempVariableName = "tmp_" + strColumnNameWO;
-                sColumnInfo->strVariableTypePointer = sColumnInfo->strVariableType;
-                if ((sColumnInfo->isNullable) && (!sColumnInfo->isBinary))
-                {
-                    sColumnInfo->strVariableType += "*";
-                    sColumnInfo->strColumnValue = "*" + strColumnNameWO;
-                }
+            sColumnInfo->strTempVariableName = "tmp_" + strColumnNameWO;
+            sColumnInfo->strVariableTypePointer = sColumnInfo->strVariableType;
+            if ((sColumnInfo->isNullable) || (sColumnInfo->isBinary))
+            {
+                sColumnInfo->strVariableType += "*";
+                sColumnInfo->strColumnValue = "*" + strColumnNameWO;
+            }
+            else
+                sColumnInfo->strColumnValue = strColumnNameWO;
+
+            vecColumns.push_back(sColumnInfo);
+
+            if (sColumnInfo->isBinary)
+            {
+                structColumnInfo* sColumnInfoBinary = new structColumnInfo();
+                sColumnInfoBinary->strVariableName = "sz_" + strColumnNameWO;
+                sColumnInfoBinary->strTempVariableName = "tmp_sz_" + strColumnNameWO;
+                sColumnInfoBinary->strVariableType = "Long_t";
+                sColumnInfoBinary->strColumnName = "size_" + strColumnNameWO;
+                sColumnInfoBinary->strShortVariableName = sColumnInfo->strShortVariableName + "Size";
+                sColumnInfoBinary->strStatementType = "";
+
+                vecColumns.push_back(sColumnInfoBinary);
+            }
+        }// cycle for all columns of current table
+
+        delete row;
+        delete res;
+
+        // generating class name corresponding current table name
+        TString strClassName = strTableName;
+        strClassName = strClassName.Replace(0, 1, toupper(strClassName[0]));
+        Ssiz_t char_under;
+        while ((char_under = strClassName.First('_')) != kNPOS)
+        {
+            strClassName = strClassName.Remove(char_under,1);
+            if (strClassName.Length() > char_under)
+                strClassName = strClassName.Replace(char_under, 1, toupper(strClassName[char_under]));
+        }
+        TString strShortTableName = strClassName;
+        strClassName = class_prefix + strClassName;
+
+        // CREATING OR CHANGING HEADER FILE
+        TString strFileName = "db_classes/" + strClassName + ".h"; // set header file name
+        // open and write to file
+        ifstream oldFile;
+        TString strTempFileName;
+        ofstream hFile;
+        if (isOnlyUpdate)
+        {
+            oldFile.open(strFileName, ios::in);
+            if (!oldFile.is_open())
+            {
+                cout<<"Error: could not open existing header file: "<<strFileName<<endl;
+                return -5;
+            }
+
+            strTempFileName = strFileName + "_tmp";
+            hFile.open(strTempFileName, ios::out);
+            if (!hFile.is_open())
+            {
+                cout<<"Error: could not create temporary header file: "<<strTempFileName<<endl;
+                return -6;
+            }
+
+            string cur_line;
+            while (getline(oldFile, cur_line))
+            {
+                string trim_line = trim(cur_line);
+                if (trim_line.substr(0, 20) == "/* GENERATED PRIVATE")
+                    break;
                 else
-                    sColumnInfo->strColumnValue = strColumnNameWO;
+                   hFile<<cur_line<<endl;
+            }
+        }
+        else
+        {
+            hFile.open(strFileName, ios::out);
+            if (!hFile.is_open())
+            {
+                cout<<"Error: could not create header file: "<<strFileName<<endl;
+                return -7;
+            }
 
-                vecColumns.push_back(sColumnInfo);
+            hFile<<"// ----------------------------------------------------------------------\n";
+            hFile<<(TString::Format("//                    %s header file \n", strClassName.Data())).Data();
+            hFile<<(TString::Format("//                      Generated %s \n", get_current_date().c_str())).Data();
+            hFile<<"// ----------------------------------------------------------------------\n\n";
 
-                if (sColumnInfo->isBinary)
-                {\
-                    structColumnInfo* sColumnInfoBinary = new structColumnInfo();
-                    sColumnInfoBinary->strVariableName = "sz_" + strColumnNameWO;
-                    sColumnInfoBinary->strTempVariableName = "tmp_sz_" + strColumnNameWO;
-                    sColumnInfoBinary->strVariableType = "Long_t";
-                    sColumnInfoBinary->strColumnName = "size_" + strColumnNameWO;
-                    sColumnInfoBinary->strShortVariableName = sColumnInfo->strShortVariableName + "Size";
-                    sColumnInfoBinary->strStatementType = "";
+            hFile<<TString::Format("/** %s \n", strFileName.Data());
+            hFile<<(TString::Format(" ** Class for the table: %s \n", strTableName.Data())).Data();
+            hFile<<" **/ \n\n";
 
-                    vecColumns.push_back(sColumnInfoBinary);
-                }
-            }// cycle for all columns
+            TString strClassNameUpper = strClassName;
+            strClassNameUpper.ToUpper();
+            hFile<<(TString::Format("#ifndef %s_H \n", strClassNameUpper.Data())).Data();
+            hFile<<(TString::Format("#define %s_H 1 \n\n", strClassNameUpper.Data())).Data();
 
-            delete row;
-            delete res;
+            hFile<<"#include \"TString.h\"\n";
+            hFile<<"#include \"TDatime.h\"\n";
+            hFile<<"\n#include \"MpdDbConnection.h\"\n\n";
+
+            hFile<<(TString::Format("class %s\n", strClassName.Data())).Data();
+            hFile<<"{\n";
+            hFile<<" private:\n";
         }
 
+        hFile<<"\t/* GENERATED PRIVATE MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */\n";
+        hFile<<"\tMpdDbConnection* connectionUniDb;\n\n";
+
+        // adding member variables corresding table columns
         for(vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
         {
             structColumnInfo* cur_col= *it;
@@ -462,7 +371,28 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         hFile<<");\n";
         hFile<<"\t/* END OF PRIVATE GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */\n";
 
-        hFile<<"\n public:\n";
+        if (isOnlyUpdate)
+        {
+            string cur_line;
+            while (getline(oldFile, cur_line))
+            {
+                string trim_line = trim(cur_line);
+                if (trim_line.substr(0, 27) == "/* END OF PRIVATE GENERATED")
+                    break;
+            }
+
+            while (getline(oldFile, cur_line))
+            {
+                string trim_line = trim(cur_line);
+                if (trim_line.substr(0, 19) == "/* GENERATED PUBLIC")
+                    break;
+                else
+                   hFile<<cur_line<<endl;
+            }
+        }
+        else
+            hFile<<"\n public:\n";
+
         hFile<<"\t/* GENERATED PUBLIC MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */\n";
         hFile<<(TString::Format("\tvirtual ~%s(); // Destructor\n\n", strClassName.Data())).Data();
 
@@ -553,12 +483,40 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         // PRINT ALL ROWS -DECLARATION
         hFile<<"\tstatic int PrintAll();\n";
 
-        // GETTERS FUNCTIONS -DECLARATION
+        // GETTERS FUNCTIONS - IMPLEMENTATIONS
         hFile<<"\n\t// Getters\n";
         for (vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
         {
             structColumnInfo* cur_col= *it;
-            hFile<<(TString::Format("\t%s Get%s(){return %s;}\n", cur_col->strVariableType.Data(), cur_col->strShortVariableName.Data(), cur_col->strVariableName.Data())).Data();
+            hFile<<(TString::Format("\t%s Get%s() {", cur_col->strVariableType.Data(), cur_col->strShortVariableName.Data())).Data();
+
+            if (cur_col->isNullable)
+            {
+                hFile<<(TString::Format("if (%s == NULL) return NULL; else ", cur_col->strVariableName.Data())).Data();
+                if (cur_col->isBinary)
+                {
+                    structColumnInfo* next_col = *(it+1);
+                    hFile<<(TString::Format("{%s %s = new %s[%s]; ", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data(), cur_col->strVariableTypePointer.Data(), next_col->strVariableName.Data())).Data();
+                    hFile<<(TString::Format("memcpy(%s, %s, %s); ", cur_col->strTempVariableName.Data(), cur_col->strVariableName.Data(), next_col->strVariableName.Data())).Data();
+                    hFile<<(TString::Format("return %s;}", cur_col->strTempVariableName.Data())).Data();
+                }
+                else
+                    hFile<<(TString::Format("return new %s(*%s);", cur_col->strVariableTypePointer.Data(), cur_col->strVariableName.Data())).Data();
+            }
+            else
+            {
+                if (cur_col->isBinary)
+                {
+                    structColumnInfo* next_col = *(it+1);
+                    hFile<<(TString::Format("%s %s = new %s[%s]; ", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data(), cur_col->strVariableTypePointer.Data(), next_col->strVariableName.Data())).Data();
+                    hFile<<(TString::Format("memcpy(%s, %s, %s); ", cur_col->strTempVariableName.Data(), cur_col->strVariableName.Data(), next_col->strVariableName.Data())).Data();
+                    hFile<<(TString::Format("return %s;", cur_col->strTempVariableName.Data())).Data();
+                }
+                else
+                    hFile<<(TString::Format("return %s;", cur_col->strVariableName.Data())).Data();
+            }
+
+            hFile<<"}\n";
         }
 
         hFile<<"\n\t// Setters\n";
@@ -579,34 +537,90 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         // PRINT VALUES -DECLARATION
         hFile<<"\tvoid Print();\n";
         hFile<<"\t/* END OF PUBLIC GENERATED PART (SHOULDN'T BE CHANGED MANUALLY) */\n";
-        hFile<<(TString::Format("\n ClassDef(%s,1);\n", strClassName.Data())).Data();
-        hFile<<"};\n";
-        hFile<<"\n#endif\n";
+
+        if (isOnlyUpdate)
+        {
+            string cur_line;
+            while (getline(oldFile, cur_line))
+            {
+                string trim_line = trim(cur_line);
+                if (trim_line.substr(0, 26) == "/* END OF PUBLIC GENERATED")
+                    break;
+            }
+
+            while (getline(oldFile, cur_line))
+                   hFile<<cur_line<<endl;
+        }
+        else
+        {
+            hFile<<(TString::Format("\n ClassDef(%s,1);\n", strClassName.Data())).Data();
+            hFile<<"};\n";
+            hFile<<"\n#endif\n";
+        }
 
         hFile.close();
 
-        // CREATING CXX FILE
-        strFileName = "db_classes/" + strClassName + ".cxx";
-        // open file for writing
-        ofstream cxxFile;
-        cxxFile.open(strFileName, ios::out);
-        if (!cxxFile.is_open())
+        if (isOnlyUpdate)
         {
-            cout<<"Error: could not create cxx file: "<<strFileName<<endl;
-            return -6;
+            oldFile.close();
+            // delete the original file
+            remove(strFileName);
+            // rename temporary file to original
+            rename(strTempFileName, strFileName);
         }
 
-        cxxFile<<"// ----------------------------------------------------------------------\n";
-        cxxFile<<(TString::Format("//                    %s cxx file \n", strClassName.Data())).Data();
-        cxxFile<<(TString::Format("//                      Generated %s \n", get_current_date().c_str())).Data();
-        cxxFile<<"// ----------------------------------------------------------------------\n\n";
+        // CREATING OR CHANGING CXX FILE
+        strFileName = "db_classes/" + strClassName + ".cxx";
+        // open and write to file
+        ofstream cxxFile;
+        if (isOnlyUpdate)
+        {
+            oldFile.open(strFileName, ios::in);
+            if (!oldFile.is_open())
+            {
+                cout<<"Error: could not open existing cxx file: "<<strFileName<<endl;
+                return -8;
+            }
 
-        cxxFile<<"#include \"TSQLServer.h\"\n";
-        cxxFile<<"#include \"TSQLStatement.h\"\n";
-        cxxFile<<(TString::Format("\n#include \"%s.h\"\n\n", strClassName.Data())).Data();
+            strTempFileName = strFileName + "_tmp";
+            cxxFile.open(strTempFileName, ios::out);
+            if (!cxxFile.is_open())
+            {
+                cout<<"Error: could not create temporary cxx file: "<<strTempFileName<<endl;
+                return -9;
+            }
 
-        cxxFile<<"#include <iostream>\n";
-        cxxFile<<"using namespace std;\n\n";
+            string cur_line;
+            while (getline(oldFile, cur_line))
+            {
+                string trim_line = trim(cur_line);
+                if (trim_line.substr(0, 18) == "/* GENERATED CLASS")
+                    break;
+                else
+                   cxxFile<<cur_line<<endl;
+            }
+        }
+        else
+        {
+            cxxFile.open(strFileName, ios::out);
+            if (!cxxFile.is_open())
+            {
+                cout<<"Error: could not create cxx file: "<<strFileName<<endl;
+                return -10;
+            }
+
+            cxxFile<<"// ----------------------------------------------------------------------\n";
+            cxxFile<<(TString::Format("//                    %s cxx file \n", strClassName.Data())).Data();
+            cxxFile<<(TString::Format("//                      Generated %s \n", get_current_date().c_str())).Data();
+            cxxFile<<"// ----------------------------------------------------------------------\n\n";
+
+            cxxFile<<"#include \"TSQLServer.h\"\n";
+            cxxFile<<"#include \"TSQLStatement.h\"\n";
+            cxxFile<<(TString::Format("\n#include \"%s.h\"\n\n", strClassName.Data())).Data();
+
+            cxxFile<<"#include <iostream>\n";
+            cxxFile<<"using namespace std;\n\n";
+        }
 
         cxxFile<<"/* GENERATED CLASS MEMBERS (SHOULDN'T BE CHANGED MANUALLY) */\n";
 
@@ -723,7 +737,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                 cxxFile<<(TString::Format("\tstmt->Set%s(%d, %s);\n", cur_col->strStatementType.Data(), count, cur_col->strColumnValue.Data())).Data();
             else
             {
-                cxxFile<<(TString::Format("\tstmt->Set%s(%d, %s, ", cur_col->strStatementType.Data(), count, cur_col->strColumnValue.Data())).Data();
+                cxxFile<<(TString::Format("\tstmt->Set%s(%d, %s, ", cur_col->strStatementType.Data(), count, cur_col->strColumnName.Data())).Data();
                 ++it;
                 cur_col= *it;
                 cxxFile<<(TString::Format("%s, 0x4000000);\n", cur_col->strColumnName.Data())).Data();
@@ -771,11 +785,48 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                      "\t\treturn 0x00;\n\t}\n\n";
         }
 
-        cxxFile<<(TString::Format("\treturn new %s(connUniDb", strClassName.Data())).Data();
+        // write to temporary variable to create separate memory copy of original variables
         for (vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
         {
             structColumnInfo* cur_col= *it;
-            cxxFile<<(TString::Format(", %s", cur_col->strColumnName.Data())).Data();
+
+            TString TempColumnName = cur_col->strColumnName, TempVar = cur_col->strTempVariableName, VariableTypePointer = cur_col->strVariableTypePointer;
+            cxxFile<<(TString::Format("\t%s %s;\n", cur_col->strVariableType.Data(), TempVar.Data())).Data();
+
+            if (cur_col->isNullable)
+            {
+                cxxFile<<(TString::Format("\tif (%s == NULL) %s = NULL;\n\telse\n\t", cur_col->strColumnName.Data(), TempVar.Data())).Data();
+                if (cur_col->isBinary)
+                {
+                    ++it;
+                    cur_col= *it;
+                    cxxFile<<(TString::Format("\t{\n\t\t%s %s = %s;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data(), cur_col->strColumnName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\t%s = new %s[%s];\n", TempVar.Data(), VariableTypePointer.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\tmemcpy(%s, %s, %s);\n\t}\n", TempVar.Data(), TempColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
+                }
+                else
+                    cxxFile<<(TString::Format("\t%s = new %s(*%s);\n", TempVar.Data(), VariableTypePointer.Data(), cur_col->strColumnName.Data())).Data();
+            }
+            else
+            {
+                if (cur_col->isBinary)
+                {
+                    ++it;
+                    cur_col= *it;
+                    cxxFile<<(TString::Format("\t%s %s = %s;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data(), cur_col->strColumnName.Data())).Data();
+                    cxxFile<<(TString::Format("\t%s = new %s[%s];\n", TempVar.Data(), VariableTypePointer.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\tmemcpy(%s, %s, %s);\n", TempVar.Data(), TempColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
+                }
+                else
+                    cxxFile<<(TString::Format("\t%s = %s;\n", TempVar.Data(), cur_col->strColumnName.Data())).Data();
+            }
+        }
+
+        cxxFile<<(TString::Format("\n\treturn new %s(connUniDb", strClassName.Data())).Data();
+        for (vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
+        {
+            structColumnInfo* cur_col= *it;
+            cxxFile<<(TString::Format(", %s", cur_col->strTempVariableName.Data())).Data();
         }
         cxxFile<<");\n}\n\n";
 
@@ -1031,7 +1082,7 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
                     count++;
                 }
 
-                cxxFile<<"\tdelete stmt;\n\n";
+                cxxFile<<"\n\tdelete stmt;\n\n";
 
                 cxxFile<<(TString::Format("\treturn new %s(connUniDb", strClassName.Data())).Data();
                 for(vector<structColumnInfo*>::iterator it_inner = vecColumns.begin(); it_inner != vecColumns.end(); ++it_inner)
@@ -1219,71 +1270,64 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         cxxFile<<"\tstmt->StoreResult();\n\n";
 
         cxxFile<<"\t// print rows\n";
+        cxxFile<<(TString::Format("\tcout<<\"Table '%s'\"<<endl;\n", strTableName.Data())).Data();
         cxxFile<<"\twhile (stmt->NextResultRow())\n\t{\n";
+
         count = 0;
         for (vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
         {
             structColumnInfo* cur_col= *it;
 
-            TString StatementType = cur_col->strStatementType, TempVar = cur_col->strTempVariableName, VariableTypePointer = cur_col->strVariableTypePointer;
-            cxxFile<<(TString::Format("\t\t%s %s;\n", cur_col->strVariableType.Data(), TempVar.Data())).Data();
+            TString StatementType = cur_col->strStatementType, TempVar = cur_col->strTempVariableName;
+            cxxFile<<(TString::Format("\t\tcout<<\". %s: \";\n", cur_col->strColumnName.Data())).Data();
 
             if (cur_col->isNullable)
             {
-                cxxFile<<(TString::Format("\t\tif (stmt->IsNull(%d)) %s = NULL;\n\t\telse\n\t", count, TempVar.Data())).Data();
+                cxxFile<<(TString::Format("\t\tif (stmt->IsNull(%d)) cout<<\"NULL\";\n\t\telse\n\t", count)).Data();
                 if (cur_col->isBinary)
                 {
+                    cxxFile<<(TString::Format("\t\t%s %s;\n", cur_col->strVariableType.Data(), TempVar.Data())).Data();
                     cxxFile<<(TString::Format("\t\t{\n\t\t\t%s = NULL;\n", TempVar.Data())).Data();
                     ++it;
                     cur_col= *it;
                     cxxFile<<(TString::Format("\t\t\t%s %s=0;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
                     cxxFile<<(TString::Format("\t\t\tstmt->Get%s(%d, (void*&)%s, %s);\n\t\t}\n", StatementType.Data(), count,
                                                TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\t\tcout<<(void*)%s<<\", binary size: \"<<%s;\n", TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
                 }
                 else
-                    cxxFile<<(TString::Format("\t\t%s = new %s(stmt->Get%s(%d));\n", TempVar.Data(), VariableTypePointer.Data(), StatementType.Data(), count)).Data();
+                {
+                    cxxFile<<(TString::Format("\t\tcout<<stmt->Get%s(%d)", StatementType.Data(), count)).Data();
+                    if (cur_col->isDateTime)
+                        cxxFile<<".AsSQLString()";
+                    cxxFile<<";\n";
+                }
             }
             else
             {
                 if (cur_col->isBinary)
                 {
-                    cxxFile<<(TString::Format("\t\t%s = NULL;\n", TempVar.Data())).Data();
+                    cxxFile<<(TString::Format("\t\t%s %s = NULL;\n", cur_col->strVariableType.Data(), TempVar.Data())).Data();
                     ++it;
                     cur_col= *it;
                     cxxFile<<(TString::Format("\t\t%s %s=0;\n", cur_col->strVariableType.Data(), cur_col->strTempVariableName.Data())).Data();
                     cxxFile<<(TString::Format("\t\tstmt->Get%s(%d, (void*&)%s, %s);\n", StatementType.Data(), count,
-                                           TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
+                                               TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\tcout<<(void*)%s<<\", binary size: \"<<%s;\n", TempVar.Data(), cur_col->strTempVariableName.Data())).Data();
                 }
                 else
-                    cxxFile<<(TString::Format("\t\t%s = stmt->Get%s(%d);\n", TempVar.Data(), StatementType.Data(), count)).Data();
+                {
+                    cxxFile<<(TString::Format("\t\tcout<<(stmt->Get%s(%d))", StatementType.Data(), count)).Data();
+                    if (cur_col->isDateTime)
+                        cxxFile<<".AsSQLString()";
+                    cxxFile<<";\n";
+                }
             }
 
             count++;
         }
-        cxxFile<<(TString::Format("\n\t\tcout<<\"Table '%s'\";\n\t\tcout", strTableName.Data())).Data();
-        for (vector<structColumnInfo*>::iterator it = vecColumns.begin(); it != vecColumns.end(); ++it)
-        {
-            structColumnInfo* cur_col= *it;
 
-            if (cur_col->isBinary)
-            {
-                cxxFile<<(TString::Format("<<\". %s: \"<<(void*)%s", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
-                ++it;
-                cur_col= *it;
-                cxxFile<<(TString::Format("<<\", binary size: \"<<%s", cur_col->strTempVariableName.Data())).Data();
-            }
-            else
-            {
-                if (cur_col->isNullable)
-                    cxxFile<<(TString::Format("<<\". %s: \"<<(*%s)", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
-                else
-                    cxxFile<<(TString::Format("<<\". %s: \"<<%s", cur_col->strColumnName.Data(), cur_col->strTempVariableName.Data())).Data();
-
-                if (cur_col->isDateTime)
-                    cxxFile<<".AsSQLString()";
-            }
-        }
-        cxxFile<<"<<endl;\n\t}\n\n";
+        cxxFile<<"\t\tcout<<endl;\n\t}\n\n";
 
         cxxFile<<"\tdelete stmt;\n";
         cxxFile<<"\tdelete connUniDb;\n\n";
@@ -1379,13 +1423,33 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
             cxxFile<<"\t\treturn -2;\n\t}\n\n";
 
             if (cur_col->isNullable)
-                cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete %s;\n", cur_col->strColumnName.Data(), cur_col->strColumnName.Data())).Data();
+                cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete %s;\n", cur_col->strVariableName.Data(), cur_col->strVariableName.Data())).Data();
             if (cur_col->isBinary)
-                cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete [] %s;\n", cur_col->strColumnName.Data(), cur_col->strColumnName.Data())).Data();
+                cxxFile<<(TString::Format("\tif (%s)\n\t\tdelete [] %s;\n", cur_col->strVariableName.Data(), cur_col->strVariableName.Data())).Data();
 
-            cxxFile<<(TString::Format("\t%s = %s;\n", cur_col->strVariableName.Data(), cur_col->strColumnName.Data())).Data();
-            if (cur_col->isBinary)
-                cxxFile<<(TString::Format("\t%s = %s;\n", temp_col->strVariableName.Data(), temp_col->strColumnName.Data())).Data();
+            if (cur_col->isNullable)
+            {
+                cxxFile<<(TString::Format("\tif (%s == NULL) %s = NULL;\n\telse\n\t", cur_col->strColumnName.Data(), cur_col->strVariableName.Data())).Data();
+                if (cur_col->isBinary)
+                {
+                    cxxFile<<(TString::Format("\t{\n\t\t%s %s = %s;\n", temp_col->strVariableType.Data(), temp_col->strVariableName.Data(), cur_col->strColumnName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\t%s = new %s[%s];\n", cur_col->strVariableName.Data(), cur_col->strVariableTypePointer.Data(), temp_col->strVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\t\tmemcpy(%s, %s, %s);\n\t}\n", cur_col->strVariableName.Data(), cur_col->strColumnName.Data(), temp_col->strVariableName.Data())).Data();
+                }
+                else
+                    cxxFile<<(TString::Format("\t%s = new %s(*%s);\n", cur_col->strVariableName.Data(), cur_col->strVariableTypePointer.Data(), cur_col->strColumnName.Data())).Data();
+            }
+            else
+            {
+                if (cur_col->isBinary)
+                {
+                    cxxFile<<(TString::Format("\t%s = %s;\n", temp_col->strVariableName.Data(), temp_col->strColumnName.Data())).Data();
+                    cxxFile<<(TString::Format("\t%s = new %s[%s];\n", cur_col->strVariableName.Data(), cur_col->strVariableTypePointer.Data(), temp_col->strVariableName.Data())).Data();
+                    cxxFile<<(TString::Format("\tmemcpy(%s, %s, %s);\n", cur_col->strVariableName.Data(), cur_col->strColumnName.Data(), temp_col->strVariableName.Data())).Data();
+                }
+                else
+                    cxxFile<<(TString::Format("\t%s = %s;\n", cur_col->strVariableName.Data(), cur_col->strColumnName.Data())).Data();
+            }
 
             cxxFile<<"\n\tdelete stmt;\n";
             cxxFile<<"\treturn 0;\n}\n\n";
@@ -1437,10 +1501,35 @@ int MpdDbGenerateClasses::GenerateClasses(TString connection_string, TString cla
         cxxFile<<"\treturn;\n}\n";
         cxxFile<<"/* END OF GENERATED CLASS PART (SHOULDN'T BE CHANGED MANUALLY) */\n";
 
-        cxxFile<<"\n// -------------------------------------------------------------------\n";
-        cxxFile<<(TString::Format("ClassImp(%s);\n", strClassName.Data())).Data();
+        if (isOnlyUpdate)
+        {
+            string cur_line;
+            while (getline(oldFile, cur_line))
+            {
+                string trim_line = trim(cur_line);
+                if (trim_line.substr(0, 25) == "/* END OF GENERATED CLASS")
+                    break;
+            }
+
+            while (getline(oldFile, cur_line))
+                   cxxFile<<cur_line<<endl;
+        }
+        else
+        {
+            cxxFile<<"\n// -------------------------------------------------------------------\n";
+            cxxFile<<(TString::Format("ClassImp(%s);\n", strClassName.Data())).Data();
+        }
 
         cxxFile.close();
+
+        if (isOnlyUpdate)
+        {
+            oldFile.close();
+            // delete the original file
+            remove(strFileName);
+            // rename temporary file to original
+            rename(strTempFileName, strFileName);
+        }
     }// cycle for all database tables
 
     delete lst;

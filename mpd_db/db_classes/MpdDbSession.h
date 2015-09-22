@@ -40,9 +40,9 @@ class MpdDbSession
 	static int PrintAll();
 
 	// Getters
-	int GetSessionNumber(){return i_session_number;}
-	TDatime GetStartDatetime(){return dt_start_datetime;}
-	TDatime* GetEndDatetime(){return dt_end_datetime;}
+	int GetSessionNumber() {return i_session_number;}
+	TDatime GetStartDatetime() {return dt_start_datetime;}
+	TDatime* GetEndDatetime() {if (dt_end_datetime == NULL) return NULL; else return new TDatime(*dt_end_datetime);}
 
 	// Setters
 	int SetSessionNumber(int session_number);

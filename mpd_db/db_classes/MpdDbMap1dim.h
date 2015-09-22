@@ -39,20 +39,20 @@ class MpdDbMap1dim
 	virtual ~MpdDbMap1dim(); // Destructor
 
 	// static class functions
-	static MpdDbMap1dim* CreateMap1dim(int map_id, TString serial_hex, int plane, int map_group, int slot, int channel_low, int channel_high);
+	static MpdDbMap1dim* CreateMap1dim(int map_id, int map_row, TString serial_hex, int plane, int map_group, int slot, int channel_low, int channel_high);
 	static MpdDbMap1dim* GetMap1dim(int map_id, int map_row);
 	static int DeleteMap1dim(int map_id, int map_row);
 	static int PrintAll();
 
 	// Getters
-	int GetMapId(){return i_map_id;}
-	int GetMapRow(){return i_map_row;}
-	TString GetSerialHex(){return str_serial_hex;}
-	int GetPlane(){return i_plane;}
-	int GetMapGroup(){return i_map_group;}
-	int GetSlot(){return i_slot;}
-	int GetChannelLow(){return i_channel_low;}
-	int GetChannelHigh(){return i_channel_high;}
+	int GetMapId() {return i_map_id;}
+	int GetMapRow() {return i_map_row;}
+	TString GetSerialHex() {return str_serial_hex;}
+	int GetPlane() {return i_plane;}
+	int GetMapGroup() {return i_map_group;}
+	int GetSlot() {return i_slot;}
+	int GetChannelLow() {return i_channel_low;}
+	int GetChannelHigh() {return i_channel_high;}
 
 	// Setters
 	int SetMapId(int map_id);

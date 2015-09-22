@@ -272,6 +272,41 @@ void replace_string_in_text(string &text, string s, string d)
 	while(start > -1);
 }
 
+// return string without leading and trailing spaces and tabs
+string trim(const string& str, const string& whitespace = " \t")
+{
+    size_t strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == string::npos)
+        return ""; // no content
+
+    size_t strEnd = str.find_last_not_of(whitespace);
+    size_t strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
+
+// return string changing whitespaces and tabs by single whitespace
+string reduce(const string& str, const string& fill = " ", const string& whitespace = " \t")
+{
+    // trim first
+    string result = trim(str, whitespace);
+
+    // replace sub ranges
+    size_t beginSpace = result.find_first_of(whitespace);
+    while (beginSpace != string::npos)
+    {
+        size_t endSpace = result.find_first_not_of(whitespace, beginSpace);
+        size_t range = endSpace - beginSpace;
+
+        result.replace(beginSpace, range, fill);
+
+        size_t newStart = beginSpace + fill.length();
+        beginSpace = result.find_first_of(whitespace, newStart);
+    }
+
+    return result;
+}
+
 
 /*				  */
 /* FILE FUNCTIONS */

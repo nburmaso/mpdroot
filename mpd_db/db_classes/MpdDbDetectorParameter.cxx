@@ -63,7 +63,18 @@ MpdDbDetectorParameter* MpdDbDetectorParameter::CreateDetectorParameter(int run_
 
 	delete stmt;
 
-	return new MpdDbDetectorParameter(connUniDb, run_number, detector_name, parameter_id, parameter_value, size_parameter_value);
+	int tmp_run_number;
+	tmp_run_number = run_number;
+	TString tmp_detector_name;
+	tmp_detector_name = detector_name;
+	int tmp_parameter_id;
+	tmp_parameter_id = parameter_id;
+	unsigned char* tmp_parameter_value;
+	Long_t tmp_sz_parameter_value = size_parameter_value;
+	tmp_parameter_value = new unsigned char[tmp_sz_parameter_value];
+	memcpy(tmp_parameter_value, parameter_value, tmp_sz_parameter_value);
+
+	return new MpdDbDetectorParameter(connUniDb, tmp_run_number, tmp_detector_name, tmp_parameter_id, tmp_parameter_value, tmp_sz_parameter_value);
 }
 
 // -----   Get table record from database ---------------------------
@@ -179,21 +190,21 @@ int MpdDbDetectorParameter::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'detector_parameter'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_run_number;
-		tmp_run_number = stmt->GetInt(0);
-		TString tmp_detector_name;
-		tmp_detector_name = stmt->GetString(1);
-		int tmp_parameter_id;
-		tmp_parameter_id = stmt->GetInt(2);
-		unsigned char* tmp_parameter_value;
-		tmp_parameter_value = NULL;
+		cout<<". run_number: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". detector_name: ";
+		cout<<(stmt->GetString(1));
+		cout<<". parameter_id: ";
+		cout<<(stmt->GetInt(2));
+		cout<<". parameter_value: ";
+		unsigned char* tmp_parameter_value = NULL;
 		Long_t tmp_sz_parameter_value=0;
 		stmt->GetLargeObject(3, (void*&)tmp_parameter_value, tmp_sz_parameter_value);
-
-		cout<<"Table 'detector_parameter'";
-		cout<<". run_number: "<<tmp_run_number<<". detector_name: "<<tmp_detector_name<<". parameter_id: "<<tmp_parameter_id<<". parameter_value: "<<(void*)tmp_parameter_value<<", binary size: "<<tmp_sz_parameter_value<<endl;
+		cout<<(void*)tmp_parameter_value<<", binary size: "<<tmp_sz_parameter_value;
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -346,10 +357,11 @@ int MpdDbDetectorParameter::SetParameterValue(unsigned char* parameter_value, Lo
 		return -2;
 	}
 
-	if (parameter_value)
-		delete [] parameter_value;
-	blob_parameter_value = parameter_value;
+	if (blob_parameter_value)
+		delete [] blob_parameter_value;
 	sz_parameter_value = size_parameter_value;
+	blob_parameter_value = new unsigned char[sz_parameter_value];
+	memcpy(blob_parameter_value, parameter_value, sz_parameter_value);
 
 	delete stmt;
 	return 0;
@@ -1230,7 +1242,7 @@ MpdDbDetectorParameter* MpdDbDetectorParameter::CreateDetectorParameter(int run_
 
     delete stmt;
 
-    return new MpdDbDetectorParameter(connUniDb, run_number, detector_name, parameter_id, (unsigned char*)p_parameter_value, size_parameter_value);
+    return new MpdDbDetectorParameter(connUniDb, run_number, detector_name, parameter_id, p_parameter_value, size_parameter_value);
 }
 
 // get Int+Int array for detector parameter (for current run, detector and parameter)

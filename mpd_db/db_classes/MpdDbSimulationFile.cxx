@@ -126,7 +126,38 @@ MpdDbSimulationFile* MpdDbSimulationFile::CreateSimulationFile(TString file_path
 		return 0x00;
 	}
 
-	return new MpdDbSimulationFile(connUniDb, file_id, file_path, generator_name, beam_particle, target_particle, energy, centrality, event_count, file_desc, file_size_kb);
+	int tmp_file_id;
+	tmp_file_id = file_id;
+	TString tmp_file_path;
+	tmp_file_path = file_path;
+	TString tmp_generator_name;
+	tmp_generator_name = generator_name;
+	TString tmp_beam_particle;
+	tmp_beam_particle = beam_particle;
+	TString* tmp_target_particle;
+	if (target_particle == NULL) tmp_target_particle = NULL;
+	else
+		tmp_target_particle = new TString(*target_particle);
+	double* tmp_energy;
+	if (energy == NULL) tmp_energy = NULL;
+	else
+		tmp_energy = new double(*energy);
+	TString tmp_centrality;
+	tmp_centrality = centrality;
+	int* tmp_event_count;
+	if (event_count == NULL) tmp_event_count = NULL;
+	else
+		tmp_event_count = new int(*event_count);
+	TString* tmp_file_desc;
+	if (file_desc == NULL) tmp_file_desc = NULL;
+	else
+		tmp_file_desc = new TString(*file_desc);
+	double* tmp_file_size_kb;
+	if (file_size_kb == NULL) tmp_file_size_kb = NULL;
+	else
+		tmp_file_size_kb = new double(*file_size_kb);
+
+	return new MpdDbSimulationFile(connUniDb, tmp_file_id, tmp_file_path, tmp_generator_name, tmp_beam_particle, tmp_target_particle, tmp_energy, tmp_centrality, tmp_event_count, tmp_file_desc, tmp_file_size_kb);
 }
 
 // -----   Get table record from database ---------------------------
@@ -269,6 +300,7 @@ MpdDbSimulationFile* MpdDbSimulationFile::GetSimulationFile(TString file_path)
 	if (stmt->IsNull(9)) tmp_file_size_kb = NULL;
 	else
 		tmp_file_size_kb = new double(stmt->GetDouble(9));
+
 	delete stmt;
 
 	return new MpdDbSimulationFile(connUniDb, tmp_file_id, tmp_file_path, tmp_generator_name, tmp_beam_particle, tmp_target_particle, tmp_energy, tmp_centrality, tmp_event_count, tmp_file_desc, tmp_file_size_kb);
@@ -363,41 +395,40 @@ int MpdDbSimulationFile::PrintAll()
 	stmt->StoreResult();
 
 	// print rows
+	cout<<"Table 'simulation_file'"<<endl;
 	while (stmt->NextResultRow())
 	{
-		int tmp_file_id;
-		tmp_file_id = stmt->GetInt(0);
-		TString tmp_file_path;
-		tmp_file_path = stmt->GetString(1);
-		TString tmp_generator_name;
-		tmp_generator_name = stmt->GetString(2);
-		TString tmp_beam_particle;
-		tmp_beam_particle = stmt->GetString(3);
-		TString* tmp_target_particle;
-		if (stmt->IsNull(4)) tmp_target_particle = NULL;
+		cout<<". file_id: ";
+		cout<<(stmt->GetInt(0));
+		cout<<". file_path: ";
+		cout<<(stmt->GetString(1));
+		cout<<". generator_name: ";
+		cout<<(stmt->GetString(2));
+		cout<<". beam_particle: ";
+		cout<<(stmt->GetString(3));
+		cout<<". target_particle: ";
+		if (stmt->IsNull(4)) cout<<"NULL";
 		else
-			tmp_target_particle = new TString(stmt->GetString(4));
-		double* tmp_energy;
-		if (stmt->IsNull(5)) tmp_energy = NULL;
+			cout<<stmt->GetString(4);
+		cout<<". energy: ";
+		if (stmt->IsNull(5)) cout<<"NULL";
 		else
-			tmp_energy = new double(stmt->GetDouble(5));
-		TString tmp_centrality;
-		tmp_centrality = stmt->GetString(6);
-		int* tmp_event_count;
-		if (stmt->IsNull(7)) tmp_event_count = NULL;
+			cout<<stmt->GetDouble(5);
+		cout<<". centrality: ";
+		cout<<(stmt->GetString(6));
+		cout<<". event_count: ";
+		if (stmt->IsNull(7)) cout<<"NULL";
 		else
-			tmp_event_count = new int(stmt->GetInt(7));
-		TString* tmp_file_desc;
-		if (stmt->IsNull(8)) tmp_file_desc = NULL;
+			cout<<stmt->GetInt(7);
+		cout<<". file_desc: ";
+		if (stmt->IsNull(8)) cout<<"NULL";
 		else
-			tmp_file_desc = new TString(stmt->GetString(8));
-		double* tmp_file_size_kb;
-		if (stmt->IsNull(9)) tmp_file_size_kb = NULL;
+			cout<<stmt->GetString(8);
+		cout<<". file_size_kb: ";
+		if (stmt->IsNull(9)) cout<<"NULL";
 		else
-			tmp_file_size_kb = new double(stmt->GetDouble(9));
-
-		cout<<"Table 'simulation_file'";
-		cout<<". file_id: "<<tmp_file_id<<". file_path: "<<tmp_file_path<<". generator_name: "<<tmp_generator_name<<". beam_particle: "<<tmp_beam_particle<<". target_particle: "<<(*tmp_target_particle)<<". energy: "<<(*tmp_energy)<<". centrality: "<<tmp_centrality<<". event_count: "<<(*tmp_event_count)<<". file_desc: "<<(*tmp_file_desc)<<". file_size_kb: "<<(*tmp_file_size_kb)<<endl;
+			cout<<stmt->GetDouble(9);
+		cout<<endl;
 	}
 
 	delete stmt;
@@ -545,9 +576,11 @@ int MpdDbSimulationFile::SetTargetParticle(TString* target_particle)
 		return -2;
 	}
 
-	if (target_particle)
-		delete target_particle;
-	str_target_particle = target_particle;
+	if (str_target_particle)
+		delete str_target_particle;
+	if (target_particle == NULL) str_target_particle = NULL;
+	else
+		str_target_particle = new TString(*target_particle);
 
 	delete stmt;
 	return 0;
@@ -585,9 +618,11 @@ int MpdDbSimulationFile::SetEnergy(double* energy)
 		return -2;
 	}
 
-	if (energy)
-		delete energy;
-	d_energy = energy;
+	if (d_energy)
+		delete d_energy;
+	if (energy == NULL) d_energy = NULL;
+	else
+		d_energy = new double(*energy);
 
 	delete stmt;
 	return 0;
@@ -660,9 +695,11 @@ int MpdDbSimulationFile::SetEventCount(int* event_count)
 		return -2;
 	}
 
-	if (event_count)
-		delete event_count;
-	i_event_count = event_count;
+	if (i_event_count)
+		delete i_event_count;
+	if (event_count == NULL) i_event_count = NULL;
+	else
+		i_event_count = new int(*event_count);
 
 	delete stmt;
 	return 0;
@@ -700,9 +737,11 @@ int MpdDbSimulationFile::SetFileDesc(TString* file_desc)
 		return -2;
 	}
 
-	if (file_desc)
-		delete file_desc;
-	str_file_desc = file_desc;
+	if (str_file_desc)
+		delete str_file_desc;
+	if (file_desc == NULL) str_file_desc = NULL;
+	else
+		str_file_desc = new TString(*file_desc);
 
 	delete stmt;
 	return 0;
@@ -740,9 +779,11 @@ int MpdDbSimulationFile::SetFileSizeKb(double* file_size_kb)
 		return -2;
 	}
 
-	if (file_size_kb)
-		delete file_size_kb;
-	d_file_size_kb = file_size_kb;
+	if (d_file_size_kb)
+		delete d_file_size_kb;
+	if (file_size_kb == NULL) d_file_size_kb = NULL;
+	else
+		d_file_size_kb = new double(*file_size_kb);
 
 	delete stmt;
 	return 0;

@@ -49,16 +49,16 @@ class MpdDbSimulationFile
 	static int PrintAll();
 
 	// Getters
-	int GetFileId(){return i_file_id;}
-	TString GetFilePath(){return str_file_path;}
-	TString GetGeneratorName(){return str_generator_name;}
-	TString GetBeamParticle(){return str_beam_particle;}
-	TString* GetTargetParticle(){return str_target_particle;}
-	double* GetEnergy(){return d_energy;}
-	TString GetCentrality(){return str_centrality;}
-	int* GetEventCount(){return i_event_count;}
-	TString* GetFileDesc(){return str_file_desc;}
-	double* GetFileSizeKb(){return d_file_size_kb;}
+	int GetFileId() {return i_file_id;}
+	TString GetFilePath() {return str_file_path;}
+	TString GetGeneratorName() {return str_generator_name;}
+	TString GetBeamParticle() {return str_beam_particle;}
+	TString* GetTargetParticle() {if (str_target_particle == NULL) return NULL; else return new TString(*str_target_particle);}
+	double* GetEnergy() {if (d_energy == NULL) return NULL; else return new double(*d_energy);}
+	TString GetCentrality() {return str_centrality;}
+	int* GetEventCount() {if (i_event_count == NULL) return NULL; else return new int(*i_event_count);}
+	TString* GetFileDesc() {if (str_file_desc == NULL) return NULL; else return new TString(*str_file_desc);}
+	double* GetFileSizeKb() {if (d_file_size_kb == NULL) return NULL; else return new double(*d_file_size_kb);}
 
 	// Setters
 	int SetFileId(int file_id);

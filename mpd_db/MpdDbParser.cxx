@@ -101,6 +101,10 @@ int MpdDbParser::ParseXml2Db(TString xmlName, TString schemaPath)
         {
             string strChildName = cur_schema_node.attribute("child").value();
 
+            int skip_count = 0;
+            if (strcmp(cur_schema_node.attribute("skip").value(), "") != 0)
+                skip_count = atoi(cur_schema_node.attribute("skip").value());
+
             vector<structParseSchema> vecElements;
             // write cycle structure to array vecElements
             int column_count = 0;
@@ -202,6 +206,12 @@ int MpdDbParser::ParseXml2Db(TString xmlName, TString schemaPath)
             // run XML file cycle and write the fields to DB
             for (cur_xml_node = cur_xml_node.child(strChildName.c_str()); cur_xml_node; cur_xml_node = cur_xml_node.next_sibling(strChildName.c_str()))
             {
+                if (skip_count > 0)
+                {
+                    skip_count--;
+                    continue;
+                }
+
                 count = 0;
                 int i = 0;
 
