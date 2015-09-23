@@ -20,7 +20,7 @@ set(MPDDB_SRCS
 MpdDbConnection.cxx
 MpdDbGeoConverter.cxx
 MpdDbGenerateClasses.cxx
-MpdDbRunData.cxx
+MpdDbTangoData.cxx
 MpdDbParser.cxx
 
 db_classes/MpdDbSession.cxx

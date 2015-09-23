@@ -54,6 +54,7 @@ class MpdDbParser
 {
  public:
     int ParseXml2Db(TString xmlName, TString schemapath);
+    int ParseTxtNoise2Db(TString txtName, TString schemapath);
 
  ClassDef(MpdDbParser,1) //MPDDBPARSER
 };

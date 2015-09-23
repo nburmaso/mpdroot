@@ -3,8 +3,8 @@
     добавлено чтение информации по положению ZDC из CSV файлов
 ****************************************************************************/
 
-#ifndef MPDDBRUNDATA_H
-#define MPDDBRUNDATA_H 1
+#ifndef MPDDBTANGODATA_H
+#define MPDDBTANGODATA_H 1
 
 #include "TDatime.h"
 #include "TString.h"
@@ -68,7 +68,7 @@ struct HV_Data
     }
 };
 
-class MpdDbRunData
+class MpdDbTangoData
 {
  public:
     // Функция SplitString разбивает строку на отдельные элементы по указанному разделителю.
@@ -112,7 +112,7 @@ class MpdDbRunData
     // на которых показано, как изменяется напряжение на башнях в течении заданного периода.
     void PrintHV(HV_Data* hv_parameter, bool isGraphicPresentation=false);
 
- ClassDef(MpdDbRunData,1) //MPDDBRUNDATA
+ ClassDef(MpdDbTangoData,1) //MpdDbTangoData
 };
 
 #endif

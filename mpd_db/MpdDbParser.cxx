@@ -1,5 +1,9 @@
 #include "MpdDbParser.h"
 #include "MpdDbConnection.h"
+#include "db_classes/MpdDbParameter.h"
+#include "db_classes/MpdDbDetectorParameter.h"
+#define ONLY_DECLARATIONS
+#include "../macro/mpd_scheduler/src/function_set.h"
 
 #include "TSQLServer.h"
 #include "TSQLResult.h"
@@ -9,6 +13,9 @@
 
 #include "pugixml.hpp"
 
+#include <string>
+#include <sstream>
+#include <fstream>
 #include <iostream>
 using namespace std;
 
@@ -337,6 +344,181 @@ int MpdDbParser::ParseXml2Db(TString xmlName, TString schemaPath)
             delete stmt;
         }// CYCLE PROCESSING
     }// for docSchema level 0
+
+    return 0;
+}
+
+int MpdDbParser::ParseTxtNoise2Db(TString txtName, TString schemaPath)
+{
+    ifstream txtFile;
+    txtFile.open(txtName, ios::in);
+    if (!txtFile.is_open())
+    {
+        cout<<"Error: reading TXT file '"<<txtName<<"' was failed"<<endl;
+        return -1;
+    }
+
+    // read schema
+    pugi::xml_document docSchema;
+    pugi::xml_parse_result resultSchema = docSchema.load_file(schemaPath);
+
+    if (!resultSchema)
+    {
+        cout<<"Error: reading schema file '"<<schemaPath<<"' was failed"<<endl;
+        return - 2;
+    }
+
+    // open connection to database
+    MpdDbConnection* connUniDb = MpdDbConnection::Open(UNIFIED_DB);
+    if (connUniDb == 0x00)
+        return -3;
+
+    TSQLServer* uni_db = connUniDb->GetSQLServer();
+
+    // parse SCHEMA file
+    string strTableName = "";
+    int skip_line_count = 0;
+    for (pugi::xml_node_iterator it = docSchema.begin(); it != docSchema.end(); ++it)
+    {
+        pugi::xml_node cur_schema_node = *it;
+
+        // parse table name if exists
+        if (strcmp(cur_schema_node.attribute("table_name").value(), "") != 0)
+        {
+            strTableName = cur_schema_node.attribute("table_name").value();
+            cout<<"Current database table: "<<strTableName<<endl;
+        }
+
+        if (strcmp(cur_schema_node.name(), "skip") == 0)
+        {
+            string strLineCount = cur_schema_node.attribute("line_count").value();
+            if (strLineCount != "")
+                skip_line_count = atoi(strLineCount.c_str());
+        }
+    }
+
+    string cur_line;
+    for (int i = 0; i < skip_line_count; i++)
+        getline(txtFile, cur_line);
+
+    while (getline(txtFile, cur_line))
+    {
+        // parse run and row count
+        string reduce_line = reduce(cur_line);
+
+        cout<<"Current run and count line: "<<reduce_line<<endl;
+        int run_number = -1, row_count = -1;
+        istringstream line_stream(reduce_line);
+        int num = 1;
+        string token;
+        // parse tokens by space separated
+        while(getline(line_stream, token, ' '))
+        {
+            if (num == 1)
+                run_number = atoi(token.c_str());
+            if (num == 2)
+                row_count = atoi(token.c_str());
+
+            num++;
+        }
+
+        // parse slots and channels
+        vector<IIStructure> arr;
+        for (int i = 0; i < row_count; i++)
+        {
+            getline(txtFile, cur_line);
+            cout<<"Current run: "<<run_number<<", row: "<<i<<", line: "<<cur_line<<endl;
+            reduce_line = reduce(cur_line);
+
+            istringstream line_stream(reduce_line);
+            num = 1;
+            int slot_number;
+            // parse tokens by space separated
+            while (getline(line_stream, token, ' '))
+            {
+                if (num == 1)
+                    slot_number = atoi(token.c_str());
+
+                if (num > 1)
+                {
+                    size_t index_sym = token.find_first_of('-');
+                    if (index_sym == string::npos)
+                    {
+                        int channel_number = atoi(token.c_str());
+                        if (channel_number == 0)
+                        {
+                            if (!is_string_number(token))
+                                continue;
+                        }
+
+                        IIStructure st;
+                        st.int_1 = slot_number;
+                        st.int_2 = channel_number;
+                        arr.push_back(st);
+                    }
+                    else
+                    {
+                        string strFirst = token.substr(0, index_sym);
+                        string strSecond = token.substr(index_sym + 1, token.length() - index_sym - 1);
+                        int num_first = atoi(strFirst.c_str());
+                        int num_second = atoi(strSecond.c_str());
+                        for (int j = num_first; j <= num_second; j++)
+                        {
+                            IIStructure st;
+                            st.int_1 = slot_number;
+                            st.int_2 = j;
+                            arr.push_back(st);
+                        }
+                    }
+                }
+
+                num++;
+            }// parse tokens by space separated
+        }// for (int i = 0; i < row_count; i++)
+
+        // skip empty line
+        if (getline(txtFile, cur_line) != NULL)
+        {
+            reduce_line = trim(cur_line, " \t\r");
+            if (reduce_line != "")
+            {
+                cout<<"Critical Error: file format isn't correct, current line:"<<reduce_line<<endl;
+                txtFile.close();
+                return -4;
+            }
+        }
+
+        // copy vector to dynamic array
+        int size_arr = arr.size();
+        IIStructure* pValues = new IIStructure[size_arr];
+        for (int i = 0; i < size_arr; i++)
+        {
+            pValues[i] = arr[i];
+        }
+
+        /*
+        // print array
+        cout<<"Slot:Channel"<<endl;
+        for (int i = 0; i < size_arr; i++)
+        {
+            cout<<pValues[i].int_1<<":"<<pValues[i].int_2<<endl;
+        }
+        cout<<endl;
+        */
+
+        MpdDbDetectorParameter* pDetectorParameter = MpdDbDetectorParameter::CreateDetectorParameter(run_number, "DCH1", "noise", pValues, 32); //(run_number, detector_name, parameter_name, IIStructure_value, element_count)
+        if (pDetectorParameter == NULL)
+            continue;
+
+        // clean memory after work
+        delete [] pValues;
+        if (pDetectorParameter)
+            delete pDetectorParameter;
+    }
+
+    txtFile.close();
+
+    delete connUniDb;
 
     return 0;
 }

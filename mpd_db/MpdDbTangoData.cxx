@@ -1,4 +1,4 @@
-#include "MpdDbRunData.h"
+#include "MpdDbTangoData.h"
 
 #include <TSQLServer.h>
 #include <TSQLResult.h>
@@ -15,7 +15,7 @@
 
 using namespace std;
 
-void MpdDbRunData::SplitString(TString str, TString delim, vector<TString> &v)
+void MpdDbTangoData::SplitString(TString str, TString delim, vector<TString> &v)
 {
     v.clear();
 
@@ -45,7 +45,7 @@ void MpdDbRunData::SplitString(TString str, TString delim, vector<TString> &v)
 }
 
 // перевод строки формата "DD.MM.YYYY HH:MM:SS" в класс TDatime
-TDatime MpdDbRunData::StringToDatime(TString str_time)
+TDatime MpdDbTangoData::StringToDatime(TString str_time)
 {
     tm tmp;
     sscanf(str_time.Data(), "%2d.%2d.%4d %2d:%2d:%2d", &tmp.tm_mday, &tmp.tm_mon, &tmp.tm_year, &tmp.tm_hour, &tmp.tm_min, &tmp.tm_sec);
@@ -55,7 +55,7 @@ TDatime MpdDbRunData::StringToDatime(TString str_time)
 }
 
 // перевод строки формата "DD.MM.YYYY HH:MM:SS" в стандартный формат time_t
-int MpdDbRunData::StringToTime(TString str_time)
+int MpdDbTangoData::StringToTime(TString str_time)
 {
     tm tmp;
     sscanf(str_time.Data(),"%2d.%2d.%4d %2d:%2d:%2d", &tmp.tm_mday, &tmp.tm_mon, &tmp.tm_year, &tmp.tm_hour, &tmp.tm_min, &tmp.tm_sec);
@@ -65,7 +65,7 @@ int MpdDbRunData::StringToTime(TString str_time)
 }
 
 
-CSVData* MpdDbRunData::GetCSVData(string filename)
+CSVData* MpdDbTangoData::GetCSVData(string filename)
 {
     int size = 0;
     string s;
@@ -142,7 +142,7 @@ CSVData* MpdDbRunData::GetCSVData(string filename)
     return zdcXY;
 }
 
-void MpdDbRunData::PrintCSVData(CSVData* zdcXY, bool isGraphicPresentation, bool isTimeCut, TDatime* start_time, TDatime* end_time)
+void MpdDbTangoData::PrintCSVData(CSVData* zdcXY, bool isGraphicPresentation, bool isTimeCut, TDatime* start_time, TDatime* end_time)
 {
     if (isTimeCut)
     {
@@ -223,7 +223,7 @@ void MpdDbRunData::PrintCSVData(CSVData* zdcXY, bool isGraphicPresentation, bool
     return;
 }
 
-HV_Data* MpdDbRunData::GetTangoParameter(char* detector_name, char* parameter_name, char* date_start, char* date_end)
+HV_Data* MpdDbTangoData::GetTangoParameter(char* detector_name, char* parameter_name, char* date_start, char* date_end)
 {
     //подключение к базе данных
     TSQLServer* db = TSQLServer::Connect("mysql://159.93.120.66","sima","password");
@@ -284,7 +284,7 @@ HV_Data* MpdDbRunData::GetTangoParameter(char* detector_name, char* parameter_na
     return VC;
 }
 
-void MpdDbRunData::PrintHV(HV_Data* VC, bool isGraphicPresentation)
+void MpdDbTangoData::PrintHV(HV_Data* VC, bool isGraphicPresentation)
 {
     if (!isGraphicPresentation)
     {
@@ -321,4 +321,4 @@ void MpdDbRunData::PrintHV(HV_Data* VC, bool isGraphicPresentation)
 }
 
 // -------------------------------------------------------------------
-ClassImp(MpdDbRunData);
+ClassImp(MpdDbTangoData);

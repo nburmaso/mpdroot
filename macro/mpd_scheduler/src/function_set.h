@@ -5,6 +5,9 @@
 // Description : set of common C++ functions
 //============================================================================
 
+#ifndef FUNCTION_SET_H
+#define FUNCTION_SET_H
+
 // C++ includes
 #include <unistd.h>
 #include <iostream>
@@ -16,6 +19,28 @@
 #include <ctime>
 
 using namespace std;
+
+/* declarations */
+int system_command_linux(string aCommand, string& result);
+string replace_home_symbol_linux(string path);
+string replace_vmc_path_linux(string path);
+int get_linux_processor_count();
+int get_sge_processor_count();
+int get_torque_processor_count();
+string get_app_name_linux();
+string get_app_dir_linux();
+string convert_integer_to_string(int number);
+string int_to_hex_string(int int_number);
+bool is_string_number(const string& s);
+char* convert_pchar_to_lowercase_new(char* input_char_array);
+void replace_string_in_text(string &text, string s, string d);
+string trim(const string& str, const string& whitespace = " \t\r");
+string reduce(const string& str, const string& fill = " ", const string& whitespace = " \t\r");
+string get_file_name(string path);
+string get_file_name_with_ext(string path);
+string get_current_date();
+
+#ifndef ONLY_DECLARATIONS
 
 /*				*/
 /* OS FUNCTIONS */
@@ -218,23 +243,23 @@ string get_app_dir_linux()
 // convert integer number to string
 string convert_integer_to_string(int number)
 {
-   stringstream ss;
-   ss << number;
-   return ss.str();
+    stringstream ss;
+    ss<<number;
+    return ss.str();
 }
 
 // convert integer (hexadecimal value) to string with hexadecimal presentation without "0x"
 string int_to_hex_string(int int_number)
 {
-  stringstream stream;
-  stream << std::hex << int_number;
-  return stream.str();
+    stringstream stream;
+    stream<<std::hex<<int_number;
+    return stream.str();
 }
 
 // is string a integer number?
-bool is_string_number(const std::string& s)
+bool is_string_number(const string& s)
 {
-    std::string::const_iterator it = s.begin();
+    string::const_iterator it = s.begin();
     while (it != s.end() && std::isdigit(*it)) ++it;
     return !s.empty() && it == s.end();
 }
@@ -273,7 +298,7 @@ void replace_string_in_text(string &text, string s, string d)
 }
 
 // return string without leading and trailing spaces and tabs
-string trim(const string& str, const string& whitespace = " \t")
+string trim(const string& str, const string& whitespace)
 {
     size_t strBegin = str.find_first_not_of(whitespace);
     if (strBegin == string::npos)
@@ -286,7 +311,7 @@ string trim(const string& str, const string& whitespace = " \t")
 }
 
 // return string changing whitespaces and tabs by single whitespace
-string reduce(const string& str, const string& fill = " ", const string& whitespace = " \t")
+string reduce(const string& str, const string& fill, const string& whitespace)
 {
     // trim first
     string result = trim(str, whitespace);
@@ -322,14 +347,15 @@ string get_file_name(string path)
 
 	// Remove extension if present.
 	size_t period_idx = path.rfind('.');
-	if (std::string::npos != period_idx)
+    if (string::npos != period_idx)
 	    path.erase(period_idx);
 
 	return path;
 }
 
 // get file name with extension from path
-string get_file_name_with_ext(string path){
+string get_file_name_with_ext(string path)
+{
 	// Remove directory if present.
 	size_t last_slash_idx = path.find_last_of("/");
 	if (string::npos != last_slash_idx)
@@ -360,3 +386,6 @@ string get_current_date()
 
     return str;
 }
+
+#endif /* ONLY_DECLARATIONS */
+#endif /* FUNCTION_SET_H */
