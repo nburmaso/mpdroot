@@ -46,6 +46,8 @@ TObject((const TObject&) cl) {
 MpdTpc2dCluster::~MpdTpc2dCluster() {
 }
 
+//......................................................................
+
 Bool_t MpdTpc2dCluster::Insert(Int_t row, Int_t col, Int_t bkt, Float_t adc) {
     Int_t thiscol, thisbkt;
     Float_t adcval;
@@ -82,5 +84,14 @@ Int_t MpdTpc2dCluster::Sec(int i) const { return fSecList[i]; }
 
 //......................................................................
 
+Bool_t MpdTpc2dCluster::Insert(Int_t sec, Int_t row, Int_t col, Int_t bkt, Float_t adc) 
+{
+  // Insert pixel
+
+  Insert(row, col, bkt, adc);
+  fSecList.push_back(sec);
+}
+
+//......................................................................
 
 ////////////////////////////////////////////////////////////////////////

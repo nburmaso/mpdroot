@@ -10,6 +10,8 @@
 #include <TObject.h>
 #include <TVector3.h>
 
+class TpcGas;
+
 class MpdTpcSectorGeo : public TObject
 {
 
@@ -26,6 +28,7 @@ class MpdTpcSectorGeo : public TObject
   void Local2Global(Int_t iSec, const TVector3 &xyzLoc, TVector3 &xyzGlob); ///< transform local coordinates of sector iSec to global
   Int_t PadRow(Int_t padID) { return (padID >> kPadrowS) & kPadrowM; } ///< pad rows from padID
   Int_t Sector(Int_t padID) { return (padID >> kSectorS) & kSectorM; } ///< sector No. from padID
+  Int_t PadID(Int_t sec, Int_t row) { return sec |= (row << kPadrowS); } ///< padID from sector and padrow numbers
   TVector2 LocalPadPosition(Int_t padID); ///< get local pad position for padID 
   Int_t NofSectors() { return fgkNsect; } ///< get number of TPC r/out sectors 
   //Int_t NofRows() { return fgkNrows; } ///< get number of pad rows
@@ -36,7 +39,19 @@ class MpdTpcSectorGeo : public TObject
   Double_t GetMaxY() { return fYsec[2]; } ///< get maximum sector Y
   Double_t GetRocY(Int_t i) { return fYsec[i]; } ///< get ROC region Y-coordinates
   Double_t PadHeight(Int_t ireg = 0) { return fPadH[ireg]; } ///< get pad height in ROC region ireg
+  Double_t PadWidth(Int_t ireg = 0) { return fPadW[ireg]; } ///< get pad width in ROC region ireg
   Double_t SectorAngle(Int_t iSec) { return fPhi0 + (iSec + 0.5) * fDphi; } ///< get azimuthal angle of sector axis 
+  Int_t GetNTimeBins () { return fNTimeBins; } ///< number of time bins
+  Int_t GetZmin () { return fZmin; } ///< sensitive volume Zmin
+  Int_t GetZmax () { return fZmax; } ///< sensitive volume Zmax
+  const Int_t* NPadsInRows() const { return fNPadsInRows; } ///< numbers of pads in rows
+  Double_t Z2TimeBin(Double_t z); ///< Z-to-Time bin conversion
+  Double_t T2TimeBin(Double_t time); ///< time-to-Time bin conversion
+  Double_t TimeBin2Z(Double_t timeBin); ///< Time bin-to-Z conversion
+  Double_t Pad2Xloc(Double_t pad, Int_t row); ///< Pad number-to-Xlocal conversion
+  Double_t TimeMax() const { return fTimeMax; } ///< max drift time
+  Double_t TimeBin() const { return fTimeBin; } ///< time bin length
+
   void SetNofRows(Int_t nRows, Int_t ireg = 0) { fNrows[ireg] = nRows; }
   void SetPadHeight(Double_t height, Int_t ireg = 0) { fPadH[ireg] = height; }
   void SetMinY(Double_t rmin) { fYsec[0] = rmin; }
@@ -59,7 +74,55 @@ class MpdTpcSectorGeo : public TObject
   Double_t fDphi; // sector angle
   Double_t fYsec[3]; // coordinates of ROC regions (height direction): minimum,  boundary, maximum
   Double_t fPadH[2]; // pad heights for 2 ROC regions
+  Double_t fPadW[2]; // pad widths for 2 ROC regions
+  Double_t fZmin; // sensitive volume Zmin
+  Double_t fZmax; // sensitive volume Zmax
+  Double_t fNTimeBins; // number of time bins
+  Int_t* fNPadsInRows; // numbers of pads in rows
+  Double_t fZ2TimeBin; // Z-to-Time bin conversion coefficient
+  TpcGas* fGas; // pointer to gas system
+  Double_t fTimeMax; // max drift time
+  Double_t fTimeBin; // time bin length
+  //Int_t fTimeBinMax; // max time bin 
+  Double_t fTimeBinMax; // max time bin 
 
   ClassDef(MpdTpcSectorGeo,1);
 };
+
+//__________________________________________________________________________
+inline Double_t MpdTpcSectorGeo::Z2TimeBin(Double_t z)
+{
+  // Z-to-Time bin conversion
+
+  return (fZmax - TMath::Abs(z)) * fZ2TimeBin;
+}
+
+//__________________________________________________________________________
+inline Double_t MpdTpcSectorGeo::T2TimeBin(Double_t time)
+{
+  // Time-to-Time bin conversion
+
+  //return (fTimeMax - time) / fTimeBin; 
+  return time / fTimeBin; 
+}
+
+//__________________________________________________________________________
+inline Double_t MpdTpcSectorGeo::TimeBin2Z(Double_t timeBin)
+{
+  // Time bin-to-Z conversion
+
+  //return (fNTimeBins - timeBin - 0.5) / fZ2TimeBin;
+  return (fTimeBinMax - timeBin - 0.5) / fZ2TimeBin;
+}
+
+//__________________________________________________________________________
+inline Double_t MpdTpcSectorGeo::Pad2Xloc(Double_t pad, Int_t row)
+{
+  // Pad number-to-Xlocal conversion
+
+  Double_t padW = (row < NofRowsReg(0)) ? fPadW[0] : fPadW[1];
+  return padW * (pad - fNPadsInRows[row] + 0.5);
+}
+//__________________________________________________________________________
+
 #endif

@@ -26,6 +26,7 @@ class MpdTpc2dCluster : public TObject
   MpdTpc2dCluster(const MpdTpc2dCluster& cl);
   ~MpdTpc2dCluster();
   bool Insert(Int_t row, Int_t col, Int_t bkt,  Float_t adc) ;
+  Bool_t Insert(Int_t sec, Int_t row, Int_t col, Int_t bkt,  Float_t adc);
   
  public:
   Int_t ID        () const {return fId;}

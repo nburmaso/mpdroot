@@ -30,4 +30,24 @@ Int_t MpdTpcHit::Compare(const TObject* hit) const
 }
 //---------------------------------------------------------------------------
 
+Int_t MpdTpcHit::GetTrackID() const
+{
+  // Returns track ID (from the link with the smallest weight)
+
+  FairMultiLinkedData links = GetLinksWithType(MpdTpcHit::MCTrackIndex);
+  Int_t nLinks = links.GetNLinks();
+  Int_t id = links.GetLink(0).GetIndex();
+  Float_t w = links.GetLink(0).GetWeight();
+
+  for (Int_t i = 1; i < nLinks; ++i) {
+    FairLink link = links.GetLink(i);
+    if (link.GetWeight() < w) {
+      id = link.GetIndex();
+      w = link.GetWeight();
+    }
+  }
+  return id;
+}
+
+//---------------------------------------------------------------------------
 ClassImp(MpdTpcHit)

@@ -129,7 +129,8 @@ InitStatus MpdTpcKalmanFilter::Init() {
 
   //fHits = (TClonesArray*) manager->GetObject("TpcCluster");
   if (fUseMCHit) fHits = (TClonesArray*) manager->GetObject("TpcHit");
-  else fHits = (TClonesArray*) manager->GetObject("MpdTpcHit");
+  //else fHits = (TClonesArray*) manager->GetObject("MpdTpcHit");
+  else fHits = (TClonesArray*) manager->GetObject("TpcRecPoint");
   if ( ! fHits ) {
     cout << "-I- "<< GetName() << "::Init: No MpdTpcHit array!" << endl;
     return kERROR;
@@ -603,7 +604,7 @@ void MpdTpcKalmanFilter::AddHits()
       new (trHits[j]) MpdKalmanHit(*hit);
       MpdTpcHit *p = GetTpcHit(hit);
       Int_t motherID1 = p->GetTrackID();
-      if (!fUseMCHit) motherID1 = p->GetRefIndex();
+      //AZ 19-07-15 if (!fUseMCHit) motherID1 = p->GetRefIndex();
       // Get point mother ID
       mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(motherID1);
       while (mctrack->GetMotherId() >= 0) {
@@ -1271,10 +1272,10 @@ Int_t MpdTpcKalmanFilter::RunKalmanFilter(MpdTpcKalmanTrack *track)
 	}
 	if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),"Scat");
 	Double_t dChi2 = 999999.0;
-	if (trackBr[isecDif]->GetLength() - track->GetLength() < padH / TMath::Abs(cosTh) * 1.8) 
+	if (trackBr[isecDif]->GetLength() - track->GetLength() < padH / TMath::Abs(cosTh) * 1.8 * (miss + 1)) 
 	  dChi2 = MpdKalmanFilter::Instance()->FilterHit(trackBr[isecDif],hit,pointWeight,param);
-	/*cout << lay << " " << isecHit << " " << isec << " " << dChi2 << " " << track->GetTrackID() 
-	  << " " << GetTpcHit(hit)->GetTrackID() << endl;*/
+	cout << lay << " " << isecHit << " " << isec << " " << dChi2 << " " << track->GetTrackID() 
+	  << " " << GetTpcHit(hit)->GetTrackID() << endl;
 
 	if (dChi2 < dChi2Min) {
 	  dChi2Min = dChi2;
@@ -1410,8 +1411,8 @@ Int_t MpdTpcKalmanFilter::RunKalmanFilter(MpdTpcKalmanTrack *track)
 	  track->SetNodeNew(trackBr[ip]->GetNodeNew());
 	}
       }	
-      if (miss > 1) {
-      //if (miss > 3) {
+      //if (miss > 1) {
+      if (miss > 5) {
 	/*
 	track->SetPos(rOK); //
 	track->SetPosNew(rOK); //
@@ -1466,7 +1467,8 @@ Int_t MpdTpcKalmanFilter::GetHitID(MpdKalmanHit *hit)
   /// Get hit ID from MpdTpcHit ID
 
   MpdTpcHit *h = GetTpcHit(hit);
-  return (fUseMCHit) ? h->GetTrackID() : h->GetRefIndex();
+  //AZ 19-07-15 return (fUseMCHit) ? h->GetTrackID() : h->GetRefIndex();
+  return h->GetTrackID();
 }
 
 //__________________________________________________________________________

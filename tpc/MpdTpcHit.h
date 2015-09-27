@@ -9,23 +9,11 @@
 
 #include <FairHit.h>
 #include <TObject.h>
+#include <vector>
 
 class MpdTpcHit : public FairHit
 {
-private:
-    Int_t	fiPad;
-    Int_t	fiBin;
-    Int_t	fLayer;
-    
-    Double32_t    fQ;
-    Double32_t    fStep;
-    Double32_t    fLength;
-    
-    // Sector coordinate system
-    Double32_t    fLocalX;
-    Double32_t    fLocalY;
-    Double32_t    fLocalZ;
-    
+
 public:
     enum k_LinkType { PointIndex = 1, MCTrackIndex = 2 };
 
@@ -61,7 +49,8 @@ public:
     Double_t GetLength() const { return fLength; } // track length
     // For backward compatibility
     //Int_t GetTrackID() const { return GetLinksWithType(Int_t type).GetLink(Int_t pos); } 
-    Int_t GetTrackID() const { return GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(0).GetIndex(); } 
+    //Int_t GetTrackID() const { return GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(0).GetIndex(); } 
+    Int_t GetTrackID() const;
     Double_t GetR() const { return fLocalY; } 
     Double_t GetRphi() const { return fLocalX; }
     Double_t GetEnergyLoss() const { return fQ; }
@@ -70,6 +59,10 @@ public:
     Double_t GetLocalY() const { return fLocalY; }
     Double_t GetLocalZ() const { return fLocalZ; }
     void LocalPosition(TVector3 & pos) const { pos.SetXYZ(fLocalX, fLocalY, fLocalZ); }
+    Double_t GetRMS(Int_t ixz = 0) const { return fXZrms[ixz]; }
+    Int_t GetNdigits() const { return fNdigits; }
+    Int_t GetNtracks() const { return fIDs.size(); }
+    std::vector<Int_t>& GetIDs() { return fIDs; }
     
     /** Modifiers **/
     void SetModular(Int_t imod) { SetUniqueID(imod); }
@@ -91,11 +84,31 @@ public:
     void SetLocalPosition(const TVector3& pos) { 
         fLocalX = pos.X(); fLocalY = pos.Y(); fLocalZ = pos.Z(); 
     }
-    
+    void SetRMS(Double_t rms, Int_t ixz = 0) { fXZrms[ixz] = rms; }
+    void SetNdigits(Int_t ndigs) { fNdigits = ndigs; }
+    void AddID(Int_t id) { fIDs.push_back(id); }
+
     Bool_t IsSortable() const { return kTRUE; }
     Int_t Compare(const TObject* hit) const; // "Compare" function for sorting
 
-    ClassDef(MpdTpcHit, 1)
+private:
+    Int_t	  fiPad;
+    Int_t	  fiBin;
+    Int_t	  fLayer;
+    Int_t	  fNdigits; // number of digits in the hit
+    std::vector<Int_t> fIDs; // track IDs with the highest charge contribution
+    
+    Double32_t    fQ;
+    Double32_t    fStep;
+    Double32_t    fLength;
+    
+    // Sector coordinate system
+    Double32_t    fLocalX;
+    Double32_t    fLocalY;
+    Double32_t    fLocalZ;
+    Double32_t    fXZrms[2]; // RMS of the hit (group of digits) along pad and drift directions  
+    
+    ClassDef(MpdTpcHit, 2)
 };
 
 #endif // _MPDTPCHIT_H_

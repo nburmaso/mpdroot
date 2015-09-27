@@ -4,6 +4,7 @@
 /// \author Alexander Zinchenko (LHEP, JINR, Dubna)
 
 #include "MpdTpcSectorGeo.h"
+#include "TpcGas.h"
 //#include "TpcGeoPar.h"
 //#include "FairGeoNode.h"
 //#include "FairRunAna.h"
@@ -12,11 +13,8 @@
 #include <TGeoManager.h>
 #include <TGeoPgon.h>
 #include <TGeoTube.h>
-
-#include <TGeoManager.h>
-#include <TGeoPgon.h>
-#include <TGeoTube.h>
 #include <TMath.h>
+#include <TSystem.h>
 #include <Riostream.h>
 
 using std::cout;
@@ -98,10 +96,16 @@ void MpdTpcSectorGeo::Init()
     //fNrows = Int_t ((fYsec[1] - fYsec[0] + 0.1) / 1.2); // 66 lays
     //fNrows = Int_t ((fYsec[1] - fYsec[0] + 0.1) / 1.5); // 53 lays
     //fNrows = Int_t ((fYsec[1] - fYsec[0] + 0.1) / 1.0);
-    cout << " ***** TPC sensitive volume: " << sv->GetName() << ", shape: " << shape->ClassName() 
-	 << ", inner radius: " << fYsec[0] << ", outer radius: " << fYsec[2] << ", dZ: " << ((TGeoTube*)shape)->GetDZ() << endl;
     //fPhi0 = params->At(0) * TMath::DegToRad() - fDphi;
     fPhi0 = ((TGeoPgon*)shape)->Phi1() * TMath::DegToRad() - fDphi;
+    // Extract sensitive volume Z-coordinates
+    TGeoVolume *membr = gGeoManager->GetVolume("tpc01mb"); // membrane
+    fZmin = ((TGeoTube*)membr->GetShape())->GetDZ();
+    //fZmax = fZmin + 2 * ((TGeoTube*)shape)->GetDZ();
+    fZmax = 170.; 
+    cout << " ***** TPC sensitive volume: " << sv->GetName() << ", shape: " << shape->ClassName() 
+	 << ", inner radius: " << fYsec[0] << ", outer radius: " << fYsec[2] 
+	 << ", Zmin, Zmax: " << fZmin << ", " << fZmax << endl;
   } else Fatal("MpdTpcSectorGeo::Init()"," !!! Unknown sensitive volume shape !!! ");
 
   //fPadH = (fYsec[1] - fYsec[0]) / fNrows;
@@ -110,6 +114,30 @@ void MpdTpcSectorGeo::Init()
   cout << " Number of sectors: " << fgkNsect << ", phi0: " << fPhi0*TMath::RadToDeg() << ", numbers of padrows: " 
        << fNrows[0] << " " << fNrows[1] << ", pad heights: " << fPadH[0] << " " << fPadH[1] << endl; 
   cout << " !!!!! ***** ***** ***** !!!!!" << endl;
+
+  fPadW[0] = fPadW[1] = 0.5; // pad widths
+  // Numbers of pads in rows
+  //Double_t tan = TMath::Tan(fDphi/2), dead = 1.35; // dead area on one side 
+  Double_t tan = TMath::Tan(fDphi/2), dead = 0.15; // dead area on one side 
+  fNPadsInRows = new Int_t [NofRows()];
+  for (Int_t j = 0; j < fNrows[0]; ++j) 
+    fNPadsInRows[j] = Int_t ((tan * (fYsec[0] + j * fPadH[0]) - dead) / fPadW[0]); 
+  for (Int_t j = 0; j < fNrows[1]; ++j) 
+    fNPadsInRows[j+fNrows[0]] = Int_t ((tan * (fYsec[1] + j * fPadH[1]) - dead) / fPadW[1]); 
+
+  // Gas parameters
+  std::string tpcGasFile = gSystem->Getenv("VMCWORKDIR");
+  tpcGasFile += "/geometry/Ar-90_CH4-10.asc";
+  fGas = new TpcGas(tpcGasFile, 130);
+  fTimeMax = fZmax / fGas->VDrift();
+
+  fNTimeBins = 512; // max number of time bins
+  //fTimeBin = fTimeMax / fNTimeBins;
+  fTimeBin = 100; // 100 ns
+  //fZ2TimeBin = fNTimeBins / fZmax; 
+  //fTimeBinMax = Int_t (fTimeMax / fTimeBin);
+  fTimeBinMax = fTimeMax / fTimeBin;
+  fZ2TimeBin = fTimeBinMax / fZmax; 
 }
 
 //__________________________________________________________________________
@@ -193,3 +221,6 @@ TVector2 MpdTpcSectorGeo::LocalPadPosition(Int_t padID)
   else y = fYsec[1] - fYsec[0] + fPadH[1] * (row - fNrows[0] + 0.5);
   return TVector2(x,y);
 }
+
+//__________________________________________________________________________
+
