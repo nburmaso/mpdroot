@@ -51,10 +51,11 @@ class MpdTpcKalmanFilter : public FairTask
   Int_t GetParticleId(Int_t id); ///< particle ID for track id
   Int_t SetModular(Int_t modular) { fModular = modular; } ///< set != 0 if modular geom. of r/out chambers
   void SetSectorGeo(MpdTpcSectorGeo *secGeo) { fSecGeo = secGeo; } ///< set sector geometry
-  Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1); ///< refit track using its points for given particle mass and charge
+  Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE); ///< refit track using its points for given particle mass and charge
   Int_t GetHitID(MpdKalmanHit *hit); // get hit ID from MC point ID
   void UseTpcHit(Bool_t useMC = kTRUE) { fUseMCHit = useMC; }; // to use TpcHit branch instead of MpdTpcHit
   void FillGeoScheme(); // fill Kalman filter geometry manager info (for modular geometry of r/out chambers)
+  Bool_t IsTpcHit() const { return fUseMCHit; } // tracking with hits or clusters ?
 
  private:
   // Some constants
@@ -71,7 +72,7 @@ class MpdTpcKalmanFilter : public FairTask
   void MakeKalmanHits(); // create Kalman hits  
   void MakeKalmanHitsModul(); // create Kalman hits for modular geom. of r/out chambers  
   void GoOutward(MpdTpcKalmanTrack *track); // propagate track outward
-  void BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight, Int_t iDir = 1); // propagate track thru found hits
+  void BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight, Int_t iDir = 1, Bool_t corDedx = kFALSE); // propagate track thru found hits
   void GoOut(); // backpropagate tracks outward
   void RemoveDoubles(); // remove double tracks
   Int_t GetNofCommonHits(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2); // get common hits
@@ -84,12 +85,13 @@ class MpdTpcKalmanFilter : public FairTask
   void ExcludeHits(); // exclude used hits
   void RemoveShorts(); // remove short tracks (Nhits < 4)
   void GoToBeamLine(); // propagate tracks to the beam line
-  void AddHits(); // add hit objects to tracks
+  void AddHits(Int_t indx0 = -1); // add hit objects to tracks
   void SetTrackID(MpdTpcKalmanTrack *track); // set track ID from IDs of its hits
   //TpcPoint* GetPoint(MpdKalmanHit *hit); // get MCPoint pointer for the hit
   MpdTpcHit* GetTpcHit(MpdKalmanHit *hit); // get TpcHit pointer for the Kalman hit
   Int_t SectorNo(const char* cpath); // extract sector number from TGeo path
   Double_t CorrectForLoss(Double_t pt, Double_t the, Double_t mass, Int_t charge = 1); ///< energy loss correction
+  void MergeTracks(Int_t ipass); // merge tracks
 
   Int_t fNofEvents;                    // number of events processed
   Int_t fNTracks;                      // number of found tracks
@@ -110,12 +112,12 @@ class MpdTpcKalmanFilter : public FairTask
   Int_t fZflag;                        // primary vertex position estimate quality flag
   Int_t fModular;                      // not equal 0 if modular geometry of readout chambers
   //const TpcPadPlane *fPadPlane;        //! pointer to pad plane
-  MpdTpcSectorGeo *fSecGeo;      //! pointer to sector geometry
+  MpdTpcSectorGeo *fSecGeo;            //! pointer to sector geometry
+  Bool_t fUseMCHit;                    // to use TpcHit branch (hit producer) instead of MpdTpc (clusters)
 
  private:
   // Some constants
   static const Double_t fgkChi2Cut;    // max accepted Chi2 of hit for track
-  Bool_t fUseMCHit; // to use TpcHit branch (hit producer) instead of MpdTpc (clusters)
 
   ClassDef(MpdTpcKalmanFilter,1);
 };

@@ -143,7 +143,7 @@ void MpdTpcClusterFinderAZ::Exec(Option_t* opt)
     // Loop over padrows
     for (Int_t irow = 0; irow < nRows; ++irow) {
       if (fDigiSet[isec][irow].size() == 0) continue;
-      cout << " Sector, row, digits: " << isec << " " << irow << " " << fDigiSet[isec][irow].size() << endl; 
+      //cout << " Sector, row, digits: " << isec << " " << irow << " " << fDigiSet[isec][irow].size() << endl; 
       ProcessPadrow(isec, irow);
       nSum += fDigiSet[isec][irow].size();
     }
@@ -199,7 +199,7 @@ void MpdTpcClusterFinderAZ::ProcessPadrow(Int_t isec, Int_t irow)
       }
     }
   }
-  cout << " Found preclusters: " << nclus - nclus0 << endl;
+  //cout << " Found preclusters: " << nclus - nclus0 << endl;
 }
 
 //__________________________________________________________________________
@@ -435,9 +435,9 @@ void MpdTpcClusterFinderAZ::FindHits()
       Int_t itime = clus->Bkt(idig);
       if (fFlags[ipad][itime] <= 0) continue;
       localMax.insert(pair<Double_t,Int_t>(clus->Adc(idig),idig));
-      cout << clus->Col(idig) << " " << clus->Bkt(idig) << " " << clus->Adc(idig) << endl;
+      //cout << clus->Col(idig) << " " << clus->Bkt(idig) << " " << clus->Adc(idig) << endl;
     }
-    cout << " Local max: " << clus->GetSect() << " " << clus->Row() << " " << localMax.size() << endl;
+    //cout << " Local max: " << clus->GetSect() << " " << clus->Row() << " " << localMax.size() << endl;
 
     // Remove local maxima not separated by valleys - Peak and Valley
     Int_t nLocMax0 = localMax.size();
@@ -553,7 +553,7 @@ void MpdTpcClusterFinderAZ::FindHits()
       Double_t rmsX = TMath::Sqrt (sum2p/adcTot - padMean*padMean);
       //p3err[1] = fSecGeo->TimeBin2Z(rms); // to pass the value
       //p3err[1] = rms;
-      cout << " Result: " << nLocMax0 << " " << pixels.size() << " " << xloc << " " << zloc << endl;
+      //cout << " Result: " << nLocMax0 << " " << pixels.size() << " " << xloc << " " << zloc << endl;
 
       // Apply corrections
       TVector3 p3errCor(p3err);
@@ -561,13 +561,19 @@ void MpdTpcClusterFinderAZ::FindHits()
 
       if (clus->GetSect() >= fSecGeo->NofSectors()) p3loc[2] = -p3loc[2];
       fSecGeo->Local2Global(clus->GetSect(), p3loc, p3glob);
-      //if (clus->GetSect() >= fSecGeo->NofSectors()) p3glob[2] = -p3glob[2];
+
+      // Dip angle correction (for interaction point with Z = 0)
+      Double_t dip = TMath::ATan2 (p3glob[2],p3glob.Pt()) * TMath::RadToDeg();
+      p3errCor[2] = TMath::Max (p3errCor[2], 0.116 - 0.0046 * dip + 0.00015 * dip * dip);
+      p3errCor[2] = TMath::Min (p3errCor[2], 0.5);
 
       MpdTpcHit* hit = new ((*fHitArray)[ihit++]) MpdTpcHit(padID, p3glob, p3errCor, iclus); 
       hit->SetLayer(clus->Row());
       hit->SetLocalPosition(p3loc); // point position
       hit->SetEnergyLoss(adcTot);
-      hit->SetStep(0.0);
+      Int_t ireg = (clus->Row() < fSecGeo->NofRowsReg(0)) ? 0 : 1;
+      Double_t step = fSecGeo->PadHeight(ireg);
+      hit->SetStep(step);
       hit->SetModular(1); // modular geometry flag
       hit->SetPad(Int_t(padMean));
       hit->SetBin(Int_t(timeMean));
