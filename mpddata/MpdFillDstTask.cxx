@@ -151,6 +151,7 @@ void MpdFillDstTask::Exec(Option_t * option)
     		MpdTrack *track = fEvent->AddGlobalTrack();    
     		track->SetID(kftrack->GetTrackID());
     		track->SetNofHits(kftrack->GetNofHits());
+                track->SetdEdXTPC(kftrack->GetPartID());
                 Float_t Ppi, Pk, Pe, Pp;
                                 
                 if(!identificator.GetTpcProbs(kftrack->Momentum3().Mag(), kftrack->GetPartID(), kftrack->GetNofHits(), Ppi, Pk, Pp, Pe, 1)) {
