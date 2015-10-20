@@ -299,7 +299,7 @@ void MpdTpcDigitizerAZ::Check4Edge(UInt_t iSec, TpcPoint* &prePoint, TpcPoint* v
   prePoint->Position(posG);
   Int_t row0 = MpdTpcSectorGeo::Instance()->Global2Local(posG, posL, iSec%(nSectors/2));
   row0 = MpdTpcSectorGeo::Instance()->PadRow(row0);
-  cout << " Row: " << row0 << " " << iSec << " " << posL[1] << endl;
+  //cout << " Row: " << row0 << " " << iSec << " " << posL[1] << endl;
   if (row0) return;
 
   // For padrow == 0:  create virtual point to correct for edge effect
@@ -314,7 +314,7 @@ void MpdTpcDigitizerAZ::Check4Edge(UInt_t iSec, TpcPoint* &prePoint, TpcPoint* v
   Double_t scale = mom[1] / posL[1];
   mom.SetMag(mom.Mag() / scale);
   posL -= mom;
-  cout << posL[0] << " " << posL[1] << " " << posL[2] << endl;
+  //cout << posL[0] << " " << posL[1] << " " << posL[2] << endl;
   MpdTpcSectorGeo::Instance()->Local2Global(iSec%(nSectors/2), posL, posG);
   virtPoint->SetPosition(posG);
   virtPoint->SetTrackID(prePoint->GetTrackID());
