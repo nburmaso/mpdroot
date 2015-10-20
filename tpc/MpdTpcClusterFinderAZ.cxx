@@ -102,7 +102,7 @@ InitStatus MpdTpcClusterFinderAZ::Init()
   }
   
   // Create and register output array
-  SetPersistence();
+  //SetPersistence();
   fClusArray = new TClonesArray("MpdTpc2dCluster"); 
   ioman->Register("TpcCluster", "Tpc", fClusArray, fPersistence);
   fHitArray = new TClonesArray("MpdTpcHit"); 

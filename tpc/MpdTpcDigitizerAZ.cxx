@@ -61,7 +61,7 @@ FILE *lunAZ = NULL; //fopen("gasGain.dat","w");
 
 MpdTpcDigitizerAZ::MpdTpcDigitizerAZ() :
 fOnlyPrimary(kFALSE),
-fPersistence(kTRUE),
+fPersistence(kFALSE),
 fResponse(kTRUE),
 fDistribute(kTRUE),
 fAttach(kFALSE),
