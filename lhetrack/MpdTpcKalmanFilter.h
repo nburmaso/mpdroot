@@ -66,6 +66,7 @@ class MpdTpcKalmanFilter : public FairTask
 
   virtual void SetParContainers();
   void GetTrackSeeds(Int_t iPass); // build track seeds 
+  void GetTrackSeedsEndCaps(); // build track seeds from end-cap regions 
   void DoTracking(Int_t iPass); // run tracking
   Double_t EvalPt(const MpdKalmanHit *hit1, const MpdKalmanHit *hit2); // evaluate Pt
   void Cluster2KalmanHits(); // create Kalman hits from clusters
