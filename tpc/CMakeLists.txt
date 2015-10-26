@@ -48,6 +48,8 @@ MpdTpc2dCluster.cxx
 MpdTpcHit.cxx
 MpdTpcHitProducer.cxx
 MpdTpcSectorGeo.cxx
+MpdTpcDigitizerAZ.cxx
+MpdTpcClusterFinderAZ.cxx
 )
 
 # fill list of header files from list of source files
