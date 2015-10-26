@@ -537,7 +537,8 @@ void MpdTpcDigitizerAZ::GetArea(Float_t xEll, Float_t yEll, Float_t radius, vect
       y = yEll - radius - padH;
       do {
 	y += padH;
-	row = (UInt_t) ((y - fSectInHeight) / padH) + nInRows;
+	//row = (UInt_t) ((y - fSectInHeight) / padH) + nInRows;
+	row = (Int_t) ((y - fSectInHeight) / padH) + nInRows;
 	if (row < 0) continue;
 	if (row >= nRows) break;
 	pad = (x > 0.0) ? (fNumOfPadsInRow[row] + floor(x / padW)) : (fNumOfPadsInRow[row] - 1 + ceil(x / padW));
@@ -557,7 +558,9 @@ void MpdTpcDigitizerAZ::GetArea(Float_t xEll, Float_t yEll, Float_t radius, vect
       y = yEll - radius - padH;
       do {
 	y += padH;
-	row = (UInt_t) (y / padH);
+        if (y < 0) continue; //AZ 
+	//row = (UInt_t) (y / padH);
+	row = (Int_t) (y / padH);
 	if (row < 0) continue;
 	if (row >= nInRows) break;
 	pad = (x > 0.0) ? (fNumOfPadsInRow[row] + floor(x / padW)) : (fNumOfPadsInRow[row] - 1 + ceil(x / padW));

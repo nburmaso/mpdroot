@@ -805,7 +805,7 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
 
   MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
 
-  Int_t layBeg = fSecGeo->NofRows() - 3, layEnd = 5, iDir = -1, dLays = 5;
+  Int_t layBeg = fSecGeo->NofRows() - 3, layEnd = 4, iDir = -1, dLays = 5;
   Double_t zToler = 10, zMax = 160;
   if (fZflag < 0) zToler = 50; // bad quality of vertex estimate
 
@@ -2377,7 +2377,8 @@ void MpdTpcKalmanFilter::MergeTracks(Int_t ipass)
 	Int_t hitLays1[70] = {0}, nh1 = tr1->GetNofTrHits(), nSameLay = 0;
 	if (nh1 >= 50) continue; // exclude long tracks
 	if (ipass == 0 && nh1 < 10) continue; // at first exclude short tracks
-	if (TMath::Abs(tr->Momentum3().Eta()) < 1.5) {
+	//if (TMath::Abs(tr->Momentum3().Eta()) < 1.5) {
+	if (TMath::Abs(tr->Momentum3().Eta()) < 1.3) {
 	  if (nh < 10 && nh1 < 10) continue; // both tracks too short
 	} else if (nh < 5 && nh1 < 5) continue; // both tracks too short
 	TClonesArray *hits1 = tr1->GetTrHits();
