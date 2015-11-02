@@ -2113,6 +2113,7 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
     track->GetHits()->Sort();
   }
   track->SetChi2(0.);
+  track->SetDirection(MpdKalmanTrack::kInward);
 
   //if (GetNofHits() == 1) return; 
   track->SetWeight(*track->GetWeightAtHit());
@@ -2296,6 +2297,15 @@ Double_t MpdTpcKalmanFilter::CorrectForLoss(Double_t pt, Double_t the, Double_t 
   const Double_t dedxHe3[nHe3] = {89.13, 72.42, 55.85, 45.98, 39.47, 30.53, 25.15, 19.07, 14.73,
 				  12.76, 11.42}; // mean of fit Gauss*Landau
 
+  // He4
+  const Int_t nHe4 = 9;
+  //const Double_t momHe4[nHe4] =  {1.050, 1.100, 1.200, 1.400, 1.600, 2.000, 2.500,
+  //			            3.000, 3.500};
+  const Double_t momHe4[nHe4] =  {0.606, 0.759, 0.962, 1.256, 1.500, 1.941, 2.464,
+				  2.974, 3.479};
+  const Double_t dedxHe4[nHe4] = {96.18, 82.70, 66.24, 48.44, 38.43, 27.48, 20.09,
+				  16.48, 14.14}; // mean of fit Gauss*Landau
+
   charge = TMath::Abs(charge);
   Double_t p = pt / TMath::Sin(the) * charge, mass2 = mass * mass;
   Double_t t = TMath::Sqrt (p*p + mass2) - mass, dt = 0.0;
@@ -2307,6 +2317,7 @@ Double_t MpdTpcKalmanFilter::CorrectForLoss(Double_t pt, Double_t the, Double_t 
   else if (mass < 2.0) dt = MpdKalmanFilter::Instance()->Interp(nD, momD, dedxD, p); // Deuteron
   else if (mass < 2.9 && charge == 1) dt = MpdKalmanFilter::Instance()->Interp(nT, momT, dedxT, p); // Triton
   else if (mass < 2.9) dt = MpdKalmanFilter::Instance()->Interp(nHe3, momHe3, dedxHe3, p); // He3
+  else if (mass < 3.9) dt = MpdKalmanFilter::Instance()->Interp(nHe4, momHe4, dedxHe4, p); // He4
 
   dt /= TMath::Sin(the);
   t += dt * 1.e-3;
