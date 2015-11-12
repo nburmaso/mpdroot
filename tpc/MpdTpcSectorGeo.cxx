@@ -224,3 +224,24 @@ TVector2 MpdTpcSectorGeo::LocalPadPosition(Int_t padID)
 
 //__________________________________________________________________________
 
+void MpdTpcSectorGeo::PadID(Float_t xloc, Float_t yloc, UInt_t &row, UInt_t &pad, Float_t &yNext)
+{
+  /// Compute row, pad and distance to the nearest row (+ or -)
+
+  row = fNrows[0];
+  Double_t lowHeight = fYsec[1] - fYsec[0];
+  if (yloc <= lowHeight) {
+    row = Int_t (yloc / fPadH[0]);
+    yNext = (row + 1) * fPadH[0] - yloc + 0.000001;
+    if (yNext > fPadH[0] / 2) yNext -= (fPadH[0] + 0.000002);
+    pad = Int_t (xloc / fPadW[0] + fNPadsInRows[row]);
+  } else {
+    Int_t dRow = Int_t ((yloc - lowHeight) / fPadH[1]);
+    row += dRow;
+    yNext = (dRow + 1) * fPadH[1] + lowHeight - yloc + 0.000001;
+    if (yNext > fPadH[1] / 2) yNext -= (fPadH[1] + 0.000002);
+    pad = Int_t (xloc / fPadW[1] + fNPadsInRows[row]);
+  }
+}
+
+//__________________________________________________________________________
