@@ -2113,7 +2113,7 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
     track->GetHits()->Sort();
   }
   track->SetChi2(0.);
-  track->SetDirection(MpdKalmanTrack::kInward);
+  if (iDir == 1) track->SetDirection(MpdKalmanTrack::kInward);
 
   //if (GetNofHits() == 1) return; 
   track->SetWeight(*track->GetWeightAtHit());

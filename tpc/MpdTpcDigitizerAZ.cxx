@@ -103,7 +103,10 @@ InitStatus MpdTpcDigitizerAZ::Init()
 
   //Get ROOT Manager
   FairRootManager* ioman = FairRootManager::Instance();
-  fMagField = FairRunSim::Instance()->GetField();
+  if (FairRunSim::Instance() == NULL)
+    fMagField = FairRunAna::Instance()->GetField();
+  else fMagField = FairRunSim::Instance()->GetField();
+  //fMagField = FairRunSim::Instance()->GetField();
   
   if (!ioman) {
     cout << "\n-E- [MpdTpcDigitizerAZ::Init]: RootManager not instantiated!" << endl;
@@ -230,6 +233,9 @@ void MpdTpcDigitizerAZ::Exec(Option_t* opt)
   }
   
   TpcPoint* virtPoint = new TpcPoint;
+  TpcPoint tmpPoint;
+  TpcPoint *ppp = &tmpPoint;
+
   for (UInt_t iSec = 0; iSec < nSectors; ++iSec) {
     
     if (pointsM[iSec].size() == 0) continue;
@@ -249,9 +255,22 @@ void MpdTpcDigitizerAZ::Exec(Option_t* opt)
     
     for ( ; it != pointID.end(); ++it) {
       TpcPoint* curPoint = (TpcPoint*) fMCPointArray->UncheckedAt(it->second);
-      if (curPoint->GetTrackID() != prePoint->GetTrackID()) Check4Edge(iSec, prePoint, virtPoint); // check for edge-effect 
-      //cout << " " << curPoint->GetTrackID() << " " << curPoint->GetX() << " " << curPoint->GetY() 
-      //   << " " << curPoint->GetZ() << endl;
+      //if (curPoint->GetTrackID() != prePoint->GetTrackID()) Check4Edge(iSec, prePoint, virtPoint); // check for edge-effect 
+      if (curPoint->GetTrackID() != prePoint->GetTrackID()) {
+	TVector3 pos;
+	curPoint->Position(pos);
+	tmpPoint.SetPosition(pos);
+	curPoint->Momentum(pos);
+	tmpPoint.SetMomentum(pos);
+	tmpPoint.SetTrackID(curPoint->GetTrackID());
+	ppp = &tmpPoint;
+	Check4Edge(iSec, ppp, virtPoint); // check for edge-effect 
+	prePoint = ppp;
+	//cout << " --- " << curPoint->GetTrackID() << " " << curPoint->GetX() << " " << curPoint->GetY() 
+	//   << " " << curPoint->GetZ() << endl;
+	//cout << " --- " << prePoint->GetTrackID() << " " << prePoint->GetX() << " " << prePoint->GetY() 
+	//   << " " << prePoint->GetZ() << endl;
+      }
       TpcProcessing(prePoint, curPoint, iSec, it->second, nPoints);
       prePoint = curPoint;
     }
@@ -523,10 +542,38 @@ void MpdTpcDigitizerAZ::GetArea(Float_t xEll, Float_t yEll, Float_t radius, vect
   Float_t padW = 0.0, padH = 0.0;
   Float_t y = 0.0, x = 0.0;
   UInt_t pad = 0, row = 0;
-  Float_t delta;
+  Float_t delta, yNext;
   if (fResponse) delta = 0.0;
   else delta = -1000.0; //for test only!!!
   
+  MpdTpcSectorGeo::Instance()->PadID(xEll, yEll, row, pad, yNext);
+  for (Int_t ip = -1; ip < 2; ++ip) {
+    Int_t pad1 = pad + ip;
+    if (pad1 < 0) continue;
+    if (pad1 >= MpdTpcSectorGeo::Instance()->NPadsInRows()[row] * 2) break;
+    padIDs.push_back(pad1);
+    rowIDs.push_back(row);
+  }    
+  // Add extra row
+  if (TMath::Abs(yNext) < radius) {
+    Int_t row1 = row;
+    if (yNext < 0) {
+      --row1;
+      if (row1 < 0) return;
+    } else if (yNext > 0) {
+      ++row1;
+      if (row1 > nRows - 1) return;
+    }
+    for (Int_t ip = -1; ip < 2; ++ip) {
+      Int_t pad1 = pad + ip;
+      if (pad1 < 0) continue;
+      if (pad1 >= MpdTpcSectorGeo::Instance()->NPadsInRows()[row1]) break;
+      padIDs.push_back(pad1);
+      rowIDs.push_back(row1);
+    }    
+  }
+
+  /*AZ
   if (yEll > nInRows * phIn + radius) {
     padW = pwOut;
     padH = phOut;
@@ -558,7 +605,7 @@ void MpdTpcDigitizerAZ::GetArea(Float_t xEll, Float_t yEll, Float_t radius, vect
       y = yEll - radius - padH;
       do {
 	y += padH;
-        if (y < 0) continue; //AZ 
+        //if (y < 0) continue; //AZ 
 	//row = (UInt_t) (y / padH);
 	row = (Int_t) (y / padH);
 	if (row < 0) continue;
@@ -592,6 +639,7 @@ void MpdTpcDigitizerAZ::GetArea(Float_t xEll, Float_t yEll, Float_t radius, vect
       rowIDs.push_back(row);
     } while (x < xEll + radius + delta);
   }
+  */
 }
 
 //---------------------------------------------------------------------------
@@ -623,7 +671,7 @@ Float_t MpdTpcDigitizerAZ::CalculatePadResponse(UInt_t padID, UInt_t rowID, Floa
     Double_t cy1 = TMath::Erf(maxY/fSpread);
     Double_t cy2 = TMath::Erf(minY/fSpread);
     Double_t ctot = 0.25 * TMath::Abs((cx1-cx2)*(cy1-cy2));
-    //cout << " Pad: " << maxX << " " << minX << " " << maxY << " " << minY << " " << ctot << endl; 
+    //cout << " Row, pad: " << rowID << " " << padID << " " << maxX << " " << minX << " " << maxY << " " << minY << " " << ctot << endl; 
     //AZ
     const Float_t i1 = (Exp(k2 * minX * minX) + Exp(k2 * maxX * maxX)) * k1 * padW / 2;
     const Float_t i2 = (Exp(k2 * minY * minY) + Exp(k2 * maxY * maxY)) * k1 * padH / 2;
@@ -705,6 +753,9 @@ void MpdTpcDigitizerAZ::TpcProcessing(const TpcPoint* prePoint, const TpcPoint* 
       return;
     }
 
+    qTotal = (UInt_t) floor(fabs(dE / fGas->W()));
+    if (qTotal == 0) return;
+
     curPointPos.SetXYZT(curPoint->GetX(), curPoint->GetY(), curPoint->GetZ(), curPoint->GetTime());
     prePointPos.SetXYZT(prePoint->GetX(), prePoint->GetY(), prePoint->GetZ(), prePoint->GetTime());
     if ((curPointPos.T() < 0) || (prePointPos.T() < 0)) {
@@ -714,8 +765,6 @@ void MpdTpcDigitizerAZ::TpcProcessing(const TpcPoint* prePoint, const TpcPoint* 
 
     diffPointPos = curPointPos - prePointPos; //differences between two points by coordinates
     //AZ diffPointPos *= (1 / diffPointPos.Vect().Mag()); //directional cosines //TODO! Do we need this??? Look at line #297
-
-    qTotal = (UInt_t) floor(fabs(dE / fGas->W()));  
 
     //while still charge not used-up distribute charge into next cluster
 
@@ -739,6 +788,7 @@ void MpdTpcDigitizerAZ::TpcProcessing(const TpcPoint* prePoint, const TpcPoint* 
     for (UInt_t iClust = 0; iClust < clustArr.size(); ++iClust) {
       clustPos += diffPointPos;
       driftl = zCathode - fabs(clustPos.Z());
+      if (driftl <= 0) continue;
 
       for (UInt_t iEll = 0; iEll < clustArr.at(iClust); ++iEll) {
 	

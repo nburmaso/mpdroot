@@ -563,9 +563,19 @@ void MpdTpcClusterFinderAZ::FindHits()
       fSecGeo->Local2Global(clus->GetSect(), p3loc, p3glob);
 
       // Dip angle correction (for interaction point with Z = 0)
-      Double_t dip = TMath::ATan2 (p3glob[2],p3glob.Pt()) * TMath::RadToDeg();
+      Double_t dip = TMath::ATan2 (TMath::Abs(p3glob[2]),p3glob.Pt()) * TMath::RadToDeg();
       p3errCor[2] = TMath::Max (p3errCor[2], 0.116 - 0.0046 * dip + 0.00015 * dip * dip);
       p3errCor[2] = TMath::Min (p3errCor[2], 0.5);
+      // Correct Z-coordinate for rows = 0 and 27
+      if (clus->Row() == 0 || clus->Row() == 27) {
+	Double_t zcor = 0;
+	if (clus->Row() == 0) zcor = -0.011 + 0.002 * dip;
+	else zcor = -0.029 + 0.005 * dip + 3.886e-5 * dip * dip;
+	zcor = TMath::Max (zcor, 0.);
+	zcor = TMath::Min (zcor, 0.6);
+	p3loc[2] -= TMath::Sign (zcor, p3loc[2]);
+	p3glob[2] -= TMath::Sign (zcor, p3glob[2]);
+      }
 
       MpdTpcHit* hit = new ((*fHitArray)[ihit++]) MpdTpcHit(padID, p3glob, p3errCor, iclus); 
       hit->SetLayer(clus->Row());

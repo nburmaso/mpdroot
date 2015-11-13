@@ -29,6 +29,7 @@ class MpdTpcSectorGeo : public TObject
   Int_t PadRow(Int_t padID) { return (padID >> kPadrowS) & kPadrowM; } ///< pad rows from padID
   Int_t Sector(Int_t padID) { return (padID >> kSectorS) & kSectorM; } ///< sector No. from padID
   Int_t PadID(Int_t sec, Int_t row) { return sec |= (row << kPadrowS); } ///< padID from sector and padrow numbers
+  void PadID(Float_t xloc, Float_t yloc, UInt_t &row, UInt_t &pad, Float_t &yNext); ///< get row, pad and distance to nearest row
   TVector2 LocalPadPosition(Int_t padID); ///< get local pad position for padID 
   Int_t NofSectors() { return fgkNsect; } ///< get number of TPC r/out sectors 
   //Int_t NofRows() { return fgkNrows; } ///< get number of pad rows
