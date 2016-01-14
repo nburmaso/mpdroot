@@ -28,21 +28,21 @@ MpdTofHitProducer::MpdTofHitProducer(const char *name, Int_t verbose, Bool_t tes
   : MpdTofHitProducerIdeal(name, verbose, test, true), fTimeSigma(0.100), fErrZ(1./sqrt(12.)), fErrX(0.5),  pRandom(new TRandom2), h2TestStrips(nullptr) , h1TestDistance(nullptr), h2TestNeighborPair(nullptr)
 {
         if(fDoTest)
-    	{
+    	{	
+    		fTestFlnm = "test.MpdTofHitProducer.root";
     	    	effTestEfficiencySingleHit = new TEfficiency("effSingleHit", "Efficiency single hit;R, cm;Side", 1000, -0.1, 1.); 						fList.Add(effTestEfficiencySingleHit);
 		effTestEfficiencyDoubleHit = new TEfficiency("effDoubleHit", "Efficiency double hit;R, cm;Side", 1000, -0.1, 1.); 						fList.Add(effTestEfficiencyDoubleHit);
 		
     		h1TestDistance = new TH1D("TestDistance", "Distance between strips;M, cm;Side", 1000, 0., 100.); 								fList.Add(h1TestDistance); 
      		h2TestStrips = new TH2D("TestStrips", ";Z, cm;#phi, rads", 2000, -300., 300., 500, -3.5, 3.5);									fList.Add(h2TestStrips);    		
-    		h2TestMergedTimes = new TH2D("TestMergedTimes", "Merged hits on strip times test;faster hit time, ns;slower hit time, ns", 1000, 5., 105., 1000, 5., 105.);	fList.Add(h2TestMergedTimes);
-		h2TestChainPID = new TH2D("TestChainPID", "Merged hits on strip pids test;pid;pid", 2000, -2250.5, 2250.5, 2000, -2250.5, 2250.5);				fList.Add(h2TestChainPID);
+
 		h2TestNeighborPair = new TH2D("TestNeighborPair", "Neighbor strip pairs test;stripID1;stripID2", 30, -0.5, 29.5, 30, -0.5, 29.5);				fList.Add(h2TestNeighborPair);    
 		h2TestXYSmeared = new TH2D("TestXYSmeared", "Smeared XY (single hit) test;#Delta, cm;#DeltaZ, cm", 1000, 0., 5., 1000, -1., 1.);				fList.Add(h2TestXYSmeared);
-		h2TestXYSmeared2 = new TH2D("TestXYSmeared2", "Smeared XY (single hit) test;X, cm;Y, cm", 1000, -150., 150., 1000, -150., 150.);				fList.Add(h2TestXYSmeared2);		
+		h2TestXYSmeared2 = new TH2D("TestXYSmeared2", "Smeared XY (single hit) test;X, cm;Y, cm", 1000, -180., 180., 1000, -180., 180.);				fList.Add(h2TestXYSmeared2);		
 		h2TestXYSmearedDouble = new TH2D("TestXYSmearedDouble", "Smeared XY (double hit) test;#Delta, cm;#DeltaZ, cm", 1000, 0., 5., 1000, -3., 3.);			fList.Add(h2TestXYSmearedDouble);
-		h2TestXYSmearedDouble2 = new TH2D("TestXYSmearedDouble2", "Smeared XY (double hit) test;X, cm;Y, cm", 1000, -150., 150., 1000, -150., 150.);			fList.Add(h2TestXYSmearedDouble2);		
+		h2TestXYSmearedDouble2 = new TH2D("TestXYSmearedDouble2", "Smeared XY (double hit) test;X, cm;Y, cm", 1000, -180., 180., 1000, -180., 180.);			fList.Add(h2TestXYSmearedDouble2);		
 		h2TestEtaPhi = new TH2D("TestEtaPhi", ";#eta;#phi, degree", 1000, -1.6, 1.6, 1000, -181., 181.);								fList.Add(h2TestEtaPhi);
-		h2TestRZ = new TH2D("TestRZ", ";Z, cm;R, cm", 1000, -300., 300., 1000, 100., 200.);										fList.Add(h2TestRZ);				
+		h2TestRZ = new TH2D("TestRZ", ";Z, cm;R, cm", 1000, -300., 300., 1000, 146., 158.);										fList.Add(h2TestRZ);				
     	}
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -54,7 +54,8 @@ MpdTofHitProducer::~MpdTofHitProducer()
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus MpdTofHitProducer::Init()
 {
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducer::Init] Begin initialization.");
+	TString buf = "[MpdTofHitProducer::Init] Begin initialization."; buf += GetParameters();
+	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, buf.Data());
 
 	FairRootManager *ioman = FairRootManager::Instance(); assert(ioman);
   	aTofPoints  = (TClonesArray *) ioman->GetObject("TOFPoint");

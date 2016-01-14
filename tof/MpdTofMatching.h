@@ -100,8 +100,8 @@ class MpdTofMatching : public FairTask
         
 	// QA test histos	
         TList			fList;	
-        TH2D           		*htCandNmb,*htTrackPerEvent, *htKfMcCyl, *htKFTrack, *htKFTrackCand, *htKFTrackTrueCand, *htTMatch, *htMisMatch;
-        TH2D           		*htTrueDelta, *htMisDelta, *htMcEst_DeltaP, *htMcEst_dZP, *htMcEst_dPhiP, *htMcEst_dPhidZ;
+        TH2D           		*htCandNmb,*htTrackPerEvent, *htKfMcCyl, *htKFTrack, *htKFTrackCand, *htKFTrackTrueCand, *htTrueMatch, *htMisMatch; 
+        TH2D           		*hDeltaTrueHit, *hDeltaMisHit, *hDeltaPoint, *hDeltaPoint_Dev, *hDeltaPoint_dR, *hDeltaPoint_dZ, *hDeltaPoint_dPhi;
 	TEfficiency		*pEfficiencyP, *pEfficiencyEta, *pEfficiencyEtaP;		// Efficiency = N true matchings / N tpc kf tracks having TOF hit;
 	TEfficiency		*pContaminationP, *pContaminationEta, *pContaminationEtaP; 	// Contamination = N wrong matchings / ( N true matchings + n wrong matchings)
 	        		

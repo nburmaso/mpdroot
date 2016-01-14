@@ -25,6 +25,7 @@ protected:
 	// QA test histos
         TList				fList;
 	TH1D   				*h1TestOccup;
+	TH2D 				*h2TestMergedTimes;
   
   	void 				AddHit(Int_t detUID, const TVector3& posHit, const TVector3& posHitErr, Int_t pointIndex, Int_t trackIndex, Double_t time, Int_t flag);	
  	Int_t 				CompressHits();

@@ -84,7 +84,7 @@ ClassImp(MpdTofMatching)
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatching::MpdTofMatching(const char *name, Int_t verbose, Bool_t test)
   : FairTask(name, verbose),  aTofPoints(nullptr), aTofHits(nullptr), aMCTracks(nullptr), aKFTracks(nullptr), aKFectTracks(nullptr), aTofMatching(nullptr),
-  fDoTest(test), fIsMCrun(false), fTestFlnm("test.MpdTofMatching.root"),  htCandNmb(NULL), pKF(nullptr), fTofBarrelRadius(146.2)// [cm]
+  fDoTest(test), fIsMCrun(false), fTestFlnm("test.MpdTofMatching.root"),  htCandNmb(NULL), pKF(nullptr), fTofBarrelRadius(152.)// [cm]
 {
 	pMF = new LMatchingFilter<MpdTofHit, MpdTofMatchingData>(fVerbose);
 	  
@@ -100,24 +100,25 @@ MpdTofMatching::MpdTofMatching(const char *name, Int_t verbose, Bool_t test)
     	    	pContaminationEta = new TEfficiency("ContaminationEta", ";#eta;Contamination", 100, -EtaMax, EtaMax);					fList.Add(pContaminationEta);   	    	
       	    	pContaminationEtaP = new TEfficiency("ContaminationEtaP", ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax); 			fList.Add(pContaminationEtaP);   	    	
     	
-		htMcEst_DeltaP = new TH2D("McEst_DeltaMom", "est. point <-> Mc point;#Delta, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax); 		fList.Add(htMcEst_DeltaP);
-		htMcEst_dZP = new TH2D("McEst_dZMom", "est. point <-> Mc point;#Delta_{Z}, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax);		fList.Add(htMcEst_dZP);		
-		htMcEst_dPhiP = new TH2D("McEst_dPhiMom", "est. point <-> Mc point;#Delta_{#phi}, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax);		fList.Add(htMcEst_dPhiP);
-		htMcEst_dPhidZ = new TH2D("McEst_dPhidZ", "est. point <-> Mc point;#Delta_{#phi}, cm;#Delta_{Z}, cm", 1000, 0., 50., 1000, 0., 50.);	fList.Add(htMcEst_dPhidZ);		
+		hDeltaPoint_Dev = new TH2D("DeltaPoint_dR", "est. point <-> Mc point;#Delta, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax); 		fList.Add(hDeltaPoint_Dev);
+		hDeltaPoint_dR = new TH2D("DeltaPoint_dR", "est. point <-> Mc point;#Delta_{R}, cm;P, GeV/c", 1000, -10., 10., 1000, 0., Pmax);		fList.Add(hDeltaPoint_dR);		
+		hDeltaPoint_dZ = new TH2D("DeltaPoint_dZ", "est. point <-> Mc point;#Delta_{Z}, cm;P, GeV/c", 1000, -10., 10., 1000, 0., Pmax);		fList.Add(hDeltaPoint_dZ);		
+		hDeltaPoint_dPhi = new TH2D("DeltaPoint_dPhi", "est. point <-> Mc point;#Delta_{#phi}, cm;P, GeV/c", 1000, -10., 10., 1000, 0., Pmax);	fList.Add(hDeltaPoint_dPhi);	
 				
-		htKfMcCyl = new TH2D("htKfMcCyl", "est KF point on cylinder <-> TofPoint;#Delta, cm;P, GeV/c", 1000, 0.,10., 1000, 0., Pmax); 		fList.Add(htKfMcCyl);
+		htKfMcCyl = new TH2D("KfMcCyl", "est KF point on cylinder <-> TofPoint(only one point);#Delta, cm;P, GeV/c", 1000, 0.,10., 1000, 0., Pmax); fList.Add(htKfMcCyl);		
 		
-		htTMatch = new TH2D("TestTMatch", ";P, GeV/c;#eta", 1000, 0., Pmax, 1000, -EtaMax, EtaMax);						fList.Add(htTMatch);
-		htMisMatch = (TH2D*) htTMatch->Clone("TestMisMatch"); 											fList.Add(htMisMatch);
-		htKFTrack = (TH2D*) htTMatch->Clone("TestKFTrack"); 											fList.Add(htKFTrack);
-		htKFTrackCand = (TH2D*) htTMatch->Clone("TestKFTrackCand");										fList.Add(htKFTrackCand);
-		htKFTrackTrueCand = (TH2D*) htTMatch->Clone("TestKFTrackTrueCand");									fList.Add(htKFTrackTrueCand);			
+		htKFTrack = new TH2D("TestKFTrack", ";#eta;P, GeV/c", 1000, -EtaMax, EtaMax, 1000, 0., Pmax);						fList.Add(htKFTrack);		
+		htMisMatch = (TH2D*) htKFTrack->Clone("TestMisMatch"); 											fList.Add(htMisMatch);
+		htTrueMatch = (TH2D*) htKFTrack->Clone("TestTrueMatch"); 										fList.Add(htTrueMatch);
+		htKFTrackCand = (TH2D*) htKFTrack->Clone("TestKFTrackCand");										fList.Add(htKFTrackCand);
+		htKFTrackTrueCand = (TH2D*) htKFTrack->Clone("TestKFTrackTrueCand");									fList.Add(htKFTrackTrueCand);			
 
-		htTrackPerEvent = new TH2D("htTrackPerEvent", "KF tracks vs KF tracks&point;N_{tracks};N_{tracks&point} ", 1000, -0.5, 2999.5, 1000, -0.5,2999.5); fList.Add(htTrackPerEvent);		
-		htCandNmb = new TH2D("htCandNmb",  "Number of candidate hits;N candidates;iteration", 1000, -0.5, 1999.5, 1000, -0.5, 999.5);		fList.Add(htCandNmb);		
+		htTrackPerEvent = new TH2D("TrackPerEvent", "KF tracks vs KF tracks&point;N_{tracks};N_{tracks&point} ", 1000, -0.5, 2999.5, 1000, -0.5,2999.5); fList.Add(htTrackPerEvent);		
+		htCandNmb = new TH2D("CandNmb",  "Number of candidate hits;N candidates;iteration", 1000, -0.5, 1999.5, 1000, -0.5, 999.5);		fList.Add(htCandNmb);		
 		
-		htTrueDelta = new TH2D("htTrueDelta",  ";#Delta_{Z}, cm;#Delta_{#phi}, cm", 1000, 0., 100., 1000, 0., 100.);				fList.Add(htTrueDelta);
-		htMisDelta = (TH2D*) htTrueDelta->Clone("htMisDelta"); 											fList.Add(htMisDelta);			
+		hDeltaTrueHit = new TH2D("DeltaTrueHit",  ";#Delta_{Z}, cm;#Delta_{#phi}, cm", 1000, 0., 100., 1000, 0., 100.);				fList.Add(hDeltaTrueHit);
+		hDeltaMisHit = (TH2D*) hDeltaTrueHit->Clone("DeltaMisHit"); 										fList.Add(hDeltaMisHit);
+		hDeltaPoint = (TH2D*) hDeltaTrueHit->Clone("DeltaPoint"); 										fList.Add(hDeltaPoint);			
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -242,11 +243,11 @@ void 		MpdTofMatching::Exec(Option_t *option)
 	
 	bool		DoMCTest = fIsMCrun && fDoTest;
 	
-     	TVector3 	hitPosition, estPointR, estPointPl, Momentum;	
+     	TVector3 	hitPosition, estPointOnCyl, estPointOnPlate, Momentum;	
 	
 	vector<MpdTof::intervalType> 	segmentZ, segmentPhi, intersect;
 	
-	// The MC run variables (prefix mc). It's valid values only if fIsMCrun = true	
+	// The MC run variables. It's valid values only if fIsMCrun = true	
         Int_t		mcTrackIndex = -1,  mcPID = -1;        
         TVector3 	mcPosition;			 
         Int_t		mcNpoints = -1; 			
@@ -271,7 +272,7 @@ void 		MpdTofMatching::Exec(Option_t *option)
 		
 ///cout<<"\n ------------>> KF track  KfIndex="<<KfIndex<<" mcTrackIndex="<<KfTrack->GetTrackID()<<"   P="<<KfTrack->Momentum();	
 
-                estPointR = EstTrackOnR(pKfTrack); 		// Estimate point on cylinder
+                estPointOnCyl = EstTrackOnR(pKfTrack); 		// Estimate point on cylinder
 
 		if(fIsMCrun)
 		{
@@ -310,19 +311,19 @@ void 		MpdTofMatching::Exec(Option_t *option)
 		if(DoMCTest)
 		{
 			if(mcNpoints == 1) // only one tof point per MCtrack
-				htKfMcCyl->Fill((mcPosition - estPointR).Mag(), pKfTrack->Momentum()); // mcTofPoint <-> est. KFtrack point	
+				htKfMcCyl->Fill((mcPosition - estPointOnCyl).Mag(), pKfTrack->Momentum()); // mcTofPoint <-> est. KFtrack point	
 				
 		 	if(mcTofTouch) // KF track have TOFpoint 
 			{
 				selectedTracks++; 	
-				htKFTrack->Fill(pKfTrack->Momentum(), pKfTrack->Momentum3().Eta());
+				htKFTrack->Fill(pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
 			}
 		}
 
 		MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));
 		
 		// ---------------------------------------------------------------------------------------->>> Looking for overlaping of estPointR & detectors
-		double estZ = estPointR.Z(), estPhi = estPointR.Phi();	
+		double estZ = estPointOnCyl.Z(), estPhi = estPointOnCyl.Phi();	
 
 		double Zerror = 10.; // [cm] // FIXME:  should be dependent on the parameters of the KFtrack
 		double PhiError = 0.1; // [rads] // FIXME:  should be dependent on the parameters of the KFtrack
@@ -418,21 +419,24 @@ cout<<"\n bruteforce point delta="<<it->first<<" UID="<<UIDforce<<", sector= "<<
 				Int_t charge;
 				Double_t trackLength;
 				
-				if(EstTrackOnPlane(ReFittedTrack, (*cit).value->center, (*cit).value->perp, estPointPl, trackLength, Momentum, charge)) // Estimate point on detector plane; true, if point exist
+				if(EstTrackOnPlane(ReFittedTrack, (*cit).value->center, (*cit).value->perp, estPointOnPlate, trackLength, Momentum, charge)) // Estimate point on detector plane; true, if point exist
 				{		
 					if(DoMCTest)
 					{
 						if(mcNpoints == 1) // only one tof point per MCtrack
 						{
-							double Mom = pKfTrack->Momentum();
-							double dZ = abs(mcPosition.Z() - estPointPl.Z());
-							double delta = (mcPosition - estPointPl).Mag();
-							double dPhi = sqrt(delta*delta - dZ*dZ);
+							double Mom = pKfTrack->Momentum();	
+							double devPoint = (mcPosition - estPointOnPlate).Mag();
+							double devPointZ = mcPosition.Z() - estPointOnPlate.Z();
+							double devPointR = mcPosition.Perp() - estPointOnPlate.Perp();					
+							double devPointPhi = sqrt(devPoint*devPoint - devPointZ*devPointZ - devPointR*devPointR);
+							devPointPhi = (mcPosition.Phi() > estPointOnPlate.Phi()) ? devPointPhi : -1.* devPointPhi;
 						
-							htMcEst_DeltaP->Fill(delta, Mom); // mcTofPoint <-> est. KFtrack point	
-							htMcEst_dZP->Fill(dZ, Mom); 
-							htMcEst_dPhiP->Fill(dPhi, Mom); 
-							htMcEst_dPhidZ->Fill(dPhi, dZ); 							
+							hDeltaPoint_Dev->Fill(devPoint, Mom); 
+							hDeltaPoint_dR->Fill(devPointR, Mom); 
+							hDeltaPoint_dZ->Fill(devPointZ, Mom); 
+							hDeltaPoint_dPhi->Fill(devPointPhi, Mom);				
+							hDeltaPoint->Fill(abs(devPointZ), abs(devPointPhi));						
 						}			
 					}
 				
@@ -446,9 +450,10 @@ cout<<"\n bruteforce point delta="<<it->first<<" UID="<<UIDforce<<", sector= "<<
 	 						Int_t hitIndex = mmHitCiter->second.second;
 							TofHit->Position(hitPosition);
 							 
-							double delta = (hitPosition - estPointPl).Mag();						
-							double deltaZ = abs(hitPosition.Z() - estPointPl.Z());
-							double deltaPhi = sqrt(delta*delta - deltaZ*deltaZ);
+							double devHit = (hitPosition - estPointOnPlate).Mag();	
+							double devHitR = hitPosition.Perp() - estPointOnPlate.Perp();						
+							double devHitZ = abs(hitPosition.Z() - estPointOnPlate.Z());
+							double devHitPhi = sqrt(devHit*devHit - devHitZ*devHitZ - devHitR*devHitR);
 							
 //cout<<"\n tTOFWWWhit delta="<<delta<<" point delta="<<(mcPosition - estPointPl).Mag();
 
@@ -463,11 +468,11 @@ cout<<"\n bruteforce point delta="<<it->first<<" UID="<<UIDforce<<", sector= "<<
 								mcIsSameIDs = (mcSector == sector && mcBox == box && mcDetector == detector && mcStrip == strip) ? true : false;
 //cout<<"\n MC tofHIT sector= "<<sector<<" box="<<box<<" detector="<<detector<<" strip="<<strip<<"  delta="<<delta<<" mcIsSameIDs="<<mcIsSameIDs;
 	
-								if(mcIsSameIDs)	htTrueDelta->Fill(deltaZ, deltaPhi); 
-								else		htMisDelta->Fill(deltaZ, deltaPhi); 
+								if(mcIsSameIDs)	hDeltaTrueHit->Fill(devHitZ, devHitPhi); 
+								else		hDeltaMisHit->Fill(devHitZ, devHitPhi); 
 							}
 							
-							if(deltaZ < threshZ && deltaPhi < threshPhi)	
+							if(devHitZ < threshZ && devHitPhi < threshPhi)	
 							{	
 								if(DoMCTest)
 								{
@@ -475,7 +480,7 @@ cout<<"\n bruteforce point delta="<<it->first<<" UID="<<UIDforce<<", sector= "<<
 									mcHasCand = true;
 								}
 								
-								pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), TofHit, mcPID, TofHit->GetFlag(), trackLength, estPointR, estPointPl, (*cit).value->center, Momentum, charge, delta));
+								pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), TofHit, mcPID, TofHit->GetFlag(), trackLength, estPointOnCyl, estPointOnPlate, (*cit).value->center, Momentum, charge, devHit));
 //cout<<"\n AddCandidate	KfIndex="<<KfIndex<<" hitIndex="<<hitIndex<<" delta="<<delta<<" NmbTrHits="<<NmbTrHits<<"  hasTrueCand="<<hasTrueCand;
 							}
 							
@@ -490,8 +495,8 @@ cout<<"\n bruteforce point delta="<<it->first<<" UID="<<UIDforce<<", sector= "<<
 
 		if(DoMCTest && mcTofTouch)
 		{ 	
-			if(mcHasCand)		htKFTrackCand->Fill(pKfTrack->Momentum(), pKfTrack->Momentum3().Eta());
-			if(mcHasTrueCand) 	htKFTrackTrueCand->Fill(pKfTrack->Momentum(), pKfTrack->Momentum3().Eta());
+			if(mcHasCand)		htKFTrackCand->Fill(pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
+			if(mcHasTrueCand) 	htKFTrackTrueCand->Fill(pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
 		}
 		
 	} // cycle by KF tracks
@@ -531,8 +536,8 @@ assert(nEntries	== MatchingOK);
                                      
                   	bool mcTofTouch = pMCtrack->GetNPoints(kTOF);
 	
-//			momentum = pKfTrack->Momentum3(); 	// momentum from KF track	
-			pMCtrack->GetMomentum(momentum); 	// momentum from MC track
+			if(fIsMCrun)	pMCtrack->GetMomentum(momentum);
+			else		momentum = pKfTrack->Momentum3();
 
 			double Eta = momentum.Eta(), P = momentum.Mag();
 			
@@ -542,7 +547,13 @@ assert(nEntries	== MatchingOK);
 			
 			if(mcTofTouch)
 			{	
-				if(IsMatchingExist)	IsTrueMatching = Iter->second->CheckTrackID(mcTrackIndex);							
+				if(IsMatchingExist)
+				{
+					IsTrueMatching = Iter->second->CheckTrackID(mcTrackIndex);							
+								
+					if(IsTrueMatching) 	htTrueMatch->Fill(Eta, P);	
+					else			htMisMatch->Fill(Eta, P);				
+				}
 				
 				pEfficiencyP->Fill(IsTrueMatching, P);		
 				pEfficiencyEta->Fill(IsTrueMatching, Eta);	
