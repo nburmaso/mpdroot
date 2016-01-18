@@ -1,6 +1,6 @@
 enable_language (C CXX Fortran)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") #Used for initializer lists at TShieldGeometry
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(INCLUDE_DIRECTORIES ${ROOT_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/inc ${TSHIELD_ROOT_PATH}/shield/inc ${TSHIELD_ROOT_PATH}/hadgen/inc ${TSHIELD_ROOT_PATH}/THadgen/inc)
 include_directories(${INCLUDE_DIRECTORIES})
 link_directories(${ROOT_LIBRARY_DIR})

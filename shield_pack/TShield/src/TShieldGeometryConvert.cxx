@@ -67,7 +67,9 @@ std::pair<zoneList, zoneList> getZoneFromShape(TGeoShape *shape, TGeoHMatrix cur
 SGeoBody createCone(TGeoTranslation startPoint, TGeoTranslation vectorToEnd, double rStart, double rEnd) {
     SGeoBody outBody;
     if (doubleEQ(rStart, rEnd)) {
-        outBody = {5, {0, 0, 0, 0, 0, 0, rStart}};
+        outBody.type = 5;
+        outBody.parameters[0] = 0; outBody.parameters[1] = 0; outBody.parameters[2] = 0; outBody.parameters[3] = 0;
+        outBody.parameters[4] = 0; outBody.parameters[5] = 0; outBody.parameters[6] = rStart;
         addVectorToElement(outBody, 0, startPoint);
         addVectorToElement(outBody, 3, vectorToEnd);
     } else {
@@ -75,7 +77,9 @@ SGeoBody createCone(TGeoTranslation startPoint, TGeoTranslation vectorToEnd, dou
         vectorToEnd = (rStart > rEnd) ? vectorToEnd : vectorToEnd.Inverse(); //WARNING
         double rMax = (rStart > rEnd) ? rStart : rEnd;
         double rMin = (rStart > rEnd) ? rEnd : rStart;
-        outBody = {7, {0, 0, 0, 0, 0, 0, rMax, rMin}};
+        outBody.type = 7;
+        outBody.parameters[0] = 0; outBody.parameters[1] = 0; outBody.parameters[2] = 0; outBody.parameters[3] = 0;
+        outBody.parameters[4] = 0; outBody.parameters[5] = 0; outBody.parameters[6] = rMax; outBody.parameters[7] = rMin;
         addVectorToElement(outBody, 0, startPoint);
         addVectorToElement(outBody, 3, vectorToEnd);
     }
@@ -83,11 +87,10 @@ SGeoBody createCone(TGeoTranslation startPoint, TGeoTranslation vectorToEnd, dou
 }
 zoneList cutByPhi(TGeoHMatrix currTransformation,
                   double sPhi, double dPhi, double halfX, double halfY, double halfZ) {
-    zoneList outList;
     TGeoHMatrix currRotation = TGeoHMatrix(currTransformation); currRotation.SetTranslation(kNullVector);
     TGeoTranslation currTranslation = TGeoTranslation(currTransformation);
     double ePhi = sPhi + dPhi;
-    if (doubleGE(dPhi, 360)) return {{}};
+    if (doubleGE(dPhi, 360)) return zoneList();
     TGeoHMatrix tmp = TGeoHMatrix(); tmp.RotateZ(sPhi);
     TGeoHMatrix innerRot = currRotation * tmp;
     TGeoTranslation startFirstBox = currTranslation + TGeoTranslation(innerRot * TGeoTranslation(-halfX, 0, -halfZ));
@@ -110,10 +113,14 @@ zoneList cutByPhi(TGeoHMatrix currTransformation,
     addVectorToElement(box2, 3, vec21);
     addVectorToElement(box2, 6, vec22);
     addVectorToElement(box2, 9, vec23);
+    zoneList outList;
     if (doubleLE(dPhi, 180)) {
-        outList = {{std::make_pair(-1, box1), std::make_pair(-1, box2)}};
+        std::vector<zoneElement> vec_el;
+        vec_el.push_back(std::make_pair(-1, box1)); vec_el.push_back(std::make_pair(-1, box2));
+        outList.push_back(vec_el);
     } else {
-        outList = {{std::make_pair(-1, box1)}, {std::make_pair(-1, box2)}};
+        outList.push_back(std::vector<zoneElement>(1, std::make_pair(-1, box1)));
+        outList.push_back(std::vector<zoneElement>(1, std::make_pair(-1, box2)));
     }
     return outList;
 }
@@ -132,7 +139,7 @@ inline std::pair<zoneList, zoneList> boxToZones(TGeoBBox *box, TGeoHMatrix currT
     addVectorToElement(tmp, 3, vec1);
     addVectorToElement(tmp, 6, vec2);
     addVectorToElement(tmp, 9, vec3);
-    out = {{std::make_pair(1, tmp)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, tmp)));
     outerShell = out;
     return std::make_pair(out, outerShell);
 }
@@ -164,10 +171,10 @@ inline std::pair<zoneList, zoneList> tubeToZones(TGeoTube *tube, TGeoHMatrix cur
     addVectorToElement(outerTube, 0, startTube);
     addVectorToElement(outerTube, 3, endTubeVec);
     outerTube.parameters[6] = rOut;
-    out = {{std::make_pair(1, outerTube)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, outerTube)));
     outerShell = out;
     if (doubleNE(rIn, 0)) {
-        out = andZone(out, {{std::make_pair(-1, innerTube)}});
+        out = andZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(-1, innerTube))));
     }
     return std::make_pair(out, outerShell);
 }
@@ -201,10 +208,10 @@ inline std::pair<zoneList, zoneList> coneToZones(TGeoCone *cone, TGeoHMatrix cur
     SGeoBody outerCone = createCone(startTubeVector, endTubeVec, rMax1, rMax2);
     SGeoBody innerCone = createCone(startTubeVector, endTubeVec, rMin1, rMin2);
 
-    out = {{std::make_pair(1, outerCone)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, outerCone)));
     outerShell = out;
     if (doubleNE(rMin1, 0) || doubleNE(rMin2, 0)) {
-        out = andZone(out, {{std::make_pair(-1, innerCone)}});
+        out = andZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(-1, innerCone))));
     }
 
     return std::make_pair(out, outerShell);
@@ -233,7 +240,7 @@ inline std::pair<zoneList, zoneList> trd1ToZones(TGeoTrd1 *trd, TGeoHMatrix curr
     addVectorToElement(tmp, 15, v6);
     addVectorToElement(tmp, 18, v7);
     addVectorToElement(tmp, 21, v8);
-    out = {{std::make_pair(1, tmp)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, tmp)));
     outerShell = out;
     return std::make_pair(out, outerShell);
 }
@@ -261,7 +268,7 @@ inline std::pair<zoneList, zoneList> trd2ToZones(TGeoTrd2 *trd, TGeoHMatrix curr
     addVectorToElement(tmp, 15, v6);
     addVectorToElement(tmp, 18, v7);
     addVectorToElement(tmp, 21, v8);
-    out = {{std::make_pair(1, tmp)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, tmp)));
     outerShell = out;
     return std::make_pair(out, outerShell);
 }
@@ -302,7 +309,7 @@ inline std::pair<zoneList, zoneList> trapToZones(TGeoTrap *trap, TGeoHMatrix cur
     addVectorToElement(tmp, 15, v6);
     addVectorToElement(tmp, 18, v7);
     addVectorToElement(tmp, 21, v8);
-    out = {{std::make_pair(1, tmp)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, tmp)));
     outerShell = out;
     return std::make_pair(out, outerShell);
 }
@@ -326,10 +333,10 @@ inline std::pair<zoneList, zoneList> sphereToZones(TGeoSphere *sphere, TGeoHMatr
         addVectorToElement(innerSphere, 0, currTranslation);
         addVectorToElement(outerSphere, 0, currTranslation);
     }
-    out = {{std::make_pair(1, outerSphere)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, outerSphere)));
     outerShell = out;
     if (doubleNE(rIn, 0)) {
-        out = andZone(out, {{std::make_pair(-1, innerSphere)}});
+        out = andZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(-1, innerSphere))));
     }
     zoneList phiZone = cutByPhi(currTransformation, sPhi, dPhi, rOut, rOut, rOut);
     out = andZone(out, phiZone);
@@ -344,8 +351,8 @@ inline std::pair<zoneList, zoneList> sphereToZones(TGeoSphere *sphere, TGeoHMatr
         trc1.parameters[6] = (double)(rOut * tan(sTheta));
         trc1.parameters[7] = (double)(rIn * sin(sTheta));
         int mul = (sTheta < (M_PI / 2.0)) ? -1 : 1;
-        out = andZone(out, {{std::make_pair(mul, trc1)}});
-        outerShell = andZone(outerShell, {{std::make_pair(mul, trc1)}});
+        out = andZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(mul, trc1))));
+        outerShell = andZone(outerShell, zoneList(1, std::vector<zoneElement>(1, std::make_pair(mul, trc1))));
     } else if (sTheta == (M_PI / 2.0)) {
         TGeoTranslation db1s = TGeoTranslation(currTransformation * TGeoTranslation(-rOut, -rOut, 0));
         TGeoTranslation db1v1 = TGeoTranslation(currRotation * TGeoTranslation(2 * rOut, 0, 0));
@@ -356,8 +363,8 @@ inline std::pair<zoneList, zoneList> sphereToZones(TGeoSphere *sphere, TGeoHMatr
         addVectorToElement(db1, 3, db1v1);
         addVectorToElement(db1, 6, db1v2);
         addVectorToElement(db1, 9, db1v3);
-        out = andZone(out, {{std::make_pair(-1, db1)}});
-        outerShell = andZone(outerShell, {{std::make_pair(-1, db1)}});
+        out = andZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(-1, db1))));
+        outerShell = andZone(outerShell, zoneList(1, std::vector<zoneElement>(1, std::make_pair(-1, db1))));
     }
 
     if (doubleNE(eTheta, 0) && doubleNE(eTheta, M_PI) && doubleNE(eTheta, M_PI / 2.0)) {
@@ -369,8 +376,8 @@ inline std::pair<zoneList, zoneList> sphereToZones(TGeoSphere *sphere, TGeoHMatr
         trc2.parameters[6] = (double)(rOut * tan(eTheta));
         trc2.parameters[7] = (double)(rIn * sin(eTheta));
         int mul = (eTheta > (M_PI / 2.0)) ? -1 : 1;
-        out = andZone(out, {{std::make_pair(mul, trc2)}});
-        outerShell = andZone(outerShell, {{std::make_pair(mul, trc2)}});
+        out = andZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(mul, trc2))));
+        outerShell = andZone(outerShell, zoneList(1, std::vector<zoneElement>(1, std::make_pair(mul, trc2))));
     } else if (eTheta == (M_PI / 2.0)) {
         TGeoTranslation db2s = TGeoTranslation(currTransformation * TGeoTranslation(-rOut, -rOut, 0));
         TGeoTranslation db2v1 = TGeoTranslation(currRotation * TGeoTranslation(2 * rOut, 0, 0));
@@ -381,8 +388,8 @@ inline std::pair<zoneList, zoneList> sphereToZones(TGeoSphere *sphere, TGeoHMatr
         addVectorToElement(db2, 3, db2v1);
         addVectorToElement(db2, 6, db2v2);
         addVectorToElement(db2, 9, db2v3);
-        out = andZone(out, {{std::make_pair(-1, db2)}});
-        outerShell = andZone(outerShell, {{std::make_pair(-1, db2)}});
+        out = andZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(-1, db2))));
+        outerShell = andZone(outerShell, zoneList(1, std::vector<zoneElement>(1, std::make_pair(-1, db2))));
     }
     return std::make_pair(out, outerShell);
 }
@@ -413,11 +420,11 @@ inline std::pair<zoneList, zoneList> polyconeToZones(TGeoPcon *polycone, TGeoHMa
         rMaxMax = (rMaxCurrent > rMaxMax) ? rMaxCurrent : rMaxMax;
         if (doubleNE(rMaxPrev, 0) || doubleNE(rMaxCurrent, 0)) {
             currentOuterCone = std::make_pair(1, createCone(startPoint, endVec, rMaxPrev, rMaxCurrent));
-            outerShell = orZone(outerShell, {{currentOuterCone}});
+            outerShell = orZone(outerShell, zoneList(1, std::vector<zoneElement>(1, currentOuterCone)));
         }
         if (doubleNE(rMinPrev, 0) || doubleNE(rMinCurrent, 0)) {
             currentInnerCone = std::make_pair(1, createCone(startPoint, endVec, rMinPrev, rMinCurrent));
-            out = orZone(out, {{currentInnerCone}});
+            out = orZone(out, zoneList(1, std::vector<zoneElement>(1, currentInnerCone)));
         }
     }
     out = andZone(outerShell, notZone(out));
@@ -466,7 +473,7 @@ inline std::pair<zoneList, zoneList> polyhedraToZones(TGeoPgon *polyhedra, TGeoH
                 vert1 = startZPoint + vecL * rMaxPrev; // Left bottom vertex
                 vert2 = endZPoint + vecL * rMaxCurrent; // Left upper vertex
                 vert3 = endZPoint + vecR * rMaxCurrent; // Right upper vertex
-                arb = {2, {}}; // arb is ARB
+                arb.type = 2; // arb is ARB
                 addVectorToElement(arb, 0, vert0);
                 addVectorToElement(arb, 3, vert1);
                 addVectorToElement(arb, 6, vert2);
@@ -475,14 +482,14 @@ inline std::pair<zoneList, zoneList> polyhedraToZones(TGeoPgon *polyhedra, TGeoH
                 addVectorToElement(arb, 15, startZPoint);
                 addVectorToElement(arb, 18, endZPoint);
                 addVectorToElement(arb, 21, endZPoint);
-                outerShell = orZone(outerShell, {{std::make_pair(1, arb)}});
+                outerShell = orZone(outerShell, zoneList(1, std::vector<zoneElement>(1, std::make_pair(1, arb))));
             }
             if (doubleNE(rMinPrev, 0) || doubleNE(rMinCurrent, 0)) { //Work with internal polyhedra
                 vert0 = startZPoint + vecR * rMinPrev; // Right bottom vertex
                 vert1 = startZPoint + vecL * rMinPrev; // Left bottom vertex
                 vert2 = endZPoint + vecL * rMinCurrent; // Left upper vertex
                 vert3 = endZPoint + vecR * rMinCurrent; // Right upper vertex
-                arb = {2, {}}; // wed is ARB
+                arb.type = 2; // wed is ARB
                 addVectorToElement(arb, 0, vert0);
                 addVectorToElement(arb, 3, vert1);
                 addVectorToElement(arb, 6, vert2);
@@ -491,7 +498,7 @@ inline std::pair<zoneList, zoneList> polyhedraToZones(TGeoPgon *polyhedra, TGeoH
                 addVectorToElement(arb, 15, startZPoint);
                 addVectorToElement(arb, 18, endZPoint);
                 addVectorToElement(arb, 21, endZPoint);
-                out = orZone(out, {{std::make_pair(1, arb)}});
+                out = orZone(out, zoneList(1, std::vector<zoneElement>(1, std::make_pair(1, arb))));
             }
         }
     }
@@ -513,7 +520,7 @@ inline std::pair<zoneList, zoneList> ellipticalTubeToZones(TGeoEltu *tube, TGeoH
     addVectorToElement(rec, 3, endVec);
     addVectorToElement(rec, 6, xAxis);
     addVectorToElement(rec, 9, yAxis);
-    out = {{std::make_pair(1, rec)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, rec)));
     outerShell = out;
     return std::make_pair(out, outerShell);
 }
@@ -534,10 +541,11 @@ inline std::pair<zoneList, zoneList> arb8ToZones(TGeoArb8 *gtrap, TGeoHMatrix cu
         tmp = TGeoTranslation(currTransformation * TGeoTranslation(cx, cy, cz));
         addVectorToElement(trap, i * 3, tmp);
     }
-    out = {{std::make_pair(1, trap)}};
+    out.push_back(std::vector<zoneElement>(1, std::make_pair(1, trap)));
     outerShell = out;
     return std::make_pair(out, outerShell);
 }
+
 std::pair<zoneList, zoneList> compositeShapeToZones(TGeoCompositeShape *shape, TGeoHMatrix currTransformation, double scale) {
     zoneList out, outerShell; //outer shell for conjunction at generating mother volume
     TGeoBoolNode *boolNode = shape->GetBoolNode();

@@ -48,15 +48,15 @@ protected:
         ~TShieldClean();
     };
     friend class TShieldClean;
-    TGeoManager *fGeometry = NULL;
+    TGeoManager *fGeometry;
 
-    TClonesArray *fParticlesFlyOut = NULL, *fParticlesAbsorbed = NULL;
+    TClonesArray *fParticlesFlyOut, *fParticlesAbsorbed;
     Int_t ParticlesNumFlyOut, ParticlesNumAbsorbed;
     int ParticlesNumFlyOutMax, ParticlesNumAbsorbedMax;
     bool clearAtStart;
     bool autoseed;
-    TTree *fTree = NULL;
-    TParticle* fCurrentParticle = NULL;
+    TTree *fTree;
+    TParticle* fCurrentParticle;
 public:
     const TClonesArray *GetFlyOutArray() { return fParticlesFlyOut; }
     const TClonesArray *GetAbsorbedArray() { return fParticlesAbsorbed; }
