@@ -19,8 +19,9 @@ MpdTofHitProducerIdeal::MpdTofHitProducerIdeal(const char *name, Int_t verbose, 
 { 
         if(fDoTest)
     	{
-    		h1TestOccup = new TH1D("TestOccup", "occupancy per strips;occupancy;Events", 100, -0.5, 99.5); 							fList.Add(h1TestOccup); 
-    		
+    		h1TestOccup = new TH1D("TestOccup", "occupancy per strips;occupancy;Events", 100, -0.5, 99.5); 									fList.Add(h1TestOccup); 
+       		h2TestMergedTimes = new TH2D("TestMergedTimes", "Merged hits on strip times test;faster hit time, ns;slower hit time, ns", 1000, 5., 105., 1000, 5., 105.);	fList.Add(h2TestMergedTimes); 	
+	
     	}
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -99,13 +100,14 @@ void 			MpdTofHitProducerIdeal::Finish()
 Int_t 			MpdTofHitProducerIdeal::MergeHitsOnStrip(void)
 {
 typedef map<Int_t, MpdTofHit*> hitsMapType;
-	hitsMapType 		fastestHits; // pair<detectorUID, MpdTofHit*>
+	hitsMapType 		fHits; // pair<detectorUID, MpdTofHit*> fastest hits map
 	hitsMapType::iterator 	it;	
 	Int_t mergedNmb = 0;   
 
 typedef multiset<Int_t> msUIDsType; // detectorUID for Hits
 	msUIDsType	UIDs;
 	
+	MpdTofHit *fastHit, *slowHit;
 	for(Int_t hitIndex = 0, nHits = aTofHits->GetEntriesFast(); hitIndex < nHits; hitIndex++ ) // cycle by hits
 	{	
 		MpdTofHit *pHit = (MpdTofHit*) aTofHits->UncheckedAt(hitIndex); 		
@@ -115,22 +117,30 @@ assert(nullptr != pHit);
 		
 		if(fDoTest) UIDs.insert(UID);
 		
-		it = fastestHits.find(UID);
-		if(it != fastestHits.end()) // hit for this detectorUID already exist
+		it = fHits.find(UID);
+		if(it != fHits.end()) // hit for this detectorUID already exist
 		{
 			mergedNmb++; 
-			MpdTofHit *pOldHit = it->second;
 			
-			if(pHit->GetTime() < pOldHit->GetTime()) //  hit faster found
-			{	
-				pHit->AddLinks(pOldHit->GetLinks());			// copy links
-				aTofHits->Remove(pOldHit); 				// remove old hit   --> make blank slote !!
-				pHit->SetFlag(pHit->GetFlag() | MpdTofUtils::HaveTail);	// Set "HaveTail" flag					
-				it->second = pHit;					// change pair value to current UID
+			if(pHit->GetTime() < it->second->GetTime()) //  faster hit  found
+			{
+				fastHit = pHit;
+				slowHit = it->second;
 			}
-			else  	aTofHits->Remove(pHit);					// remove current hit --> make blank slote !!
+			else
+			{
+				fastHit = it->second;
+				slowHit = pHit;			
+			}
+					
+			fastHit->AddLinks(slowHit->GetLinks());		// copy links
+			aTofHits->Remove(slowHit); 			// remove old hit   --> make blank slote !!
+			fastHit->AddFlag(MpdTofUtils::HaveTail);					
+			it->second = fastHit;				// change pair value to current UID
+				
+			if(fDoTest) h2TestMergedTimes->Fill(fastHit->GetTime(), slowHit->GetTime());						 
 		}
-		else fastestHits.insert(make_pair(UID, pHit)); 				// insert new detectorUID pair
+		else fHits.insert(make_pair(UID, pHit)); 				// insert new detectorUID pair
 		
 	} // cycle by hits
 

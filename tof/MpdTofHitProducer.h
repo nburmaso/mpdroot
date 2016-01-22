@@ -32,7 +32,7 @@ class MpdTofHitProducer : public MpdTofHitProducerIdeal
 	// QA test histos
 	TEfficiency			*effTestEfficiencySingleHit, *effTestEfficiencyDoubleHit; //!		
         TH1D                		*htR, *h1TestDistance;
-        TH2D   				*h2TestNeighborPair, *h2TestXYSmeared, *h2TestXYSmeared2,*h2TestXYSmearedDouble, *h2TestXYSmearedDouble2, *h2TestEtaPhi, *h2TestChainPID, *h2TestMergedTimes, *h2TestStrips, *h2TestRZ;
+        TH2D   				*h2TestNeighborPair, *h2TestXYSmeared, *h2TestXYSmeared2,*h2TestXYSmearedDouble, *h2TestXYSmearedDouble2, *h2TestEtaPhi, *h2TestStrips, *h2TestRZ;
 						
 	Bool_t 				HitExist(Double_t val); 
 	Bool_t 				DoubleHitExist(Double_t val);
@@ -48,6 +48,16 @@ public:
 	void			SetTimeResolution(Double_t sigma){ fTimeSigma = sigma; };
 	void			SetAlongStripzResolution(Double_t Xerr){ fErrX = Xerr;};	
 	void 			SetSeed(UInt_t seed = 0);	
+	
+	TString			GetParameters()
+	{ 
+		char s[32];
+		TString buf = "\n Run parameters: fTimeSigma="; sprintf(s, "%.5g", fTimeSigma); buf+=(s);  
+		buf+=" ns, fErrX="; sprintf(s, "%.4g", fErrX); buf+=(s); 
+		buf+=" cm, fErrZ="; sprintf(s, "%.4g", fErrZ); buf+=(s); 
+		buf+=" cm, fDoTest="; buf+=fDoTest; buf+=", fDoMergeHits="; buf+=fDoMergeHits;
+		return buf;
+	}
 
 ClassDef(MpdTofHitProducer,3) 
 };

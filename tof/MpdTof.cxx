@@ -75,9 +75,9 @@ Bool_t  MpdTof::ProcessHits(FairVolume* vol)
 	{	
 		fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
 		
-		gMC->CurrentVolOffID(1, strip);
-		gMC->CurrentVolOffID(2, detector);
-		gMC->CurrentVolOffID(3, box);
+		gMC->CurrentVolOffID(0, strip);
+		gMC->CurrentVolOffID(1, detector);
+		box = 1;//gMC->CurrentVolOffID(3, box);
 		gMC->CurrentVolOffID(4, sector);		
 					
 		fVolumeID = MpdTofPoint::GetVolumeUID(sector, box, detector, strip);
@@ -244,13 +244,13 @@ assert(gGeoManager);
 	 		TString PATH2 = PATH1 + "/" + boxName; boxID = boxNode->GetNumber(); nBoxs++;
 	  		///cout<<"\n\t BOX: "<<boxName.Data()<<", copy# "<<boxID<<" path= "<<PATH2.Data();
 	  		
-	  		TIterator *it3 = boxNode->GetNodes()->MakeIterator();
+	  		TIterator *it3 = boxNode->GetDaughter(0)->GetNodes()->MakeIterator();
 	  		while( (detectorNode = (TGeoNode*) it3->Next()) )	// DETECTORS
 	    		{
 	    			TString detName = detectorNode->GetName();
 	    			if(!detName.Contains("Detector")) continue;
 	    			
-	    			TString PATH3 = PATH2  + "/" + detName; detectorID = detectorNode->GetNumber(); nDetectors++;
+	    			TString PATH3 = PATH2  + "/vSectorAir_1/" + detName; detectorID = detectorNode->GetNumber(); nDetectors++;
 				///cout<<"\n\t\t DETECTOR: "<<detName.Data()<<", copy# "<<detectorID<<" path= "<<PATH3.Data();   
 				
 				gGeoManager->cd(PATH3);	
@@ -314,12 +314,12 @@ assert(gGeoManager);
 	  			while( (stripBoxNode = (TGeoNode*) it4->Next()) )	// STRIPS
 	    			{
 	    				TString stripBoxName = stripBoxNode->GetName();
+	    				if(!stripBoxName.Contains("Strip")) continue;
 	    				
 	    				TString PATH4 = PATH3  + "/" + stripBoxName; stripID = stripBoxNode->GetNumber(); nStrips++;
 					///cout<<"\n\t\t\t STRIP: "<<stripBoxName.Data()<<", copy# "<<stripID<<" path= "<<PATH4.Data();   
 					
-					TString PATHtoStrip = PATH4  + stripName;
-					gGeoManager->cd(PATHtoStrip);				// cd to strip sensitive gas node
+					gGeoManager->cd(PATH4);				// cd to strip sensitive gas node
 					
 		    			TGeoMatrix *matrix = gGeoManager->GetCurrentMatrix();	// calculate global TGeoHMatrix for current node
 					matrix->LocalToMaster(X0Y0Z0, master);			// 0.0.0. --> MRS			

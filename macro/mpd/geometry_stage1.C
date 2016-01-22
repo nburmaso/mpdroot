@@ -36,7 +36,7 @@ geometry_stage1(FairRunSim *fRun, Bool_t build)
     fRun->AddModule(Tpc);
   
     FairDetector *Tof= new MpdTof("TOF", kTRUE );
-    Tof->SetGeometryFileName("tof_v4.root");
+    Tof->SetGeometryFileName("tof_v7.root");
     fRun->AddModule(Tof);
 
     FairDetector *Emc= new MpdEmc("ECAL", kTRUE);
