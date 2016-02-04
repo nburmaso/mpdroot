@@ -1,6 +1,5 @@
 #!/bin/bash
 #$ -j y
-#$ -N mpd-task
 #$ -cwd
 
 # request Bourne again shell as shell for job
