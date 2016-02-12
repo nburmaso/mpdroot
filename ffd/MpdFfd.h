@@ -36,6 +36,8 @@ public:
         MpdFfd();
         virtual ~MpdFfd();
 
+	virtual void Initialize();
+
 	// Defines the action to be taken when a step is inside the
         // active volume. Creates MpdFfdPoints and adds them to the collection.
 	// @param vol  Pointer to the active volume
@@ -54,6 +56,7 @@ public:
    	// Screen output of hit collection.
 	virtual void Print() const;
 
+    /**      has to be called after each event to reset the containers      */
    	// Clears the hit collection
 	virtual void Reset();
 
@@ -64,6 +67,7 @@ public:
 
         // Constructs the FFD geometry
  	virtual void ConstructGeometry();
+        virtual void   SetSpecialPhysicsCuts() {;}
   
 private:
 

@@ -19,12 +19,12 @@ MpdFfdGeo::MpdFfdGeo() {
 
 const char* MpdFfdGeo::getModuleName(Int_t m) {
   // Returns the module name of FFD number m
-  sprintf(modName,"FFD0%i",m+1);
+  sprintf(modName,"ffd0%i",m+1);
   return modName;
 }
 
 const char* MpdFfdGeo::getEleName(Int_t m) {
   // Returns the element name of FFD number m
-  sprintf(eleName,"FFD0%i",m+1);
+  sprintf(eleName,"ffd0%i",m+1);
   return eleName;
 }
