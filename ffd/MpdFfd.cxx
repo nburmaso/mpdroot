@@ -57,12 +57,13 @@ Bool_t  MpdFfd::ProcessHits(FairVolume* vol)
 	TString Volname;
 	TLorentzVector tPos1, tMom1;
 
-#define EDEBUG
+	//#define EDEBUG
 #ifdef EDEBUG
   static Int_t lEDEBUGcounter=0;
-  if (lEDEBUGcounter<100)
+  if (lEDEBUGcounter<100) {
     std::cout << "EDEBUG-- MpdFfd::ProcessHits: entered" << gMC->CurrentVolPath() << "  ::: " ; // << endl;
   std::cout << gMC->IsTrackEntering() << " " << gMC->IsTrackExiting() << " " << gMC->IsTrackStop() << " " << gMC->IsTrackDisappeared()<< endl;
+  }
   lEDEBUGcounter++;
 #endif
 
@@ -99,8 +100,10 @@ Bool_t  MpdFfd::ProcessHits(FairVolume* vol)
 		gMC->CurrentVolOffID(1, module);
 		gMC->CurrentVolOffID(2, region);
 #ifdef EDEBUG
+  if (lEDEBUGcounter<100) {
 		std::cout << Volname << " " << region << " " << module << " " << 
 		  cell << " " << fTrackID << " " << fPos.Z() << endl;
+  }
 #endif
     
 		//		fVolumeID = ((region-1)<<24);////////////// + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
