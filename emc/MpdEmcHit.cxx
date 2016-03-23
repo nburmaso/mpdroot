@@ -31,6 +31,14 @@ MpdEmcHit::MpdEmcHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index)
 {
 }
 
+
+MpdEmcHit::MpdEmcHit(UInt_t sec, UInt_t row, UInt_t mod, UInt_t E) {
+    fSecId = sec;
+    fModId = mod;
+    fRowId = row;
+    fE = E;
+}
+
 // -----   Destructor   ----------------------------------------------------
 MpdEmcHit::~MpdEmcHit() { }
 

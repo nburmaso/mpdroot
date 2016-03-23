@@ -53,7 +53,7 @@ public:
   void Clear();
   void Fill_TUBE(Double_t length_z, Double_t r_max, Double_t r_min);
   void Fill_TUBS(Double_t zmin, Double_t zmax, Double_t rmin,Double_t rmax, Double_t dr_st, Double_t dr_end);
-   void Fill_TRAP(Double_t x, Double_t X, Double_t yW, Double_t zW, Int_t ra);
+  void Fill_TRAP(Double_t x, Double_t X,Double_t x_small_f, Double_t x_large_f, Double_t yW, Double_t zW, Int_t ra);
   // void Fill_TRAP(Double_t x_small, Double_t x_large, Double_t yWidth, Double_t zWidth);
   //void Fill_RECTRAP(Double_t x_small, Double_t x_large,Double_t xx_small, Double_t xx_large,
 	//	 Double_t yWidth, Double_t zWidth);	 
@@ -254,7 +254,7 @@ void Mpdshape::Fill_PGON( Double_t zmin, Double_t zmax, Double_t rmin, Double_t 
 
 //______________________________________________________________
 //______________________________________________________________
-void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,
+void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,Double_t x_large_f, Double_t x_small_f,
 			 Double_t yWidth, Double_t zWidth,
 			 Int_t right_angled) {
   //
@@ -274,17 +274,17 @@ void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,
            //    \_____/
            //       x
 
-  o << x_small << " " << -yWidth << " " << -zWidth << endl
+  o << x_small << " " << 0. << " " << -zWidth << endl
    << x_large << " " << yWidth << " " << -zWidth << endl
    << -x_large << " " << yWidth << " " << -zWidth << endl
-   << -x_small << " " << -yWidth << " " << -zWidth << endl
+   << -x_small << " " << 0. << " " << -zWidth << endl
 
-   << x_small << " " << -yWidth << " " << zWidth << endl
+   << x_small << " " << 0. << " " << zWidth << endl
    << x_large << " " << yWidth << " " << zWidth << endl
    << -x_large << " " << yWidth << " " << zWidth << endl
-   << -x_small << " " << -yWidth << " " << zWidth;
+   << -x_small << " " << 0. << " " << zWidth;
   }
-  else {
+   if (right_angled == 1) {
 
   // right-angled trapezoid
            // _____________
@@ -294,15 +294,50 @@ void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,
            // \________/
            //       x
 
-  o << x_small << " " << -yWidth << " " << -zWidth << endl
+  o << x_small << " " << 0 << " " << -zWidth << endl
    << x_large << " " << yWidth << " " << -zWidth << endl
    << -x_small << " " << yWidth << " " << -zWidth << endl
-   << -x_small << " " << -yWidth << " " << -zWidth << endl
+   << -x_small << " " << 0 << " " << -zWidth << endl
 
-   << x_small << " " << -yWidth << " " << zWidth << endl
+   << x_small << " " << 0 << " " << zWidth << endl
    << x_large << " " << yWidth << " " << zWidth << endl
    << -x_small << " " << yWidth << " " << zWidth << endl
-   << -x_small << " " << -yWidth << " " << zWidth;
+   << -x_small << " " << 0 << " " << zWidth;
+  }
+  
+  
+  if (right_angled == 2){
+    
+  // trapezoid
+           //  _______________
+           //  \             / ^     
+           //   \           /  | y  /z   
+           //    \         /
+           //     \_______/
+           //       x    
+   
+  o << x_small << " " << 0 << " " << -zWidth << endl
+   << x_large << " " << yWidth << " " << -zWidth << endl
+   << x_large_f << " " << yWidth << " " << -zWidth << endl
+   << x_small_f << " " << 0 << " " << -zWidth << endl
+
+   << x_small << " " << 0 << " " << zWidth << endl
+   << x_large << " " << yWidth << " " << zWidth << endl
+   << x_large_f << " " << yWidth << " " << zWidth << endl
+   << x_small_f << " " << 0 << " " << zWidth;  
+  
+  
+  }
+  if (right_angled == 3){
+ o << x_small << " " << 0. << " " << -zWidth << endl
+   << x_small << " " << yWidth << " " << -zWidth << endl
+   << -x_small << " " << yWidth << " " << -zWidth << endl
+   << -x_small << " " << 0. << " " << -zWidth << endl
+
+   << x_small << " " << 0. << " " << zWidth << endl
+   << x_small << " " << yWidth << " " << zWidth << endl
+   << -x_small << " " << yWidth << " " << zWidth << endl
+   << -x_small << " " << 0. << " " << zWidth;
   }
 
    fPoints = o.str();

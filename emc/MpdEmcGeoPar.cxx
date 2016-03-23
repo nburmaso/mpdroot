@@ -1,21 +1,27 @@
 #include "MpdEmcGeoPar.h"
-
 #include "FairParamList.h"
-
 #include "TObjArray.h"
-
+#include "emc.h"
 #include <iostream>
 
 ClassImp(MpdEmcGeoPar)
 
-MpdEmcGeoPar ::MpdEmcGeoPar(const char* name,
-					    const char* title,
-					    const char* context)
+MpdEmcGeoPar ::MpdEmcGeoPar(const char* name, const char* title, const char* context)
   : FairParGenericSet(name,title,context) {
-  
+
   fGeoSensNodes = new TObjArray();
   fGeoPassNodes = new TObjArray();
 
+}
+
+MpdEmcGeoPar::MpdEmcGeoPar() {
+    //TODO!!! correct parameters;
+    length = emc1Chamber_z * 0.1; //0.1 - mm->cm
+    rMax = outr;
+    rMin = inr;
+    nSec = NSector;
+    nRows = NmodZ;
+    nMod = NmodPHY / nSec;
 }
 
 MpdEmcGeoPar::~MpdEmcGeoPar(void) {
