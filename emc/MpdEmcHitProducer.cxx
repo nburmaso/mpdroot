@@ -72,34 +72,7 @@ InitStatus MpdEmcHitProducer::Init() {
 }
 
 void MpdEmcHitProducer::Finish() {
-    //---
-
-    Int_t nSec = fGeoPar->GetNsec();
-    Int_t nMod = fGeoPar->GetNmod();
-    Int_t nRow = fGeoPar->GetNrows();
-    TH2F* h_map = new TH2F("tmp", "tmp", nRow * 2, -nRow, nRow, nSec * nMod, 0, nSec * nMod);
-    for (UInt_t iDig = 0; iDig < fDigiArray->GetEntriesFast(); ++iDig) {
-        MpdEmcHit* dig = (MpdEmcHit*) fDigiArray->At(iDig);
-        Int_t sec = dig->GetSec();
-        Int_t row = dig->GetRow();
-        Int_t mod = dig->GetMod();
-        Float_t E = dig->GetE();
-
-        Int_t globModNumber;
-        if (sec > nSec) {
-            row *= -1;
-            globModNumber = (sec - nSec) * 4 + mod;
-        } else {
-            globModNumber = sec * 4 + mod;
-        }
-        
-        h_map->Fill(row, globModNumber, E);
-    }
-
-    h_map->Write(); //Draw("colz");
-
     cout << "-I- MpdEmcHitProducer: Finish" << endl;
-
 }
 
 void MpdEmcHitProducer::Exec(Option_t* opt) {
