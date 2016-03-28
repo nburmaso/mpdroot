@@ -5,6 +5,8 @@
 
 ClassImp(EmcGeom)
 
+using namespace emc;
+
 EmcGeom::EmcGeom() {}
 
 EmcGeom::EmcGeom(ofstream* f) {

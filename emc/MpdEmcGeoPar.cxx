@@ -16,12 +16,19 @@ MpdEmcGeoPar ::MpdEmcGeoPar(const char* name, const char* title, const char* con
 
 MpdEmcGeoPar::MpdEmcGeoPar() {
     //TODO!!! correct parameters;
-    length = emc1Chamber_z * 0.1; //0.1 - mm->cm
-    rMax = outr;
-    rMin = inr;
-    nSec = NSector;
-    nRows = NmodZ;
-    nMod = NmodPHY / nSec;
+    length = emc::emc1Chamber_z * 0.1; //0.1: mm->cm
+    rMax = emc::outr;
+    rMin = emc::inr;
+    nSec = emc::NSector;
+    nRows = emc::NmodZ;
+    nSupMod = emc::nSuperModInRow;
+    nMod = emc::nModInSuperModByPhi * emc::nModInSuperModByZ;
+    lengthOfModuleByZ = emc::base * 0.1; // 0.1: mm->cm
+    lengthOfSuperModuleByZ = emc::emc1_box1_z * 0.1; // 0.1: mm->cm
+    nModInSuperModByZ = emc::nModInSuperModByZ; // 0.1: mm->cm
+    angleOfSuperModule = emc::angleSuperModule;
+    angleOfSector = emc::angleSector;
+    angleOfModule = emc::angleModule;
 }
 
 MpdEmcGeoPar::~MpdEmcGeoPar(void) {

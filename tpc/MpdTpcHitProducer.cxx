@@ -52,8 +52,8 @@ InitStatus MpdTpcHitProducer::Init()
 
   // Create and register output array
   fHitArray = new TClonesArray("MpdTpcHit");
-  //ioman->Register("TpcHit", "TPC", fHitArray, kTRUE);
-  ioman->Register("TpcHit", "TPC", fHitArray, kFALSE);
+  ioman->Register("TpcHit", "TPC", fHitArray, kTRUE);
+//  ioman->Register("TpcHit", "TPC", fHitArray, kFALSE);
 
   cout << "-I- MpdTpcHitProducer: Intialisation successfull." << endl;
   return kSUCCESS;
