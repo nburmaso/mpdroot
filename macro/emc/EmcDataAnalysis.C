@@ -37,12 +37,12 @@ void EmcDataAnalysis(Int_t opt = 1) {
     Float_t rMinEmc = fGeoPar->GetRmin() * 0.1;
     Float_t rMaxEmc = fGeoPar->GetRmax() * 0.1;
     Float_t deltaR = rMaxEmc - rMinEmc;
-    
+
     Float_t rMinTpc = 0.0;
     Float_t rMaxTpc = 140.0;
-    Float_t rMinTof = 0.0;
-    Float_t rMaxTof = 156.0;
-    
+    Float_t rMinTof = 0.0; //150.0;
+    Float_t rMaxTof = 0.0; //160.2;
+
 
     const Int_t n2Dbins = 360;
     Float_t eneArr[n2Dbins]; // array of energies in each angle bin of EMC
@@ -89,7 +89,7 @@ void EmcDataAnalysis(Int_t opt = 1) {
 
     TLine * line[n2Dbins];
     Float_t dPhi = TwoPi() / n2Dbins;
-    Int_t lineWidth = 12;
+    Int_t lineWidth = 10;
 
     const Int_t Number = 4;
     const Int_t nb = 100;
@@ -155,6 +155,11 @@ void EmcDataAnalysis(Int_t opt = 1) {
     tpcGr->GetXaxis()->SetLimits(-bound, bound);
     tpcGr->SetMaximum(bound);
     tpcGr->SetMinimum(-bound);
+    tpcGr->GetXaxis()->SetTitle("X, cm");
+    tpcGr->GetXaxis()->CenterTitle();
+    tpcGr->GetYaxis()->SetTitle("Y, cm");
+    tpcGr->GetYaxis()->CenterTitle();
+    tpcGr->SetTitle("XY projection of hits in TPC, TOF and EMC");
     tpcGr->Draw("PA");
 
     tofGr->SetMarkerStyle(20);
@@ -164,31 +169,26 @@ void EmcDataAnalysis(Int_t opt = 1) {
 
 
     for (Int_t i = 0; i < n2Dbins - 1; ++i) {
-        if ((opt == 1 || opt == 2) && eneArr[i] < 0.05 * maxE) continue;
+        if (eneArr[i] < 0.05 * maxE) continue;
         line[i]->Draw("same");
     }
-    TArc* iEmc = new TArc(0.0, 0.0, rMinEmc);
-    TArc* oEmc = new TArc(0.0, 0.0, rMaxEmc);
-    TArc* iTpc = new TArc(0.0, 0.0, rMinTpc);
-    TArc* oTpc = new TArc(0.0, 0.0, rMaxTpc);
-    TArc* iTof = new TArc(0.0, 0.0, rMinTof);
-    TArc* oTof = new TArc(0.0, 0.0, rMaxTof);
-    iEmc->SetFillStyle(0);
-    oEmc->SetFillStyle(0);
-    iTpc->SetFillStyle(0);
-    oTpc->SetFillStyle(0);
-    iTof->SetFillStyle(0);
-    oTof->SetFillStyle(0);
-    iEmc->Draw("same");
-    oEmc->Draw("same");
-    iTpc->Draw("same");
-    oTpc->Draw("same");
-    iTof->Draw("same");
-    oTof->Draw("same");
+    
+    DrawCircle(rMinEmc);
+    DrawCircle(rMaxEmc);
+    DrawCircle(rMinTpc);
+    DrawCircle(rMaxTpc);
+    DrawCircle(rMinTof);
+    DrawCircle(rMaxTof);
 
 }
 
 Int_t GetIdxByPhi(Float_t phi, Int_t N) {
     //phi in radian
     return Int_t(phi / TwoPi() * N);
+}
+
+void DrawCircle(Float_t r) {
+    TArc* circ = new TArc(0.0, 0.0, r);
+    circ->SetFillStyle(0);
+    circ->Draw("same");
 }

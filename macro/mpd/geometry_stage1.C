@@ -32,7 +32,7 @@ geometry_stage1(FairRunSim *fRun, Bool_t build)
     //fRun->AddModule(Ffd);
 
     FairDetector *Tpc = new TpcDetector("TPC", kTRUE);
-    Tpc->SetGeometryFileName("tpc_v6.geo");
+    Tpc->SetGeometryFileName("tpc_v7.root");
     fRun->AddModule(Tpc);
   
     FairDetector *Tof= new MpdTof("TOF", kTRUE );

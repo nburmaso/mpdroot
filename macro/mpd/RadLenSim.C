@@ -36,7 +36,7 @@ using namespace std;
 #endif
 
 
-void RadLenSimZR (Int_t nStartEvent = 0, Int_t nEvents = 1, TString outFile = "RadLenSimZR.root", Bool_t flag_store_FairRadLenPoint=kTRUE)
+void RadLenSim(Int_t nStartEvent = 0, Int_t nEvents = 500, TString outFile = "RadLenSim.root", Bool_t flag_store_FairRadLenPoint=kTRUE)
 {
 
   TStopwatch timer;
@@ -46,8 +46,8 @@ void RadLenSimZR (Int_t nStartEvent = 0, Int_t nEvents = 1, TString outFile = "R
   gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
   mpdloadlibs(1,1);                 // load main libraries
 
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2_option.C");
-  geometry_v2_option(0x0, kFALSE);     // load mpd detectors libraries
+  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
+  //geometry_v2_option(0x0, kFALSE);     // load mpd detectors libraries
 
   FairRunSim *fRun = new FairRunSim();
   
@@ -59,7 +59,7 @@ void RadLenSimZR (Int_t nStartEvent = 0, Int_t nEvents = 1, TString outFile = "R
   
   fRun->SetOutputFile(outFile.Data()); //output file
 
-  geometry_v2(fRun, kTRUE);    // load mpd standard geometries
+  geometry_stage1(fRun, kTRUE);    // load mpd standard geometries
 
   // Create and Set Event Generator
   //-------------------------------
@@ -71,11 +71,12 @@ void RadLenSimZR (Int_t nStartEvent = 0, Int_t nEvents = 1, TString outFile = "R
   // Box Generator
   
   FairBoxGenerator* boxGen = new  
-    FairBoxGenerator(0, 10000); // 0 = geantino - required for RadLen Simulation
+    FairBoxGenerator(0, 100); // 0 = geantino - required for RadLen Simulation
   boxGen->SetPRange(.2,.2); // GeV/c
   //Do not change for RadLen Simulation 
-  boxGen->SetPhiRange(0, 0); 
-  boxGen->SetBoxXYZ(0.,0.,120.,0.,0.);
+  boxGen->SetPhiRange(0, 360); 
+  boxGen->SetThetaRange(0, 180); 
+  boxGen->SetXYZ(0., 0., 0.);
   primGen->AddGenerator(boxGen); 
 
 
@@ -98,14 +99,4 @@ void RadLenSimZR (Int_t nStartEvent = 0, Int_t nEvents = 1, TString outFile = "R
   // -----------------
 
   fRun->Run(nEvents); 
-  
- 
-  timer.Stop();
-  Double_t rtime = timer.RealTime();
-  Double_t ctime = timer.CpuTime();
-  printf("RealTime=%f seconds, CpuTime=%f seconds\n",rtime,ctime);
-
-  cout << " Simulation passed" << endl;
-  cout << " All ok " << endl;
-  exit(0);
 }  
