@@ -14,8 +14,10 @@ using namespace TMath;
 void RadLenAna(TString infile1 = "RadLenSim.root") {
 
     TH2F *hXY = new TH2F("hXY", "Material budget in the MPD", 3000, -320., 320., 3000, -320., 320.);
-    TH2F *hZR = new TH2F("hZR", "Material budget in the MPD", 3000, -320., 320., 1500, 0., 320.);
-    TH2F *hEtaDist = new TH2F("hEtaDist", "Material budget in the MPD", 3000, 0., 5., 1500, 0., 550.);
+    TH2F *hZR = new TH2F("hZR", "Material budget in the MPD", 3000, 0., 500., 1500, 0., 350.);
+    TH2F *hZX_narrow = new TH2F("hZX_narrow", "Material budget in the MPD, |y| < 10.0 cm", 3000, -500., 500., 3000, -350., 350.);
+    TH2F *hZX = new TH2F("hZX", "Material budget in the MPD", 3000, -500., 500., 3000, -350., 350.);
+    TH2F *hEtaDist = new TH2F("hEtaDist", "Material budget in the MPD", 3000, -5.5, 5.5, 1500, 0., 600.);
 
     /* Load basic libraries */
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
@@ -56,6 +58,8 @@ void RadLenAna(TString infile1 = "RadLenSim.root") {
             Float_t Theta = PosIn.Theta();
             Float_t Eta = -Log(Tan(Theta / 2));
 
+            if(Abs(Y) < 10.0) hZX_narrow->Fill(Z, X, LenEff);
+            hZX->Fill(Z, X, LenEff);
             hXY->Fill(X, Y, LenEff);
             hZR->Fill(Z, r, LenEff);
             hEtaDist->Fill(Eta, PosIn.Mag(), LenEff);
@@ -65,33 +69,27 @@ void RadLenAna(TString infile1 = "RadLenSim.root") {
         cout << iEv + 1 << " out of " << events << " events processed" << endl;
     }
 
-        
-    hXY->GetXaxis()->SetTitle("X, cm");
-    hXY->GetXaxis()->CenterTitle();
-    hXY->GetYaxis()->SetTitle("Y, cm");
-    hXY->GetYaxis()->CenterTitle();
-    hXY->GetZaxis()->SetTitle("Radiation length, X/X0");
-//    hXY->SetMaximum(10.);
-
-    hZR->GetXaxis()->SetTitle("Z, cm");
-    hZR->GetXaxis()->CenterTitle();
-    hZR->GetYaxis()->SetTitle("R, cm");
-    hZR->GetYaxis()->CenterTitle();
-    hZR->GetZaxis()->SetTitle("Radiation length, X/X0");
-//    hZR->SetMaximum(10.);
-
-    hEtaDist->GetXaxis()->SetTitle("#eta");
-    hEtaDist->GetXaxis()->CenterTitle();
-    hEtaDist->GetYaxis()->SetTitle("Distance from IP, cm");
-    hEtaDist->GetYaxis()->CenterTitle();
-    hEtaDist->GetZaxis()->SetTitle("Radiation length, X/X0");
-//    hEtaDist->SetMaximum(10.);
-
     gStyle->SetOptStat(0);
-    TCanvas *c1 = new TCanvas("c1", "c1", 1000, 1000);
-    hXY->Draw("colz");
-    TCanvas *c2 = new TCanvas("c2", "c2", 1000, 500);
-    hZR->Draw("colz");
-    TCanvas *c3 = new TCanvas("c3", "c3", 1000, 500);
-    hEtaDist->Draw("colz");
+
+    TCanvas *c1 = new TCanvas(hXY->GetName(), hXY->GetName(), 1000, 1000);
+    DrawHisto(hXY, "X, cm", "Y, cm", c1);
+    TCanvas *c2 = new TCanvas(hZR->GetName(), hZR->GetName(), 1000, 1000);
+    DrawHisto(hZR, "Z, cm", "R, cm", c2);
+    TCanvas *c3 = new TCanvas(hEtaDist->GetName(), hEtaDist->GetName(), 1000, 500);
+    DrawHisto(hEtaDist, "#eta", "Distance from IP, cm", c3);
+    TCanvas *c4 = new TCanvas(hZX_narrow->GetName(), hZX_narrow->GetName(), 1000, 700);
+    DrawHisto(hZX_narrow, "Z, cm", "X, cm", c4);
+    TCanvas *c5 = new TCanvas(hZX->GetName(), hZX->GetName(), 1000, 700);
+    DrawHisto(hZX, "Z, cm", "X, cm", c5);
+
+}
+
+void DrawHisto(TH2F* h, TString xName, TString yName, TCanvas *c) {
+    h->GetXaxis()->SetTitle(xName);
+    h->GetXaxis()->CenterTitle();
+    h->GetYaxis()->SetTitle(yName);
+    h->GetYaxis()->CenterTitle();
+    h->GetZaxis()->SetTitle("Radiation length, X/X0");
+    h->SetMaximum(10.);
+    h->Draw("colz");
 }

@@ -1,87 +1,29 @@
-// Macro for running Fair  with Geant3  or Geant4 (M. Al-Turany , D. Bertini)
-// Modified 22/06/2005 D.Bertini
-// Modified 14/07/2012 A. Basalaev
+// Macro for running MPD simulation with GEANTINO to exclude interactions
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include "TString.h"
-#include "TStopwatch.h"
-#include "TROOT.h"
-#include "TSystem.h"
-
-#include "FairRunSim.h"
-#include "FairRuntimeDb.h"
-#include "FairParRootFileIo.h"
-#include "FairTrajFilter.h"
-#include "PndConstField.h"
-#include "FairUrqmdGenerator.h"
-#include "FairPrimaryGenerator.h"
-#include "FairCave.h"
-#include "FairPipe.h"
-#include "FairMagnet.h"
-
-#include "MpdSts.h"
-#include "TpcDetector.h"
-#include "MpdEtof.h"
-#include "MpdFsa.h"
-#include "MpdBbc.h"
-#include "MpdCpc.h"
-#include "MpdTof.h"
-#include "MpdStrawendcap.h"
-#include "MpdZdc.h"
-#include "MpdFfd.h"
-
-#include <iostream>
-#include <fstream>
-using namespace std;
-#endif
-
-
-void RadLenSim(Int_t nStartEvent = 0, Int_t nEvents = 500, TString outFile = "RadLenSim.root", Bool_t flag_store_FairRadLenPoint=kTRUE)
-{
-
-  TStopwatch timer;
-  timer.Start();
-  gDebug=0;
+void RadLenSim(Int_t nStartEvent = 0, Int_t nEvents = 500, TString outFile = "RadLenSim.root") {
 
   gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
   mpdloadlibs(1,1);                 // load main libraries
 
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
-  //geometry_v2_option(0x0, kFALSE);     // load mpd detectors libraries
-
   FairRunSim *fRun = new FairRunSim();
   
-  // set the MC version used
-  // ------------------------
-
-  //  fRun->SetName("TGeant4");
   fRun->SetName("TGeant3");
-  
   fRun->SetOutputFile(outFile.Data()); //output file
-
+  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
   geometry_stage1(fRun, kTRUE);    // load mpd standard geometries
-
-  // Create and Set Event Generator
-  //-------------------------------
 
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
   fRun->SetGenerator(primGen); 
-
   
-  // Box Generator
-  
-  FairBoxGenerator* boxGen = new  
-    FairBoxGenerator(0, 100); // 0 = geantino - required for RadLen Simulation
+  FairBoxGenerator* boxGen = new FairBoxGenerator(0, 100); // 0 = geantino - required for RadLen Simulation
   boxGen->SetPRange(.2,.2); // GeV/c
-  //Do not change for RadLen Simulation 
   boxGen->SetPhiRange(0, 360); 
   boxGen->SetThetaRange(0, 180); 
   boxGen->SetXYZ(0., 0., 0.);
   primGen->AddGenerator(boxGen); 
 
-
   fRun->SetStoreTraj(kFALSE);
-  fRun->SetRadLenRegister(flag_store_FairRadLenPoint); // radiation length manager 
+  fRun->SetRadLenRegister(kTRUE); // radiation length manager 
 
   fRun->Init(); 
 
@@ -90,13 +32,8 @@ void RadLenSim(Int_t nStartEvent = 0, Int_t nEvents = 500, TString outFile = "Ra
   //-------------------------------------------
 
   FairRuntimeDb *rtdb=fRun->GetRuntimeDb();
-  Bool_t kParameterMerged=kTRUE;
-
   rtdb->print();
 
-  
-  // Transport nEvents
-  // -----------------
 
   fRun->Run(nEvents); 
 }  
