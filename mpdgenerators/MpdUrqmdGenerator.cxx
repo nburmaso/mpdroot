@@ -155,20 +155,25 @@ Bool_t MpdUrqmdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 
     cout << "-I MpdUrqmdGenerator: Event " << evnr << ",  b = " << b
             << " fm,  multiplicity " << ntracks << ", ekin: " << ekin << endl;
-
+    
+    
+    Double_t phi = 0.;
+    // ---> Generate rotation angle
+    if (fEventPlaneSet) {
+        gRandom->SetSeed(0);
+        phi = gRandom->Uniform(fPhiMin, fPhiMax);
+    }
+    
     // Set event id and impact parameter in MCEvent if not yet done
     FairMCEventHeader* event = primGen->GetEvent();
     if (event && (!event->IsSet())) {
         event->SetEventID(evnr);
         event->SetB(b);
         event->MarkSet(kTRUE);
+        event->SetRotZ(phi);
     }
 
-    Double_t phi = 0.;
-    // ---> Generate rotation angle
-    if (fEventPlaneSet) {
-        phi = gRandom->Uniform(fPhiMin, fPhiMax);
-    }
+
 
     // ---> Loop over tracks in the current event
     for (int itrack = 0; itrack < ntracks; itrack++) {
