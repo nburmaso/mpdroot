@@ -12,7 +12,7 @@
  calculation has to be performed in the CM system of the collision; Lorentz
  transformation into the lab is performed by this class.
  Derived from FairGenerator.
-**/
+ **/
 
 
 #ifndef MPDURQMDGENERATOR_H
@@ -28,10 +28,8 @@
 class TVirtualMCStack;
 class FairPrimaryGenerator;
 
-class MpdUrqmdGenerator : public FairGenerator
-{
-
-  public:
+class MpdUrqmdGenerator : public FairGenerator {
+public:
 
     /** Default constructor without arguments should not be used. **/
     MpdUrqmdGenerator();
@@ -57,13 +55,18 @@ class MpdUrqmdGenerator : public FairGenerator
     //Skip some events in file
     Bool_t SkipEvents(Int_t count);
 
-  private:
+    void SetEventPlane(Double_t phiMin, Double_t phiMax);
 
-    gzFile fInputFile;                     //!  Input file
+private:
 
-    std::map<Int_t,Int_t> fParticleTable;      //!  Map from UrQMD PID to PDGPID
+    gzFile fInputFile; //!  Input file
 
-    const Char_t* fFileName;              //!  Input file name
+    std::map<Int_t, Int_t> fParticleTable; //!  Map from UrQMD PID to PDGPID
+
+    Double32_t fPhiMin, fPhiMax; // Limits of event plane angle
+    Bool_t fEventPlaneSet; // Flag whether event plane angle is used
+
+    const Char_t* fFileName; //!  Input file name
 
     /** Private method ReadConversionTable. Reads the conversion table
         from UrQMD particle code to PDG particle code and fills the
@@ -73,7 +76,7 @@ class MpdUrqmdGenerator : public FairGenerator
     MpdUrqmdGenerator(const MpdUrqmdGenerator&);
     MpdUrqmdGenerator& operator=(const MpdUrqmdGenerator&);
 
-    ClassDef(MpdUrqmdGenerator,1);
+    ClassDef(MpdUrqmdGenerator, 1);
 
 };
 
