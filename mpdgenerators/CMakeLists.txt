@@ -39,6 +39,7 @@ MpdUrqmdGenerator.cxx
 MpdGetNumEvents.cxx
 MpdHistoGenerator.cxx
 Mpd3fdGenerator.cxx
+MpdVHLLEGenerator.cxx
 )
 
 

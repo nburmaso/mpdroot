@@ -104,7 +104,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "$V
     // Angles are in degrees
     Float_t min = 0.0;
     Float_t max = 30.0;
-    urqmdGen->SetEventPlane(min * TMath::DegToRad(), max * TMath::DegToRad()); 
+    urqmdGen->SetEventPlane(min * TMath::DegToRad(), max * TMath::DegToRad());
     primGen->AddGenerator(urqmdGen);
     if (nStartEvent > 0) urqmdGen->SkipEvents(nStartEvent);
 
@@ -113,6 +113,13 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "$V
         nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
 
 #else
+    
+#ifdef VHLLE
+    MpdVHLLEGenerator* vhlleGen = new MpdVHLLEGenerator(inFile, kTRUE); // kTRUE corresponds to hydro + cascade, kFALSE -- hydro only                                                                                    
+    vhlleGen->SkipEvents(0);
+    primGen->AddGenerator(vhlleGen);
+#else 
+    
 #ifdef FLUID
 
     Mpd3fdGenerator* fluidGen = new Mpd3fdGenerator(inFile);
@@ -213,6 +220,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "$V
 #endif
 #endif
 #endif
+#endif 
 
     fRun->SetOutputFile(outFile.Data());
 

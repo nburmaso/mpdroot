@@ -16,5 +16,6 @@
 #pragma link C++ class Mpd3fdGenerator+;
 #pragma link C++ class MpdUrqmdGenerator+;
 #pragma link C++ class map<TString, FairIon*>;
+#pragma link C++ class MpdVHLLEGenerator+;
 #endif
 
