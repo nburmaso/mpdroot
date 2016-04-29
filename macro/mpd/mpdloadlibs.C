@@ -17,10 +17,12 @@ void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
   gSystem->Load("libMpdData");
   gSystem->Load("libMpdgenerators");
 
-  gSystem->Load("libHADGEN.so");
-  gSystem->Load("libTHadgen.so");
-  gSystem->Load("libMpdGeneralGenerator.so");
+  // gSystem->Load("libHADGEN.so");
+  // gSystem->Load("libTHadgen.so");
+  //  gSystem->Load("libMpdGeneralGenerator.so");
 
+  gSystem->Load("libMpdFemto.so");
+     
   if (reco) {
     gSystem->Load("libKalman");
     gSystem->Load("libtpc");
