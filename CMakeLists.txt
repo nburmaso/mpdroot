@@ -163,6 +163,7 @@ add_subdirectory (strawendcap)
 #add_subdirectory (dch)
 add_subdirectory (shield_pack)
 add_subdirectory (strawECT)
+add_subdirectory (physics/femto)
 
 Option(BUILD_DOXYGEN "Build Doxygen" OFF)
 if(BUILD_DOXYGEN)
