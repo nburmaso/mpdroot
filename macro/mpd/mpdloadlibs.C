@@ -1,8 +1,9 @@
-void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
+void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
 {
   // Load basic libraries
   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
   basiclibs();
+
   // Load other libraries
   gSystem->Load("libFairTools");
   gSystem->Load("libGeoBase");
@@ -17,20 +18,26 @@ void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
   gSystem->Load("libMpdData");
   gSystem->Load("libMpdgenerators");
 
-  // gSystem->Load("libHADGEN.so");
-  // gSystem->Load("libTHadgen.so");
-  //  gSystem->Load("libMpdGeneralGenerator.so");
+  // HADGEN
+  gSystem->Load("libHADGEN.so");
+  gSystem->Load("libTHadgen.so");
+  gSystem->Load("libMpdGeneralGenerator.so");
 
+  // FEMTOSCOPY
   gSystem->Load("libMpdFemto.so");
      
-  if (reco) {
+  // RECONSTRUCTION
+  if (reco)
+  {
     gSystem->Load("libKalman");
     gSystem->Load("libtpc");
     gSystem->Load("libLHETrack");
     gSystem->Load("libGeane");
   }
 
-  if (detectors) {
+  // DETECTORS
+  if (detectors)
+  {
     gSystem->Load("libtpc");
     gSystem->Load("libTof");
     //gSystem->Load("libEtof");
@@ -45,7 +52,7 @@ void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
     //gSystem->Load("libCpc");
     //gSystem->Load("libNDet");
     //gSystem->Load("libSft");
-	 gSystem->Load("libStrawECT");
+    gSystem->Load("libStrawECT");
   }
 }
 
