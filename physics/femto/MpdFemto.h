@@ -22,7 +22,8 @@ using namespace TMath;
 class MpdFemto : public TNamed {
 public:
     MpdFemto();
-    MpdFemto(const Char_t* fname);
+    MpdFemto(const Char_t*);
+    MpdFemto(const Char_t*, MpdFemtoHistos*);
     virtual ~MpdFemto();
 
     // Getters
@@ -85,7 +86,7 @@ public:
     }
     
     void MakeCFs_1D();
-
+   
 
 private:
     MpdFemtoHistos* fHisto;

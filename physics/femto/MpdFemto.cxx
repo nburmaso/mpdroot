@@ -22,7 +22,7 @@ MpdFemto::MpdFemto() {
 MpdFemto::MpdFemto(const Char_t* fname) :
 fFilename(""),
 fPartTable(NULL),
-fMassPart(NULL),       
+fMassPart(NULL),
 fDstTree(NULL),
 fMpdEvent(NULL),
 fMcTracks(NULL),
@@ -42,8 +42,8 @@ fMpdTrackMc(NULL) {
     fDstTree->Add(fFilename);
 
     Int_t events = fDstTree->GetEntries();
-    cout << "Number of events in DST file = " << events << endl;
-    cout << endl;
+    cout << "Number of events in " << fname << " is " << events << endl;
+    // cout << endl;
 
     fDstTree->SetBranchAddress("MPDEvent.", &fMpdEvent);
     fDstTree->SetBranchAddress("MCTrack", &fMcTracks);
@@ -55,12 +55,47 @@ fMpdTrackMc(NULL) {
 
 //--------------------------------------------------------------------------
 
+MpdFemto::MpdFemto(const Char_t* fname, MpdFemtoHistos* _h) :
+fFilename(""),
+fPartTable(NULL),
+fMassPart(NULL),
+fDstTree(NULL),
+fMpdEvent(NULL),
+fMcTracks(NULL),
+fRecoTracks(NULL),
+fFemtoContainerReco(NULL),
+fFemtoContainerMc(NULL),
+fMpdTrackReco(NULL),
+fMpdTrackMc(NULL) {
+    TString path = getenv("VMCWORKDIR");
+    TString path2pdg = path + "/input/pdg_table.txt";
+
+    fPartTable = new TDatabasePDG();
+    fPartTable->ReadPDGTable(path2pdg.Data());
+
+    fFilename = fname;
+    fDstTree = new TChain("cbmsim");
+    fDstTree->Add(fFilename);
+
+    Int_t events = fDstTree->GetEntries();
+    cout << "Number of events in " << fname << " is " << events << endl;
+    // cout << endl;
+
+    fDstTree->SetBranchAddress("MPDEvent.", &fMpdEvent);
+    fDstTree->SetBranchAddress("MCTrack", &fMcTracks);
+    fFemtoContainerReco = new TClonesArray("MpdFemtoContainer");
+    fFemtoContainerMc = new TClonesArray("MpdFemtoContainer");
+
+    fHisto = _h;
+}
+//--------------------------------------------------------------------------
+
 MpdFemto::~MpdFemto() {
     delete fDstTree;
     delete fFemtoContainerReco;
     delete fFemtoContainerMc;
     delete fPartTable;
-    delete fHisto;
+    // delete fHisto;
 }
 
 //--------------------------------------------------------------------------
@@ -110,7 +145,6 @@ void MpdFemto::ReadEvent(Int_t evNum) {
 
         new((*fFemtoContainerReco)[fFemtoContainerReco->GetEntriesFast()])
                 MpdFemtoContainer(evNum, MOM_RECO, COORD);
-
 
         //        fFemtoContainerReco->AddLast(new MpdFemtoContainer(evNum, MOM_RECO, COORD));
         //        fFemtoContainerMc->AddLast(new MpdFemtoContainer(evNum, MOM_MC, COORD));
@@ -178,22 +212,5 @@ void MpdFemto::MakeCFs_1D() {
                 } else
                     fHisto->GetDenominator()->Fill(Qinv);
             }
-    }
-    fHisto->GetNominator()->Sumw2();
-    // fHisto->GetNominatorBase()->Sumw2();
-    fHisto->GetDenominator()->Sumw2();
-    fHisto->GetCF()->Sumw2();
-    fHisto->GetCFBase()->Sumw2();
-
-    fHisto->GetCF()->Divide(fHisto->GetNominator(), fHisto->GetDenominator(), 1., 1.);
-    fHisto->GetCFBase()->Divide(fHisto->GetNominatorBase(), fHisto->GetDenominator(), 1., 1.);
-
-    Float_t normDenomFactor = fHisto->GetDenominator()->Integral(0.25 * fHisto->GetDenominator()->GetNbinsX(), 0.75 * fHisto->GetDenominator()->GetNbinsX());
-    Float_t normNominFactor = fHisto->GetNominator()->Integral(0.25 * fHisto->GetNominator()->GetNbinsX(), 0.75 * fHisto->GetNominator()->GetNbinsX());
-    Float_t normNominBaseFactor = fHisto->GetNominatorBase()->Integral(0.25 * fHisto->GetNominatorBase()->GetNbinsX(), 0.75 * fHisto->GetNominatorBase()->GetNbinsX());
-
-    if (normNominFactor > 0. && normNominBaseFactor > 0.) {
-        fHisto->GetCF()->Scale(normDenomFactor / normNominFactor);
-        fHisto->GetCFBase()->Scale(normDenomFactor / normNominBaseFactor);
     }
 }

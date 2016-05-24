@@ -56,6 +56,8 @@ public:
     _hCFBase = h;
     }
     
+    void MakeNorm_1D();
+    
 private:
 
     Int_t fBins;
