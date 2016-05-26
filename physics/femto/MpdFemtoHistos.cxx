@@ -1,3 +1,5 @@
+#include <TStyle.h>
+
 #include "MpdFemtoHistos.h"
 
 //--------------------------------------------------------------------------
@@ -42,4 +44,19 @@ void MpdFemtoHistos::MakeNorm_1D() {
         _hCF->Scale(normDenomFactor / normNominFactor);
         _hCFBase->Scale(normDenomFactor / normNominBaseFactor);
     }
+}
+
+//--------------------------------------------------------------------------
+
+Double_t* MpdFemtoHistos::GetFitParams1D(TH1F* h, Float_t qInv) {
+    //fit QS only: C2 = N * [1 + lambda * exp(-q^2r0^2/h/h)], h=0.1973 GeV/fm
+    TF1* fqs = new TF1("fqs", "[2] * (1 + [1] * exp(-x * x * [0] * [0] / 0.1973 / 0.1973))", 0, qInv);
+    fqs->SetParName(0, "r_{0}");
+    fqs->SetParName(1, "#lambda");
+    fqs->SetParName(2, "Norm");
+    fqs->SetParameters(10, 1, 1);
+
+    h->Fit(fqs, "SRQ", " ", 0., qInv); 
+      
+    return fqs->GetParameters();
 }

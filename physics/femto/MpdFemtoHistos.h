@@ -4,6 +4,10 @@
 #include <iostream>
 #include <TNamed.h>
 #include <TH1.h>
+#include <TF1.h>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
+#include <TVector3.h>
 
 using namespace std;
 
@@ -57,7 +61,8 @@ public:
     }
     
     void MakeNorm_1D();
-    
+    Double_t* GetFitParams1D(TH1F* h, Float_t qInv);
+       
 private:
 
     Int_t fBins;
