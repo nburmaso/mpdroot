@@ -164,6 +164,7 @@ Float_t MpdFemto::EposFemtoWeightQS(TLorentzVector a, TLorentzVector b, TLorentz
 
 void MpdFemto::MakeCFs_1D() {
 
+    cout << "1D-analysis started ... " << endl;
     cout << "Number of events to be mixed: " << fMixedEvents << endl;
 
     fMassPart = fPartTable->GetParticle(fPDG);
@@ -211,6 +212,68 @@ void MpdFemto::MakeCFs_1D() {
 
                 } else
                     fHisto->GetDenominator()->Fill(Qinv);
+            }
+    }
+}
+
+void MpdFemto::MakeCFs_3D() {
+ 
+    cout << "3D-analysis started ... " << endl;
+    cout << "Number of events to be mixed: " << fMixedEvents << endl;
+
+    fMassPart = fPartTable->GetParticle(fPDG);
+    fMass = fMassPart->Mass();
+
+    for (Int_t iEvent = 0; iEvent < fDstTree->GetEntries(); iEvent += fMixedEvents) {
+        fFemtoContainerMc->Delete();
+        fFemtoContainerReco->Delete();
+
+        for (Int_t jEvent = iEvent; jEvent < iEvent + fMixedEvents; jEvent++)
+            ReadEvent(jEvent);
+
+        cout << "Event: " << iEvent << " of " << fDstTree->GetEntries() << " mix " << fFemtoContainerReco->GetEntriesFast() << " particles" << endl;
+
+        for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++)
+            for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
+
+                TLorentzVector mom_iPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->Get4Momentum();
+                TLorentzVector mom_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Momentum();
+                TLorentzVector mom_iPart_sim = ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(iPart))->Get4Momentum();
+                TLorentzVector mom_jPart_sim = ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(jPart))->Get4Momentum();
+
+                TLorentzVector coord_iPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->Get4Coordinate();
+                TLorentzVector coord_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Coordinate();
+
+                TVector3 vlong;
+                vlong.SetXYZ(0., 0., (mom_iPart_reco.Z() + mom_jPart_reco.Z()) / (mom_iPart_reco.E() + mom_jPart_reco.E()));
+
+                mom_iPart_reco.Boost(-vlong);
+                mom_jPart_reco.Boost(-vlong);
+
+                Double_t kt = 0.5 * Hypot(mom_iPart_reco.X() + mom_jPart_reco.X(), mom_iPart_reco.Y() + mom_jPart_reco.Y());
+                if (kt < fKtCutLow || kt > fKtCutUp)
+                    continue;
+
+                Int_t iPart_evNum = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->GetEventNumber();
+                Int_t jPart_evNum = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetEventNumber();
+
+                Float_t pXsum = mom_iPart_reco.X() + mom_jPart_reco.X();
+                Float_t pYsum = mom_iPart_reco.Y() + mom_jPart_reco.Y();
+                Float_t pXdif = mom_iPart_reco.X() - mom_jPart_reco.X();
+                Float_t pYdif = mom_iPart_reco.Y() - mom_jPart_reco.Y();
+
+                Float_t qOut = 0.5 * (pXsum * pXdif + pYsum * pYdif) / kt;
+                Float_t qSide = (mom_iPart_reco.X() * mom_jPart_reco.Y() - mom_iPart_reco.Y() * mom_jPart_reco.X()) / kt;
+                Float_t qLong = mom_iPart_reco.Z() - mom_jPart_reco.Z();
+                
+                if (qOut < 0. && qOut > fQinv && qSide < 0. && qSide > fQinv && qLong < 0. && qLong > fQinv)
+                    continue;
+
+                if (iPart_evNum == jPart_evNum) {
+                    Float_t wfemto = EposFemtoWeightQS(mom_iPart_sim, mom_jPart_sim, coord_iPart_reco, coord_jPart_reco);
+                    fHisto->GetNominator3D()->Fill(qOut, qSide, qLong, wfemto);
+                } else
+                    fHisto->GetDenominator3D()->Fill(qOut, qSide, qLong);
             }
     }
 }

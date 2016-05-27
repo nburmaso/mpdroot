@@ -8,17 +8,24 @@
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TVector3.h>
+#include <TH3.h>
 
 using namespace std;
 
 class MpdFemtoHistos : public TNamed {
 public:
-    MpdFemtoHistos();
+    MpdFemtoHistos() {}
     // MpdFemtoHistos(Int_t, Float_t);
+    
+    MpdFemtoHistos(Float_t);
 
     virtual ~MpdFemtoHistos();
-
-    // Getters  
+    
+    void SetQinv(Float_t val) {
+        fQinv = val;
+    }
+    
+    // Getters and Setters for 1D-analysis
     TH1F* GetNominator() {
         return _hCFQinvNom;
     }
@@ -39,7 +46,6 @@ public:
         return _hCFBase;
     }
     
-    // Setters
     void SetNominator(TH1F* h) {
         _hCFQinvNom = h;
     }
@@ -60,19 +66,54 @@ public:
     _hCFBase = h;
     }
     
+    // Getters and Setters for 3D-analysis
+    TH3F* GetNominator3D() {
+        return _hCFNom3D;
+    }
+
+    TH3F* GetDenominator3D() {
+        return _hCFDenom3D;
+    }
+    
+    TH3F* GetCF3D() {
+        return _hCF3D;
+    }
+        
+    void SetNominator3D(TH3F* h) {
+        _hCFNom3D = h;
+    }
+
+    void SetDenominator3D(TH3F* h) {
+        _hCFDenom3D = h;
+    }
+    
+    void SetCF3D(TH3F* h) {
+    _hCF3D = h;
+    }
+     
     void MakeNorm_1D();
+    void MakeNorm_3D();
     Double_t* GetFitParams1D(TH1F* h, Float_t qInv);
+    Double_t* GetFitParams3D(TH3F* h) {
+        // TO BE REALIZED THE NEXT COMMIT!
+    }
        
 private:
 
     Int_t fBins;
     Float_t fxUp;
     
+    Int_t fQinv;
+    
     TH1F* _hCFQinvNomBase;
     TH1F* _hCFQinvNom;
     TH1F* _hCFQinvDenom;
     TH1F* _hCF;
     TH1F* _hCFBase;
+    
+    TH3F* _hCFNom3D;
+    TH3F* _hCFDenom3D;
+    TH3F* _hCF3D;
     
     ClassDef(MpdFemtoHistos, 1)
 };

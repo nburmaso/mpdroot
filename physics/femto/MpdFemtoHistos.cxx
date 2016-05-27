@@ -1,20 +1,23 @@
 #include <TStyle.h>
-
 #include "MpdFemtoHistos.h"
 
 //--------------------------------------------------------------------------
 
-MpdFemtoHistos::MpdFemtoHistos() :
+MpdFemtoHistos::MpdFemtoHistos(Float_t qInv) :
 _hCFQinvNomBase(NULL),
 _hCFQinvNom(NULL),
 _hCFQinvDenom(NULL),
 _hCF(NULL),
 _hCFBase(NULL) {
-    _hCFQinvNomBase = new TH1F("_hCFQinvNomBase", "_hCFQinvNomBase", 50, 0., 0.15);
-    _hCFQinvNom = new TH1F("_hCFQinvNom", "_hCFQinvNom", 50, 0., 0.15);
-    _hCFQinvDenom = new TH1F("_hCFQinvDenom", "_hCFQinvDenom", 50, 0., 0.15);
-    _hCF = new TH1F("_hCF", "_hCF", 50, 0., 0.15);
-    _hCFBase = new TH1F("_hCFBase", "_hCFBase", 50, 0., 0.15);
+    _hCFQinvNomBase = new TH1F("_hCFQinvNomBase", "_hCFQinvNomBase", 50, 0., qInv);
+    _hCFQinvNom = new TH1F("_hCFQinvNom", "_hCFQinvNom", 50, 0., qInv);
+    _hCFQinvDenom = new TH1F("_hCFQinvDenom", "_hCFQinvDenom", 50, 0., qInv);
+    _hCF = new TH1F("_hCF", "_hCF", 50, 0., qInv);
+    _hCFBase = new TH1F("_hCFBase", "_hCFBase", 50, 0., qInv);
+    
+    _hCFNom3D   = new TH3F("_hCFNom3D", "_hCFNom3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
+    _hCFDenom3D = new TH3F("_hCFDenom3D", "_hCFDenom3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
+    _hCF3D      = new TH3F("_hCF3D", "_hCF3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
 }
 
 //--------------------------------------------------------------------------
@@ -26,6 +29,7 @@ MpdFemtoHistos::~MpdFemtoHistos() {
 }
 
 //--------------------------------------------------------------------------
+
 void MpdFemtoHistos::MakeNorm_1D() {
     _hCFQinvNom->Sumw2();
     // fHisto->GetNominatorBase()->Sumw2();
@@ -44,6 +48,16 @@ void MpdFemtoHistos::MakeNorm_1D() {
         _hCF->Scale(normDenomFactor / normNominFactor);
         _hCFBase->Scale(normDenomFactor / normNominBaseFactor);
     }
+}
+
+//--------------------------------------------------------------------------
+
+void MpdFemtoHistos::MakeNorm_3D() {
+    _hCFNom3D->Sumw2();
+    _hCFDenom3D->Sumw2();
+    _hCF3D->Sumw2();
+
+    _hCF3D->Divide(_hCFNom3D, _hCFDenom3D, 1., 1.);
 }
 
 //--------------------------------------------------------------------------
