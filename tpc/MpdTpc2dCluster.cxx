@@ -3,6 +3,7 @@
 #include "MpdTpcSector.h"
 #include <iostream>
 #include <iomanip>
+#include <set>
 
 ClassImp(MpdTpc2dCluster);
 
@@ -90,6 +91,18 @@ Bool_t MpdTpc2dCluster::Insert(Int_t sec, Int_t row, Int_t col, Int_t bkt, Float
 
   Insert(row, col, bkt, adc);
   fSecList.push_back(sec);
+}
+
+//......................................................................
+
+Int_t MpdTpc2dCluster::NTracks() const
+{
+  // Get number of track contributors to this cluster
+
+  std::set<Int_t> ids;
+  Int_t ndig = fSecList.size();
+  for (Int_t i = 0; i < ndig; ++i) ids.insert(fSecList[i]);
+  return ids.size();
 }
 
 //......................................................................

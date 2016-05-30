@@ -36,6 +36,7 @@ class MpdTpc2dCluster : public TObject
   Int_t MaxCol    () const {return fMaxCol;}
   Int_t MinBkt    () const {return fMinBkt;}
   Int_t MaxBkt    () const {return fMaxBkt;}
+  Int_t NTracks   () const;
 //  Int_t ADCSum    () const {return fADCSum;}
 
 //  Float_t AvgCol () const {return fAvgCol;}

@@ -52,8 +52,8 @@ InitStatus MpdTpcHitProducer::Init()
 
   // Create and register output array
   fHitArray = new TClonesArray("MpdTpcHit");
-  ioman->Register("TpcHit", "TPC", fHitArray, kTRUE);
-//  ioman->Register("TpcHit", "TPC", fHitArray, kFALSE);
+  //ioman->Register("TpcHit", "TPC", fHitArray, kTRUE);
+  ioman->Register("TpcHit", "TPC", fHitArray, kFALSE);
 
   cout << "-I- MpdTpcHitProducer: Intialisation successfull." << endl;
   return kSUCCESS;
@@ -367,142 +367,136 @@ void MpdTpcHitProducer::ExecModular()
     times[i0] = point->GetTime();
     hindx[i0++] = mit->second;
 
-    if (i0 == nh) {
-      TMath::Sort (nh, times, ord, kFALSE);
-      // Take 3 consecutive (in time) points and use parabolic interpolation
-      // to put the hit on a padrow median plane
-      Int_t sec0 = -99, np = 0, ibeg = 0;
-      Double_t ypad0 = -999.0, dir = 0.0, xhit = 0.0, zhit = 0.0;
-      Bool_t ok = kTRUE;
-
-      for (Int_t i3 = 0; i3 < nh; ++i3) {
-	h = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i3]]);
-	Int_t sec = secGeo->Sector(h->GetDetectorID());
-	if (sec != sec0 || i3 > lastIndx) {
+    if (i0 != nh) continue;
+    TMath::Sort (nh, times, ord, kFALSE);
+    // Take 3 consecutive (in time) points and use parabolic interpolation
+    // to put the hit on a padrow median plane
+    Int_t sec0 = -99, np = 0, ibeg = 0;
+    Double_t ypad0 = -999.0, dir = 0.0, xhit = 0.0, zhit = 0.0;
+    Bool_t ok = kTRUE;
+    
+    for (Int_t i3 = 0; i3 < nh; ++i3) {
+      h = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i3]]);
+      Int_t sec = secGeo->Sector(h->GetDetectorID());
+      if (sec != sec0 || i3 > lastIndx) {
 	//if (sec != sec0) {
-	  // Store coordinates of all hits in this sector
-	  //cout << " ***** New sector: " << sec << endl;
-	  sec0 = sec;
-	  np = ibeg = 0;
-	  ypad0 = -999.0;
-	  for (Int_t jj = i3; jj < nh; ++jj) {
-	    MpdTpcHit *h1 = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[jj]]);
-	    sec = secGeo->Sector(h1->GetDetectorID());
-	    if (sec != sec0) break; // different sector
-	    yy[np] = h1->GetLocalY();
-	    xx[np] = h1->GetLocalX();
-	    if (np > 0 && TMath::Abs(xx[np]-xx[np-1]) > 5.0) break; // broken track 
-	    zz[np++] = h1->GetLocalZ();
-	    lastIndx = jj;
-	  }
-	  /*for (Int_t jj = 0; jj < 6; ++jj) cout << xx[jj] << " " << yy[jj] << " " << zz[jj] << " ";
+	// Store coordinates of all hits in this sector
+	//cout << " ***** New sector: " << sec << endl;
+	sec0 = sec;
+	np = ibeg = 0;
+	ypad0 = -999.0;
+	for (Int_t jj = i3; jj < nh; ++jj) {
+	  MpdTpcHit *h1 = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[jj]]);
+	  sec = secGeo->Sector(h1->GetDetectorID());
+	  if (sec != sec0) break; // different sector
+	  yy[np] = h1->GetLocalY();
+	  xx[np] = h1->GetLocalX();
+	  if (np > 0 && TMath::Abs(xx[np]-xx[np-1]) > 5.0) break; // broken track 
+	  zz[np++] = h1->GetLocalZ();
+	  lastIndx = jj;
+	}
+	/*for (Int_t jj = 0; jj < 6; ++jj) cout << xx[jj] << " " << yy[jj] << " " << zz[jj] << " ";
 	  cout << endl;*/
-	}
-	Double_t ypad = secGeo->LocalPadPosition(h->GetDetectorID()).Y(); // padrow position
-	if (TMath::Abs(ypad-ypad0) < 0.1) {
-	  // The same padrow
-	  if (!ok) { fHitArray->RemoveAt(hindx[ord[i3]]); continue; }
-	  times[i3] = times[i3-1];
-	  ys[i3] = ys[i3-1];
-	  zs[i3] = zs[i3-1];
-	} else {
-	  ypad0 = ypad;
-	  //cout << "---------------------------\n";
-	  ok = Interpolate(np, ibeg, yy, xx, zz, ypad0, dir, xhit, zhit);
-	  if (!ok) { fHitArray->RemoveAt(hindx[ord[i3]]); continue; }
-	  times[i3] = xhit; // reuse array times
-	  ys[i3] = ypad0;
-	  zs[i3] = zhit;
-	}
-
-	/*cout << " np, ibeg, y, x, z: " << np << " " << ibeg << " " << yy[ibeg] << " " << xx[ibeg] << " " << zz[ibeg] << endl;
-	cout << ys[i3] << " " << times[i3] << " " << zs[i3] << endl;*/
-
-	if (ibeg < np - 2) ++ibeg;
-	Double_t dy = ypad0 - h->GetLocalY();
-	//h->SetLocalY(ypad0);
-	Double_t dx = times[i3] - h->GetLocalX();
-	Double_t dz = zs[i3] - h->GetLocalZ();
-	Double_t dl = dx * dx + dy * dy + dz * dz;
-	dl = TMath::Sign (TMath::Sqrt(dl), dy);
-	if (dir > 0) h->SetLength(h->GetLength()+dl); // going outward
-	else h->SetLength(h->GetLength()-dl); // inward
-      } // for (Int_t i3 = 0; i3 < nh;
-      // Change hit coordinates
-      for (Int_t i3 = 0; i3 < nh; ++i3) {
-	h = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i3]]);
-	if (h == NULL) continue;
-	Int_t padID = h->GetDetectorID();
-	h->SetLocalX(times[i3]);
-	h->SetLocalY(ys[i3]);
-	h->SetLocalZ(zs[i3]);
-	h->LocalPosition(p30);
-	secGeo->Local2Global(secGeo->Sector(padID), p30, p3);
-	h->SetPosition(p3);
       }
-      delete [] times;
-      delete [] ys;
-      delete [] zs;
-      delete [] xx;
-      delete [] yy;
-      delete [] zz;
-      //delete [] hindx;
-      //delete [] ord;
-
-      // Merge hits
-      for (Int_t i3 = 0; i3 < nh; ++i3) {
-	// Loop over first hits
-	MpdTpcHit *hit0 = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i3]]);
-	if (hit0 == 0x0) continue;
-	Int_t padID0 = hit0->GetDetectorID();
-	Int_t nMerge = 1;
-	//TpcPoint* point0 = (TpcPoint*) fPointArray->UncheckedAt(hit0->GetRefIndex());
-	hit0->LocalPosition(p3local0);
-	hit0->LocalPosition(p3extr);
-	hit0->Position(p30);
-	Double_t leng = hit0->GetLength();
-	Double_t edep = hit0->GetEnergyLoss();
-	Double_t step = hit0->GetStep();
-
-	for (Int_t i31 = i3 + 1; i31 < nh; ++i31) {
-	  //continue; ///
-	  // Second hit
-	  MpdTpcHit *hit = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i31]]);
-	  if (hit == 0x0) continue;
-	  Int_t padID = hit->GetDetectorID();
-	  //TpcPoint* point = (TpcPoint*) fPointArray->UncheckedAt(hit->GetRefIndex());
-	  //if (point->GetTrackID() != point0->GetTrackID()) break;
-	  //if (hit->GetTrackID() != hit0->GetTrackID()) break;
-	  if (secGeo->PadRow(padID) != secGeo->PadRow(padID0)) continue; // in different padrows 
-	  if (secGeo->Sector(padID) != secGeo->Sector(padID0)) continue; // in different sectors 
-	  hit->LocalPosition(p3local);
-	  hit->Position(p3);
-	  if (TMath::Abs(p3extr.Z()-p3local.Z()) > 2.5) continue;
-	  if (TMath::Abs(p3extr.X()-p3local.X()) > 2.5) continue;
-	  // Merge hits
-	  //cout << " Merge: " << p3extr.X() << " " << p3extr.Y() << " " << p3extr.Z() << " " << p3local.X() << " " << p3local.Y() << " " << p3local.Z() << endl;
-	  p3local0 += p3local;
-	  p30 += p3;
-	  leng += hit->GetLength();	
-	  edep += hit->GetEnergyLoss();
-	  step += hit->GetStep();
-	  //hit0->AddLinks(hit->GetLinks()); // copy links
-	  fHitArray->RemoveAt(hindx[ord[i31]]); 
-	  ++nMerge;
-	}
-	if (nMerge == 1) continue;
-	p3local0.SetMag(p3local0.Mag()/nMerge);
-	hit0->SetLocalPosition(p3local0);
-	p30.SetMag(p30.Mag()/nMerge);
-	hit0->SetPosition(p30);
-	hit0->SetLength(leng/nMerge);
-	hit0->SetEnergyLoss(edep);
-	hit0->SetStep(step);
-      } // for (Int_t i3 = 0; i3 < nh;
-      delete [] hindx;
-      delete [] ord;
+      Double_t ypad = secGeo->LocalPadPosition(h->GetDetectorID()).Y(); // padrow position
+      if (TMath::Abs(ypad-ypad0) < 0.1) {
+	// The same padrow
+	if (!ok) { fHitArray->RemoveAt(hindx[ord[i3]]); continue; }
+	times[i3] = times[i3-1];
+	ys[i3] = ys[i3-1];
+	zs[i3] = zs[i3-1];
+      } else {
+	ypad0 = ypad;
+	//cout << "---------------------------\n";
+	ok = Interpolate(np, ibeg, yy, xx, zz, ypad0, dir, xhit, zhit);
+	if (!ok) { fHitArray->RemoveAt(hindx[ord[i3]]); continue; }
+	times[i3] = xhit; // reuse array times
+	ys[i3] = ypad0;
+	zs[i3] = zhit;
+      }
       
-    } // if (i0 == nh) 
+      /*cout << " np, ibeg, y, x, z: " << np << " " << ibeg << " " << yy[ibeg] << " " << xx[ibeg] << " " << zz[ibeg] << endl;
+	cout << ys[i3] << " " << times[i3] << " " << zs[i3] << endl;*/
+      
+      if (ibeg < np - 2) ++ibeg;
+      Double_t dy = ypad0 - h->GetLocalY();
+      //h->SetLocalY(ypad0);
+      Double_t dx = times[i3] - h->GetLocalX();
+      Double_t dz = zs[i3] - h->GetLocalZ();
+      Double_t dl = dx * dx + dy * dy + dz * dz;
+      dl = TMath::Sign (TMath::Sqrt(dl), dy);
+      if (dir > 0) h->SetLength(h->GetLength()+dl); // going outward
+      else h->SetLength(h->GetLength()-dl); // inward
+    } // for (Int_t i3 = 0; i3 < nh;
+    // Change hit coordinates
+    for (Int_t i3 = 0; i3 < nh; ++i3) {
+      h = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i3]]);
+      if (h == NULL) continue;
+      Int_t padID = h->GetDetectorID();
+      h->SetLocalX(times[i3]);
+      h->SetLocalY(ys[i3]);
+      h->SetLocalZ(zs[i3]);
+      h->LocalPosition(p30);
+      secGeo->Local2Global(secGeo->Sector(padID), p30, p3);
+      h->SetPosition(p3);
+    }
+    delete [] times;
+    delete [] ys;
+    delete [] zs;
+    delete [] xx;
+    delete [] yy;
+    delete [] zz;
+    
+    // Merge hits
+    for (Int_t i3 = 0; i3 < nh; ++i3) {
+      // Loop over first hits
+      MpdTpcHit *hit0 = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i3]]);
+      if (hit0 == 0x0) continue;
+      Int_t padID0 = hit0->GetDetectorID();
+      Int_t nMerge = 1;
+      hit0->LocalPosition(p3local0);
+      hit0->LocalPosition(p3extr);
+      hit0->Position(p30);
+      Double_t leng = hit0->GetLength();
+      Double_t edep = hit0->GetEnergyLoss();
+      Double_t step = hit0->GetStep();
+      
+      for (Int_t i31 = i3 + 1; i31 < nh; ++i31) {
+	//continue; ///
+	// Second hit
+	MpdTpcHit *hit = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i31]]);
+	if (hit == 0x0) continue;
+	Int_t padID = hit->GetDetectorID();
+	if (secGeo->PadRow(padID) != secGeo->PadRow(padID0)) break; // in different padrows 
+	if (secGeo->Sector(padID) != secGeo->Sector(padID0)) break; // in different sectors 
+	hit->LocalPosition(p3local);
+	hit->Position(p3);
+	if (TMath::Abs(p3extr.Z()-p3local.Z()) > 2.5) break;
+	if (TMath::Abs(p3extr.X()-p3local.X()) > 2.5) break;
+	// Merge hits
+	//cout << " Merge: " << p3extr.X() << " " << p3extr.Y() << " " << p3extr.Z() << " " << p3local.X() << " " << p3local.Y() << " " << p3local.Z() << endl;
+	p3local0 += p3local;
+	p30 += p3;
+	leng += hit->GetLength();	
+	edep += hit->GetEnergyLoss();
+	step += hit->GetStep();
+	//hit0->AddLinks(hit->GetLinks()); // copy links
+	fHitArray->RemoveAt(hindx[ord[i31]]); 
+	++nMerge;
+      }
+      
+      if (nMerge == 1) continue;
+      p3local0.SetMag(p3local0.Mag()/nMerge);
+      hit0->SetLocalPosition(p3local0);
+      p30.SetMag(p30.Mag()/nMerge);
+      hit0->SetPosition(p30);
+      hit0->SetLength(leng/nMerge);
+      hit0->SetEnergyLoss(edep);
+      hit0->SetStep(step);
+    } // for (Int_t i3 = 0; i3 < nh;
+    delete [] hindx;
+    delete [] ord;
+      
   } // for (mit = midIndx.begin(); mit != midIndx.end();
 
   fHitArray->Compress();

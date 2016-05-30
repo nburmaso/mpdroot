@@ -478,8 +478,8 @@ void MpdTpcClusterFinderAZ::FindHits()
 	  sum2p += ip * ip * fCharges[ip][it];
 	}
       } else {
-	// Process complex cluster - start from maximum and go ouward (up tp 5 steps), 
-	// adding pixels with repectively lower charges
+	// Process complex cluster - start from maximum and go outward (up to 5 steps), 
+	// adding pixels with respectively lower charges
 	for (Int_t idirp = -1; idirp < 2; idirp += 2) {
 	  for (Int_t ip = 0; ip < 5; ++ip) {
 	    if (idirp > 0 && ip == 0) continue;
@@ -567,7 +567,8 @@ void MpdTpcClusterFinderAZ::FindHits()
       p3errCor[2] = TMath::Max (p3errCor[2], 0.116 - 0.0046 * dip + 0.00015 * dip * dip);
       p3errCor[2] = TMath::Min (p3errCor[2], 0.5);
       // Correct Z-coordinate for rows = 0 and 27
-      if (clus->Row() == 0 || clus->Row() == 27) {
+      //if ((clus->Row() == 0 || clus->Row() == 27) && rmsZ > 1.0) {
+      if (clus->Row() == 0 && rmsZ > 1.0) {
 	Double_t zcor = 0;
 	if (clus->Row() == 0) zcor = -0.011 + 0.002 * dip;
 	else zcor = -0.029 + 0.005 * dip + 3.886e-5 * dip * dip;
@@ -600,7 +601,7 @@ void MpdTpcClusterFinderAZ::FindHits()
       for (map<Int_t,Double_t>::iterator mit = mapIdQ.begin(); mit != mapIdQ.end(); ++mit) 
 	mapDig.insert(pair<Double_t,Int_t>(-mit->second,mit->first));
       multimap<Double_t,Int_t>::iterator mit = mapDig.begin();
-      while (mit != mapDig.end() && vecDig.size() < 3) {
+      while (mit != mapDig.end() && vecDig.size() < 9) {
       //while (mit != mapDig.end() && vecDig.size() < 1) {
 	vecDig.push_back(mit->second);
 	++mit;
