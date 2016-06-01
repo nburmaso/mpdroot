@@ -5,6 +5,7 @@ void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
   basiclibs();
 
   // Load other libraries
+  gSystem->Load("libCluster.so");
   gSystem->Load("libFairTools");
   gSystem->Load("libGeoBase");
   gSystem->Load("libParBase");
