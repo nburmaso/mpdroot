@@ -85,6 +85,10 @@ public:
         fxUp = xUp;
     }
     
+    void SetEvNumToRead(Int_t val) {
+        fEvNum = val;
+    }
+    
     void MakeCFs_1D();
     void MakeCFs_3D();
    
@@ -112,6 +116,8 @@ private:
     
     Int_t fBins;
     Float_t fxUp;
+    
+    Int_t fEvNum;
 
     TChain* fDstTree;
     MpdEvent* fMpdEvent;

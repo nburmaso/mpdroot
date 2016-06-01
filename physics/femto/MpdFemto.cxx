@@ -170,7 +170,7 @@ void MpdFemto::MakeCFs_1D() {
     fMassPart = fPartTable->GetParticle(fPDG);
     fMass = fMassPart->Mass();
 
-    for (Int_t iEvent = 0; iEvent < fDstTree->GetEntries(); iEvent += fMixedEvents) {
+    for (Int_t iEvent = 0; iEvent < fEvNum; iEvent += fMixedEvents) {
         fFemtoContainerMc->Delete();
         fFemtoContainerReco->Delete();
 
@@ -184,8 +184,8 @@ void MpdFemto::MakeCFs_1D() {
 
                 TLorentzVector mom_iPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->Get4Momentum();
                 TLorentzVector mom_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Momentum();
-                TLorentzVector mom_iPart_sim = ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(iPart))->Get4Momentum();
-                TLorentzVector mom_jPart_sim = ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(jPart))->Get4Momentum();
+                TLorentzVector mom_iPart_sim =  ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(iPart))->Get4Momentum();
+                TLorentzVector mom_jPart_sim =  ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(jPart))->Get4Momentum();
 
                 TLorentzVector coord_iPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->Get4Coordinate();
                 TLorentzVector coord_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Coordinate();
@@ -224,7 +224,7 @@ void MpdFemto::MakeCFs_3D() {
     fMassPart = fPartTable->GetParticle(fPDG);
     fMass = fMassPart->Mass();
 
-    for (Int_t iEvent = 0; iEvent < fDstTree->GetEntries(); iEvent += fMixedEvents) {
+    for (Int_t iEvent = 0; iEvent < fEvNum; iEvent += fMixedEvents) {
         fFemtoContainerMc->Delete();
         fFemtoContainerReco->Delete();
 

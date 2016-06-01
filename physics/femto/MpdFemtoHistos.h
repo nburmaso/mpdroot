@@ -5,10 +5,12 @@
 #include <TNamed.h>
 #include <TH1.h>
 #include <TF1.h>
+#include <TF3.h>
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TVector3.h>
 #include <TH3.h>
+#include <TFile.h>
 
 using namespace std;
 
@@ -17,7 +19,7 @@ public:
     MpdFemtoHistos() {}
     // MpdFemtoHistos(Int_t, Float_t);
     
-    MpdFemtoHistos(Float_t);
+    MpdFemtoHistos(Float_t, const Char_t*);
 
     virtual ~MpdFemtoHistos();
     
@@ -91,19 +93,16 @@ public:
     _hCF3D = h;
     }
      
-    void MakeNorm_1D();
-    void MakeNorm_3D();
-    Double_t* GetFitParams1D(TH1F* h, Float_t qInv);
-    Double_t* GetFitParams3D(TH3F* h) {
-        // TO BE REALIZED THE NEXT COMMIT!
-    }
+    Double_t* GetFitParams1D();
+    Double_t* GetFitParams3D();
        
 private:
-
+    TFile* fOut;
+    
     Int_t fBins;
     Float_t fxUp;
     
-    Int_t fQinv;
+    Float_t fQinv;
     
     TH1F* _hCFQinvNomBase;
     TH1F* _hCFQinvNom;
