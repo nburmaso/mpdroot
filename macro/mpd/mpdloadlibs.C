@@ -20,9 +20,9 @@ void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
   gSystem->Load("libMpdgenerators");
 
   // HADGEN
-//  gSystem->Load("libHADGEN.so");
-//  gSystem->Load("libTHadgen.so");
-//  gSystem->Load("libMpdGeneralGenerator.so");
+  gSystem->Load("libHADGEN.so");
+  gSystem->Load("libTHadgen.so");
+  gSystem->Load("libMpdGeneralGenerator.so");
 
   // FEMTOSCOPY
   gSystem->Load("libMpdFemto.so");
@@ -42,18 +42,18 @@ void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
     gSystem->Load("libtpc");
     gSystem->Load("libTof");
     //gSystem->Load("libEtof");
- //   gSystem->Load("libEmc");
+    gSystem->Load("libEmc");
     //gSystem->Load("libStrawendcap");
     //gSystem->Load("libStt");
     //gSystem->Load("libSts");
     //gSystem->Load("libBbc");
- //   gSystem->Load("libZdc");
+    gSystem->Load("libZdc");
     //gSystem->Load("libFsa");
- //   gSystem->Load("libFfd");
+    gSystem->Load("libFfd");
     //gSystem->Load("libCpc");
     //gSystem->Load("libNDet");
     //gSystem->Load("libSft");
-   // gSystem->Load("libStrawECT");
+    gSystem->Load("libStrawECT");
   }
 }
 
