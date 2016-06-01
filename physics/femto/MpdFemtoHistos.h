@@ -17,8 +17,6 @@ using namespace std;
 class MpdFemtoHistos : public TNamed {
 public:
     MpdFemtoHistos() {}
-    // MpdFemtoHistos(Int_t, Float_t);
-    
     MpdFemtoHistos(Float_t, const Char_t*);
 
     virtual ~MpdFemtoHistos();

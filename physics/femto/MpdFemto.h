@@ -35,11 +35,11 @@ public:
     Int_t GetEntriesNum() {
         return fDstTree->GetEntries();
     }
-    
+
     MpdFemtoHistos* GetHistos() {
         return fHisto;
     }
-    
+
     Float_t GetQinv() {
         return fQinv;
     }
@@ -59,7 +59,7 @@ public:
         fPtCutLow = low;
         fPtCutUp = up;
     }
-    
+
     void SetKtCuts(Float_t low, Float_t up) {
         fKtCutLow = low;
         fKtCutUp = up;
@@ -68,15 +68,15 @@ public:
     void SetSourceSize(Float_t size) {
         fSourceSize = size;
     }
-    
+
     void SetNumMixedEvents(Int_t num) {
         fMixedEvents = num;
     }
-    
+
     void SetQinv(Float_t qinv) {
         fQinv = qinv;
     }
-    
+
     void SetNbins(Int_t val) {
         fBins = val;
     }
@@ -84,18 +84,18 @@ public:
     void SetUpLimit(Float_t xUp) {
         fxUp = xUp;
     }
-    
+
     void SetEvNumToRead(Int_t val) {
         fEvNum = val;
     }
-    
+
     void MakeCFs_1D();
     void MakeCFs_3D();
-   
+
 
 private:
     MpdFemtoHistos* fHisto;
-    
+
     void ReadEvent(Int_t);
 
     Int_t fPDG;
@@ -103,7 +103,7 @@ private:
     const Char_t* fFilename;
     TDatabasePDG* fPartTable;
     TParticlePDG* fMassPart;
-    
+
     Float_t fQinv;
     Float_t fKtCutLow;
     Float_t fKtCutUp;
@@ -113,10 +113,10 @@ private:
     Float_t fPtCutUp;
     Float_t fSourceSize;
     Int_t fMixedEvents;
-    
+
     Int_t fBins;
     Float_t fxUp;
-    
+
     Int_t fEvNum;
 
     TChain* fDstTree;
@@ -129,12 +129,12 @@ private:
 
     MpdTrack* fMpdTrackReco;
     FairMCTrack* fMpdTrackMc;
-    
+
     inline Float_t EposFemtoQinv4vec(TLorentzVector first, TLorentzVector second) {
         return Abs((first - second).M());
     }
-    
-    Float_t EposFemtoWeightQS(TLorentzVector, TLorentzVector, TLorentzVector, TLorentzVector); 
+
+    Float_t EposFemtoWeightQS(TLorentzVector, TLorentzVector, TLorentzVector, TLorentzVector);
 
     ClassDef(MpdFemto, 1)
 };

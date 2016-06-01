@@ -101,8 +101,7 @@ MpdFemto::~MpdFemto() {
 //--------------------------------------------------------------------------
 
 void MpdFemto::ReadEvent(Int_t evNum) {
-    // cout << fMassPart->Mass() << endl;
-
+    
     fDstTree->GetEntry(evNum);
 
     fRecoTracks = fMpdEvent->GetGlobalTracks();

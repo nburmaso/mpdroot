@@ -40,7 +40,7 @@ void femto_test(const Char_t* outfile = "outputFemto.root") {
 
         delete femto;
     }
-       
+    
     // Return parameters of the 1D-fit. [0] corresponds to R0, [1] -- to \lambda 
     Double_t* fitRes1D = histos->GetFitParams1D();
     cout << "R0 = " << fitRes1D[0] << " Lambda = " << fitRes1D[1] << endl;
@@ -48,6 +48,5 @@ void femto_test(const Char_t* outfile = "outputFemto.root") {
     // Return parameters of the 3D-fit. [0] corresponds to Rout, [1] -- to Rside, [2] -- to Rlong
     Double_t* fitRes3D = histos->GetFitParams3D();
     cout << "Rout = " << fitRes3D[0] << " Rside = " << fitRes3D[1] << " Rlong = " << fitRes3D[2] << endl;
-         
-    delete histos;
+    
 }

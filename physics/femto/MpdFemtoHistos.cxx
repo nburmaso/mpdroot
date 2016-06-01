@@ -29,8 +29,6 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     _hCFDenom3D->Write();
     _hCF3D->Write();
 
-    //  fOut->Close();
-
     delete _hCFQinvNomBase;
     delete _hCFQinvNom;
     delete _hCFQinvDenom;
