@@ -10,6 +10,9 @@ ${CMAKE_SOURCE_DIR}/parbase
 ${CMAKE_SOURCE_DIR}/base 
 ${CMAKE_SOURCE_DIR}/mcstack 
 ${CMAKE_SOURCE_DIR}/fairtools
+${CMAKE_SOURCE_DIR}/clustering
+${CMAKE_SOURCE_DIR}/emc/hitmaker
+${CMAKE_SOURCE_DIR}/emc/clustering
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
@@ -28,6 +31,18 @@ MpdEmcGeoPar.cxx
 MpdEmcPoint.cxx
 MpdEmcHit.cxx
 MpdEmcHitProducer.cxx
+
+hitmaker/MpdEmcHitA.cxx
+hitmaker/MpdEmcHitProducerA.cxx
+hitmaker/MpdEmcHitCont.cxx
+hitmaker/MpdEmcGeoParWrapper.cxx
+
+clustering/EmcClManager.cxx
+clustering/EmcClusterElement.cxx
+clustering/EmcCluster.cxx
+clustering/EmcClusterCollection.cxx
+clustering/EmcClusterInfo.cxx
+clustering/EmcCLinfo.cxx
 )
 
 # fill list of header files from list of source files

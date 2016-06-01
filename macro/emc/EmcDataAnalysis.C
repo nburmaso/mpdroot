@@ -172,7 +172,7 @@ void EmcDataAnalysis(Int_t opt = 1) {
         if (eneArr[i] < 0.05 * maxE) continue;
         line[i]->Draw("same");
     }
-    
+
     DrawCircle(rMinEmc);
     DrawCircle(rMaxEmc);
     DrawCircle(rMinTpc);

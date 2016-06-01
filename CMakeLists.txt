@@ -163,6 +163,7 @@ add_subdirectory (strawendcap)
 add_subdirectory (shield_pack)
 add_subdirectory (strawECT)
 add_subdirectory (physics/femto)
+add_subdirectory (clustering)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/macro/mpd_scheduler/CMakeLists.txt")
  add_subdirectory (macro/mpd_scheduler)

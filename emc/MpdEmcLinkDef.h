@@ -11,4 +11,18 @@
 #pragma link C++ class MpdEmcPoint+;
 #pragma link C++ class MpdEmcHitProducer+;
 #pragma link C++ class MpdEmcHit+;
+
+#pragma link C++ class MpdEmcHitProducerA+;
+#pragma link C++ class MpdEmcHitA+;
+#pragma link C++ class MpdEmcHitCont+;
+#pragma link C++ class MpdEmcGeoParWrapper+;
+
+#pragma link C++ class EmcClManager+;
+#pragma link C++ class EmcClusterElement+;
+#pragma link C++ class EmcCluster+;
+#pragma link C++ class EmcClusterCollection+;
+#pragma link C++ class EmcClusterInfo+;
+#pragma link C++ class EmcClusterInfo0+;
+#pragma link C++ class EmcCLinfo+;
+
 #endif
