@@ -26,6 +26,7 @@ MpdEmcGeoPar::MpdEmcGeoPar() {
     lengthOfModuleByZ = emc::base * 0.1; // 0.1: mm->cm
     lengthOfSuperModuleByZ = emc::emc1_box1_z * 0.1; // 0.1: mm->cm
     nModInSuperModByZ = emc::nModInSuperModByZ; // 0.1: mm->cm
+    nModInSuperModByPhi = emc::nModInSuperModByPhi;
     angleOfSuperModule = emc::angleSuperModule;
     angleOfSector = emc::angleSector;
     angleOfModule = emc::angleModule;
