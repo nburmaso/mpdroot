@@ -43,6 +43,18 @@ public:
     Float_t GetQinv() {
         return fQinv;
     }
+    
+    Float_t GetMagField() {
+        return fMagField;
+    }
+    
+    Float_t GetRadTpc() {
+        return fRadTPC;
+    }
+    
+    Int_t GetStartEvent() {
+        return fStartEvent;
+    }
 
     // Setters
 
@@ -88,9 +100,42 @@ public:
     void SetEvNumToRead(Int_t val) {
         fEvNum = val;
     }
+    
+    void SetMagField(Float_t val) {
+        fMagField = val;
+    }
+    
+    void SetRadTpc(Float_t val) {
+        fRadTPC = val;
+    } 
+    
+    void SetStartEvent(Int_t val) {
+        fStartEvent = val;
+    }
+                                                          
 
     void MakeCFs_1D();
     void MakeCFs_3D();
+    void DeltaEtaDeltaPhi();
+    
+    inline void DebugInfo() {
+        cout << " Service information: " << endl;
+        cout << " fPDG = " << fPDG << endl;
+        cout << " fMass = " << fMass << endl;
+        cout << " fQinv = " << fQinv << endl;
+        cout << " fKtCutLow = " << fKtCutLow << endl;
+        cout << " fKtCutUp = " << fKtCutUp << endl;
+        cout << " fEtaCutLow = " << fEtaCutLow << endl;
+        cout << " fEtaCutUp = " << fEtaCutUp << endl;
+        cout << " fPtCutLow = " << fPtCutLow << endl;
+        cout << " fPtCutUp = " << fPtCutUp << endl;
+        cout << " fSourceSize = " << fSourceSize << endl;
+        cout << " fMixedEvents = " << fMixedEvents << endl;
+        cout << " fMcTracks, size = " << fMcTracks->GetEntriesFast() << endl;
+        // cout << " fRecoTracks, size = " << fRecoTracks->GetEntriesFast() << endl;
+        // cout << " fFemtoContainerReco, size = " << fFemtoContainerReco->GetEntriesFast() << endl;
+        // cout << " fFemtoContainerMc, size = " << fFemtoContainerMc->GetEntriesFast() << endl;
+    }
 
 
 private:
@@ -100,9 +145,12 @@ private:
 
     Int_t fPDG;
     Float_t fMass;
+    Float_t fCharge;
+    Float_t fMagField;
+    Float_t fRadTPC;
     const Char_t* fFilename;
     TDatabasePDG* fPartTable;
-    TParticlePDG* fMassPart;
+    TParticlePDG* fParticle;
 
     Float_t fQinv;
     Float_t fKtCutLow;
@@ -118,6 +166,7 @@ private:
     Float_t fxUp;
 
     Int_t fEvNum;
+    Int_t fStartEvent;
 
     TChain* fDstTree;
     MpdEvent* fMpdEvent;

@@ -15,6 +15,8 @@ MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, const Char_t* out) {
     _hCFNom3D   = new TH3F("_hCFNom3D", "_hCFNom3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
     _hCFDenom3D = new TH3F("_hCFDenom3D", "_hCFDenom3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
     _hCF3D      = new TH3F("_hCF3D", "_hCF3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
+    
+    _hDeltaPhiDeltaEta = new TH2F("_hDeltaPhiDeltaEta", "_hDeltaPhiDeltaEta", 100, 0.0, 0.0, 100, 0.0, 0.0);
 }
 
 //--------------------------------------------------------------------------
@@ -28,6 +30,7 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     _hCFNom3D->Write();
     _hCFDenom3D->Write();
     _hCF3D->Write();
+    _hDeltaPhiDeltaEta->Write();
 
     delete _hCFQinvNomBase;
     delete _hCFQinvNom;
@@ -37,6 +40,7 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     delete _hCFNom3D;
     delete _hCFDenom3D;
     delete _hCF3D;
+    delete _hDeltaPhiDeltaEta;
 
     delete fOut;
 }
@@ -46,12 +50,12 @@ MpdFemtoHistos::~MpdFemtoHistos() {
 Double_t* MpdFemtoHistos::GetFitParams1D() {
     // Normalization:
     _hCFQinvNom->Sumw2();
-    // fHisto->GetNominatorBase()->Sumw2();
+    _hCFQinvNomBase->Sumw2();
     _hCFQinvDenom->Sumw2();
-    _hCF->Sumw2();
-    _hCFBase->Sumw2();
 
+    _hCF->Sumw2();
     _hCF->Divide(_hCFQinvNom, _hCFQinvDenom, 1., 1.);
+    _hCFBase->Sumw2();
     _hCFBase->Divide(_hCFQinvNomBase, _hCFQinvDenom, 1., 1.);
 
     Float_t normDenomFactor = _hCFQinvDenom->Integral(0.25 * _hCFQinvDenom->GetNbinsX(), 0.75 * _hCFQinvDenom->GetNbinsX());
@@ -68,7 +72,7 @@ Double_t* MpdFemtoHistos::GetFitParams1D() {
     fqs->SetParName(0, "r_{0}");
     fqs->SetParName(1, "#lambda");
     fqs->SetParName(2, "Norm");
-    fqs->SetParameters(10, 1, 1);
+    fqs->SetParameters(10., 1., 1.);
 
     _hCF->Fit(fqs, "SRQ", " ", 0., fQinv); 
       
@@ -82,7 +86,7 @@ Double_t* MpdFemtoHistos::GetFitParams3D() {
     _hCFDenom3D->Sumw2();
     _hCF3D->Sumw2();
     _hCF3D->Divide(_hCFNom3D, _hCFDenom3D, 1., 1.);
-
+ 
     TF3* fitc = new TF3("fitc", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
     fitc->SetParameters(3.0, 3.0, 3.0, 1.0);
 

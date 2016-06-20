@@ -10,6 +10,7 @@
 #include <TFitResultPtr.h>
 #include <TVector3.h>
 #include <TH3.h>
+#include <TH2.h>
 #include <TFile.h>
 
 using namespace std;
@@ -44,6 +45,10 @@ public:
     
     TH1F* GetCFBase() {
         return _hCFBase;
+    }
+    
+    TH2F* GetDeltaEtaDeltaPhi() {
+        return _hDeltaPhiDeltaEta;
     }
     
     void SetNominator(TH1F* h) {
@@ -90,9 +95,29 @@ public:
     void SetCF3D(TH3F* h) {
     _hCF3D = h;
     }
+    
+    void SetDeltaEtaDeltaPhi(TH2F* h) {
+    _hDeltaPhiDeltaEta = h;
+    }
      
     Double_t* GetFitParams1D();
     Double_t* GetFitParams3D();
+    
+    inline void DebugInfo() {
+        cout << "Service information: " << endl;
+        cout << " _hCFQinvNomBase, #entries = " << _hCFQinvNomBase->GetEntries() << endl;    
+        cout << " _hCFQinvNom, #entries = " << _hCFQinvNom->GetEntries() << endl;    
+        cout << " _hCFQinvDenom, #entries = " << _hCFQinvDenom->GetEntries() << endl;    
+        cout << " _hCF, #entries = " << _hCF->GetEntries() << endl; 
+        cout << " _hCFBase, #entries = " << _hCFBase->GetEntries() << endl;
+        
+        cout << " _hCFNom3D, #entries = " << _hCFNom3D->GetEntries() << endl; 
+        cout << " _hCFDenom3D, #entries = " << _hCFDenom3D->GetEntries() << endl; 
+        cout << " _hCF3D, #entries = " << _hCF3D->GetEntries() << endl; 
+        cout << " fBins = " << fBins << endl;
+        cout << " fxUp = " << fxUp << endl;
+        cout << " fQinv = " << fQinv << endl;
+    }
        
 private:
     TFile* fOut;
@@ -111,6 +136,8 @@ private:
     TH3F* _hCFNom3D;
     TH3F* _hCFDenom3D;
     TH3F* _hCF3D;
+    
+    TH2F* _hDeltaPhiDeltaEta;
     
     ClassDef(MpdFemtoHistos, 1)
 };

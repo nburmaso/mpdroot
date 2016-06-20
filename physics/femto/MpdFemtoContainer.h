@@ -10,7 +10,7 @@ using namespace std;
 class MpdFemtoContainer : public TNamed {
 public:
     MpdFemtoContainer();
-    MpdFemtoContainer(Int_t, TLorentzVector, TLorentzVector);
+    MpdFemtoContainer(Int_t, TLorentzVector, TLorentzVector, Float_t, Float_t);
     
     virtual ~MpdFemtoContainer();
 
@@ -26,6 +26,14 @@ public:
     TLorentzVector Get4Coordinate() {
         return fCo;
     }
+    
+    Float_t GetPhi() {
+        return fPhi;
+    }
+    
+    Float_t GetTheta() {
+        return fTheta;
+    }
 
     // Setters
     void SetEventNumber(Int_t number) {
@@ -39,13 +47,23 @@ public:
     void Set4Momentum(TLorentzVector mom) {
         fMo = mom;
     }
-
-
+    
+    void SetPhi(Float_t val) {
+        fPhi = val;
+    }
+        
+    void SetTheta(Float_t val) {
+        fTheta = val;
+    }
+    
 private:
 
     Int_t fEventNumber;
     TLorentzVector fMo; // 4-momentum of particle
     TLorentzVector fCo; // 4-coordinate of particle
+       
+    Float_t fPhi;
+    Float_t fTheta;
 
     ClassDef(MpdFemtoContainer, 1)
 };
