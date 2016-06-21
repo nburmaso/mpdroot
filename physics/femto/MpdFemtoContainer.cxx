@@ -13,12 +13,13 @@ fTheta(0.)
 
 //--------------------------------------------------------------------------
 
-MpdFemtoContainer::MpdFemtoContainer(Int_t ev, TLorentzVector mom, TLorentzVector coord, Float_t phi, Float_t theta) {
+MpdFemtoContainer::MpdFemtoContainer(Int_t ev, TLorentzVector mom, TLorentzVector coord, Float_t phi, Float_t theta, Int_t trackID) {
     fEventNumber = ev;
     fMo = mom;
     fCo = coord;
     fPhi = phi;
     fTheta = theta;
+    fTrackID = trackID;
 }
 
 //--------------------------------------------------------------------------

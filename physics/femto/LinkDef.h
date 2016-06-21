@@ -7,6 +7,7 @@
 #pragma link C++ class MpdFemto+;
 #pragma link C++ class MpdFemtoContainer+;
 #pragma link C++ class MpdFemtoHistos+;
+#pragma link C++ class MpdFemtoShareQualityPairCut+;
 
 #endif
 

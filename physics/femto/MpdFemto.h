@@ -15,6 +15,7 @@
 #include <TRandom.h>
 #include <TLorentzVector.h>
 #include <MpdFemtoHistos.h>
+#include "MpdFemtoShareQualityPairCut.h"
 
 using namespace std;
 using namespace TMath;
@@ -112,8 +113,15 @@ public:
     void SetStartEvent(Int_t val) {
         fStartEvent = val;
     }
-                                                          
-
+    
+    void SetQualityPairCut(Bool_t flag) {
+        fQualityCut = flag;
+    }
+    
+    void SetMinNoHits(Int_t val) {
+        fCuts->SetMinNoHits(val);
+    }
+                                                
     void MakeCFs_1D();
     void MakeCFs_3D();
     void DeltaEtaDeltaPhi();
@@ -140,8 +148,12 @@ public:
 
 private:
     MpdFemtoHistos* fHisto;
-
+    MpdFemtoShareQualityPairCut* fCuts;
+    
+    Bool_t fQualityCut;
+    
     void ReadEvent(Int_t);
+    void CreatePair(TObject*, TObject*) {};
 
     Int_t fPDG;
     Float_t fMass;
@@ -178,6 +190,12 @@ private:
 
     MpdTrack* fMpdTrackReco;
     FairMCTrack* fMpdTrackMc;
+    
+    TClonesArray* fTracksTPC;
+    // TClonesArray* fHitsTPC;
+    
+   // MpdTpcKalmanTrack* fTrack;
+   // MpdKalmanHit* fKalmanHit;
 
     inline Float_t EposFemtoQinv4vec(TLorentzVector first, TLorentzVector second) {
         return Abs((first - second).M());

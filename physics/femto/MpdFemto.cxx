@@ -1,5 +1,6 @@
 #include "MpdFemto.h"
 #include "MpdFemtoContainer.h"
+#include "MpdFemtoShareQualityPairCut.h"
 
 //--------------------------------------------------------------------------
 
@@ -48,10 +49,13 @@ fMass(0.) {
 
     fDstTree->SetBranchAddress("MPDEvent.", &fMpdEvent);
     fDstTree->SetBranchAddress("MCTrack", &fMcTracks);
+    // fDstTree->SetBranchAddress("TpcKalmanTrack", &fTracksTPC);
+
     fFemtoContainerReco = new TClonesArray("MpdFemtoContainer");
     fFemtoContainerMc = new TClonesArray("MpdFemtoContainer");
 
     fHisto = new MpdFemtoHistos();
+    //fCuts = new MpdFemtoShareQualityPairCut(fDstTree, fTracksTPC);   
 }
 
 //--------------------------------------------------------------------------
@@ -68,7 +72,9 @@ fFemtoContainerReco(NULL),
 fFemtoContainerMc(NULL),
 fMpdTrackReco(NULL),
 fMpdTrackMc(NULL),
-fMass(0.) {
+fTracksTPC(NULL),
+fMass(0.),
+fQualityCut(kFALSE) {
     TString path = getenv("VMCWORKDIR");
     TString path2pdg = path + "/input/pdg_table.txt";
 
@@ -85,10 +91,13 @@ fMass(0.) {
 
     fDstTree->SetBranchAddress("MPDEvent.", &fMpdEvent);
     fDstTree->SetBranchAddress("MCTrack", &fMcTracks);
+    // fDstTree->SetBranchAddress("TpcKalmanTrack", &fTracksTPC);
+
     fFemtoContainerReco = new TClonesArray("MpdFemtoContainer");
     fFemtoContainerMc = new TClonesArray("MpdFemtoContainer");
 
     fHisto = _h;
+    fCuts = new MpdFemtoShareQualityPairCut(fDstTree);
 }
 //--------------------------------------------------------------------------
 
@@ -97,18 +106,18 @@ MpdFemto::~MpdFemto() {
     delete fFemtoContainerReco;
     delete fFemtoContainerMc;
     delete fPartTable;
+    delete fCuts;
     // delete fHisto;
 }
 
 //--------------------------------------------------------------------------
 
 void MpdFemto::ReadEvent(Int_t evNum) {
-
     fDstTree->GetEntry(evNum);
 
+    // fCuts->CheckTwoTrackEffects();
+
     fRecoTracks = fMpdEvent->GetGlobalTracks();
-    // cout << "Number of RECO-tracks: " << fRecoTracks->GetEntriesFast() << endl;
-    // cout << "Number of MC-tracks: " << fMcTracks->GetEntriesFast() << endl;
 
     for (Int_t iRecoTrack = 0; iRecoTrack < fRecoTracks->GetEntriesFast(); iRecoTrack++) {
 
@@ -148,13 +157,13 @@ void MpdFemto::ReadEvent(Int_t evNum) {
         Float_t Theta = fMpdTrackReco->GetTheta();
 
         new((*fFemtoContainerReco)[fFemtoContainerReco->GetEntriesFast()])
-                MpdFemtoContainer(evNum, MOM_RECO, COORD, Phi, Theta);
+                MpdFemtoContainer(evNum, MOM_RECO, COORD, Phi, Theta, trackID);
 
         //        fFemtoContainerReco->AddLast(new MpdFemtoContainer(evNum, MOM_RECO, COORD));
         //        fFemtoContainerMc->AddLast(new MpdFemtoContainer(evNum, MOM_MC, COORD));
 
         new((*fFemtoContainerMc)[fFemtoContainerMc->GetEntriesFast()])
-                MpdFemtoContainer(evNum, MOM_MC, COORD, 0.0, 0.0);
+                MpdFemtoContainer(evNum, MOM_MC, COORD, 0.0, 0.0, trackID);
     }
 }
 
@@ -289,6 +298,8 @@ void MpdFemto::DeltaEtaDeltaPhi() {
 
     fMass = fParticle->Mass();
     fCharge = fParticle->Charge() / 3.; // Charge() return the caharge value in |e| / 3
+    
+    Int_t nGoodPairs = 0;
 
     for (Int_t iEvent = fStartEvent; iEvent < fEvNum; iEvent++) {
         fFemtoContainerMc->Delete();
@@ -300,6 +311,7 @@ void MpdFemto::DeltaEtaDeltaPhi() {
 
         for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++) {
             TLorentzVector mom_iPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->Get4Momentum();
+            Int_t trId1 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->GetTrackID();
 
             Float_t pt1 = Sqrt(mom_iPart_reco.X() * mom_iPart_reco.X() + mom_iPart_reco.Y() * mom_iPart_reco.Y());
             Float_t phi1 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->GetPhi();
@@ -309,7 +321,13 @@ void MpdFemto::DeltaEtaDeltaPhi() {
 
             for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
                 TLorentzVector mom_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Momentum();
+                Int_t trId2 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetTrackID();
 
+                if (fQualityCut) {
+                    fCuts->CheckTwoTrackEffects(trId1, trId2);
+                   
+                }
+                 
                 Float_t pt2 = Sqrt(mom_jPart_reco.X() * mom_jPart_reco.X() + mom_jPart_reco.Y() * mom_jPart_reco.Y());
                 Float_t phi2 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetPhi();
                 Float_t theta2 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetTheta();
@@ -331,5 +349,7 @@ void MpdFemto::DeltaEtaDeltaPhi() {
 
             }
         }
+        // cout << "nGoodPairs = " << nGoodPairs << endl;
+        //nGoodPairs = 0;
     }
 }

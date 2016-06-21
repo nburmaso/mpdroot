@@ -10,7 +10,7 @@ using namespace std;
 class MpdFemtoContainer : public TNamed {
 public:
     MpdFemtoContainer();
-    MpdFemtoContainer(Int_t, TLorentzVector, TLorentzVector, Float_t, Float_t);
+    MpdFemtoContainer(Int_t, TLorentzVector, TLorentzVector, Float_t, Float_t, Int_t);
     
     virtual ~MpdFemtoContainer();
 
@@ -34,6 +34,10 @@ public:
     Float_t GetTheta() {
         return fTheta;
     }
+    
+    Int_t GetTrackID() {
+        return fTrackID;
+    }
 
     // Setters
     void SetEventNumber(Int_t number) {
@@ -56,6 +60,10 @@ public:
         fTheta = val;
     }
     
+    void SetTrackID(Int_t val) {
+        fTrackID = val;
+    }
+    
 private:
 
     Int_t fEventNumber;
@@ -64,6 +72,7 @@ private:
        
     Float_t fPhi;
     Float_t fTheta;
+    Int_t   fTrackID;
 
     ClassDef(MpdFemtoContainer, 1)
 };

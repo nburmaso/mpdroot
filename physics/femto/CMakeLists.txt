@@ -32,6 +32,7 @@ set(PHYS_FEMTO_SRCS
 MpdFemto.cxx
 MpdFemtoContainer.cxx
 MpdFemtoHistos.cxx
+MpdFemtoShareQualityPairCut.cxx
 )
 
 # fill list of header files from list of source files
