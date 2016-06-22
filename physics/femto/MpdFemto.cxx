@@ -125,7 +125,7 @@ void MpdFemto::ReadEvent(Int_t evNum) {
         Int_t trackID = fMpdTrackReco->GetID();
 
         fMpdTrackMc = (FairMCTrack*) fMcTracks->UncheckedAt(trackID);
-
+        
         if (fMpdTrackMc->GetPdgCode() != fPDG)
             continue;
 
@@ -157,7 +157,7 @@ void MpdFemto::ReadEvent(Int_t evNum) {
         Float_t Theta = fMpdTrackReco->GetTheta();
 
         new((*fFemtoContainerReco)[fFemtoContainerReco->GetEntriesFast()])
-                MpdFemtoContainer(evNum, MOM_RECO, COORD, Phi, Theta, trackID);
+                MpdFemtoContainer(evNum, MOM_RECO, COORD, Phi, Theta, iRecoTrack);
 
         //        fFemtoContainerReco->AddLast(new MpdFemtoContainer(evNum, MOM_RECO, COORD));
         //        fFemtoContainerMc->AddLast(new MpdFemtoContainer(evNum, MOM_MC, COORD));
@@ -305,7 +305,8 @@ void MpdFemto::DeltaEtaDeltaPhi() {
     fMass = fParticle->Mass();
     fCharge = fParticle->Charge() / 3.; // Charge() returns the charge value in |e| / 3
     
-    Int_t nGoodPairs = 0;
+    Int_t nPassedPairs = 0;
+    Int_t nFailedPairs = 0;
 
     for (Int_t iEvent = fStartEvent; iEvent < fStartEvent + fEvNum; iEvent++) {
         fFemtoContainerMc->Delete();
@@ -330,10 +331,14 @@ void MpdFemto::DeltaEtaDeltaPhi() {
             for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
                 TLorentzVector mom_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Momentum();
                 Int_t trId2 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetTrackID();
-
+ 
                 if (fQualityCut) {
-                    fCuts->CheckTwoTrackEffects(trId1, trId2);
-                   
+                    if (fCuts->CheckSharing(trId1, trId2) == kTRUE)
+                        nFailedPairs++;
+                    else    
+                        nPassedPairs++;
+                
+                    fCuts->Quality(trId1, trId2);
                 }
                  
                 Float_t pt2 = Sqrt(mom_jPart_reco.X() * mom_jPart_reco.X() + mom_jPart_reco.Y() * mom_jPart_reco.Y());
@@ -352,12 +357,12 @@ void MpdFemto::DeltaEtaDeltaPhi() {
 
                 Double_t Qinv = EposFemtoQinv4vec(mom_iPart_reco, mom_jPart_reco);
 
-                if (Qinv < 0.1)
+                if (Qinv < fQinv)
                     fHisto->GetDeltaEtaDeltaPhi()->Fill(phid, etad);
-
             }
         }
-        // cout << "nGoodPairs = " << nGoodPairs << endl;
-        //nGoodPairs = 0;
+        cout << "nGoodPairs = " << nPassedPairs << " nFailedPairs = " << nFailedPairs<< endl;
+        nPassedPairs = 0;
+        nFailedPairs = 0;
     }
 }

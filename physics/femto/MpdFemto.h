@@ -121,6 +121,8 @@ public:
     void SetMinNoHits(Int_t val) {
         fCuts->SetMinNoHits(val);
     }
+    
+    
                                                 
     void MakeCFs_1D();
     void MakeCFs_3D();
