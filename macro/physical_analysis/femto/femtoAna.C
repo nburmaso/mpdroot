@@ -8,7 +8,7 @@
 
 using namespace std;
 
-void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TString outFile = "outputFemto.root", Int_t nStartEvent = 0, Int_t nEvents = 5) {
+void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TString outFile = "outputFemto.root", Int_t nStartEvent = 3, Int_t nEvents = 2) {
     gStyle->SetOptFit(1111111);
 
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
@@ -32,8 +32,8 @@ void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TS
         femto->SetQinv(Qinv);
         femto->SetMagField(0.5); // Define magnitude of the mag.field
         femto->SetRadTpc(1.0); // Define average TPC rad. where split. && merg. effects are studied
-        femto->SetQualityPairCut(kTRUE);
-        femto->SetMinNoHits(13);
+       // femto->SetQualityPairCut(kTRUE);
+        // femto->SetMinNoHits(13);
 
         // A method to perform 3D-analysis
 	//femto->MakeCFs_1D();

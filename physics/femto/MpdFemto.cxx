@@ -301,11 +301,11 @@ void MpdFemto::DeltaEtaDeltaPhi() {
     
     Int_t nGoodPairs = 0;
 
-    for (Int_t iEvent = fStartEvent; iEvent < fEvNum; iEvent++) {
+    for (Int_t iEvent = fStartEvent; iEvent < fStartEvent + fEvNum; iEvent++) {
         fFemtoContainerMc->Delete();
         fFemtoContainerReco->Delete();
 
-        cout << "Event: " << iEvent << " of " << fEvNum << endl;
+        cout << "Event: " << iEvent << " of " << fEvNum + fStartEvent << endl;
 
         ReadEvent(iEvent);
 
