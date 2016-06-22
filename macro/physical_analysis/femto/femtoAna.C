@@ -8,7 +8,7 @@
 
 using namespace std;
 
-void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TString outFile = "outputFemto.root", Int_t nStartEvent = 3, Int_t nEvents = 2) {
+void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TString outFile = "outputFemto.root", Int_t nStartEvent = 0, Int_t nEvents = 100) {
     gStyle->SetOptFit(1111111);
 
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
@@ -32,14 +32,14 @@ void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TS
         femto->SetQinv(Qinv);
         femto->SetMagField(0.5); // Define magnitude of the mag.field
         femto->SetRadTpc(1.0); // Define average TPC rad. where split. && merg. effects are studied
-       // femto->SetQualityPairCut(kTRUE);
+        // femto->SetQualityPairCut(kTRUE);
         // femto->SetMinNoHits(13);
 
         // A method to perform 3D-analysis
-	//femto->MakeCFs_1D();
+	femto->MakeCFs_1D();
 
         // A method to perform 1D-analysis
-	// femto->MakeCFs_3D(); 
+	femto->MakeCFs_3D(); 
 
         // A method to perform DEtaDPhi-analysis
         femto->DeltaEtaDeltaPhi();
@@ -48,14 +48,12 @@ void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TS
     }
    
     // Return parameters of the 1D-fit. [0] corresponds to R0, [1] -- to \lambda 
-    /*
     Double_t* fitRes1D = histos->GetFitParams1D();
-    cout << "R0 = " << fitRes1D[0] << " Lambda = " << fitRes1D[1] << endl;
+    // cout << "R0 = " << fitRes1D[0] << " Lambda = " << fitRes1D[1] << endl;
         
     // Return parameters of the 3D-fit. [0] corresponds to Rout, [1] -- to Rside, [2] -- to Rlong
     Double_t* fitRes3D = histos->GetFitParams3D();
-    cout << "Rout = " << fitRes3D[0] << " Rside = " << fitRes3D[1] << " Rlong = " << fitRes3D[2] << endl;  
-    */
-    
+    // cout << "Rout = " << fitRes3D[0] << " Rside = " << fitRes3D[1] << " Rlong = " << fitRes3D[2] << endl;  
+        
     delete histos;
 }

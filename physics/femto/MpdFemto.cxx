@@ -183,14 +183,17 @@ void MpdFemto::MakeCFs_1D() {
     fParticle = fPartTable->GetParticle(fPDG);
     fMass = fParticle->Mass();
 
-    for (Int_t iEvent = fStartEvent; iEvent < fEvNum; iEvent += fMixedEvents) {
+    for (Int_t iEvent = fStartEvent; iEvent < fEvNum + fStartEvent; iEvent += fMixedEvents) {
         fFemtoContainerMc->Delete();
         fFemtoContainerReco->Delete();
+        
+        if (iEvent > fDstTree->GetEntries() - 1)
+            return;
 
         for (Int_t jEvent = iEvent; jEvent < iEvent + fMixedEvents; jEvent++)
             ReadEvent(jEvent);
 
-        cout << "Event: " << iEvent << " of " << fEvNum << " mix " << fFemtoContainerReco->GetEntriesFast() << " particles" << endl;
+        cout << "Event: " << iEvent << " of " << fDstTree->GetEntries() << " mix " << fFemtoContainerReco->GetEntriesFast() << " particles" << endl;
 
         for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++)
             for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
@@ -237,14 +240,17 @@ void MpdFemto::MakeCFs_3D() {
     fParticle = fPartTable->GetParticle(fPDG);
     fMass = fParticle->Mass();
 
-    for (Int_t iEvent = fStartEvent; iEvent < fEvNum; iEvent += fMixedEvents) {
+    for (Int_t iEvent = fStartEvent; iEvent < fStartEvent + fEvNum; iEvent += fMixedEvents) {
+        if (iEvent > fDstTree->GetEntries() - 1)
+            return;
+        
         fFemtoContainerMc->Delete();
         fFemtoContainerReco->Delete();
 
-        for (Int_t jEvent = iEvent; jEvent < iEvent + fMixedEvents; jEvent++)
+        for (Int_t jEvent = iEvent; jEvent < iEvent + fMixedEvents; jEvent++) 
             ReadEvent(jEvent);
 
-        cout << "Event: " << iEvent << " of " << fEvNum << " mix " << fFemtoContainerReco->GetEntriesFast() << " particles" << endl;
+        cout << "Event: " << iEvent << " of " << fDstTree->GetEntries() << " mix " << fFemtoContainerReco->GetEntriesFast() << " particles" << endl;
 
         for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++)
             for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
@@ -292,12 +298,12 @@ void MpdFemto::MakeCFs_3D() {
 }
 
 void MpdFemto::DeltaEtaDeltaPhi() {
-    cout << "DeltaEtaDeltaPhi_analysis started ... " << endl;
+    cout << "DeltaEtaDeltaPhi-analysis started ... " << endl;
 
     fParticle = fPartTable->GetParticle(fPDG);
 
     fMass = fParticle->Mass();
-    fCharge = fParticle->Charge() / 3.; // Charge() return the caharge value in |e| / 3
+    fCharge = fParticle->Charge() / 3.; // Charge() returns the charge value in |e| / 3
     
     Int_t nGoodPairs = 0;
 
@@ -305,8 +311,10 @@ void MpdFemto::DeltaEtaDeltaPhi() {
         fFemtoContainerMc->Delete();
         fFemtoContainerReco->Delete();
 
-        cout << "Event: " << iEvent << " of " << fEvNum + fStartEvent << endl;
-
+        if (iEvent > fDstTree->GetEntries() - 1)
+            return;
+        
+        cout << "Event: " << iEvent << " of " << fDstTree->GetEntries() << " in the file" << endl;
         ReadEvent(iEvent);
 
         for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++) {
