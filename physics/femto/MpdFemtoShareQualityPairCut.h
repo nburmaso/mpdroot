@@ -40,9 +40,12 @@ public:
     UInt_t GetNPairsFailed() {
         return fNPairsFailed;
     }
+    
+    Bool_t GetZeroSharing() {
+        return fZeroSharing;
+    }
 
     // Setters
-
     void SetShareQualityMax(Float_t val) {
         fShareQualityMax = val;
     }
@@ -54,10 +57,14 @@ public:
     void SetMinNoHits(Int_t val) {
         fMinNoHits = val;
     }
+    
+    void SetZeroSharing(Bool_t val) {
+        fZeroSharing = val;
+    }
 
     void CheckTwoTrackEffects();
-    void Quality(Int_t, Int_t);
-    Bool_t CheckSharing(Int_t, Int_t);
+    Float_t Quality(Int_t, Int_t);
+    Float_t Sharing(Int_t, Int_t);
 
 private:
 
@@ -83,6 +90,8 @@ private:
 
     Float_t fShareQualityMax; // Maximum allowed pair quality
     Float_t fShareFractionMax; // Maximum allowed share fraction
+    
+    Bool_t fZeroSharing;
 
 
     ClassDef(MpdFemtoShareQualityPairCut, 1)

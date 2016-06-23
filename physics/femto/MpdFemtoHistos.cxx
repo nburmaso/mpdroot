@@ -17,6 +17,10 @@ MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, const Char_t* out) {
     _hCF3D      = new TH3F("_hCF3D", "_hCF3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
     
     _hDeltaPhiDeltaEta = new TH2F("_hDeltaPhiDeltaEta", "_hDeltaPhiDeltaEta", 100, 0.0, 0.0, 100, 0.0, 0.0);
+    
+    _hQuality = new TH1F("_hQuality", "_hQuality", 100, -0.6, 1.4);
+    _hSharing = new TH1F("_hSharing", "_hSharing", 100, 0.0, 1.0);
+    _hQualityVsSharing = new TH2F("_hQualityVsSharing", "_hQualityVsSharing", 100, -0.6, 1.4, 100, 0.0, 1.0); 
 }
 
 //--------------------------------------------------------------------------
@@ -31,6 +35,9 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     _hCFDenom3D->Write();
     _hCF3D->Write();
     _hDeltaPhiDeltaEta->Write();
+    _hQuality->Write();
+    _hSharing->Write();
+    _hQualityVsSharing->Write();
 
     delete _hCFQinvNomBase;
     delete _hCFQinvNom;
@@ -41,6 +48,9 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     delete _hCFDenom3D;
     delete _hCF3D;
     delete _hDeltaPhiDeltaEta;
+    delete _hQuality;
+    delete _hSharing;
+    delete _hQualityVsSharing;
 
     delete fOut;
 }

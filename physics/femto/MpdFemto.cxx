@@ -331,15 +331,16 @@ void MpdFemto::DeltaEtaDeltaPhi() {
             for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
                 TLorentzVector mom_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Momentum();
                 Int_t trId2 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetTrackID();
- 
-                if (fQualityCut) {
-                    if (fCuts->CheckSharing(trId1, trId2) == kTRUE)
-                        nFailedPairs++;
-                    else    
-                        nPassedPairs++;
+
+                if (fQualityCut)
+                    if (fCuts->Sharing(trId1, trId2) > 0.051 && fCuts->Quality(trId1, trId2) != -0.5)
+                        continue;
+                    
+
+//                        nFailedPairs++;
+//                    else    
+//                        nPassedPairs++;
                 
-                    fCuts->Quality(trId1, trId2);
-                }
                  
                 Float_t pt2 = Sqrt(mom_jPart_reco.X() * mom_jPart_reco.X() + mom_jPart_reco.Y() * mom_jPart_reco.Y());
                 Float_t phi2 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetPhi();
@@ -361,8 +362,55 @@ void MpdFemto::DeltaEtaDeltaPhi() {
                     fHisto->GetDeltaEtaDeltaPhi()->Fill(phid, etad);
             }
         }
-        cout << "nGoodPairs = " << nPassedPairs << " nFailedPairs = " << nFailedPairs<< endl;
+        // cout << "nGoodPairs = " << nPassedPairs << " nFailedPairs = " << nFailedPairs<< endl;
         nPassedPairs = 0;
         nFailedPairs = 0;
     }
+}
+
+void MpdFemto::QualityAndSharing() {
+    cout << "Define Quality and Sharing ... " << endl;
+
+    fParticle = fPartTable->GetParticle(fPDG);
+
+    fMass = fParticle->Mass();
+    fCharge = fParticle->Charge() / 3.; // Charge() returns the charge value in |e| / 3
+
+    for (Int_t iEvent = fStartEvent; iEvent < fStartEvent + fEvNum; iEvent++) {
+        fFemtoContainerMc->Delete();
+        fFemtoContainerReco->Delete();
+
+        if (iEvent > fDstTree->GetEntries() - 1)
+            return;
+
+        cout << "Event: " << iEvent << " of " << fDstTree->GetEntries() << " in the file" << endl;
+        ReadEvent(iEvent);
+
+        for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++) {
+            Int_t trId1 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->GetTrackID();
+
+            for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
+                Int_t trId2 = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetTrackID();
+                
+                Float_t q = fCuts->Quality(trId1, trId2);
+                Float_t s = fCuts->Sharing(trId1, trId2);
+                
+                fHisto->GetQuality()->Fill(q);
+                if (fCuts->GetZeroSharing()) {
+                    fHisto->GetSharing()->Fill(s);
+                    fHisto->GetQualityVsSharing()->Fill(q, s);
+                }
+                else {
+                    if (s != 0.) {
+                    fHisto->GetSharing()->Fill(s);
+                    fHisto->GetQualityVsSharing()->Fill(q, s);
+                    }
+                }  
+                
+            }
+        }
+    }
+
+
+
 }

@@ -8,9 +8,7 @@
 
 using namespace std;
 
-void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TString outFile = "outputFemto.root", Int_t nStartEvent = 0, Int_t nEvents = 100) {
-    gStyle->SetOptFit(1111111);
-
+void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TString outFile = "test.root", Int_t nStartEvent = 0, Int_t nEvents = 1000) {
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
     mpdloadlibs(1, 1); // load main libraries
 
@@ -34,6 +32,7 @@ void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TS
         femto->SetRadTpc(1.0); // Define average TPC rad. where split. && merg. effects are studied
         // femto->SetQualityPairCut(kTRUE);
         // femto->SetMinNoHits(13);
+        femto->SetZeroSharing(kTRUE); // If true, pairs with the number of shared hits equal to 0, are put in the histo _hSharing.   
 
         // A method to perform 3D-analysis
 	femto->MakeCFs_1D();
@@ -44,6 +43,8 @@ void femtoAna(TString inFile = "/nica/user/b/basalaev/vHLLE_mpdroot/mpddst_", TS
         // A method to perform DEtaDPhi-analysis
         femto->DeltaEtaDeltaPhi();
 
+        // A method to obtain Quality & Sharing cuts
+        femto->QualityAndSharing();
         delete femto;
     }
    

@@ -51,6 +51,18 @@ public:
         return _hDeltaPhiDeltaEta;
     }
     
+    TH1F* GetQuality() {
+        return _hQuality;
+    }
+    
+    TH1F* GetSharing() {
+        return _hSharing;
+    }
+    
+    TH2F* GetQualityVsSharing() {
+        return _hQualityVsSharing;
+    }
+    
     void SetNominator(TH1F* h) {
         _hCFQinvNom = h;
     }
@@ -99,6 +111,18 @@ public:
     void SetDeltaEtaDeltaPhi(TH2F* h) {
     _hDeltaPhiDeltaEta = h;
     }
+    
+    void SetQuality(TH1F* h) {
+    _hQuality = h;
+    } 
+    
+    void SetSharing(TH1F* h) {
+    _hSharing = h;
+    }
+    
+    void SetQualityVsSharing(TH2F* h) {
+    _hQualityVsSharing = h;
+    }
      
     Double_t* GetFitParams1D();
     Double_t* GetFitParams3D();
@@ -138,6 +162,10 @@ private:
     TH3F* _hCF3D;
     
     TH2F* _hDeltaPhiDeltaEta;
+    
+    TH1F* _hQuality;
+    TH1F* _hSharing;
+    TH2F* _hQualityVsSharing;
     
     ClassDef(MpdFemtoHistos, 1)
 };

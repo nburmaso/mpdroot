@@ -122,11 +122,15 @@ public:
         fCuts->SetMinNoHits(val);
     }
     
-    
-                                                
+    void SetZeroSharing(Bool_t val) {
+        fCuts->SetZeroSharing(val);
+    }
+                                                    
     void MakeCFs_1D();
     void MakeCFs_3D();
     void DeltaEtaDeltaPhi();
+    
+    void QualityAndSharing();
     
     inline void DebugInfo() {
         cout << " Service information: " << endl;
@@ -153,6 +157,7 @@ private:
     MpdFemtoShareQualityPairCut* fCuts;
     
     Bool_t fQualityCut;
+    // Bool_t fZeroSharing;
     
     void ReadEvent(Int_t);
     void CreatePair(TObject*, TObject*) {};
