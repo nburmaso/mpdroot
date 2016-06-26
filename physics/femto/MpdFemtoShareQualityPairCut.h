@@ -9,6 +9,7 @@
 #include <MpdTpcKalmanTrack.h>
 #include <MpdTpcHit.h>
 #include <MpdKalmanHit.h>
+#include <TVector2.h>
 
 using namespace std;
 using namespace TMath;
@@ -17,21 +18,12 @@ class MpdFemtoShareQualityPairCut : public TNamed {
 public:
 
     MpdFemtoShareQualityPairCut();
-    ;
     MpdFemtoShareQualityPairCut(TFile*, Float_t, Float_t);
-    MpdFemtoShareQualityPairCut(TChain*);
+    MpdFemtoShareQualityPairCut(TChain*, TClonesArray*);
 
     virtual ~MpdFemtoShareQualityPairCut();
 
     // Getters
-
-    Float_t GetShareQualityMax() {
-        return fShareQualityMax;
-    }
-
-    Float_t GetShareFractionMax() {
-        return fShareFractionMax;
-    }
 
     UInt_t GetNPairsPassed() {
         return fNPairsPassed;
@@ -44,6 +36,14 @@ public:
     Bool_t GetZeroSharing() {
         return fZeroSharing;
     }
+    
+    Float_t GetQualityMax() {
+        return fShareQualityMax;
+    }
+    
+    Float_t GetSharingMax() {
+        return fShareFractionMax;
+    }
 
     // Setters
     void SetShareQualityMax(Float_t val) {
@@ -53,15 +53,19 @@ public:
     void SetShareFractionMax(Float_t val) {
         fShareFractionMax = val;
     }
-
-    void SetMinNoHits(Int_t val) {
-        fMinNoHits = val;
-    }
     
     void SetZeroSharing(Bool_t val) {
         fZeroSharing = val;
     }
+    
+    void SetQualityMax(Float_t val) {
+        fShareFractionMax = val;
+    }
 
+    void SetSharingMax(Float_t val) {
+        fShareFractionMax = val;
+    }
+    
     void CheckTwoTrackEffects();
     Float_t Quality(Int_t, Int_t);
     Float_t Sharing(Int_t, Int_t);
@@ -83,8 +87,6 @@ private:
     TClonesArray* fHits_1st;
     TClonesArray* fHits_2nd;
 
-    Int_t fMinNoHits;
-
     UInt_t fNPairsPassed; // Number of pairs consideered that passed the cut 
     UInt_t fNPairsFailed; // Number of pairs consideered that failed the cut
 
@@ -92,8 +94,7 @@ private:
     Float_t fShareFractionMax; // Maximum allowed share fraction
     
     Bool_t fZeroSharing;
-
-
+     
     ClassDef(MpdFemtoShareQualityPairCut, 1)
 };
 

@@ -16,6 +16,7 @@
 #include <TLorentzVector.h>
 #include <MpdFemtoHistos.h>
 #include "MpdFemtoShareQualityPairCut.h"
+#include <TVector3.h>
 
 using namespace std;
 using namespace TMath;
@@ -117,15 +118,23 @@ public:
     void SetQualityPairCut(Bool_t flag) {
         fQualityCut = flag;
     }
-    
+
     void SetMinNoHits(Int_t val) {
-        fCuts->SetMinNoHits(val);
+        fMinNoHits = val;
     }
     
     void SetZeroSharing(Bool_t val) {
         fCuts->SetZeroSharing(val);
     }
-                                                    
+    
+    void SetQualityMax(Float_t val) {
+        fCuts->SetQualityMax(val);
+    }
+
+    void SetSharingMax(Float_t val) {
+        fCuts->SetSharingMax(val);
+    }
+    
     void MakeCFs_1D();
     void MakeCFs_3D();
     void DeltaEtaDeltaPhi();
@@ -156,11 +165,13 @@ private:
     MpdFemtoHistos* fHisto;
     MpdFemtoShareQualityPairCut* fCuts;
     
+    Int_t fMinNoHits;
+    
     Bool_t fQualityCut;
     // Bool_t fZeroSharing;
     
-    void ReadEvent(Int_t);
-    void CreatePair(TObject*, TObject*) {};
+    void ReadEvent(Int_t, const Char_t*);
+    Bool_t Preselection(MpdTpcKalmanTrack*, FairMCTrack*);
 
     Int_t fPDG;
     Float_t fMass;
@@ -199,6 +210,7 @@ private:
     FairMCTrack* fMpdTrackMc;
     
     TClonesArray* fTracksTPC;
+    // MpdTpcKalmanTrack* fKalmanTrack;
     // TClonesArray* fHitsTPC;
     
    // MpdTpcKalmanTrack* fTrack;

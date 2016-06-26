@@ -6,14 +6,13 @@ MpdFemtoShareQualityPairCut::MpdFemtoShareQualityPairCut(TFile* f, Float_t Share
     fFile = f;
 }
 
-MpdFemtoShareQualityPairCut::MpdFemtoShareQualityPairCut(TChain* ch) :
-fTracks(NULL),
+MpdFemtoShareQualityPairCut::MpdFemtoShareQualityPairCut(TChain* ch, TClonesArray* tr) :
+fTracks(tr),
 fHits_1st(NULL),
 fHits_2nd(NULL),
-fMinNoHits(0),
 fZeroSharing(kFALSE) {
     fChain = ch;
-    fChain->SetBranchAddress("TpcKalmanTrack", &fTracks);
+    //fChain->SetBranchAddress("TpcKalmanTrack", &fTracks);
 }
 
 void MpdFemtoShareQualityPairCut::CheckTwoTrackEffects() {
@@ -64,9 +63,9 @@ Float_t MpdFemtoShareQualityPairCut::Sharing(Int_t id1, Int_t id2) {
 
     // Looking for a correspondance between reco(global)- and kalman(tpc)-tracks
     MpdTpcKalmanTrack* tr1 = (MpdTpcKalmanTrack*) fTracks->At(id1);
-    if (tr1->GetNofHits() > fMinNoHits) {
+  //  if (tr1->GetNofHits() > fMinNoHits) {
         MpdTpcKalmanTrack* tr2 = (MpdTpcKalmanTrack*) fTracks->At(id2);
-        if (tr2->GetNofHits() > fMinNoHits) {
+  //      if (tr2->GetNofHits() > fMinNoHits) {
             totHitNum = tr1->GetNofHits() + tr2->GetNofHits();
             totHitNum1 = tr1->GetNofHits();
             totHitNum2 = tr2->GetNofHits();
@@ -80,8 +79,8 @@ Float_t MpdFemtoShareQualityPairCut::Sharing(Int_t id1, Int_t id2) {
                         nSharedHits++;
                 }
             }
-        }
-    }
+ //       }
+ //   }
     return (1. * nSharedHits / totHitNum);
 }
 

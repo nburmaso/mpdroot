@@ -6,11 +6,12 @@
 MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, const Char_t* out) {
     fQinv = qInv;
     fOut = new TFile(out, "RECREATE");
-    _hCFQinvNomBase = new TH1F("_hCFQinvNomBase", "_hCFQinvNomBase", 50, 0., qInv);
-    _hCFQinvNom = new TH1F("_hCFQinvNom", "_hCFQinvNom", 50, 0., qInv);
-    _hCFQinvDenom = new TH1F("_hCFQinvDenom", "_hCFQinvDenom", 50, 0., qInv);
-    _hCF = new TH1F("_hCF", "_hCF", 50, 0., qInv);
-    _hCFBase = new TH1F("_hCFBase", "_hCFBase", 50, 0., qInv);
+    const Int_t nBins = 100;
+    _hCFQinvNomBase = new TH1F("_hCFQinvNomBase", "_hCFQinvNomBase", nBins, 0., qInv);
+    _hCFQinvNom = new TH1F("_hCFQinvNom", "_hCFQinvNom", nBins, 0., qInv);
+    _hCFQinvDenom = new TH1F("_hCFQinvDenom", "_hCFQinvDenom", nBins, 0., qInv);
+    _hCF = new TH1F("_hCF", "_hCF", nBins, 0., qInv);
+    _hCFBase = new TH1F("_hCFBase", "_hCFBase", nBins, 0., qInv);
     
     _hCFNom3D   = new TH3F("_hCFNom3D", "_hCFNom3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
     _hCFDenom3D = new TH3F("_hCFDenom3D", "_hCFDenom3D", 10, 0., qInv, 10, 0., qInv, 10, 0., qInv);
@@ -18,9 +19,9 @@ MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, const Char_t* out) {
     
     _hDeltaPhiDeltaEta = new TH2F("_hDeltaPhiDeltaEta", "_hDeltaPhiDeltaEta", 100, 0.0, 0.0, 100, 0.0, 0.0);
     
-    _hQuality = new TH1F("_hQuality", "_hQuality", 100, -0.6, 1.4);
-    _hSharing = new TH1F("_hSharing", "_hSharing", 100, 0.0, 1.0);
-    _hQualityVsSharing = new TH2F("_hQualityVsSharing", "_hQualityVsSharing", 100, -0.6, 1.4, 100, 0.0, 1.0); 
+    _hQuality = new TH1F("_hQuality", "_hQuality", 500, -0.6, 1.);
+    _hSharing = new TH1F("_hSharing", "_hSharing", 500, 0.0, 0.3);
+    _hQualityVsSharing = new TH2F("_hQualityVsSharing", "_hQualityVsSharing", 500, -0.6, 1., 500, 0.0, 0.3); 
 }
 
 //--------------------------------------------------------------------------
@@ -34,6 +35,7 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     _hCFNom3D->Write();
     _hCFDenom3D->Write();
     _hCF3D->Write();
+    // _hDeltaPhiDeltaEta->GetZaxis()->SetLimits(0., 500.);
     _hDeltaPhiDeltaEta->Write();
     _hQuality->Write();
     _hSharing->Write();
@@ -63,9 +65,9 @@ Double_t* MpdFemtoHistos::GetFitParams1D() {
     _hCFQinvNomBase->Sumw2();
     _hCFQinvDenom->Sumw2();
 
-    _hCF->Sumw2();
+   // _hCF->Sumw2();
     _hCF->Divide(_hCFQinvNom, _hCFQinvDenom, 1., 1.);
-    _hCFBase->Sumw2();
+    // _hCFBase->Sumw2();
     _hCFBase->Divide(_hCFQinvNomBase, _hCFQinvDenom, 1., 1.);
 
     Float_t normDenomFactor = _hCFQinvDenom->Integral(0.25 * _hCFQinvDenom->GetNbinsX(), 0.75 * _hCFQinvDenom->GetNbinsX());
