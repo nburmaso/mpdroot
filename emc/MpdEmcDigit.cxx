@@ -84,6 +84,7 @@ void MpdEmcDigit::IncreaseEnergy(Float_t e, Int_t trId)
   fE += e;
   if (fContrib.find(trId) == fContrib.end()) fContrib[trId] = e;
   else fContrib[trId] += e;
+  fDy = TMath::Max(Double_t(e),fDy);
 }
 // -------------------------------------------------------------------------
 

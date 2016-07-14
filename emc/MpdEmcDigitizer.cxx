@@ -175,10 +175,16 @@ void MpdEmcDigitizer::Exec(Option_t* opt)
     hit->IncreaseEnergy(e, trId);
     hit->SetTimeStamp(TMath::Min(pnt->GetTime(),hit->GetTimeStamp()));
     hit->SetNumTracks(hit->GetNumTracks() + 1);
-    hit->SetTrackId(trId);
+    //hit->SetTrackId(trId);
     hit->SetPdg(pdg);
     //AZ hit->SetZCenter(CalcZCenter(sec, row, mod));
     //AZ hit->SetPhiCenter(CalcPhiCenter(sec, supMod, mod));
+
+    // Redo timing - take time from the highest energy deposit
+    if (TMath::Abs(e-hit->GetDy()) < 1.e-6) {
+      hit->SetTimeStamp(pnt->GetTime()); // Dy - holder of Emax
+      hit->SetTrackId(iPnt); // point index
+    }
   }
   
   Int_t nHits = fDigiArray->GetEntriesFast();
@@ -186,7 +192,7 @@ void MpdEmcDigitizer::Exec(Option_t* opt)
     MpdEmcDigit* hit = (MpdEmcDigit*) fDigiArray->UncheckedAt(iHit);
     if (hit->GetNumTracks() > 1) {
       hit->SetPdg(0);
-      hit->SetTrackId(-1);
+      //hit->SetTrackId(-1);
     }
     //hit->Print();
   }    

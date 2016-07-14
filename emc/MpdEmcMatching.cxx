@@ -178,6 +178,11 @@ void MpdEmcMatching::DoMatching(Int_t itrack)
   Double_t depth = 2.3 + 8.8 * eta;
   Double_t sigmaL = 0.82 + 1.50 * eta + 0.91 * eta * eta;
   Double_t sigmaL2 = sigmaL * sigmaL, sigmaT2 = 0.66 * 0.66;
+  // For chi2pi: parameters obtained for box pi (pT = 0.1-2.0, eta = -1.1-1.1)
+  Double_t sig1 = 7.8 - 10.9 * eta + 8.6 * eta * eta;
+  Double_t sig2 = 7.1 - 8.1 * eta + 5.3 * eta * eta;
+  Double_t et = TMath::Min (eta, 1.0);
+  Double_t sigT = 1.4 - 2.2 * et + 5.6 * et * et - 3.2 * et * et * et;
   
   Int_t secs[2], iok = 0;
   Double_t zminmax[2] = {999,-999}, ztr[2], phitr[2];
@@ -223,6 +228,7 @@ void MpdEmcMatching::DoMatching(Int_t itrack)
    
   phitr[1] = MpdKalmanFilter::Instance()->Proxim(phitr[0],phitr[1]);
   TVector2 track(ztr[1]-ztr[0],(phitr[1]-phitr[0])*rMax);
+  Double_t trLeng = track.Mod();
   Int_t imatch = fMatchArray->GetEntriesFast();
   
   for (Int_t io = 0; io < 2; ++io) {
@@ -235,9 +241,17 @@ void MpdEmcMatching::DoMatching(Int_t itrack)
       TVector2 vect(it->first-ztr[0],(phiRecp-phitr[0])*rMax);
       Double_t distT = TMath::Sin(vect.DeltaPhi(track)) * vect.Mod();
       Double_t distL = TMath::Cos(vect.DeltaPhi(track)) * vect.Mod();
-      MpdEmcMatch *match = new ((*fMatchArray)[imatch++]) MpdEmcMatch(itrack, it->second, distT, distL, recp->GetQ()); 
+      MpdEmcMatch *match = new ((*fMatchArray)[imatch++]) MpdEmcMatch(itrack, it->second, distT, distL, 
+								      recp->GetQ(), trLeng); 
       Double_t chi2 = distT * distT / sigmaT2 + (distL - depth) * (distL - depth) / sigmaL2;
       match->SetChi2(chi2);
+      // Pions
+      if (distL >=0 && distL <= trLeng) distL = 0.0;
+      else if (distL > trLeng) distL -= trLeng;
+      chi2 = distT * distT / sigT / sigT;
+      if (distL < 0) chi2 += (distL * distL / sig1 / sig1);
+      else chi2 += (distL * distL / sig2 / sig2);
+      match->SetChi2pi(chi2);
     }
   }
 }

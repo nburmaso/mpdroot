@@ -28,8 +28,9 @@ MpdEmcMatch::MpdEmcMatch() : TObject(),
 
 // -----   Standard constructor   ------------------------------------------
 
-MpdEmcMatch::MpdEmcMatch(Int_t trackInd, Int_t recpInd, Double_t distT, Double_t distL, Double_t ener) : TObject(),
-  fEnergy(ener), fChi2(999.0)
+MpdEmcMatch::MpdEmcMatch(Int_t trackInd, Int_t recpInd, Double_t distT, Double_t distL, 
+			 Double_t ener, Double_t trLeng) : TObject(),
+  fEnergy(ener), fTrLeng(trLeng), fChi2(999.0), fChi2pi(999.0)
 {
   fDist[0] = distT;
   fDist[1] = distL;

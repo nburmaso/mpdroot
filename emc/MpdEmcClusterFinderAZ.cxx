@@ -179,6 +179,7 @@ void MpdEmcClusterFinderAZ::FillEmcInfo()
       Double_t dist = TMath::Sqrt (digi->GetZcenter() * digi->GetZcenter() + rmin * rmin);
       Double_t dt = digi->GetTimeStamp() - dist / 30.; // c = 30 cm/ns       
       if (dt < -0.5 || dt > 2.0) continue;
+      //if (dt < -0.5 || dt > 1.0) continue;
 
       Int_t iphi = digi->GetChanPhiId(), iz = digi->GetChanZId();
       Int_t ix = iphi + nTowSec;
