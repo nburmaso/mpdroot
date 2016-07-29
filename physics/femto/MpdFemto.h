@@ -8,7 +8,9 @@
 #include <TClonesArray.h>
 #include <MpdEvent.h>
 #include <FairMCTrack.h>
+#include <FairMCPoint.h>
 #include <MpdTrack.h>
+#include <MpdTpcDigit.h>
 #include <TMath.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -26,6 +28,7 @@ public:
     MpdFemto();
     MpdFemto(const Char_t*);
     MpdFemto(const Char_t*, MpdFemtoHistos*);
+    MpdFemto(const Char_t*, const Char_t*, MpdFemtoHistos*);
     virtual ~MpdFemto();
 
     // Getters
@@ -115,8 +118,12 @@ public:
         fStartEvent = val;
     }
     
-    void SetQualityPairCut(Bool_t flag) {
-        fQualityCut = flag;
+    void SetSharingCut(Bool_t flag) {
+        fSharingCut = flag;
+    }
+    
+    void SetSplittingCut(Bool_t flag) {
+        fSplittingCut = flag;
     }
 
     void SetMinNoHits(Int_t val) {
@@ -135,11 +142,16 @@ public:
         fCuts->SetSharingMax(val);
     }
     
+    void SetDeltaEtaDeltaPhi(Bool_t val) {
+        fDeltaEtaDeltaPhi = val;
+    }
+       
     void MakeCFs_1D();
-    void MakeCFs_3D();
+    void MakeCFs_3D() {};
     void DeltaEtaDeltaPhi();
     
     void QualityAndSharing();
+    void EffSplitting();
     
     inline void DebugInfo() {
         cout << " Service information: " << endl;
@@ -167,18 +179,21 @@ private:
     
     Int_t fMinNoHits;
     
-    Bool_t fQualityCut;
+    Bool_t fSharingCut;
+    Bool_t fSplittingCut;
+    Bool_t fDeltaEtaDeltaPhi;
     // Bool_t fZeroSharing;
     
     void ReadEvent(Int_t, const Char_t*);
     Bool_t Preselection(MpdTpcKalmanTrack*, FairMCTrack*);
-
+       
     Int_t fPDG;
     Float_t fMass;
     Float_t fCharge;
     Float_t fMagField;
     Float_t fRadTPC;
-    const Char_t* fFilename;
+    const Char_t* fFilenameEve;
+    const Char_t* fFilenameDST;
     TDatabasePDG* fPartTable;
     TParticlePDG* fParticle;
 
@@ -199,17 +214,20 @@ private:
     Int_t fStartEvent;
 
     TChain* fDstTree;
+    TChain* fEveTree;
     MpdEvent* fMpdEvent;
 
     TClonesArray* fMcTracks;
+    TClonesArray* fMcPoints;
     TClonesArray* fRecoTracks;
     TClonesArray* fFemtoContainerReco;
     TClonesArray* fFemtoContainerMc;
 
     MpdTrack* fMpdTrackReco;
     FairMCTrack* fMpdTrackMc;
-    
+        
     TClonesArray* fTracksTPC;
+    TClonesArray* fDigitsTPC;
     // MpdTpcKalmanTrack* fKalmanTrack;
     // TClonesArray* fHitsTPC;
     

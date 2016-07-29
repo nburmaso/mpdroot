@@ -50,6 +50,26 @@ public:
     TH2F* GetDeltaEtaDeltaPhi() {
         return _hDeltaPhiDeltaEta;
     }
+   
+    TH2F* GetDeltaEtaDeltaPhiNomin() {
+        return _hDeltaPhiDeltaEtaNomin;
+    }
+    
+//    TH1D* GetDeltaEtaDeltaPhiNominProjX() {
+//        return _hDeltaPhiDeltaEtaNominProjX;
+//    }
+    
+    TH2F* GetDeltaEtaDeltaPhiDenom() {
+        return _hDeltaPhiDeltaEtaDenom;
+    }
+    
+//    TH1D* GetDeltaEtaDeltaPhiDenomProjX() {
+//        return _hDeltaPhiDeltaEtaDenomProjX;
+//    }
+    
+    TH2F* GetEtaPhiStar() {
+        return _hEtaPhiStar;
+    }
     
     TH1F* GetQuality() {
         return _hQuality;
@@ -61,6 +81,26 @@ public:
     
     TH2F* GetQualityVsSharing() {
         return _hQualityVsSharing;
+    }
+    
+    TH2F* GetQualityVsNhits() {
+        return _hQualityVsNhits;
+    }
+    
+    TH1F* GetPtNoSplit() {
+        return _hPtNoSplit;
+    }
+    
+    TH1F* GetPtSplit() {
+        return _hPtSplit;
+    }
+    
+    TH1F* GetEff() {
+        return _hEff;
+    }
+    
+    TH1I* GetNsplits() {
+        return _hNsplits;
     }
     
     void SetNominator(TH1F* h) {
@@ -112,6 +152,26 @@ public:
     _hDeltaPhiDeltaEta = h;
     }
     
+    void SetDeltaEtaDeltaPhiNomin(TH2F* h) {
+    _hDeltaPhiDeltaEtaNomin = h;
+    }
+    
+//    void SetDeltaEtaDeltaPhiNominProjX(TH1D* h) {
+//    _hDeltaPhiDeltaEtaNominProjX = h;
+//    }
+    
+    void SetDeltaEtaDeltaPhiDenom(TH2F* h) {
+    _hDeltaPhiDeltaEtaDenom = h;
+    }
+   
+//    void SetDeltaEtaDeltaPhiDenomProjX(TH1D* h) {
+//    _hDeltaPhiDeltaEtaDenomProjX = h;
+//    }
+    
+    void SetEtaPhiStar(TH2F* h) {
+    _hEtaPhiStar = h;
+    }
+    
     void SetQuality(TH1F* h) {
     _hQuality = h;
     } 
@@ -123,7 +183,27 @@ public:
     void SetQualityVsSharing(TH2F* h) {
     _hQualityVsSharing = h;
     }
-     
+    
+    void SetQualityVsNhits(TH2F* h) {
+    _hQualityVsNhits = h;
+    }
+    
+    void SetPtNoSplit(TH1F* h) {
+    _hPtNoSplit = h;
+    }
+    
+    void SetPtSplit(TH1F* h) {
+    _hPtSplit = h;
+    }
+    
+    void SetEff(TH1F* h) {
+    _hEff = h;
+    }
+    
+    void SetNsplits(TH1I* h) {
+    _hNsplits = h;
+    }
+        
     Double_t* GetFitParams1D();
     Double_t* GetFitParams3D();
     
@@ -162,10 +242,27 @@ private:
     TH3F* _hCF3D;
     
     TH2F* _hDeltaPhiDeltaEta;
+    TH2F* _hDeltaPhiDeltaEtaNomin;
+    TH2F* _hDeltaPhiDeltaEtaDenom;
+    
+    //TH1D* _hDeltaPhiDeltaEtaNominProjX;
+    //TH1D* _hDeltaPhiDeltaEtaDenomProjX;
+    TH1D* _hDeltaPhiDeltaEtaProjX;
+    TH1D* _hDeltaPhiDeltaEtaProjY;
+    
+    TH2F* _hEtaPhiStar;
     
     TH1F* _hQuality;
     TH1F* _hSharing;
     TH2F* _hQualityVsSharing;
+    
+    TH1F* _hPtNoSplit;
+    TH1F* _hPtSplit;
+    TH1F* _hEff;
+    
+    TH1I* _hNsplits;
+    
+    TH2F* _hQualityVsNhits; 
     
     ClassDef(MpdFemtoHistos, 1)
 };
