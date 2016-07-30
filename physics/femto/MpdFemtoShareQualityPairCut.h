@@ -7,6 +7,7 @@
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <MpdTpcKalmanTrack.h>
+#include <FairMCTrack.h>
 #include <MpdTpcHit.h>
 #include <MpdKalmanHit.h>
 #include <TVector2.h>
@@ -19,7 +20,7 @@ public:
 
     MpdFemtoShareQualityPairCut();
     MpdFemtoShareQualityPairCut(TFile*, Float_t, Float_t);
-    MpdFemtoShareQualityPairCut(TChain*, TClonesArray*);
+    MpdFemtoShareQualityPairCut(TChain*, TClonesArray*, TClonesArray*);
 
     virtual ~MpdFemtoShareQualityPairCut();
 
@@ -59,16 +60,19 @@ public:
     }
     
     void SetQualityMax(Float_t val) {
-        fShareFractionMax = val;
+        fShareQualityMax = val;
     }
 
     void SetSharingMax(Float_t val) {
         fShareFractionMax = val;
     }
     
-    void CheckTwoTrackEffects();
+    void CheckTwoTrackEffects() {};
     Float_t Quality(Int_t, Int_t);
     Float_t Sharing(Int_t, Int_t);
+    void MapOfSplittedTracks(TClonesArray*, map <Int_t, Int_t>&, map <Int_t, Int_t>::iterator&, Int_t);
+    Bool_t Splitting(map <Int_t, Int_t>&, Int_t);
+    void SplittingInefficiency(map <Int_t, Int_t>&) {}; 
 
 private:
 
@@ -84,6 +88,7 @@ private:
     TChain* fChain;
 
     TClonesArray* fTracks;
+    TClonesArray* fMcTracks;
     TClonesArray* fHits_1st;
     TClonesArray* fHits_2nd;
 

@@ -61,7 +61,7 @@ class MpdGeneralGenerator : public FairGenerator {
             return *this;
         }
     private:
-        TGenerator *fGenerator;
+        TGenerator *fGenerator; //!
         bool fDebug;
 };
 
