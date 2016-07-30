@@ -19,6 +19,7 @@ ${CMAKE_SOURCE_DIR}/mpddata
 ${CMAKE_SOURCE_DIR}/sts
 ${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/tgem
+${CMAKE_SOURCE_DIR}/cpc
 ${CMAKE_SOURCE_DIR}/dch
 ${CMAKE_SOURCE_DIR}/fairtools
 
@@ -61,6 +62,7 @@ MpdTrackFinderIts.cxx
 MpdVertexZfinder.cxx
 MpdTpcDedxTask.cxx
 MpdKfV0Fitter.cxx
+MpdEctTrackFinderCpc.cxx
 MpdEctTrackFinderTof.cxx
 MpdMotherFitterPart.cxx
 #MpdMotherFitterTrac.cxx
