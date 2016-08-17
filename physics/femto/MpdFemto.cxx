@@ -403,24 +403,24 @@ void MpdFemto::MakeCFs_3D() {
 
                 if (kt > fHisto->GetfKtRange(0) && kt < fHisto->GetfKtRange(1)) {
                     if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT1_Nomoinatior3D()->Fill(q_out, q_side, q_long, wfemto);
+                        fHisto->Get_kT1_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
                     else
-                        fHisto->Get_kT1_Denomoinatior3D()->Fill(q_out, q_side, q_long);
+                        fHisto->Get_kT1_Denominator3D()->Fill(q_out, q_side, q_long);
                 } else if (kt > fHisto->GetfKtRange(1) && kt < fHisto->GetfKtRange(2)) {
                     if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT2_Nomoinatior3D()->Fill(q_out, q_side, q_long, wfemto);
+                        fHisto->Get_kT2_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
                     else
-                        fHisto->Get_kT2_Denomoinatior3D()->Fill(q_out, q_side, q_long);
+                        fHisto->Get_kT2_Denominator3D()->Fill(q_out, q_side, q_long);
                 } else if (kt > fHisto->GetfKtRange(2) && kt < fHisto->GetfKtRange(3)) {
                     if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT3_Nomoinatior3D()->Fill(q_out, q_side, q_long, wfemto);
+                        fHisto->Get_kT3_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
                     else
-                        fHisto->Get_kT3_Denomoinatior3D()->Fill(q_out, q_side, q_long);
+                        fHisto->Get_kT3_Denominator3D()->Fill(q_out, q_side, q_long);
                 } else if (kt > fHisto->GetfKtRange(3) && kt < fHisto->GetfKtRange(4)) {
                     if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT4_Nomoinatior3D()->Fill(q_out, q_side, q_long, wfemto);
+                        fHisto->Get_kT4_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
                     else
-                        fHisto->Get_kT4_Denomoinatior3D()->Fill(q_out, q_side, q_long);
+                        fHisto->Get_kT4_Denominator3D()->Fill(q_out, q_side, q_long);
                 }
             }
         }

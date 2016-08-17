@@ -142,37 +142,37 @@ public:
     }
         
 
-    TH3F* Get_kT1_Nomoinatior3D(){
+    TH3F* Get_kT1_Nominator3D(){
         return _kt1_Nom_3D;
     }
-    TH3F* Get_kT1_Denomoinatior3D(){
+    TH3F* Get_kT1_Denominator3D(){
         return _kt1_Denom_3D;
     }
     TH3F* Get_kT1_CF3D(){
         return _kt1_CF_3D;
     }
-    TH3F* Get_kT2_Nomoinatior3D(){
+    TH3F* Get_kT2_Nominator3D(){
         return _kt2_Nom_3D;
     }
-    TH3F* Get_kT2_Denomoinatior3D(){
+    TH3F* Get_kT2_Denominator3D(){
         return _kt2_Denom_3D;
     }
     TH3F* Get_kT2_CF3D(){
         return _kt2_CF_3D;
     } 
-    TH3F* Get_kT3_Nomoinatior3D(){
+    TH3F* Get_kT3_Nominator3D(){
         return _kt3_Nom_3D;
     }
-    TH3F* Get_kT3_Denomoinatior3D(){
+    TH3F* Get_kT3_Denominator3D(){
         return _kt3_Denom_3D;
     }
     TH3F* Get_kT3_CF3D(){
         return _kt3_CF_3D;
     }
-    TH3F* Get_kT4_Nomoinatior3D(){
+    TH3F* Get_kT4_Nominator3D(){
         return _kt4_Nom_3D;
     }
-    TH3F* Get_kT4_Denomoinatior3D(){
+    TH3F* Get_kT4_Denominator3D(){
         return _kt4_Denom_3D;
     }
     TH3F* Get_kT4_CF3D(){
