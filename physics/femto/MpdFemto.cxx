@@ -219,8 +219,8 @@ void MpdFemto::ReadEvent(Int_t evNum, const Char_t* track) {
             Float_t E_sim = Sqrt(Px_sim * Px_sim + Py_sim * Py_sim + Pz_sim * Pz_sim + fMass * fMass);
 
             Float_t x = gRandom->Gaus(0, fSourceSize * Sqrt(2.0));
-            Float_t y = x;
-            Float_t z = y;
+            Float_t y = gRandom->Gaus(0., fSourceSize * Sqrt(2.0));
+            Float_t z = gRandom->Gaus(0., fSourceSize * Sqrt(2.0));
 
             TLorentzVector MOM_RECO(Px_reco, Py_reco, Pz_reco, E_reco);
             TLorentzVector MOM_MC(Px_sim, Py_sim, Pz_sim, E_sim);
@@ -369,9 +369,7 @@ void MpdFemto::MakeCFs_3D() {
 
         cout << "Event: " << iEvent << " of " << fDstTree->GetEntries() << " mix " << fFemtoContainerReco->GetEntriesFast() << " particles" << endl;
 
-        Float_t phid, etad; //, eta1, eta2, phi1, phi2, arg1, arg2;
-        for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++) {
-
+        for (Int_t iPart = 0; iPart < fFemtoContainerReco->GetEntriesFast(); iPart++)
             for (Int_t jPart = iPart + 1; jPart < fFemtoContainerReco->GetEntriesFast(); jPart++) {
                 TLorentzVector mom_iPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->Get4Momentum();
                 TLorentzVector mom_iPart_sim = ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(iPart))->Get4Momentum();
@@ -402,7 +400,7 @@ void MpdFemto::MakeCFs_3D() {
 
                 Float_t wfemto = EposFemtoWeightQS(mom_iPart_sim, mom_jPart_sim, coord_iPart_reco, coord_jPart_reco);
 
-                for (Int_t iKt = 0; iKt < 4; iKt++) {
+                for (Int_t iKt = 0; iKt < fHisto->GetfKtBins(); iKt++) {
                     if (kt > fHisto->GetfKtRange(iKt) && kt < fHisto->GetfKtRange(iKt + 1)) {
                         if (iPart_evNum == jPart_evNum)
                             fHisto->GetNominator3D(iKt)->Fill(q_out, q_side, q_long, wfemto);
@@ -411,34 +409,7 @@ void MpdFemto::MakeCFs_3D() {
                         break;
                     }
                 }
-
-                //                if (kt > fHisto->GetfKtRange(0) && kt < fHisto->GetfKtRange(1)) {
-                //                    if (iPart_evNum == jPart_evNum)
-                //                        fHisto->Get_kT1_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                //                    else
-                //                        fHisto->Get_kT1_Denominator3D()->Fill(q_out, q_side, q_long);
-                //                } else if (kt > fHisto->GetfKtRange(1) && kt < fHisto->GetfKtRange(2)) {
-                //                    if (iPart_evNum == jPart_evNum)
-                //                        fHisto->Get_kT2_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                //                    else
-                //                        fHisto->Get_kT2_Denominator3D()->Fill(q_out, q_side, q_long);
-                //                } 
-
-                //                if (kt > fHisto->GetfKtRange(2) && kt < fHisto->GetfKtRange(3)) {
-                //                    if (iPart_evNum == jPart_evNum)
-                //                        fHisto->Get_kT3_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                //                    else
-                //                        fHisto->Get_kT3_Denominator3D()->Fill(q_out, q_side, q_long);
-                //                } 
-                //                
-                //                else if (kt > fHisto->GetfKtRange(3) && kt < fHisto->GetfKtRange(4)) {
-                //                    if (iPart_evNum == jPart_evNum)
-                //                        fHisto->Get_kT4_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                //                    else
-                //                        fHisto->Get_kT4_Denominator3D()->Fill(q_out, q_side, q_long);
-                //                }
             }
-        }
     }
 }
 

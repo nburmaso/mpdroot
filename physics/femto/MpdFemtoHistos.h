@@ -141,44 +141,6 @@ public:
         return _hCF3D[N];
     }
 
-
-    //    TH3F* Get_kT1_Nominator3D(){
-    //        return _kt1_Nom_3D;
-    //    }
-    //    TH3F* Get_kT1_Denominator3D(){
-    //        return _kt1_Denom_3D;
-    //    }
-    //    TH3F* Get_kT1_CF3D(){
-    //        return _kt1_CF_3D;
-    //    }
-    //    TH3F* Get_kT2_Nominator3D(){
-    //        return _kt2_Nom_3D;
-    //    }
-    //    TH3F* Get_kT2_Denominator3D(){
-    //        return _kt2_Denom_3D;
-    //    }
-    //    TH3F* Get_kT2_CF3D(){
-    //        return _kt2_CF_3D;
-    //    } 
-    //    TH3F* Get_kT3_Nominator3D(){
-    //        return _kt3_Nom_3D;
-    //    }
-    //    TH3F* Get_kT3_Denominator3D(){
-    //        return _kt3_Denom_3D;
-    //    }
-    //    TH3F* Get_kT3_CF3D(){
-    //        return _kt3_CF_3D;
-    //    }
-    //    TH3F* Get_kT4_Nominator3D(){
-    //        return _kt4_Nom_3D;
-    //    }
-    //    TH3F* Get_kT4_Denominator3D(){
-    //        return _kt4_Denom_3D;
-    //    }
-    //    TH3F* Get_kT4_CF3D(){
-    //        return _kt4_CF_3D;
-    //    }        
-
     TGraph* Get_R_out_kT_3D() {
         return _R_out_kT_3D;
     }
@@ -207,18 +169,6 @@ public:
     void SetfKtRange(Int_t nr, Float_t val) {
         fKtRange[nr] = val;
     }
-
-    //    void SetNominator3D(TH3F* h) {
-    //        _hCFNom3D = h;
-    //    }
-    //
-    //    void SetDenominator3D(TH3F* h) {
-    //        _hCFDenom3D = h;
-    //    }
-    //    
-    //    void SetCF3D(TH3F* h) {
-    //    _hCF3D = h;
-    //    }
 
     void SetDeltaEtaDeltaPhi(TH2F* h) {
         _hDeltaPhiDeltaEta = h;
@@ -277,9 +227,8 @@ public:
     }
 
     Double_t* GetFitParams1D();
-    Double_t GetFitParams3D();
-    Double_t* GetFitPar_kT_3D();
-
+    void GetFitParams3D();
+   
     inline void DebugInfo() {
         cout << "Service information: " << endl;
         cout << " _hCFQinvNomBase, #entries = " << _hCFQinvNomBase->GetEntries() << endl;
@@ -318,23 +267,10 @@ private:
     TH3F** _hCFNom3D;
     TH3F** _hCFDenom3D;
     TH3F** _hCF3D;
-    //
-    //    TH3F* _kt1_Nom_3D;
-    //    TH3F* _kt1_Denom_3D;
-    //    TH3F* _kt1_CF_3D;
-    //    TH3F* _kt2_Nom_3D;
-    //    TH3F* _kt2_Denom_3D;
-    //    TH3F* _kt2_CF_3D;
-    //    TH3F* _kt3_Nom_3D;
-    //    TH3F* _kt3_Denom_3D;
-    //    TH3F* _kt3_CF_3D;
-    //    TH3F* _kt4_Nom_3D;
-    //    TH3F* _kt4_Denom_3D;
-    //    TH3F* _kt4_CF_3D;            
+          
     TGraph* _R_out_kT_3D;
     TGraph* _R_side_kT_3D;
     TGraph* _R_long_kT_3D;
-
 
     TH2F* _hDeltaPhiDeltaEta;
     TH2F* _hDeltaPhiDeltaEtaNomin;

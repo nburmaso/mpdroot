@@ -150,22 +150,16 @@ public:
     
     void SetDeltaEtaDeltaPhi(Bool_t val) {
         fDeltaEtaDeltaPhi = val;
-    }
-       
+    }  
 
     void  SetMultKtBins(Bool_t val) {
         fSetMultKtBins = val;
     }
 
-
-
-
     void MakeCFs_1D();
     void MakeCFs_3D();
 
-
     void DeltaEtaDeltaPhi();
-    
     void QualityAndSharing();
     void EffSplitting();
     
@@ -214,8 +208,6 @@ private:
 
     Int_t fNrOfKtBins;
     Bool_t fSetMultKtBins;
-
-
 
     Float_t fQinv;
     Float_t fKtCutLow;
