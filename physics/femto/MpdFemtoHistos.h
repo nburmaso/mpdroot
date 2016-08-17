@@ -6,6 +6,7 @@
 #include <TH1.h>
 #include <TF1.h>
 #include <TF3.h>
+#include <TGraph.h>
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TVector3.h>
@@ -13,10 +14,12 @@
 #include <TH2.h>
 #include <TFile.h>
 
+
 using namespace std;
 
 class MpdFemtoHistos : public TNamed {
 public:
+
     MpdFemtoHistos() {}
     MpdFemtoHistos(Float_t, const Char_t*);
 
@@ -30,6 +33,7 @@ public:
     TH1F* GetNominator() {
         return _hCFQinvNom;
     }
+   
 
     TH1F* GetNominatorBase() {
         return _hCFQinvNomBase;
@@ -38,7 +42,8 @@ public:
     TH1F* GetDenominator() {
         return _hCFQinvDenom;
     }
-    
+  
+
     TH1F* GetCF() {
         return _hCF;
     }
@@ -46,7 +51,7 @@ public:
     TH1F* GetCFBase() {
         return _hCFBase;
     }
-    
+   
     TH2F* GetDeltaEtaDeltaPhi() {
         return _hDeltaPhiDeltaEta;
     }
@@ -136,6 +141,72 @@ public:
         return _hCF3D;
     }
         
+
+    TH3F* Get_kT1_Nomoinatior3D(){
+        return _kt1_Nom_3D;
+    }
+    TH3F* Get_kT1_Denomoinatior3D(){
+        return _kt1_Denom_3D;
+    }
+    TH3F* Get_kT1_CF3D(){
+        return _kt1_CF_3D;
+    }
+    TH3F* Get_kT2_Nomoinatior3D(){
+        return _kt2_Nom_3D;
+    }
+    TH3F* Get_kT2_Denomoinatior3D(){
+        return _kt2_Denom_3D;
+    }
+    TH3F* Get_kT2_CF3D(){
+        return _kt2_CF_3D;
+    } 
+    TH3F* Get_kT3_Nomoinatior3D(){
+        return _kt3_Nom_3D;
+    }
+    TH3F* Get_kT3_Denomoinatior3D(){
+        return _kt3_Denom_3D;
+    }
+    TH3F* Get_kT3_CF3D(){
+        return _kt3_CF_3D;
+    }
+    TH3F* Get_kT4_Nomoinatior3D(){
+        return _kt4_Nom_3D;
+    }
+    TH3F* Get_kT4_Denomoinatior3D(){
+        return _kt4_Denom_3D;
+    }
+    TH3F* Get_kT4_CF3D(){
+        return _kt4_CF_3D;
+    }        
+
+    TGraph* Get_R_out_kT_3D(){
+        return _R_out_kT_3D;
+    }
+    TGraph* Get_R_side_kT_3D(){
+        return _R_side_kT_3D;
+    }
+    TGraph* Get_R_long_kT_3D(){
+        return _R_long_kT_3D;
+    }
+
+    Int_t GetfKtBins() {
+        return fKtBins;
+    }
+    Float_t GetfKtRange(Int_t nr){
+        return fKtRange[nr];
+    }
+
+    void SetfKtBins(Int_t val) {
+        fKtBins = val;
+        fKtRange = new Float_t[fKtBins+1];
+    }
+    void SetfKtRange(Int_t nr, Float_t val){
+        fKtRange[nr]=val;
+    }
+
+    Int_t fKtBins;
+    Float_t *fKtRange;
+
     void SetNominator3D(TH3F* h) {
         _hCFNom3D = h;
     }
@@ -155,6 +226,11 @@ public:
     void SetDeltaEtaDeltaPhiNomin(TH2F* h) {
     _hDeltaPhiDeltaEtaNomin = h;
     }
+
+
+   
+
+
     
 //    void SetDeltaEtaDeltaPhiNominProjX(TH1D* h) {
 //    _hDeltaPhiDeltaEtaNominProjX = h;
@@ -206,6 +282,7 @@ public:
         
     Double_t* GetFitParams1D();
     Double_t* GetFitParams3D();
+    Double_t* GetFitPar_kT_3D();
     
     inline void DebugInfo() {
         cout << "Service information: " << endl;
@@ -225,12 +302,20 @@ public:
        
 private:
     TFile* fOut;
-    
     Int_t fBins;
     Float_t fxUp;
-    
+    Int_t nr;
     Float_t fQinv;
-    
+/*
+    Double_t* parameters_3D1;
+    Double_t* parameters_3D2;
+    Double_t* parameters_3D3;
+    Double_t* parameters_3D4;
+    Float_t kt_x[4]; 
+    Float_t R_side[4];
+    Float_t R_out[4];
+    Float_t R_long[4];
+*/
     TH1F* _hCFQinvNomBase;
     TH1F* _hCFQinvNom;
     TH1F* _hCFQinvDenom;
@@ -240,6 +325,23 @@ private:
     TH3F* _hCFNom3D;
     TH3F* _hCFDenom3D;
     TH3F* _hCF3D;
+
+    TH3F* _kt1_Nom_3D;
+    TH3F* _kt1_Denom_3D;
+    TH3F* _kt1_CF_3D;
+    TH3F* _kt2_Nom_3D;
+    TH3F* _kt2_Denom_3D;
+    TH3F* _kt2_CF_3D;
+    TH3F* _kt3_Nom_3D;
+    TH3F* _kt3_Denom_3D;
+    TH3F* _kt3_CF_3D;
+    TH3F* _kt4_Nom_3D;
+    TH3F* _kt4_Denom_3D;
+    TH3F* _kt4_CF_3D;            
+    TGraph* _R_out_kT_3D;
+    TGraph* _R_side_kT_3D;
+    TGraph* _R_long_kT_3D;
+
     
     TH2F* _hDeltaPhiDeltaEta;
     TH2F* _hDeltaPhiDeltaEtaNomin;

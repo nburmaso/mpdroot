@@ -61,6 +61,12 @@ public:
         return fStartEvent;
     }
 
+    Int_t GetNrOfKtBins(){
+        return fNrOfKtBins;
+    }
+
+
+
     // Setters
 
     void SetPdgCode(Int_t val) {
@@ -146,8 +152,18 @@ public:
         fDeltaEtaDeltaPhi = val;
     }
        
+
+    void  SetMultKtBins(Bool_t val) {
+        fSetMultKtBins = val;
+    }
+
+
+
+
     void MakeCFs_1D();
-    void MakeCFs_3D() {};
+    void MakeCFs_3D();
+
+
     void DeltaEtaDeltaPhi();
     
     void QualityAndSharing();
@@ -172,7 +188,6 @@ public:
         // cout << " fFemtoContainerMc, size = " << fFemtoContainerMc->GetEntriesFast() << endl;
     }
 
-
 private:
     MpdFemtoHistos* fHisto;
     MpdFemtoShareQualityPairCut* fCuts;
@@ -196,6 +211,11 @@ private:
     const Char_t* fFilenameDST;
     TDatabasePDG* fPartTable;
     TParticlePDG* fParticle;
+
+    Int_t fNrOfKtBins;
+    Bool_t fSetMultKtBins;
+
+
 
     Float_t fQinv;
     Float_t fKtCutLow;
@@ -233,6 +253,8 @@ private:
     
    // MpdTpcKalmanTrack* fTrack;
    // MpdKalmanHit* fKalmanHit;
+
+
 
     inline Float_t EposFemtoQinv4vec(TLorentzVector first, TLorentzVector second) {
         return Abs((first - second).M());
