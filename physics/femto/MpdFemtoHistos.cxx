@@ -2,45 +2,59 @@
 #include <TH1.h>
 #include <TH3F.h>
 #include <TGraph.h>
+#include <TH3.h>
 #include "MpdFemtoHistos.h"
 
 //--------------------------------------------------------------------------
 
-MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, const Char_t* out) {
+MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, Int_t nKtBins, const Char_t* out) {
     fQinv = qInv;
+    fKtBins = nKtBins;
 
     fOut = new TFile(out, "RECREATE");
+
+    // Histos for 1D-analysis
     const Int_t nBins = 100;
     _hCFQinvNomBase = new TH1F("_hCFQinvNomBase", "_hCFQinvNomBase", nBins, 0., qInv);
     _hCFQinvNom = new TH1F("_hCFQinvNom", "_hCFQinvNom", nBins, 0., qInv);
     _hCFQinvDenom = new TH1F("_hCFQinvDenom", "_hCFQinvDenom", nBins, 0., qInv);
     _hCF = new TH1F("_hCF", "_hCF", nBins, 0., qInv);
     _hCFBase = new TH1F("_hCFBase", "_hCFBase", nBins, 0., qInv);
-    
+
+    // Histos for 3D-analysis
     const Int_t nBins2 = 60;
+    _hCFNom3D = new TH3F*[fKtBins];
+    _hCFDenom3D = new TH3F*[fKtBins];
+    _hCF3D = new TH3F*[fKtBins];
 
-    _hCFNom3D = new TH3F("_hCFNom3D", "_hCFNom3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _hCFDenom3D = new TH3F("_hCFDenom3D", "_hCFDenom3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _hCF3D = new TH3F("_hCF3D", "_hCF3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    
-    _kt1_Nom_3D = new TH3F("_kt1_Nom_3D", "_kt1_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt1_Denom_3D = new TH3F("_kt1_Denom_3D", "_kt1_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt1_CF_3D = new TH3F("_kt1_CF_3D", "_kt1_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    for (Int_t iKt = 0; iKt < fKtBins; iKt++) {
+        _hCFNom3D[iKt] = new TH3F(Form("_kt%d_Nom_3D", iKt), Form("_kt%d_Nom_3D", iKt), nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+        _hCFDenom3D[iKt] = new TH3F(Form("_kt%d_Denom_3D", iKt), Form("_kt%d_Denom_3D", iKt), nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+        _hCF3D[iKt] = new TH3F(Form("_kt%d_CF_3D", iKt), Form("_kt%d_CF_3D", iKt), nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    }
 
-    _kt2_Nom_3D = new TH3F("_kt2_Nom_3D", "_kt2_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt2_Denom_3D = new TH3F("_kt2_Denom_3D", "_kt2_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt2_CF_3D = new TH3F("_kt2_CF_3D", "_kt2_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _hCFNom3D = new TH3F("_hCFNom3D", "_hCFNom3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _hCFDenom3D = new TH3F("_hCFDenom3D", "_hCFDenom3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _hCF3D = new TH3F("_hCF3D", "_hCF3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
 
-    _kt3_Nom_3D = new TH3F("_kt3_Nom_3D", "_kt3_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt3_Denom_3D = new TH3F("_kt3_Denom_3D", "_kt3_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt3_CF_3D = new TH3F("_kt3_CF_3D", "_kt3_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt1_Nom_3D = new TH3F("_kt1_Nom_3D", "_kt1_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt1_Denom_3D = new TH3F("_kt1_Denom_3D", "_kt1_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt1_CF_3D = new TH3F("_kt1_CF_3D", "_kt1_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //
+    //    _kt2_Nom_3D = new TH3F("_kt2_Nom_3D", "_kt2_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt2_Denom_3D = new TH3F("_kt2_Denom_3D", "_kt2_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt2_CF_3D = new TH3F("_kt2_CF_3D", "_kt2_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //
+    //    _kt3_Nom_3D = new TH3F("_kt3_Nom_3D", "_kt3_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt3_Denom_3D = new TH3F("_kt3_Denom_3D", "_kt3_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt3_CF_3D = new TH3F("_kt3_CF_3D", "_kt3_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //
+    //    _kt4_Nom_3D = new TH3F("_kt4_Nom_3D", "_kt4_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt4_Denom_3D = new TH3F("_kt4_Denom_3D", "_kt4_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
+    //    _kt4_CF_3D = new TH3F("_kt4_CF_3D", "_kt4_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
 
-    _kt4_Nom_3D = new TH3F("_kt4_Nom_3D", "_kt4_Nom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt4_Denom_3D = new TH3F("_kt4_Denom_3D", "_kt4_Denom_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
-    _kt4_CF_3D = new TH3F("_kt4_CF_3D", "_kt4_CF_3D", nBins2, 0., qInv, nBins2, 0., qInv, nBins2, 0., qInv);
 
-
-    Int_t nr_of_kT_Bins = 4;
+    //   Int_t nr_of_kT_Bins = 4;
     _R_out_kT_3D = new TGraph();
     _R_side_kT_3D = new TGraph();
     _R_long_kT_3D = new TGraph();
@@ -80,9 +94,9 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     _hCFQinvDenom->Write();
     _hCF->Write();
     _hCFBase->Write();
-    _hCFNom3D->Write();
-    _hCFDenom3D->Write();
-    _hCF3D->Write();
+    //    _hCFNom3D->Write();
+    //    _hCFDenom3D->Write();
+    //    _hCF3D->Write();
     _hDeltaPhiDeltaEta->Write();
     _hQuality->Write();
     _hSharing->Write();
@@ -100,18 +114,18 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     _hDeltaPhiDeltaEtaProjX->Write();
     _hDeltaPhiDeltaEtaProjY->Write();
 
-    _kt1_Nom_3D->Write();
-    _kt1_Denom_3D->Write();
-    _kt1_CF_3D->Write();
-    _kt2_Nom_3D->Write();
-    _kt2_Denom_3D->Write();
-    _kt2_CF_3D->Write();
-    _kt3_Nom_3D->Write();
-    _kt3_Denom_3D->Write();
-    _kt3_CF_3D->Write();
-    _kt4_Nom_3D->Write();
-    _kt4_Denom_3D->Write();
-    _kt4_CF_3D->Write();
+    //    _kt1_Nom_3D->Write();
+    //    _kt1_Denom_3D->Write();
+    //    _kt1_CF_3D->Write();
+    //    _kt2_Nom_3D->Write();
+    //    _kt2_Denom_3D->Write();
+    //    _kt2_CF_3D->Write();
+    //    _kt3_Nom_3D->Write();
+    //    _kt3_Denom_3D->Write();
+    //    _kt3_CF_3D->Write();
+    //    _kt4_Nom_3D->Write();
+    //    _kt4_Denom_3D->Write();
+    //    _kt4_CF_3D->Write();
     _R_out_kT_3D->Write();
     _R_side_kT_3D->Write();
     _R_long_kT_3D->Write();
@@ -121,25 +135,25 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     delete _hCFQinvDenom;
     delete _hCF;
     delete _hCFBase;
-    delete _hCFNom3D;
-    delete _hCFDenom3D;
-    delete _hCF3D;
+    //    delete _hCFNom3D;
+    //    delete _hCFDenom3D;
+    //    delete _hCF3D;
 
-    delete _kt1_Nom_3D;
-    delete _kt1_Denom_3D;
-    delete _kt1_CF_3D;
-
-    delete _kt2_Nom_3D;
-    delete _kt2_Denom_3D;
-    delete _kt2_CF_3D;
-
-    delete _kt3_Nom_3D;
-    delete _kt3_Denom_3D;
-    delete _kt3_CF_3D;
-
-    delete _kt4_Nom_3D;
-    delete _kt4_Denom_3D;
-    delete _kt4_CF_3D;
+    //    delete _kt1_Nom_3D;
+    //    delete _kt1_Denom_3D;
+    //    delete _kt1_CF_3D;
+    //
+    //    delete _kt2_Nom_3D;
+    //    delete _kt2_Denom_3D;
+    //    delete _kt2_CF_3D;
+    //
+    //    delete _kt3_Nom_3D;
+    //    delete _kt3_Denom_3D;
+    //    delete _kt3_CF_3D;
+    //
+    //    delete _kt4_Nom_3D;
+    //    delete _kt4_Denom_3D;
+    //    delete _kt4_CF_3D;
 
     delete _hDeltaPhiDeltaEta;
     delete _hDeltaPhiDeltaEtaNomin;
@@ -221,87 +235,110 @@ Double_t* MpdFemtoHistos::GetFitParams1D() {
 
 //--------------------------------------------------------------------------
 
-Double_t* MpdFemtoHistos::GetFitParams3D() {
-    _hCFNom3D->Sumw2();
-    _hCFDenom3D->Sumw2();
-    _hCF3D->Sumw2();
-    _hCF3D->Divide(_hCFNom3D, _hCFDenom3D, 1., 1.);
+Double_t MpdFemtoHistos::GetFitParams3D() {
+    vector <Float_t> Rout;
+    vector <Float_t> Rside;
+    vector <Float_t> Rlong;
+    vector <Float_t> kt_x;
+
+    for (Int_t iKt = 0; iKt < fKtBins; iKt++) {
+        kt_x.push_back(0.5 * (GetfKtRange(iKt) + GetfKtRange(iKt)));
+        _hCFNom3D[iKt]->Sumw2();
+        _hCFDenom3D[iKt]->Sumw2();
+        _hCF3D[iKt]->Sumw2();
+        _hCF3D[iKt]->Divide(_hCFNom3D[iKt], _hCFDenom3D[iKt], 1., 1., "B");
+    }
 
     TF3* fitc = new TF3("fitc", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
-    fitc->SetParameters(3.0, 3.0, 3.0, 1.0);
 
-    _hCF3D->Fit(fitc, "SRQ", " ", 0., fQinv);
+    for (Int_t iKt = 0; iKt < fKtBins; iKt++) {
+        fitc->SetParameters(3.0, 3.0, 3.0, 1.0);
+        _hCF3D[iKt]->Fit(fitc, "SRQ", " ", 0., fQinv);
+        Double_t* params = fitc->GetParameters();
+        Rside.push_back(params[0]);
+        Rout.push_back(params[1]);
+        Rlong.push_back(params[2]);
+    }
 
-    return fitc->GetParameters();
+    for (Int_t iKt = 0; iKt < fKtBins; iKt++) {
+        _R_out_kT_3D->SetPoint(iKt, kt_x[iKt], Rout[iKt]);
+        cout << "R_out: " << Rout[iKt] << endl;
+        _R_side_kT_3D->SetPoint(iKt, kt_x[iKt], Rside[iKt]);
+        cout << "R_side: " << Rside[iKt] << endl;
+        _R_long_kT_3D->SetPoint(iKt, kt_x[iKt], Rlong[iKt]);
+        cout << "R_long: " << Rlong[iKt] << endl;
+    }
+
+    return 0.;
 }
 
 Double_t* MpdFemtoHistos::GetFitPar_kT_3D() {
 
-    _kt1_Nom_3D->Sumw2();
-    _kt1_Denom_3D->Sumw2();
-    _kt1_CF_3D->Sumw2();
-
-    _kt2_Nom_3D->Sumw2();
-    _kt2_Denom_3D->Sumw2();
-    _kt2_CF_3D->Sumw2();
-
-    _kt3_Nom_3D->Sumw2();
-    _kt3_Denom_3D->Sumw2();
-    _kt3_CF_3D->Sumw2();
-
-    _kt4_Nom_3D->Sumw2();
-    _kt4_Denom_3D->Sumw2();
-    _kt4_CF_3D->Sumw2();
-
-    _kt1_CF_3D->Divide(_kt1_Nom_3D, _kt1_Denom_3D, 1., 1., "B");
-    _kt2_CF_3D->Divide(_kt2_Nom_3D, _kt2_Denom_3D, 1., 1., "B");
-    _kt3_CF_3D->Divide(_kt3_Nom_3D, _kt3_Denom_3D, 1., 1., "B");
-    _kt4_CF_3D->Divide(_kt4_Nom_3D, _kt4_Denom_3D, 1., 1., "B");
-
-    TF3* fit_kt1 = new TF3("fit_kt1", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
-    fit_kt1->SetParameters(3.0, 3.0, 3.0, 1.0);
-
-    TF3* fit_kt2 = new TF3("fit_kt2", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
-    fit_kt2->SetParameters(3.0, 3.0, 3.0, 1.0);
-
-    TF3* fit_kt3 = new TF3("fit_kt3", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
-    fit_kt3->SetParameters(3.0, 3.0, 3.0, 1.0);
-
-    TF3* fit_kt4 = new TF3("fit_kt4", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
-    fit_kt4->SetParameters(3.0, 3.0, 3.0, 1.0);
-
-    _kt1_CF_3D->Fit(fit_kt1, "SRQ", " ", 0., fQinv);
-    _kt2_CF_3D->Fit(fit_kt2, "SRQ", " ", 0., fQinv);
-    _kt3_CF_3D->Fit(fit_kt3, "SRQ", " ", 0., fQinv);
-    _kt4_CF_3D->Fit(fit_kt4, "SRQ", " ", 0., fQinv);
-
-    Double_t* parameters_3D1 = fit_kt1->GetParameters();
-    Double_t* parameters_3D2 = fit_kt2->GetParameters();
-    Double_t* parameters_3D3 = fit_kt3->GetParameters();
-    Double_t* parameters_3D4 = fit_kt4->GetParameters();
-
-    Float_t kt_x[4] = {0.5 * (GetfKtRange(0) + GetfKtRange(1)), 0.5 * (GetfKtRange(1) + GetfKtRange(2)), 0.5 * (GetfKtRange(2) + GetfKtRange(3)), 0.5 * (GetfKtRange(3) + GetfKtRange(4))};
-    Float_t R_side[4] = {parameters_3D1[0], parameters_3D2[0], parameters_3D3[0], parameters_3D4[0]};
-    Float_t R_out[4] = {parameters_3D1[1], parameters_3D2[1], parameters_3D3[1], parameters_3D4[1]};
-    Float_t R_long[4] = {parameters_3D1[2], parameters_3D2[2], parameters_3D3[2], parameters_3D4[2]};
-
-    for (Int_t i = 0; i < 4; i++) {
-        _R_out_kT_3D->SetPoint(i, kt_x[i], R_out[i]);
-        cout << "R_out: " << R_out[i] << endl;
-        _R_side_kT_3D->SetPoint(i, kt_x[i], R_side[i]);
-        cout << "R_side: " << R_side[i] << endl;
-        _R_long_kT_3D->SetPoint(i, kt_x[i], R_long[i]);
-        cout << "R_long: " << R_long[i] << endl;
-    }
-
-    _R_out_kT_3D->SetName("_R_out");
-    _R_out_kT_3D->SetMarkerStyle(24);
-    _R_side_kT_3D->SetName("_R_side");
-    _R_side_kT_3D->SetMarkerStyle(24);
-    _R_long_kT_3D->SetName("_R_long");
-    _R_long_kT_3D->SetMarkerStyle(24);
-
-    return parameters_3D1;
+    //    _kt1_Nom_3D->Sumw2();
+    //    _kt1_Denom_3D->Sumw2();
+    //    _kt1_CF_3D->Sumw2();
+    //
+    //    _kt2_Nom_3D->Sumw2();
+    //    _kt2_Denom_3D->Sumw2();
+    //    _kt2_CF_3D->Sumw2();
+    //
+    //    _kt3_Nom_3D->Sumw2();
+    //    _kt3_Denom_3D->Sumw2();
+    //    _kt3_CF_3D->Sumw2();
+    //
+    //    _kt4_Nom_3D->Sumw2();
+    //    _kt4_Denom_3D->Sumw2();
+    //    _kt4_CF_3D->Sumw2();
+    //
+    //    _kt1_CF_3D->Divide(_kt1_Nom_3D, _kt1_Denom_3D, 1., 1., "B");
+    //    _kt2_CF_3D->Divide(_kt2_Nom_3D, _kt2_Denom_3D, 1., 1., "B");
+    //    _kt3_CF_3D->Divide(_kt3_Nom_3D, _kt3_Denom_3D, 1., 1., "B");
+    //    _kt4_CF_3D->Divide(_kt4_Nom_3D, _kt4_Denom_3D, 1., 1., "B");
+    //
+    //    TF3* fit_kt1 = new TF3("fit_kt1", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
+    //    fit_kt1->SetParameters(3.0, 3.0, 3.0, 1.0);
+    //
+    //    TF3* fit_kt2 = new TF3("fit_kt2", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
+    //    fit_kt2->SetParameters(3.0, 3.0, 3.0, 1.0);
+    //
+    //    TF3* fit_kt3 = new TF3("fit_kt3", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
+    //    fit_kt3->SetParameters(3.0, 3.0, 3.0, 1.0);
+    //
+    //    TF3* fit_kt4 = new TF3("fit_kt4", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
+    //    fit_kt4->SetParameters(3.0, 3.0, 3.0, 1.0);
+    //
+    //    _kt1_CF_3D->Fit(fit_kt1, "SRQ", " ", 0., fQinv);
+    //    _kt2_CF_3D->Fit(fit_kt2, "SRQ", " ", 0., fQinv);
+    //    _kt3_CF_3D->Fit(fit_kt3, "SRQ", " ", 0., fQinv);
+    //    _kt4_CF_3D->Fit(fit_kt4, "SRQ", " ", 0., fQinv);
+    //
+    //    Double_t* parameters_3D1 = fit_kt1->GetParameters();
+    //    Double_t* parameters_3D2 = fit_kt2->GetParameters();
+    //    Double_t* parameters_3D3 = fit_kt3->GetParameters();
+    //    Double_t* parameters_3D4 = fit_kt4->GetParameters();
+    //
+    //    Float_t kt_x[4] = {0.5 * (GetfKtRange(0) + GetfKtRange(1)), 0.5 * (GetfKtRange(1) + GetfKtRange(2)), 0.5 * (GetfKtRange(2) + GetfKtRange(3)), 0.5 * (GetfKtRange(3) + GetfKtRange(4))};
+    //    Float_t R_side[4] = {parameters_3D1[0], parameters_3D2[0], parameters_3D3[0], parameters_3D4[0]};
+    //    Float_t R_out[4] = {parameters_3D1[1], parameters_3D2[1], parameters_3D3[1], parameters_3D4[1]};
+    //    Float_t R_long[4] = {parameters_3D1[2], parameters_3D2[2], parameters_3D3[2], parameters_3D4[2]};
+    //
+    //    for (Int_t i = 0; i < 4; i++) {
+    //        _R_out_kT_3D->SetPoint(i, kt_x[i], R_out[i]);
+    //        cout << "R_out: " << R_out[i] << endl;
+    //        _R_side_kT_3D->SetPoint(i, kt_x[i], R_side[i]);
+    //        cout << "R_side: " << R_side[i] << endl;
+    //        _R_long_kT_3D->SetPoint(i, kt_x[i], R_long[i]);
+    //        cout << "R_long: " << R_long[i] << endl;
+    //    }
+    //
+    //    _R_out_kT_3D->SetName("_R_out");
+    //    _R_out_kT_3D->SetMarkerStyle(24);
+    //    _R_side_kT_3D->SetName("_R_side");
+    //    _R_side_kT_3D->SetMarkerStyle(24);
+    //    _R_long_kT_3D->SetName("_R_long");
+    //    _R_long_kT_3D->SetMarkerStyle(24);
+    //
+    //    return parameters_3D1;
 }
 
 

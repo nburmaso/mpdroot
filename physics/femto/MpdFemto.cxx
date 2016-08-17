@@ -235,8 +235,7 @@ void MpdFemto::ReadEvent(Int_t evNum, const Char_t* track) {
             new((*fFemtoContainerMc)[fFemtoContainerMc->GetEntriesFast()])
                     MpdFemtoContainer(evNum, MOM_MC, COORD, 0.0, 0.0, trackID);
         }
-    }
-    else if (track == "kalmanTracks") {
+    } else if (track == "kalmanTracks") {
 
         if (fSplittingCut)
             fCuts->MapOfSplittedTracks(fTracksTPC, nPoinsInTrack, it, fMinNoHits);
@@ -302,9 +301,9 @@ void MpdFemto::ReadEvent(Int_t evNum, const Char_t* track) {
             Float_t Pz_sim = mc1->GetPz();
             Float_t E_sim = Sqrt(Px_sim * Px_sim + Py_sim * Py_sim + Pz_sim * Pz_sim + fMass * fMass);
 
-            Float_t x = gRandom->Gaus(0, fSourceSize * Sqrt(2.0));
-            Float_t y = x;
-            Float_t z = y;
+            Float_t x = gRandom->Gaus(0., fSourceSize * Sqrt(2.0));
+            Float_t y = gRandom->Gaus(0., fSourceSize * Sqrt(2.0));
+            Float_t z = gRandom->Gaus(0., fSourceSize * Sqrt(2.0));
 
             TLorentzVector MOM_RECO(Px_reco, Py_reco, Pz_reco, E_reco);
             TLorentzVector MOM_MC(Px_sim, Py_sim, Pz_sim, E_sim);
@@ -352,10 +351,12 @@ void MpdFemto::MakeCFs_3D() {
 
     fParticle = fPartTable->GetParticle(fPDG);
     fMass = fParticle->Mass();
-    cout << "kt range: " << fHisto->GetfKtRange(1) << endl;
-    cout << "kt range: " << fHisto->GetfKtRange(2) << endl;
-    cout << "kt range: " << fHisto->GetfKtRange(3) << endl;
-    cout << "kt range: " << fHisto->GetfKtRange(4) << endl;
+
+    cout << "kt-bin ranges (in GeV/c): " << endl;
+    for (Int_t iKt = 0; iKt < fHisto->GetfKtBins(); iKt++)
+        cout << "[" << fHisto->GetfKtRange(iKt) << "; " << fHisto->GetfKtRange(iKt + 1) << "] ";
+    cout << endl;
+
     for (Int_t iEvent = fStartEvent; iEvent < fEvNum + fStartEvent; iEvent += fMixedEvents) {
         fFemtoContainerMc->Delete();
         fFemtoContainerReco->Delete();
@@ -401,27 +402,41 @@ void MpdFemto::MakeCFs_3D() {
 
                 Float_t wfemto = EposFemtoWeightQS(mom_iPart_sim, mom_jPart_sim, coord_iPart_reco, coord_jPart_reco);
 
-                if (kt > fHisto->GetfKtRange(0) && kt < fHisto->GetfKtRange(1)) {
-                    if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT1_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                    else
-                        fHisto->Get_kT1_Denominator3D()->Fill(q_out, q_side, q_long);
-                } else if (kt > fHisto->GetfKtRange(1) && kt < fHisto->GetfKtRange(2)) {
-                    if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT2_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                    else
-                        fHisto->Get_kT2_Denominator3D()->Fill(q_out, q_side, q_long);
-                } else if (kt > fHisto->GetfKtRange(2) && kt < fHisto->GetfKtRange(3)) {
-                    if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT3_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                    else
-                        fHisto->Get_kT3_Denominator3D()->Fill(q_out, q_side, q_long);
-                } else if (kt > fHisto->GetfKtRange(3) && kt < fHisto->GetfKtRange(4)) {
-                    if (iPart_evNum == jPart_evNum)
-                        fHisto->Get_kT4_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
-                    else
-                        fHisto->Get_kT4_Denominator3D()->Fill(q_out, q_side, q_long);
+                for (Int_t iKt = 0; iKt < 4; iKt++) {
+                    if (kt > fHisto->GetfKtRange(iKt) && kt < fHisto->GetfKtRange(iKt + 1)) {
+                        if (iPart_evNum == jPart_evNum)
+                            fHisto->GetNominator3D(iKt)->Fill(q_out, q_side, q_long, wfemto);
+                        else
+                            fHisto->GetDenominator3D(iKt)->Fill(q_out, q_side, q_long);
+                        break;
+                    }
                 }
+
+                //                if (kt > fHisto->GetfKtRange(0) && kt < fHisto->GetfKtRange(1)) {
+                //                    if (iPart_evNum == jPart_evNum)
+                //                        fHisto->Get_kT1_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
+                //                    else
+                //                        fHisto->Get_kT1_Denominator3D()->Fill(q_out, q_side, q_long);
+                //                } else if (kt > fHisto->GetfKtRange(1) && kt < fHisto->GetfKtRange(2)) {
+                //                    if (iPart_evNum == jPart_evNum)
+                //                        fHisto->Get_kT2_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
+                //                    else
+                //                        fHisto->Get_kT2_Denominator3D()->Fill(q_out, q_side, q_long);
+                //                } 
+
+                //                if (kt > fHisto->GetfKtRange(2) && kt < fHisto->GetfKtRange(3)) {
+                //                    if (iPart_evNum == jPart_evNum)
+                //                        fHisto->Get_kT3_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
+                //                    else
+                //                        fHisto->Get_kT3_Denominator3D()->Fill(q_out, q_side, q_long);
+                //                } 
+                //                
+                //                else if (kt > fHisto->GetfKtRange(3) && kt < fHisto->GetfKtRange(4)) {
+                //                    if (iPart_evNum == jPart_evNum)
+                //                        fHisto->Get_kT4_Nominator3D()->Fill(q_out, q_side, q_long, wfemto);
+                //                    else
+                //                        fHisto->Get_kT4_Denominator3D()->Fill(q_out, q_side, q_long);
+                //                }
             }
         }
     }
@@ -508,8 +523,7 @@ void MpdFemto::MakeCFs_1D() {
                     if (fDeltaEtaDeltaPhi)
                         if (Qinv < 0.1)
                             fHisto->GetDeltaEtaDeltaPhiNomin()->Fill(phid, etad);
-                }
-                else {
+                } else {
                     fHisto->GetDenominator()->Fill(Qinv);
                     if (fDeltaEtaDeltaPhi)
                         if (Qinv < 0.1)
