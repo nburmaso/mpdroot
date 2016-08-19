@@ -83,11 +83,6 @@ public:
         fPtCutUp = up;
     }
 
-    void SetKtCuts(Float_t low, Float_t up) {
-        fKtCutLow = low;
-        fKtCutUp = up;
-    }
-
     void SetSourceSize(Float_t size) {
         fSourceSize = size;
     }
@@ -168,8 +163,6 @@ public:
         cout << " fPDG = " << fPDG << endl;
         cout << " fMass = " << fMass << endl;
         cout << " fQinv = " << fQinv << endl;
-        cout << " fKtCutLow = " << fKtCutLow << endl;
-        cout << " fKtCutUp = " << fKtCutUp << endl;
         cout << " fEtaCutLow = " << fEtaCutLow << endl;
         cout << " fEtaCutUp = " << fEtaCutUp << endl;
         cout << " fPtCutLow = " << fPtCutLow << endl;
@@ -210,8 +203,6 @@ private:
     Bool_t fSetMultKtBins;
 
     Float_t fQinv;
-    Float_t fKtCutLow;
-    Float_t fKtCutUp;
     Float_t fEtaCutLow;
     Float_t fEtaCutUp;
     Float_t fPtCutLow;
@@ -249,7 +240,7 @@ private:
 
 
     inline Float_t EposFemtoQinv4vec(TLorentzVector first, TLorentzVector second) {
-        return Abs((first - second).M());
+        return Abs(TLorentzVector(first - second).M());
     }
 
     Float_t EposFemtoWeightQS(TLorentzVector, TLorentzVector, TLorentzVector, TLorentzVector);

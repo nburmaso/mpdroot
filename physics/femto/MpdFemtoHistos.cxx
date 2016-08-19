@@ -31,6 +31,8 @@ MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, Int_t nKtBins, const Char_t* out) {
         _hCFNom3D[iKt] = new TH3F(Form("_kt%d_Nom_3D", iKt), Form("_kt%d_Nom_3D", iKt), nBins3D, 0., qInv, nBins3D, 0., qInv, nBins3D, 0., qInv);
         _hCFDenom3D[iKt] = new TH3F(Form("_kt%d_Denom_3D", iKt), Form("_kt%d_Denom_3D", iKt), nBins3D, 0., qInv, nBins3D, 0., qInv, nBins3D, 0., qInv);
         _hCF3D[iKt] = new TH3F(Form("_kt%d_CF_3D", iKt), Form("_kt%d_CF_3D", iKt), nBins3D, 0., qInv, nBins3D, 0., qInv, nBins3D, 0., qInv);
+        _hCFNom3D[iKt]->Sumw2();
+        _hCFDenom3D[iKt]->Sumw2();
     }
 
     _R_out_kT_3D = new TGraph();
@@ -199,9 +201,9 @@ void MpdFemtoHistos::GetFitParams3D() {
 
     for (Int_t iKt = 0; iKt < fKtBins; iKt++) {
         kt_x.push_back(0.5 * (GetfKtRange(iKt) + GetfKtRange(iKt + 1)));
-        _hCFNom3D[iKt]->Sumw2();
-        _hCFDenom3D[iKt]->Sumw2();
-        _hCF3D[iKt]->Sumw2();
+//        _hCFNom3D[iKt]->Sumw2();
+//        _hCFDenom3D[iKt]->Sumw2();
+//        _hCF3D[iKt]->Sumw2();
         _hCF3D[iKt]->Divide(_hCFNom3D[iKt], _hCFDenom3D[iKt], 1., 1., "B");
     }
 

@@ -15,8 +15,6 @@ MpdFemto::MpdFemto() {
     fEtaCutUp = 0.;
     fPtCutLow = 0.;
     fPtCutUp = 0.;
-    fKtCutLow = 0.;
-    fKtCutUp = 0.;
     fSourceSize = 0.;
     fMixedEvents = 0;
 
@@ -41,7 +39,11 @@ fMpdTrackMc(NULL),
 fMass(0.),
 fSplittingCut(kFALSE),
 fSharingCut(kFALSE),
-fDeltaEtaDeltaPhi(kFALSE) {
+fDeltaEtaDeltaPhi(kFALSE),
+fPtCutLow(0.0),
+fPtCutUp(LDBL_MAX),
+fEtaCutLow(-LDBL_MAX),
+fEtaCutUp(LDBL_MAX) {
     TString path = getenv("VMCWORKDIR");
     TString path2pdg = path + "/input/pdg_table.txt";
 
@@ -84,10 +86,14 @@ fMpdTrackReco(NULL),
 fMpdTrackMc(NULL),
 fTracksTPC(NULL),
 fMass(0.),
-fMinNoHits(0),
+fMinNoHits(5),
 fSplittingCut(kFALSE),
 fSharingCut(kFALSE),
-fDeltaEtaDeltaPhi(kFALSE) {
+fDeltaEtaDeltaPhi(kFALSE), 
+fPtCutLow(0.0),
+fPtCutUp(LDBL_MAX),
+fEtaCutLow(-LDBL_MAX),
+fEtaCutUp(LDBL_MAX) {
     TString path = getenv("VMCWORKDIR");
     TString path2pdg = path + "/input/pdg_table.txt";
 
@@ -133,7 +139,11 @@ fMcPoints(NULL),
 fDigitsTPC(NULL),
 fSplittingCut(kFALSE),
 fSharingCut(kFALSE),
-fDeltaEtaDeltaPhi(kFALSE) {
+fDeltaEtaDeltaPhi(kFALSE), 
+fPtCutLow(0.0),
+fPtCutUp(LDBL_MAX),
+fEtaCutLow(-LDBL_MAX),
+fEtaCutUp(LDBL_MAX) {
     TString path = getenv("VMCWORKDIR");
     TString path2pdg = path + "/input/pdg_table.txt";
 
@@ -244,8 +254,7 @@ void MpdFemto::ReadEvent(Int_t evNum, const Char_t* track) {
             MpdTpcKalmanTrack* tr1 = (MpdTpcKalmanTrack*) fTracksTPC->UncheckedAt(iKalmanTrack);
             Int_t trId1 = tr1->GetTrackID();
             Int_t nHits1 = tr1->GetNofHits();
-            //cout << fMinNoHits << endl;
-            // Nantes, 07July 2016
+           
             if (nHits1 < fMinNoHits)
                 continue;
 
@@ -277,12 +286,12 @@ void MpdFemto::ReadEvent(Int_t evNum, const Char_t* track) {
                         continue;
 
                     Float_t s = fCuts->Sharing(iKalmanTrack, jKalmanTrack);
-                    Float_t q = fCuts->Quality(iKalmanTrack, jKalmanTrack);
-                    fHisto->GetQuality()->Fill(q);
+                    // Float_t q = fCuts->Quality(iKalmanTrack, jKalmanTrack);
+                    // fHisto->GetQuality()->Fill(q);
                     fHisto->GetSharing()->Fill(s);
-                    fHisto->GetQualityVsSharing()->Fill(q, s);
-                    fHisto->GetQualityVsNhits()->Fill(q, nHits1);
-                    if (q > -0.4) {
+                    // fHisto->GetQualityVsSharing()->Fill(q, s);
+                    // fHisto->GetQualityVsNhits()->Fill(q, nHits1);
+                    if (s > 0.) {
                         isShared = kTRUE;
                         break;
                     }
@@ -356,6 +365,8 @@ void MpdFemto::MakeCFs_3D() {
     for (Int_t iKt = 0; iKt < fHisto->GetfKtBins(); iKt++)
         cout << "[" << fHisto->GetfKtRange(iKt) << "; " << fHisto->GetfKtRange(iKt + 1) << "] ";
     cout << endl;
+    
+    UInt_t n = 0, d = 0;
 
     for (Int_t iEvent = fStartEvent; iEvent < fEvNum + fStartEvent; iEvent += fMixedEvents) {
         fFemtoContainerMc->Delete();
@@ -378,8 +389,8 @@ void MpdFemto::MakeCFs_3D() {
                 TLorentzVector mom_jPart_sim = ((MpdFemtoContainer*) fFemtoContainerMc->UncheckedAt(jPart))->Get4Momentum();
                 TLorentzVector coord_jPart_reco = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->Get4Coordinate();
 
-                Float_t pt1 = Sqrt(mom_iPart_reco.X() * mom_iPart_reco.X() + mom_iPart_reco.Y() * mom_iPart_reco.Y());
-                Float_t pt2 = Sqrt(mom_jPart_reco.X() * mom_jPart_reco.X() + mom_jPart_reco.Y() * mom_jPart_reco.Y());
+                // Float_t pt1 = Sqrt(mom_iPart_reco.X() * mom_iPart_reco.X() + mom_iPart_reco.Y() * mom_iPart_reco.Y());
+                // Float_t pt2 = Sqrt(mom_jPart_reco.X() * mom_jPart_reco.X() + mom_jPart_reco.Y() * mom_jPart_reco.Y());
                 Float_t p_x_sum = mom_iPart_reco.X() + mom_jPart_reco.X();
                 Float_t p_y_sum = mom_iPart_reco.Y() + mom_jPart_reco.Y();
                 Float_t p_x_dif = mom_iPart_reco.X() - mom_jPart_reco.X();
@@ -399,18 +410,22 @@ void MpdFemto::MakeCFs_3D() {
                 Float_t q_long = mom_iPart_reco.Z() - mom_jPart_reco.Z();
 
                 Float_t wfemto = EposFemtoWeightQS(mom_iPart_sim, mom_jPart_sim, coord_iPart_reco, coord_jPart_reco);
-
                 for (Int_t iKt = 0; iKt < fHisto->GetfKtBins(); iKt++) {
                     if (kt > fHisto->GetfKtRange(iKt) && kt < fHisto->GetfKtRange(iKt + 1)) {
-                        if (iPart_evNum == jPart_evNum)
+                        if (iPart_evNum == jPart_evNum) {
                             fHisto->GetNominator3D(iKt)->Fill(q_out, q_side, q_long, wfemto);
-                        else
+                            n++;
+                        }
+                        else {
                             fHisto->GetDenominator3D(iKt)->Fill(q_out, q_side, q_long);
+                            d++;
+                        }
                         break;
                     }
                 }
             }
     }
+    cout << n << " " << d << endl;
 }
 
 void MpdFemto::MakeCFs_1D() {
@@ -481,9 +496,7 @@ void MpdFemto::MakeCFs_1D() {
                 mom_jPart_reco.Boost(-vlong);
 
                 Double_t kt = 0.5 * Hypot(mom_iPart_reco.X() + mom_jPart_reco.X(), mom_iPart_reco.Y() + mom_jPart_reco.Y());
-                if (kt < fKtCutLow || kt > fKtCutUp)
-                    continue;
-
+              
                 Int_t iPart_evNum = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(iPart))->GetEventNumber();
                 Int_t jPart_evNum = ((MpdFemtoContainer*) fFemtoContainerReco->UncheckedAt(jPart))->GetEventNumber();
 
