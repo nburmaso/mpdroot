@@ -13,8 +13,9 @@
 #include <TH3.h>
 #include <TH2.h>
 #include <TFile.h>
+#include <TMath.h>
 
-
+using namespace TMath;
 using namespace std;
 
 class MpdFemtoHistos : public TNamed {

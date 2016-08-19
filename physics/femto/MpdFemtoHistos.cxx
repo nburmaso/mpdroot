@@ -201,20 +201,24 @@ void MpdFemtoHistos::GetFitParams3D() {
 
     for (Int_t iKt = 0; iKt < fKtBins; iKt++) {
         kt_x.push_back(0.5 * (GetfKtRange(iKt) + GetfKtRange(iKt + 1)));
-//        _hCFNom3D[iKt]->Sumw2();
-//        _hCFDenom3D[iKt]->Sumw2();
-//        _hCF3D[iKt]->Sumw2();
+        //        _hCFNom3D[iKt]->Sumw2();
+        //        _hCFDenom3D[iKt]->Sumw2();
+        //        _hCF3D[iKt]->Sumw2();
         _hCF3D[iKt]->Divide(_hCFNom3D[iKt], _hCFDenom3D[iKt], 1., 1., "B");
     }
 
     for (Int_t iKt = 0; iKt < fKtBins; iKt++) {
-        TF3* fitc = new TF3("fitc", "1 + [3] * exp(-25.76578 * (x * x * [0] * [0] + y * y * [1] * [1] + z * z * [2] * [2]))");
+        TF3* fitc = new TF3("fitc", "1 + [3] * exp(-25.76578 * (x * x * [0] + y * y * [1] + z * z * [2]))");
         fitc->SetParameters(3.0, 3.0, 3.0, 1.0);
+        fitc->SetParLimits(0, 0., 100.);
+        fitc->SetParLimits(1, 0., 100.);
+        fitc->SetParLimits(2, 0., 100.);
+        fitc->SetParLimits(3, 0., 1.);
         _hCF3D[iKt]->Fit(fitc, "SRQ", " ", 0., fQinv);
         Double_t* params = fitc->GetParameters();
-        Rside.push_back(params[0]);
-        Rout.push_back(params[1]);
-        Rlong.push_back(params[2]);
+        Rside.push_back(Sqrt(params[0]));
+        Rout.push_back(Sqrt(params[1]));
+        Rlong.push_back(Sqrt(params[2]));
         delete fitc;
     }
 
