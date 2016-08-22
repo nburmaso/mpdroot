@@ -696,37 +696,54 @@ void MpdTpcClusterFinderAZ::PeakAndValley(const MpdTpc2dCluster* clus, multimap<
 
 //__________________________________________________________________________
 
-void MpdTpcClusterFinderAZ::CorrectReco(TVector3 &p3loc, TVector3 &p3errCor, Int_t nPads, Double_t adc)
+void MpdTpcClusterFinderAZ::CorrectReco(TVector3 &p3loc, TVector3 &p3errCor, Int_t nPads, Double_t &adc)
 {
-  // Correct reconstructed coordinates
+  // Correct reconstructed coordinates and charge
 
   Double_t xsec = (p3loc.Y() + fSecGeo->GetMinY()) * TMath::Tan(fSecGeo->Dphi()/2);
   Double_t xloc = p3loc.X(), xloc0 = xloc, edge = 0.0; // distance to sector boundary
   if (xloc < 0) edge = xloc + xsec;
   else edge = xloc - xsec;
+  if (TMath::Abs(edge) > 2.0) return; // no corrections
+  Double_t adc0 = adc, coef = 1.0;
+  // Correct charge
+  if (nPads == 1 && adc0 < 5000) {
+    coef = -0.0065 + 0.00015 * adc0 - 2.528e-8 * adc0 * adc0 + 1.380e-12 * adc0 * adc0 * adc0;
+    coef = TMath::Max(coef,0.02) / 0.74 * 0.91;
+    adc /= coef;
+  } else if (nPads == 2 && adc0 < 10000) {
+    coef = 0.0139 + 0.000201 * adc0 - 2.351e-8 * adc0 * adc0 + 9.750e-13 * adc0 * adc0 * adc0;
+    coef = TMath::Max(coef,0.05) / 0.74 * 0.91;
+    adc /= coef;
+  } else if (nPads == 3 && adc0 < 6500) {
+    coef = -0.068 + 0.000333 * adc0 - 4.401e-8 * adc0 * adc0 + 1.834e-12 * adc0 * adc0 * adc0;
+    coef = TMath::Max(coef,0.02) / 0.74 * 0.91;
+    adc /= coef;
+  }
+    
   if (TMath::Abs(edge) > 1.5 || nPads > 3) return; // no corrections
-  
+  // Correct coordinates
   if (nPads == 1) {
     xloc -= TMath::Sign(0.520,edge);
     Double_t corr = -0.15;
-    if (adc < 50000) corr = 0.206 - 2.532e-5 * adc + 8.715e-10 * adc * adc
-      - 1.610e-14 * adc * adc * adc + 1.193e-19 * adc * adc * adc * adc;
+    if (adc0 < 50000) corr = 0.206 - 2.532e-5 * adc0 + 8.715e-10 * adc0 * adc0
+      - 1.610e-14 * adc0 * adc0 * adc0 + 1.193e-19 * adc0 * adc0 * adc0 * adc0;
     if (edge < 0) corr = -corr;
     xloc -= corr;
     p3errCor[0] = 0.116;
   } else if (nPads == 2) {
     xloc -= TMath::Sign(0.200,edge);
     Double_t corr = -0.07;
-    if (adc < 200000) corr = 0.374 - 1.046e-5 * adc + 9.595e-11 * adc * adc
-	- 4.098e-16 * adc * adc * adc + 6.811e-22 * adc * adc * adc * adc;
+    if (adc0 < 200000) corr = 0.374 - 1.046e-5 * adc0 + 9.595e-11 * adc0 * adc0
+	- 4.098e-16 * adc0 * adc0 * adc0 + 6.811e-22 * adc0 * adc0 * adc0 * adc0;
     if (edge < 0) corr = -corr;
     xloc -= corr;
     p3errCor[0] = 0.110;
   } else if (nPads == 3) {
     xloc -= TMath::Sign(0.033,edge);
     Double_t corr = 0.01;
-    if (adc < 200000) corr = 0.188 - 4.007e-6 * adc + 3.364e-11 * adc * adc
-	- 1.265e-16 * adc * adc * adc + 1.771e-22 * adc * adc * adc * adc;
+    if (adc0 < 200000) corr = 0.188 - 4.007e-6 * adc0 + 3.364e-11 * adc0 * adc0
+	- 1.265e-16 * adc0 * adc0 * adc0 + 1.771e-22 * adc0 * adc0 * adc0 * adc0;
     if (edge < 0) corr = -corr;
     xloc -= corr;
     p3errCor[0] = 0.073;

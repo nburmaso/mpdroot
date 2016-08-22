@@ -41,10 +41,11 @@ class MpdTpcDedxTask :public FairTask
 
   TClonesArray *fTracks;    // TPC tracks
   TClonesArray *fMCTracks;  // MC tracks
+  TClonesArray *fHits;      // TPC hits (rec. points)
 
  private:
 
-  ClassDef(MpdTpcDedxTask,1);
+  ClassDef(MpdTpcDedxTask,0);
 
 };
 
