@@ -4,6 +4,7 @@
 
 set(INCLUDE_DIRECTORIES
 ${ROOT_INCLUDE_DIR} 
+${GSL_DIR}/include
 ${CLHEP_INCLUDE_DIR} 
 ${CMAKE_SOURCE_DIR}/geobase 
 ${CMAKE_SOURCE_DIR}/parbase 
@@ -33,6 +34,8 @@ MpdFemto.cxx
 MpdFemtoContainer.cxx
 MpdFemtoHistos.cxx
 MpdFemtoShareQualityPairCut.cxx
+MpdFemtoYlm.cxx
+MpdFemtoSHCF.cxx
 )
 
 # fill list of header files from list of source files

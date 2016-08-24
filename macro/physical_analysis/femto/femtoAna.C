@@ -19,7 +19,7 @@ void femtoAna(TString inFileDST = "/nfs/test_femto/mpddst_", //tutaj wrzucam pat
     const Int_t dim = nKtBins + 1;
     Float_t KtRanges[dim] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5};
 
-    MpdFemtoHistos* histos = new MpdFemtoHistos(Qinv, nKtBins, outFile);
+    MpdFemtoHistos* histos = new MpdFemtoHistos(Qinv, nKtBins, 3,outFile);
     histos->SetfKtBins(nKtBins);
     for (Int_t idx = 0; idx < dim; idx++)
         histos->SetfKtRange(idx, KtRanges[idx]);
@@ -51,6 +51,9 @@ void femtoAna(TString inFileDST = "/nfs/test_femto/mpddst_", //tutaj wrzucam pat
 
         // A method to perform 3D-analysis
         femto->MakeCFs_3D();
+
+        // A method to perform SH-analysis
+        femto->MakeCFs_SH();
 
         // A method to perform DEtaDPhi-analysis
         // femto->DeltaEtaDeltaPhi();

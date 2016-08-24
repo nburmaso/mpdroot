@@ -2,6 +2,7 @@
 #define MPDFEMTOHISTOS_H 1
 
 #include <iostream>
+#include <complex>
 #include <TNamed.h>
 #include <TH1.h>
 #include <TF1.h>
@@ -12,8 +13,12 @@
 #include <TVector3.h>
 #include <TH3.h>
 #include <TH2.h>
+#include <TH3D.h>
 #include <TFile.h>
+#include <TDirectory.h>
 #include <TMath.h>
+#include "MpdFemtoYlm.h"
+#include "MpdFemtoSHCF.h"
 
 using namespace TMath;
 using namespace std;
@@ -23,7 +28,7 @@ public:
 
     MpdFemtoHistos() {
     }
-    MpdFemtoHistos(Float_t, Int_t, const Char_t*);
+    MpdFemtoHistos(Float_t, Int_t, Int_t,const Char_t*);
 
     virtual ~MpdFemtoHistos();
 
@@ -228,8 +233,38 @@ public:
     }
 
     Double_t* GetFitParams1D();
+
+    void SetL(int L){fMaxL = L;};
+
     void GetFitParams3D();
+
+    Int_t GetMaxJM()const {return fMaxJM;};
+    Int_t GetMaxL() const {return fMaxL;};
+
+    Int_t GetBin(int qbin, int ilmzero, int zeroimag, int ilmprim, int primimag);
+
+    TH1D* GetRealNumerator(Int_t kt,Int_t i) const { return _hNumReal[kt][i];};
    
+    TH1D *GetImagNumerator(Int_t kt,Int_t i) const {return _hNumImag[kt][i];};
+
+    TH1D *GetRealDenominator(Int_t kt, Int_t i) const {return _hDenReal[kt][i];};
+
+    TH1D *GetImagDenominator(Int_t kt,Int_t i) const {return _hDenImag[kt][i];};
+
+    TH3D *GetCovNumerator(Int_t kt) const {return _hCovNum[kt];};
+
+    TH3D *GetCovDenominator(Int_t kt) const {return _hCovDen[kt];};
+
+    TH1D *GetBinCNumerator(Int_t kt)const {return _hBinCtn[kt];};
+
+    TH1D *GetBinCDenominator(Int_t kt) const {return _hBinCtd[kt];};
+
+    void FillSHNumerator(Int_t kt, Double_t qout, Double_t qside, Double_t qlong, Double_t weight);
+
+    void FillSHDenominator(Int_t kt, Double_t qout, Double_t qside, Double_t qlong, Double_t weight);
+
+    void PackCovariances();
+
     inline void DebugInfo() {
         cout << "Service information: " << endl;
         cout << " _hCFQinvNomBase, #entries = " << _hCFQinvNomBase->GetEntries() << endl;
@@ -295,6 +330,28 @@ private:
     TH1I* _hNsplits;
 
     TH2F* _hQualityVsNhits;
+
+    //Spherical harmonics stuff
+    TH1D ***_hNumReal;
+    TH1D ***_hNumImag;
+    TH1D ***_hDenReal;
+    TH1D ***_hDenImag;
+    TH1D **_hBinCtn;
+    TH1D **_hBinCtd;
+    TH3D **_hCovNum;
+    TH3D **_hCovDen;
+    Double_t **fCovmnum;
+    Double_t **fCovmden;
+    Int_t fCovSize;
+    Int_t fFactorialsSize;
+    Int_t fMaxL;
+    Int_t fMaxJM;
+    Double_t *fEls;
+    Double_t *fEms;
+    Int_t *fElsi;
+    Int_t *fEmsi;
+    std::complex<double> *fYlmBuffer;
+    Double_t *fFactorials;
 
     ClassDef(MpdFemtoHistos, 1)
 };
