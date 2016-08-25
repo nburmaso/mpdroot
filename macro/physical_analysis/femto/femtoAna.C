@@ -8,9 +8,9 @@
 
 using namespace std;
 
-void femtoAna(TString inFileDST = "/nfs/test_femto/mpddst_", //tutaj wrzucam path do initial root
+void femtoAna(TString inFileDST = "/nica/mpd16/basalaev/mpddata/mpddst_", //tutaj wrzucam path do initial root
         TString inFileEve = "/nica/user/b/basalaev/mpdroot_vHLLE/macro/mpd/simReco/evetest_",
-        TString outFile = "_test.root", Int_t nStartEvent = 0, Int_t nEvents = 1000) {
+	      TString outFile = "_test.root", Int_t nStartEvent = 0, Int_t nEvents = 1000, Int_t nFiles = 93) {
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
     mpdloadlibs(1, 1); // load main libraries
 
@@ -24,7 +24,7 @@ void femtoAna(TString inFileDST = "/nfs/test_femto/mpddst_", //tutaj wrzucam pat
     for (Int_t idx = 0; idx < dim; idx++)
         histos->SetfKtRange(idx, KtRanges[idx]);
    
-    for (Int_t iFile = 0; iFile < 3; iFile++) {
+    for (Int_t iFile = 0; iFile < nFiles; iFile++) {
         // /nica/user/b/basalaev/vHLLE_mpdroot - is a path on NICA-cluster to the test data sample (vHLLE+UrQMD, 11.5 GeV/n, 1PT, MPD, geometry_stage1)
         MpdFemto* femto = new MpdFemto(inFileDST + TString::Format("%d.root", iFile), histos);
         // MpdFemto* femto = new MpdFemto(inFileDST + TString::Format("%d.root", iFile), inFileEve + TString::Format("%d.root", iFile), histos);
