@@ -3,11 +3,12 @@
 #include <TH3F.h>
 #include <TGraph.h>
 #include <TH3.h>
+#include <TH3D.h>
 #include "MpdFemtoHistos.h"
 
 //--------------------------------------------------------------------------
 
-MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, Int_t nKtBins, const Char_t* out) {
+MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, Int_t nKtBins,Int_t l, const Char_t* out) {
     fQinv = qInv;
     fKtBins = nKtBins;
 
@@ -63,7 +64,84 @@ MpdFemtoHistos::MpdFemtoHistos(Float_t qInv, Int_t nKtBins, const Char_t* out) {
     _hNsplits = new TH1I("_hNsplits", "_hNsplits", 19, 1, 20);
 
     _hQualityVsNhits = new TH2F("_hQualityVsNhits", "_hQualityVsNhits", 100, -0.6, 1., 50, 4, 54);
+    fMaxL = l;
+	 fMaxJM = (fMaxL+1)*(fMaxL+1);
+	 fFactorialsSize = 4*(fMaxL+1);
+		 fFactorials =  new Double_t[fFactorialsSize];
+		 int fac = 1;
+		 fFactorials[0] = 1;
+		 for (int iter=1; iter<4*(fMaxL+1); iter++){
+		     fac *= iter;
+		     fFactorials[iter] = fac;
+		  }
 
+		  // Fill in els and ems table
+		  Int_t el = 0;
+		  Int_t em = 0;
+		  Int_t il = 0;
+		  fEls = new Double_t[fMaxJM];
+		  fEms = new Double_t[fMaxJM];
+		  fElsi = new Int_t[fMaxJM];
+		  fEmsi = new Int_t[fMaxJM];
+		  do {
+		    fEls[il] = el;
+		    fEms[il] = em;
+		    fElsi[il] = (Int_t) el;
+		    fEmsi[il] = (Int_t) em;
+
+		    em++;
+		    il++;
+		    if (em > el) {
+		      el++;
+		      em = -el;
+		    }
+		  }
+		  while (el <= fMaxL);
+		  _hNumReal = new TH1D**[fKtBins];
+		  _hNumImag = new TH1D**[fKtBins];
+		  _hDenReal = new TH1D**[fKtBins];
+		  _hDenImag = new TH1D**[fKtBins];
+		  _hBinCtd = new TH1D*[fKtBins];
+		  _hBinCtn = new TH1D*[fKtBins];
+		  for(int ikt=0;ikt<fKtBins;ikt++){
+
+			  _hNumReal[ikt] = new TH1D*[fMaxJM];
+			  _hNumImag[ikt] = new TH1D*[fMaxJM];
+			  _hDenReal[ikt] = new TH1D*[fMaxJM];
+			  _hDenImag[ikt] = new TH1D*[fMaxJM];
+			  _hBinCtn[ikt] = new TH1D(Form("BinCountNum[%i]",ikt),Form("BinCountNum[%i]",ikt),nBins1D,0,qInv);
+			  _hBinCtd[ikt] = new TH1D(Form("BinCountDen[%i]",ikt),Form("BinCountDen[%i]",ikt),nBins1D,0,qInv);
+			  for(int ihist = 0;ihist<fMaxJM;ihist++){
+				  TString num_name_re = Form("NumReYlm%i%i[%i]",fElsi[ihist],fEmsi[ihist],ikt);
+				  TString num_name_im = Form("NumImYlm%i%i[%i]",fElsi[ihist],fEmsi[ihist],ikt);
+				  TString den_name_re = Form("DenReYlm%i%i[%i]",fElsi[ihist],fEmsi[ihist],ikt);
+				  TString den_name_im = Form("DenImYlm%i%i[%i]",fElsi[ihist],fEmsi[ihist],ikt);
+				  _hNumReal[ikt][ihist] = new TH1D(num_name_re,num_name_re,nBins1D,0,qInv);
+				  _hNumImag[ikt][ihist] = new TH1D(num_name_im,num_name_re,nBins1D,0,qInv);
+				  _hDenReal[ikt][ihist] = new TH1D(den_name_re,num_name_re,nBins1D,0,qInv);
+				  _hDenImag[ikt][ihist] = new TH1D(den_name_im,num_name_re,nBins1D,0,qInv);
+				  _hNumReal[ikt][ihist]->Sumw2();
+				  _hNumImag[ikt][ihist]->Sumw2();
+				  _hDenReal[ikt][ihist]->Sumw2();
+				  _hDenImag[ikt][ihist]->Sumw2();
+			  }
+		  }
+		  fYlmBuffer = new std::complex<double>[fMaxJM];
+		  fCovSize = fMaxJM*fMaxJM*4*nBins1D;
+		  fCovmnum = new Double_t*[fKtBins];
+		  fCovmden = new Double_t*[fKtBins];
+		  for(int ikt=0;ikt<fKtBins;ikt++){
+			  fCovmnum[ikt] = new Double_t[fCovSize];
+			  fCovmden[ikt] = new Double_t[fCovSize];
+			  for(int j = 0;j<fCovSize;j++){
+				  fCovmnum[ikt][j] =0;
+				  fCovmden[ikt][j]=0;
+			  }
+		  }
+		  _hCovNum = NULL;
+		  _hCovDen = NULL;
+		MpdFemtoYlm *ylm = MpdFemtoYlm::Instance();
+		ylm->InitializeYlms();
 }
 
 //--------------------------------------------------------------------------
@@ -129,6 +207,69 @@ MpdFemtoHistos::~MpdFemtoHistos() {
     delete _hEtaPhiStar;
     delete _hDeltaPhiDeltaEtaProjX;
     delete _hDeltaPhiDeltaEtaProjY;
+
+
+
+    std::cout<<"address "<<_hNumReal<<std::endl;
+    if(_hNumReal){
+	gDirectory->mkdir("SH");
+	gDirectory->Cd("SH");
+	MpdFemtoSHCF *cf = new MpdFemtoSHCF(fMaxL);
+	PackCovariances();
+	for(int i=0;i<fKtBins;i++){
+		gDirectory->mkdir(Form("kt_%i",i));
+		gDirectory->Cd(Form("kt_%i",i));
+		cf->SetNumRe(_hNumReal[i],kFALSE);
+		cf->SetNumIm(_hNumImag[i],kFALSE);
+		cf->SetDenRe(_hDenReal[i],kFALSE);
+		cf->SetDenIm(_hDenImag[i],kFALSE);
+		cf->SetCovMatrix(_hCovNum[i],_hCovDen[i],kFALSE);
+		cf->RecalculateCF();//calculate CF's in proper way
+		TH1D **cf_real = cf->GetCFRe();
+		TH1D **cf_imag = cf->GetCFIm();
+		_hCovNum[i]->Write();
+		_hCovDen[i]->Write();
+		for(int j=0;j<fMaxJM;j++){
+			_hNumReal[i][j]->Write();
+			_hNumImag[i][j]->Write();
+			_hDenReal[i][j]->Write();
+			_hDenImag[i][j]->Write();
+			TH1D *cf_re = (TH1D*)cf_real[j]->Clone();
+			TH1D *cf_im = (TH1D*)cf_imag[j]->Clone();
+			cf_re->Write();
+			cf_im->Write();
+		}
+	}
+	//set pointers to null to avoid crash during calling delete MpdFemtoSHCF
+	cf->SetNumIm(NULL,kFALSE);
+	cf->SetNumRe(NULL,kFALSE);
+	cf->SetDenIm(NULL,kFALSE);
+	cf->SetDenRe(NULL,kFALSE);
+	cf->SetCovMatrix(NULL,NULL,kFALSE);
+	delete cf;
+
+    for(int ikt = 0;ikt<fKtBins;ikt++){
+    	delete []_hNumReal[ikt];
+    	delete []_hNumImag[ikt];
+    	delete []_hDenReal[ikt];
+    	delete []_hDenImag[ikt];
+    	delete []fCovmnum[ikt];
+    	delete []fCovmden[ikt];
+    }
+    delete []_hNumReal;
+    delete []_hNumImag;
+    delete []_hDenReal;
+    delete []_hDenImag;
+    delete []_hBinCtn;
+    delete []_hBinCtd;
+    delete []fCovmnum;
+    delete []fCovmden;
+    delete fYlmBuffer;
+    delete []fEls;
+    delete []fEms;
+    delete []fElsi;
+    delete []fEmsi;
+    }
 
     delete fOut;
 }
@@ -241,3 +382,111 @@ void MpdFemtoHistos::GetFitParams3D() {
     _R_long_kT_3D->SetName("R_{long}, fm");
     _R_long_kT_3D->SetMarkerStyle(markerStyle);
 }
+
+Int_t MpdFemtoHistos::GetBin(int qbin, int ilmzero, int zeroimag, int ilmprim,
+		int primimag) {
+	  return (qbin*GetMaxJM()*GetMaxJM()*4 +
+		  (ilmprim*2 + primimag) * GetMaxJM()*2 +
+		  ilmzero*2 + zeroimag);
+}
+
+void MpdFemtoHistos::PackCovariances() {
+	if(_hCovNum)
+		delete []_hCovNum;
+	if(_hCovDen)
+		delete []_hCovDen;
+	_hCovNum = new TH3D*[fKtBins];
+	_hCovDen = new TH3D*[fKtBins];
+	for(int i=0;i<fKtBins;i++){
+		TString name_num = Form("CovNum%i",i);
+		TString name_den = Form("CovDen%i",i);
+		TAxis *axis = _hNumReal[0][0]->GetXaxis();
+		_hCovNum[i] = new TH3D(name_num,name_num,
+				axis->GetNbins(),axis->GetBinLowEdge(1),axis->GetBinUpEdge(axis->GetNbins()),
+				GetMaxJM()*2, -0.5, GetMaxJM()*2-0.5,
+				GetMaxJM()*2, -0.5, GetMaxJM()*2-0.5);
+		_hCovDen[i] = new TH3D(name_den,name_den,
+				axis->GetNbins(),axis->GetBinLowEdge(1),axis->GetBinUpEdge(axis->GetNbins()),
+				GetMaxJM()*2, -0.5, GetMaxJM()*2-0.5,
+				GetMaxJM()*2, -0.5, GetMaxJM()*2-0.5);
+		  for (int ibin=1; ibin<=_hCovNum[i]->GetNbinsX(); ibin++){
+			 for (int ilmz=0; ilmz<GetMaxJM()*2; ilmz++){
+			      for (int ilmp=0; ilmp<GetMaxJM()*2; ilmp++){
+			    	  _hCovNum[i]->SetBinContent(ibin,ilmz+1,ilmp+1,fCovmnum[i][GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)]);
+			    	  _hCovDen[i]->SetBinContent(ibin,ilmz+1,ilmp+1,fCovmden[i][GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)]);
+			      }
+			  }
+		  }
+	}
+}
+
+void MpdFemtoHistos::FillSHNumerator(Int_t kt, Double_t qout, Double_t qside,
+		Double_t qlong, Double_t weight) {
+	Double_t kv = TMath::Sqrt(qout * qout + qside * qside + qlong * qlong);
+	MpdFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer);
+	for (int ilm = 0; ilm < GetMaxJM(); ilm++) {
+		_hNumReal[kt][ilm]->Fill(kv, real(fYlmBuffer[ilm]) * weight);
+		_hNumImag[kt][ilm]->Fill(kv, -imag(fYlmBuffer[ilm]) * weight);
+		_hBinCtn[kt]->Fill(kv, 1.0);
+	}
+	Int_t nqbin = _hBinCtn[kt]->GetXaxis()->FindFixBin(kv) - 1;
+	if (nqbin < _hBinCtn[kt]->GetNbinsX()) {
+		Double_t weight2 = weight * weight;
+		for (int ilmzero = 0; ilmzero < GetMaxJM(); ilmzero++) {
+			for (int ilmprim = 0; ilmprim < GetMaxJM(); ilmprim++) {
+				Int_t gbin = GetBin(nqbin, ilmzero, 0, ilmprim, 0);
+				fCovmnum[kt][gbin] = fCovmnum[kt][gbin]
+						+ real(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim])
+								* weight2;
+				gbin = GetBin(nqbin, ilmzero, 0, ilmprim, 1);
+				fCovmnum[kt][gbin] = fCovmnum[kt][gbin]
+						+ real(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim])
+								* weight2;
+				gbin = GetBin(nqbin, ilmzero, 1, ilmprim, 0);
+				fCovmnum[kt][gbin] = fCovmnum[kt][gbin]
+						- imag(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim])
+								* weight2;
+				gbin = GetBin(nqbin, ilmzero, 1, ilmprim, 1);
+				fCovmnum[kt][gbin] = fCovmnum[kt][gbin]
+						- imag(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim])
+								* weight2;
+			}
+		}
+	}
+}
+
+void MpdFemtoHistos::FillSHDenominator(Int_t kt, Double_t qout, Double_t qside,
+		Double_t qlong, Double_t weight) {
+	Double_t kv = TMath::Sqrt(qout * qout + qside * qside + qlong * qlong);
+	MpdFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer);
+	for (int ilm = 0; ilm < GetMaxJM(); ilm++) {
+		_hDenReal[kt][ilm]->Fill(kv, real(fYlmBuffer[ilm]) * weight);
+		_hDenImag[kt][ilm]->Fill(kv, -imag(fYlmBuffer[ilm]) * weight);
+		_hBinCtd[kt]->Fill(kv, 1.0);
+	}
+	Int_t nqbin = _hBinCtd[kt]->GetXaxis()->FindFixBin(kv) - 1;
+	if (nqbin < _hBinCtd[kt]->GetNbinsX()) {
+		Double_t weight2 = weight * weight;
+		for (int ilmzero = 0; ilmzero < GetMaxJM(); ilmzero++) {
+			for (int ilmprim = 0; ilmprim < GetMaxJM(); ilmprim++) {
+				Int_t gbin = GetBin(nqbin, ilmzero, 0, ilmprim, 0);
+				fCovmden[kt][gbin] = fCovmden[kt][gbin]
+						+ real(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim])
+								* weight2;
+				gbin = GetBin(nqbin, ilmzero, 0, ilmprim, 1);
+				fCovmden[kt][gbin] = fCovmden[kt][gbin]
+						+ real(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim])
+								* weight2;
+				gbin = GetBin(nqbin, ilmzero, 1, ilmprim, 0);
+				fCovmden[kt][gbin] = fCovmden[kt][gbin]
+						- imag(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim])
+								* weight2;
+				gbin = GetBin(nqbin, ilmzero, 1, ilmprim, 1);
+				fCovmden[kt][gbin] = fCovmden[kt][gbin]
+						- imag(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim])
+								* weight2;
+			}
+		}
+	}
+}
+

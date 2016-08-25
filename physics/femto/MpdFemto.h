@@ -19,6 +19,7 @@
 #include <MpdFemtoHistos.h>
 #include "MpdFemtoShareQualityPairCut.h"
 #include <TVector3.h>
+#include"MpdFemtoYlm.h"
 
 using namespace std;
 using namespace TMath;
@@ -153,12 +154,13 @@ public:
 
     void MakeCFs_1D();
     void MakeCFs_3D();
+    void MakeCFs_SH();
 
     void DeltaEtaDeltaPhi();
     void QualityAndSharing();
     void EffSplitting();
     
-    inline void DebugInfo() {
+	inline void DebugInfo() {
         cout << " Service information: " << endl;
         cout << " fPDG = " << fPDG << endl;
         cout << " fMass = " << fMass << endl;
@@ -236,6 +238,8 @@ private:
     
    // MpdTpcKalmanTrack* fTrack;
    // MpdKalmanHit* fKalmanHit;
+    /// spherical harmonics stuff
+    Int_t fMaxL;
 
 
 
