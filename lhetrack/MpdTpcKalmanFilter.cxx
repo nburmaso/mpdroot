@@ -1684,6 +1684,7 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
     track->SetParamNew(param);
     //if (i == 0 && iDir > 0) track->SetLength(0.); // for correct track length
     // Correct dE/dx for step length (for clusters) - due to track angles
+    /* Angle corrections moved to Dedx task
     if (!fUseMCHit && corDedx) {
       Double_t cosTh = TMath::Cos(track->GetParamNew(3));
       Double_t phi = track->GetParamNew(2);
@@ -1693,6 +1694,7 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
       if (cosPhi < 0.1) { cout << " oops " << secPhi << " " << phi << " " << track->Pt() << endl; cosPhi = 1; }
       hit->SetSignal(hit->GetSignal() * cosTh * cosPhi);
     }
+    */
   }
   // Save track params at last hit
   track->SetLengAtHit(track->GetLength());

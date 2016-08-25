@@ -119,6 +119,7 @@ void MpdTpcDedxTask::Exec(Option_t * option)
 	}
       }
       dedx[nOK++] = sig;
+      hit->SetSignal(sig);
     }
     if (nOK == 0) continue;
     Int_t *indx = new Int_t [nOK];
