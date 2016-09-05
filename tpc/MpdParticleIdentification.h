@@ -19,15 +19,18 @@
 
 // Base Class Headers ----------------
 #include "TSystem.h"
+#include "MpdTPCpid.h"
 
-class MpdParticleIdentification {
+
+class MpdParticleIdentification : public MpdTPCpid {
 public:
    
   // Constructors/Destructors ---------
   MpdParticleIdentification();
-  ~MpdParticleIdentification();
+  virtual ~MpdParticleIdentification();
   
-  Int_t GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi, Float_t& PK, Float_t& Pp, Float_t& Pe, Int_t method);
+  // Int_t GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi, Float_t& PK, Float_t& Pp, Float_t& Pe, Int_t method);
+  // The function is realized now in the MpdTPCpid-class with corrected probability coefficients
   Int_t GetTofProbs(Float_t P, Float_t beta, Float_t& Ppi, Float_t& PK, Float_t& Pp, Float_t& Pe, Int_t method);
   Int_t GetCombinedProbs(Float_t *tofProbs, Float_t *tpcProbs, Float_t *resultProbs, Int_t N);
   
