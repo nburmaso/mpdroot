@@ -3,6 +3,7 @@
 #define __MPD_LMATCHING_FILTER_H 1
 
 #include<assert.h>
+#include<vector>
 #include<map>
 //#include<debug/map>
 #include<set>
@@ -12,36 +13,98 @@
 #include<TH2D.h>
 
 #include "FairLogger.h"
+#include "FairMCTrack.h"
+
+#include "MpdTofMatchingQA.h"
+#include "MpdTofMatchingData.h"
+#include "MpdTofHit.h"
+#include "MpdTofPoint.h"
 
 //#define DoTest
+
+struct CandHistory
+{
+	enum kFlags{ kNothing = 0, k1thRank = (1 << 1), kNoCompetitor = (1 << 2), kHaveCompetitor = (1 << 3) };
+	Int_t	flag;
+
+	std::vector<MpdTofMatchingData*> 	vCompetitors;
+	MpdTofMatchingData			*pCandidate;
+
+
+	void 	AddFlag(Int_t f){ flag = flag | f ;}
+	void 	ResetFlag(Int_t f)
+	{ 
+		Clear();
+		flag =  f;
+	}	
+	
+	void	Clear()
+	{
+		flag = kNothing;
+		vCompetitors.clear();
+		pCandidate = nullptr;
+	}
+	
+	void	Print()
+	{
+		switch(flag)
+		{
+		case k1thRank | kNoCompetitor:
+			std::cout<<"\n  k1thRank & kNoCompetitor pair<"<<pCandidate->GetKFTrackIndex()<<", "<<pCandidate->GetTofHitIndex()<<"> deltaZ="<<pCandidate->GetDelta1()<<" deltaPhi="<<pCandidate->GetDelta2();
+			break;
+		case k1thRank |	kHaveCompetitor:
+			std::cout<<"\n  k1thRank & kHaveCompetitor pair<"<<pCandidate->GetKFTrackIndex()<<", "<<pCandidate->GetTofHitIndex()<<"> deltaZ="<<pCandidate->GetDelta1()<<" deltaPhi="<<pCandidate->GetDelta2();		
+			for(int i=0; i < vCompetitors.size();i++)
+			{
+				MpdTofMatchingData* ptr = vCompetitors[i];
+				std::cout<<"\n\t  competitiors pair<"<<ptr->GetKFTrackIndex()<<", "<<ptr->GetTofHitIndex()<<"> deltaZ="<<ptr->GetDelta1()<<" deltaPhi="<<ptr->GetDelta2();
+			}
+			break;			
+			
+		
+		};
+	
+	}	
+	
+};
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
 class LMatchingFilter
 {
+public:
+
 // matching candidates 
-//typedef std::__debug::multimap<Int_t, MdataT*>			MMcandType;
-typedef std::multimap<Int_t, MdataT*>			MMcandType;	// pair< KfIndex, MdataT*>
-typedef typename MMcandType::iterator			candIter;
-typedef typename MMcandType::const_iterator		candCIter;
+//typedef std::__debug::multimap<Int_t, MpdTofMatchingData*>			MMcandType;
+typedef std::multimap<Int_t, MpdTofMatchingData*>	MMcandType;	// pair<KfIndex, MpdTofMatchingData*>
+typedef MMcandType::iterator					candIter;
+typedef MMcandType::const_iterator				candCIter;
 
 // back links to matching candidates 
-typedef std::multimap<Int_t, candIter>			MMbackLinksType; // pair< hitIndex, candIter>
-typedef typename MMbackLinksType::iterator		linkIter;
-typedef typename MMbackLinksType::const_iterator	linkCIter;
+typedef std::multimap<Int_t, candIter>			MMbackLinksType; // pair<hitIndex, candIter>
+typedef MMbackLinksType::iterator				linkIter;
+typedef MMbackLinksType::const_iterator				linkCIter;
 
-typedef std::multimap<Int_t, Int_t>			MMCandRankType;	// pair <number of candidate hits for current KFtrack, KfIndex>
-typedef typename MMCandRankType::iterator 		rankIter;
-typedef typename MMCandRankType::const_iterator		rankCIter;
+typedef std::multimap<Int_t, Int_t>			MMCandRankType;	// pair<number of candidate hits for current KFtrack, KfIndex>
+typedef MMCandRankType::iterator 				rankIter;
+typedef MMCandRankType::const_iterator				rankCIter;
+	
+typedef std::multimap<Int_t, MpdTofMatchingData>	MMcandT;  	// pair<kfTrackIndex, MpdTofMatchingData> 
 
-	TClonesArray 		*aMdata;		//  Matching data container;
+private:
+	TClonesArray 		*aMdata;			//  Matching data container;
+	MMcandT 		mcTrueMdata, mcMaybeMdata;	// filled by mcFindTrueMachings method, if used MC run data. 
+	
+	MpdTofMatchingQA 	*pQA;
 	int			fVerbose; 
 	bool			isOwner;
+	bool			isMCdata;		// true, if used MC run data. (TofHits and KalmanTracks have links to MC origins.)
 	double 			fChi2;
 	
 	MMcandType		mmCandidate, mmCandidateSnapshot, mmAccepted, mmAcceptedSnapshot;
 	MMbackLinksType		mmLinks, mmLinksSnapshot;		
 	MMCandRankType 		mmRanks;
 
+	CandHistory		candHist;
+	
 	// for debug
 	void		Commit(void); 
 	void		Status(const char* comment = nullptr, std::ostream& os = std::cout) const; 	
@@ -68,55 +131,61 @@ typedef typename MMCandRankType::const_iterator		rankCIter;
 	}
 
 	inline Int_t 	GetMinRank()const { rankCIter iter = mmRanks.begin(); assert(iter !=  mmRanks.end()); return iter->first; }
-	inline Int_t 	GetMinRankAfter(Int_t rank)const{ rankCIter iter = mmRanks.upper_bound(rank); if(iter !=  mmRanks.end()) return iter->first; else return -1; }		
+	inline Int_t 	GetMinRankAfter(Int_t rank)const{ rankCIter iter = mmRanks.upper_bound(rank); if(iter !=  mmRanks.end()) return iter->first; else return -1; }	
+		
 public:
-	LMatchingFilter(int verbose = 0);
+	LMatchingFilter(MpdTofMatchingQA*, int verbose = 0);
 	~LMatchingFilter();
 		
 	void		SetContainer(TClonesArray *array);	
-	void		AddCandidate(const  MdataT& data);
-
+	void		AddCandidate(const  MpdTofMatchingData& data);
+	
 	void		Reset();
-	Int_t		Processing(Int_t nKFTracks, TH2D* h2, double& chi2);
+	Int_t		Processing(Int_t nKFTracks, double& chi2);
 	Int_t		UpdateContainer();
 	
 	void		Dump(const char* comment = nullptr, std::ostream& os = std::cout) const;
 	void		PrintRanks(const char* comment = nullptr, std::ostream& os = std::cout) const;	
+		
+	// method used MC data
+	template<typename kfTrackT>	
+	void		mcFindTrueMachings( TClonesArray *aPoints,  TClonesArray *aHits, TClonesArray *aMCTracks, TClonesArray *aKfTracks, bool print = false);	// work correctly only if used MC run data.
+
+	bool		mcIsTrueMatching(const MpdTofMatchingData*);
+	bool		mcIsMaybeMatching(const MpdTofMatchingData*);	
 };
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-LMatchingFilter<HitT,MdataT>::LMatchingFilter(int verbose)
-: fVerbose(verbose), isOwner(true)
+
+LMatchingFilter::LMatchingFilter(MpdTofMatchingQA *ptr, int verbose)
+: pQA(ptr), fVerbose(verbose), isOwner(true), isMCdata(false)
 {
-	aMdata = new TClonesArray(MdataT::Class(), 1000);
+	aMdata = new TClonesArray("MpdTofMatchingData", 1000);
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-LMatchingFilter<HitT,MdataT>::~LMatchingFilter()
+LMatchingFilter::~LMatchingFilter()
 {
 	if(isOwner) delete aMdata;
+
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::AddCandidate(const  MdataT& data)
+void	LMatchingFilter::AddCandidate(const  MpdTofMatchingData& data)
 {
-	MdataT *pData =	new ((*aMdata) [aMdata->GetEntriesFast()]) MdataT(data);  // save data to the TClonesArray container
+	MpdTofMatchingData *pData =	new ((*aMdata) [aMdata->GetEntriesFast()]) MpdTofMatchingData(data);  // save data to the TClonesArray container
 
 	candIter it = mmCandidate.insert(std::make_pair(pData->GetKFTrackIndex(), pData));	// insert matching candidate into the mmCandidate
 	
 	mmLinks.insert(std::make_pair(pData->GetTofHitIndex(), it)); 		// insert back link to matching candidate
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-Int_t	LMatchingFilter<HitT, MdataT>::UpdateContainer()
+Int_t	LMatchingFilter::UpdateContainer()
 {
 	// select accepted candidates
-	std::set<MdataT*> sAccepted;
+	std::set<MpdTofMatchingData*> sAccepted;
 	for(candCIter citer = mmAccepted.begin(), citerEnd = mmAccepted.end(); citer != citerEnd; citer++) sAccepted.insert(citer->second);
 		
-	for(int entry = 0, Nentries = aMdata->GetEntriesFast(); entry < Nentries; entry++) // cycle by MdataT at TClonesArray container
+	for(int entry = 0, Nentries = aMdata->GetEntriesFast(); entry < Nentries; entry++) // cycle by MpdTofMatchingData at TClonesArray container
 	{
-		MdataT *pData = (MdataT*) aMdata->At(entry);
+		MpdTofMatchingData *pData = (MpdTofMatchingData*) aMdata->At(entry);
 		
 		if(sAccepted.find(pData) == sAccepted.end()) // no exist -> not accepted
 			aMdata->RemoveAt(entry);
@@ -127,8 +196,7 @@ Int_t	LMatchingFilter<HitT, MdataT>::UpdateContainer()
 return 	aMdata->GetEntriesFast();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-typename LMatchingFilter<HitT, MdataT>::candIter	LMatchingFilter<HitT, MdataT>::FindCandidate(MMcandType *map, Int_t hitIndex, Int_t KfIndex)
+LMatchingFilter::candIter	LMatchingFilter::FindCandidate(MMcandType *map, Int_t hitIndex, Int_t KfIndex)
 {
 	std::pair<candIter, candIter> rangeCands = map->equal_range(KfIndex); 	
 	for(candIter iter = rangeCands.first; iter != rangeCands.second; ++iter)	// cycle by hits for this KfIndex
@@ -137,11 +205,132 @@ typename LMatchingFilter<HitT, MdataT>::candIter	LMatchingFilter<HitT, MdataT>::
 	}
 	
 assert(false);	
-return map->end();	
+return map->end();
+}
+#include"MpdDetectorList.h"
+//----------------------------------------------------------------------------------------------------------------------------------------
+template<typename kfTrackT> 
+void		LMatchingFilter::mcFindTrueMachings(TClonesArray *aPoints,  TClonesArray *aHits, TClonesArray *aMCTracks, TClonesArray *aKfTracks, bool print)
+{
+	// Cleanup or initialize container
+	mcTrueMdata.clear();
+	mcMaybeMdata.clear();
+	
+	typedef std::multimap<int, kfTrackT*> 	mmapTracksT; // pair <mcTrackIndex, Mpd?KalmanTrack*>
+	mmapTracksT				mTracks;	
+	typename mmapTracksT::iterator		itTrack, itTrackEnd;
+	
+	typedef std::multimap<kfTrackT*, int> 	mapTracksInvT; // pair <Mpd?KalmanTrack*, kftrackIndex>
+	mapTracksInvT				mTracksInv;	
+	typename mapTracksInvT::iterator	itTrackInv;
+	
+	typedef std::multimap<int, MpdTofHit*> 	mmapHitsT; // pair <mcTrackIndex, MpdTofHit*>	
+	typedef std::map<MpdTofHit*, int> 	mapHitsInvT; // pair <MpdTofHit*, hitIndex>			
+	mmapHitsT				mHits;	
+	mapHitsInvT				mHitsInv;
+		
+	typename mmapHitsT::iterator		itHit, itHitEnd;	
+	typename mapHitsInvT::iterator		itHitInv;
+	
+	MpdTofPoint	*pPoint;
+	MpdTofHit	*pHit;
+	kfTrackT 	*pKfTrack;
+	Int_t 		tid;
+	
+	// Sorting MpdTpcKalmanTracks by tid
+	Int_t nKFTracks = aKfTracks->GetEntriesFast();
+	for(size_t KfIndex = 0; KfIndex < nKFTracks; KfIndex++) // cycle by MpdTpcKalmanTrack*
+	{
+		pKfTrack =  (kfTrackT*) aKfTracks->UncheckedAt(KfIndex);
+		tid = pKfTrack->GetTrackID();
+		
+		mTracks.insert(make_pair(tid, pKfTrack));
+		mTracksInv.insert(make_pair(pKfTrack, KfIndex));
+	}
+
+	// Sorting MpdTofHits by tid
+	Int_t nHits = aHits->GetEntriesFast();
+	for(size_t hitIndex = 0; hitIndex < nHits; hitIndex++) // cycle by MpdTofHit*
+	{
+		pHit =  (MpdTofHit*) aHits->UncheckedAt(hitIndex);	
+		pPoint = (MpdTofPoint*) aPoints->UncheckedAt(pHit->GetRefIndex());
+		tid = pPoint->GetTrackID();
+		
+		mHits.insert(make_pair(tid, pHit));
+		mHitsInv.insert(make_pair(pHit, hitIndex));
+	}
+
+	// Fill "True" &  "maybe" matching pairs
+	Int_t		counterT, counterH;
+	MMcandT 	*container;
+	for(itTrack = mTracks.begin(), itTrackEnd = mTracks.end(); itTrack != itTrackEnd; itTrack = mTracks.upper_bound(tid)) // cycle by MpdKalmanTrack* with unique tid
+	{
+	  	tid = itTrack->first;
+	  	  	  
+FairMCTrack *mcTrack = (FairMCTrack*) aMCTracks->UncheckedAt(itTrack->second->GetTrackID());               
+if(!  mcTrack->GetNPoints(kTOF)) continue; // FIXME: mcTofTouch FOR TEST     	  
+	  
+	  	
+	  	itHit = mHits.find(tid);
+	  	if(itHit == mHits.end()) continue;	// don't have hit for same tid;
+	  	
+	  	counterT = mTracks.count(tid);
+	  	counterH = mHits.count(tid);
+	  	
+		container = ( counterT == 1  && counterH == 1 )  ? &mcTrueMdata : &mcMaybeMdata; //  = mcTrueMdata, if relation one to one (both kftracks to mctrack and hits to mctrack)		
+		
+		for(int t = 0; t < counterT; t++, itTrack++)
+		{	
+			kfTrackT *track = itTrack->second;
+ 			Int_t kfTrackIndex = (mTracksInv.find(track))->second;
+ 			
+			for(int h = 0; h < counterH; h++, itHit++)
+			{
+				MpdTofHit *hit = itHit->second;		
+				Int_t hitIndex = (mHitsInv.find(hit))->second;
+							
+				container->insert(make_pair(kfTrackIndex, MpdTofMatchingData(kfTrackIndex, hitIndex)));
+			}
+		}		
+	}
+	
+	if(print)
+	{
+		std::cout<<"\n\t True Matching data: ----------------------------------------------------------------------";
+		for(typename MMcandT::const_iterator it = mcTrueMdata.begin(), itEnd = mcTrueMdata.end(); it != itEnd; it++)it->second.Print();
+
+		std::cout<<"\n\t Maybe Matching data: ----------------------------------------------------------------------";
+		for(typename MMcandT::const_iterator it = mcMaybeMdata.begin(), itEnd = mcMaybeMdata.end(); it != itEnd; it++)it->second.Print();	
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-Int_t	LMatchingFilter<HitT, MdataT>::Processing(Int_t nKFTracks, TH2D* h2, double& chi2)
+bool	LMatchingFilter::mcIsTrueMatching(const MpdTofMatchingData *pSample)
+{
+	MMcandT::iterator  it = mcTrueMdata.find(pSample->GetKFTrackIndex()); // pair<kfindex, MdataT>
+	
+	if(it == mcTrueMdata.end()) return false; // no one pair for same kfindex exist;
+	
+	return  (it->second == (*pSample)); // check by equality operator
+return false;	
+}
+//----------------------------------------------------------------------------------------------------------------------------------------
+bool	LMatchingFilter::mcIsMaybeMatching(const MpdTofMatchingData *pSample)
+{
+	Int_t kfindex = pSample->GetKFTrackIndex();
+	MMcandT::iterator  it = mcMaybeMdata.find(kfindex); // pair<kfindex, MdataT>
+	
+	if(it == mcMaybeMdata.end()) return false; // no one pair for same kfindex exist;
+	
+	int counter = mcMaybeMdata.count(kfindex);
+	for(int i=0; i<counter;i++, it++) // cycle by pairs for same kfindex
+	{
+		if(it->second == (*pSample)) return true;
+	}
+
+return false;	
+}	
+//----------------------------------------------------------------------------------------------------------------------------------------
+Int_t	LMatchingFilter::Processing(Int_t nKFTracks, double& chi2)
 {
 	fChi2 = 0.;
 	Int_t candNmb = mmCandidate.size();
@@ -200,7 +389,7 @@ if( mmCandidate.size() <=20) Dump();
 finish:
 	chi2 = fChi2;
 	
-	if(h2 != nullptr) h2->Fill(candNmb, iterNmb);
+	if(pQA) pQA->FillCandidateNumber(candNmb, iterNmb);
 	
 #ifdef DoTest	
 std::cout<<"\n -I-  [TofMatchingFilter::Processing] FINAL SIZE: mmLinks="<<mmLinks.size()<<" mmCandidate="<<mmCandidate.size()<<" mmRanks="<<mmRanks.size()<<"\n";	
@@ -211,8 +400,7 @@ std::cout<<"\n -I-  [TofMatchingFilter::Processing] FINAL SIZE: mmLinks="<<mmLin
 return 	mmAccepted.size();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-int	LMatchingFilter<HitT, MdataT>::ProcessSingleTracks()  //  only single hit (1th rank) candidate tracks processing
+int	LMatchingFilter::ProcessSingleTracks()  //  only single hit (1th rank) candidate tracks processing
 {
 	std::pair<rankIter, rankIter> range = mmRanks.equal_range(1); 
 	if(std::distance(range.first, range.second) == 0) return 0; // no 1th rank candidates
@@ -239,22 +427,19 @@ std::cout<<" EXIST";
 		
 		if(counter == 1)// don't have  competitor tracks
 		{ 
-#ifdef DoTest		
-std::cout<<"\t\t\t SINGLE "<<MatchingOK;
-#endif		
+
+///			candHist.ResetFlag(CandHistory< MdataT>::k1thRank | CandHistory< MdataT>::kNoCompetitor); 
+///			candHist.pCandidate = itCand->second;
+			
 			AcceptCandidate(itCand);  
 			MatchingOK++;			
 		} 
 		else	// accept best(closest) 1th rank candidate
 		{
-			Double_t delta;
-#ifdef DoTest			
-std::cout<<"\n	 counter = "<<	mmLinks.count(hitIndex);			
-#endif				
+			Double_t delta;	
 			candIter it = FindClosest1hRankCandidate(mmLinks.equal_range(hitIndex), delta);	
-#ifdef DoTest	
-std::cout<<"\t\t\t MULTU "<<MatchingOK;	
-#endif						
+///			candHist.pCandidate = it->second;	
+			
 			AcceptCandidate(it);  
 			MatchingOK++;		
 		}	
@@ -267,8 +452,7 @@ std::cout<<"\n LMatchingFilter::ProcessSingleTracks 1th rank cands="<<std::dista
 return 	MatchingOK;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-double			LMatchingFilter<HitT, MdataT>::FindMinDeltaForTrack(Int_t KfIndex, Int_t disabledHitIndex, candIter& minCand, bool& IsWithoutCompetition)
+double			LMatchingFilter::FindMinDeltaForTrack(Int_t KfIndex, Int_t disabledHitIndex, candIter& minCand, bool& IsWithoutCompetition)
 {
 	Double_t  delta, minDelta = 1.e+10; // big value
 	std::pair<candIter, candIter> rangeCands = mmCandidate.equal_range(KfIndex); 	
@@ -301,8 +485,7 @@ assert(minCand != mmCandidate.end()); // don't have local minimum ????
 return 	minDelta;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::ProcessNRankTrack(Int_t rank)  // process  Nth rank  ONE track
+void	LMatchingFilter::ProcessNRankTrack(Int_t rank)  // process  Nth rank  ONE track
 {
 	std::pair<rankIter, rankIter> rangeRanks = mmRanks.equal_range(rank); 
 	if(std::distance(rangeRanks.first, rangeRanks.second) == 0) return; // no Nth rank candidates
@@ -360,15 +543,18 @@ assert(cand != mmCandidate.end());
 	}	
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-typename LMatchingFilter<HitT, MdataT>::candIter	LMatchingFilter<HitT, MdataT>::FindClosest1hRankCandidate(const std::pair< linkIter,  linkIter>& range, Double_t& minDelta)
+LMatchingFilter::candIter	LMatchingFilter::FindClosest1hRankCandidate(const std::pair< linkIter,  linkIter>& range, Double_t& minDelta)
 {
+///////////	candHist.ResetFlag(CandHistory< MdataT>::k1thRank | CandHistory< MdataT>::kHaveCompetitor);		
+	
 	candIter retvalue = mmCandidate.end();
 	Double_t  delta; minDelta = 1.e+10; // big value
 
 	for(linkIter it = range.first; it != range.second; it++) // cycle by competitor candidates
 	{
 		delta =  it->second->second->GetDelta();
+		
+/////////////		candHist.vCompetitors.push_back(it->second->second);
 		
 		if(delta < minDelta) // best (closest) candidate
 		{ 
@@ -381,10 +567,17 @@ assert(retvalue != mmCandidate.end());
 return retvalue;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::AcceptCandidate(candIter itCand)
+void	LMatchingFilter::AcceptCandidate(candIter itCand)
 {
+	bool isTrueMatching = mcIsTrueMatching(itCand->second);
+	bool isMaybeTrueMatching = mcIsMaybeMatching(itCand->second);	
+	
 #ifdef DoTest
+	if(! (isTrueMatching || isMaybeTrueMatching) ) // mis matching accepted !!!
+	{
+///		candHist.Print();
+	//itCand->second->Print();
+	}
 Commit();
 #endif
 	// Accept candidate
@@ -434,8 +627,7 @@ assert(pass);
 #endif	
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-bool	LMatchingFilter<HitT, MdataT>::CheckAdequacy(const char* comment)
+bool	LMatchingFilter::CheckAdequacy(const char* comment)
 {
 	MMbackLinksType		mmLinksTmp;
 	for(candIter iter = mmCandidate.begin(), iterEnd = mmCandidate.end(); iter != iterEnd; iter++)	 mmLinksTmp.insert(make_pair(iter->second->GetTofHitIndex(), iter )); 	 	 
@@ -495,8 +687,7 @@ bool	LMatchingFilter<HitT, MdataT>::CheckAdequacy(const char* comment)
 return	(equalFront && equalBack);	
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::RemoveLink(Int_t hitIndex, Int_t KfIndex)
+void	LMatchingFilter::RemoveLink(Int_t hitIndex, Int_t KfIndex)
 {
 	std::pair<linkIter, linkIter> range = mmLinks.equal_range(hitIndex); // links for same  hitIndex 
 
@@ -507,8 +698,7 @@ void	LMatchingFilter<HitT, MdataT>::RemoveLink(Int_t hitIndex, Int_t KfIndex)
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::RemoveCandidate(Int_t hitIndex, Int_t KfIndex)
+void	LMatchingFilter::RemoveCandidate(Int_t hitIndex, Int_t KfIndex)
 {
 	std::pair<candIter, candIter> range = mmCandidate.equal_range(KfIndex); // 
 
@@ -519,8 +709,7 @@ void	LMatchingFilter<HitT, MdataT>::RemoveCandidate(Int_t hitIndex, Int_t KfInde
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::UpdateRanks()
+void	LMatchingFilter::UpdateRanks()
 {
 	mmRanks.clear();
 
@@ -530,23 +719,23 @@ void	LMatchingFilter<HitT, MdataT>::UpdateRanks()
   	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::Reset()
+void	LMatchingFilter::Reset()
 {
 	mmCandidate.clear(); 
 	mmAccepted.clear();
 	mmLinks.clear();
+	
+	candHist.Clear();
+	
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::SetContainer(TClonesArray *array)
+void	LMatchingFilter::SetContainer(TClonesArray *array)
 {
 	aMdata = array;
 	isOwner = false;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::Commit()
+void	LMatchingFilter::Commit()
 {
 	mmCandidateSnapshot = mmCandidate;
 	mmAcceptedSnapshot = mmAccepted;
@@ -564,8 +753,7 @@ void	LMatchingFilter<HitT, MdataT>::Commit()
 	}	
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::Status(const char *comment, std::ostream& os) const
+void	LMatchingFilter::Status(const char *comment, std::ostream& os) const
 {
 	os<<"\n -------------------------------------------------STATUS-----  "; if(comment != nullptr) os<<comment;
 
@@ -590,8 +778,7 @@ void	LMatchingFilter<HitT, MdataT>::Status(const char *comment, std::ostream& os
 	os<<"\n ------------------------------------------------------------"<<std::flush;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::PrintChanges(const MMcandType& src, const MMcandType& checked, std::ostream& os) const
+void	LMatchingFilter::PrintChanges(const MMcandType& src, const MMcandType& checked, std::ostream& os) const
 {
 	if(src == checked)
 	{
@@ -621,8 +808,7 @@ void	LMatchingFilter<HitT, MdataT>::PrintChanges(const MMcandType& src, const MM
 	}
 }	
 //------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::PrintChanges(const MMbackLinksType& src, const MMbackLinksType& checked, std::ostream& os) const
+void	LMatchingFilter::PrintChanges(const MMbackLinksType& src, const MMbackLinksType& checked, std::ostream& os) const
 {
 	if(src == checked)
 	{
@@ -652,8 +838,7 @@ void	LMatchingFilter<HitT, MdataT>::PrintChanges(const MMbackLinksType& src, con
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::Dump(const char* comment, std::ostream& os) const
+void	LMatchingFilter::Dump(const char* comment, std::ostream& os) const
 {
 	os<<"\n ---------------------- DUMP --------------- "; if(comment) os<<comment; os<<" ------------   entries: "<<mmCandidate.size();	
 
@@ -687,8 +872,7 @@ void	LMatchingFilter<HitT, MdataT>::Dump(const char* comment, std::ostream& os) 
 	os<<"\n ---------------------- DUMP --------------------------------------"<<std::flush;	
 }
 //------------------------------------------------------------------------------------------------------------------------
-template<typename HitT, typename MdataT> 
-void	LMatchingFilter<HitT, MdataT>::PrintRanks(const char* comment, std::ostream& os) const
+void	LMatchingFilter::PrintRanks(const char* comment, std::ostream& os) const
 {
 	os<<std::endl;
 	if(comment) 	os<<comment;

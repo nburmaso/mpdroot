@@ -49,7 +49,7 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
     fRun->AddModule(Tpc);
   
     FairDetector *Tof= new MpdTof("TOF", kTRUE );
-    Tof->SetGeometryFileName("tof_v3.geo");
+    Tof->SetGeometryFileName("tof_v7.root");
     fRun->AddModule(Tof);
 	
     FairDetector *eTof= new MpdEtof("ETOF", kTRUE );
@@ -69,7 +69,8 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
 //     fRun->AddModule(Bbc);
 
     FairDetector *Cpc = new MpdCpc("CPC",kTRUE );
-    Cpc->SetGeometryFileName("cpc.geo");
+ //   Cpc->SetGeometryFileName("cpc.geo");
+    Cpc->SetGeometryFileName("cpc_simple.geo");    
     fRun->AddModule(Cpc);
 	
     FairDetector *Zdc = new MpdZdc("ZDC",kTRUE );

@@ -18,8 +18,8 @@
 #include "MpdTpcKalmanTrack.h"
 #include "MpdStrawendcapGeoPar.h"
 #include "MpdStrawendcapPoint.h"
-#include "MpdEtofHit.h"
-#include "MpdEtofPoint.h"
+#include "MpdTofHit.h"
+#include "MpdTofPoint.h"
 #include "MpdCpcPoint.h"
 #include "MpdTofUtils.h"
 #include "MpdVertex.h"
@@ -507,7 +507,7 @@ void MpdEctTrackFinderCpc::MatchEtof()
 
   MpdKalmanHit hTmp;
   hTmp.SetType(MpdKalmanHit::kFixedZ);
-  hTmp.SetDist(((MpdEtofHit*) fTofHits->First())->GetZ());
+  hTmp.SetDist(((MpdTofHit*) fTofHits->First())->GetZ());
   Int_t nTof = fTofHits->GetEntriesFast();
 
   Int_t nTpc = fTracks->GetEntriesFast(), nMatch = 0;
@@ -524,8 +524,8 @@ void MpdEctTrackFinderCpc::MatchEtof()
     Double_t rMin = 999999., rID = 999, xTr = track.GetParamNew(0), yTr = track.GetParamNew(1);
 
     for (Int_t itof = 0; itof < nTof; ++itof) {
-      MpdEtofHit *tof = (MpdEtofHit*) fTofHits->UncheckedAt(itof);
-      MpdEtofPoint *tofP = (MpdEtofPoint*) fTofPoints->UncheckedAt(tof->GetRefIndex());
+      MpdTofHit *tof = (MpdTofHit*) fTofHits->UncheckedAt(itof);
+      MpdTofPoint *tofP = (MpdTofPoint*) fTofPoints->UncheckedAt(tof->GetRefIndex());
 
       //if (tof->GetZ() < 0) continue; // !!! exclude one side for now
 
@@ -537,9 +537,9 @@ void MpdEctTrackFinderCpc::MatchEtof()
     //if (lun2) fprintf(lun2,"%d %10.3e %10.3e\n", id, TMath::Sqrt(rID), TMath::Sqrt(rMin));
     if (TMath::Sqrt(rMin) < rMax) {
       // Exclude ETOF hit
-      //if (((MpdEtofHit*) fTofHits->UncheckedAt(iMin))->GetFlag() != -1) {
+      //if (((MpdTofHit*) fTofHits->UncheckedAt(iMin))->GetFlag() != -1) {
 	++nMatch;
-	MpdEtofHit *tof = (MpdEtofHit*) fTofHits->UncheckedAt(iMin);
+	MpdTofHit *tof = (MpdTofHit*) fTofHits->UncheckedAt(iMin);
 	tof->SetFlag(tof->GetFlag() | MpdTofUtils::IsSelected);
 	//3-may-12 tr->SetTofIndex(iMin);
 	tr->SetMatchEtof();
@@ -560,7 +560,7 @@ void MpdEctTrackFinderCpc::MatchCpc()
 
   MpdKalmanHit hTmp;
   hTmp.SetType(MpdKalmanHit::kFixedZ);
-  //hTmp.SetDist(((MpdEtofHit*) fTofHits->First())->GetZ());
+  //hTmp.SetDist(((MpdTofHit*) fTofHits->First())->GetZ());
   //Int_t nTof = fTofHits->GetEntriesFast();
   Double_t zCpc[2] = {0};
   if (fMapCpc[0].size()) zCpc[0] = TMath::Abs (fMapCpc[0].begin()->second.Z());
@@ -631,9 +631,9 @@ void MpdEctTrackFinderCpc::GetTrackSeeds(Int_t iPass)
   cout << " Number of ETOF hits: " << nTof << endl;
   TVector3 posTof;
   for (Int_t itof = 0; itof < nTof; ++itof) {
-    MpdEtofHit *tof = (MpdEtofHit*) fTofHits->UncheckedAt(itof);
+    MpdTofHit *tof = (MpdTofHit*) fTofHits->UncheckedAt(itof);
     if (tof->GetFlag() & MpdTofUtils::IsSelected) continue; 
-    MpdEtofPoint *tofP = (MpdEtofPoint*) fTofPoints->UncheckedAt(tof->GetRefIndex());
+    MpdTofPoint *tofP = (MpdTofPoint*) fTofPoints->UncheckedAt(tof->GetRefIndex());
 
     //if (tof->GetZ() < 0) continue; // !!! exclude one side for now
 
@@ -764,7 +764,7 @@ void MpdEctTrackFinderCpc::GetTrackSeedsCpc(Int_t iPass)
 
   cout << " Number of ETOF hits: " << nTof << ", CPC points: " << nCpc << endl;
   map<Int_t,TVector3>::iterator it, it1;
-  MpdEtofHit tof;
+  MpdTofHit tof;
 
   for (it = fMapCpc[0].begin(); it != fMapCpc[0].end(); ++it) {
     posCpc = it->second;
@@ -891,7 +891,7 @@ Bool_t MpdEctTrackFinderCpc::EvalParamsCpc(TVector3 cpc, TVector3 tof, Double_t 
 }
 
 //__________________________________________________________________________
-void MpdEctTrackFinderCpc::EvalParams(const MpdEtofHit *tof, const MpdKalmanHit *ect, 
+void MpdEctTrackFinderCpc::EvalParams(const MpdTofHit *tof, const MpdKalmanHit *ect, 
 				      MpdEctKalmanTrack *track, Double_t rEct, Double_t phEct) 
 {
   /// Evaluate track parameters
@@ -918,7 +918,7 @@ void MpdEctTrackFinderCpc::EvalParams(const MpdEtofHit *tof, const MpdKalmanHit 
 }
 
 //__________________________________________________________________________
-void MpdEctTrackFinderCpc::EvalCovar(const MpdEtofHit *tof, const MpdKalmanHit *ect, 
+void MpdEctTrackFinderCpc::EvalCovar(const MpdTofHit *tof, const MpdKalmanHit *ect, 
 				     MpdEctKalmanTrack *track, Double_t rEct, Double_t phEct)
 {
   /// Evaluate covariance matrix for the track seed
@@ -2348,11 +2348,11 @@ void MpdEctTrackFinderCpc::Smooth()
     if (track->GetChi2Vertex() < cutChi2) track->SetLengAtHit(track->GetLengAtHit() + track->GetLength() - lengs[itr]);
     //if (track->GetChi2Vertex() > cutChi2) continue;
     //if (track->GetTofIndex() < 0) continue;
-    Double_t dist = fTofHits ? TMath::Abs (((MpdEtofHit*) fTofHits->First())->GetZ()) : 295.2;
+    Double_t dist = fTofHits ? TMath::Abs (((MpdTofHit*) fTofHits->First())->GetZ()) : 295.2;
     if (track->GetTofIndex() < 0) {
       if (track->GetChi2Vertex() > cutChi2) continue;
     } else {
-      //MpdEtofHit *hit = (MpdEtofHit*) fTofHits->UncheckedAt(track->GetTofIndex());
+      //MpdTofHit *hit = (MpdTofHit*) fTofHits->UncheckedAt(track->GetTofIndex());
       MpdCpcPoint *hit = (MpdCpcPoint*) fCpcPoints->UncheckedAt(track->GetTofIndex());
       Double_t dz = hit->GetZ() - vtx->GetZ();
       dist = hit->GetX() * hit->GetX() + hit->GetY() * hit->GetY() + dz * dz;
@@ -2511,7 +2511,7 @@ void MpdEctTrackFinderCpc::GoOutward()
       tr.SetPos(((MpdKalmanHit*)track->GetTrHits()->First())->GetPos());
       tr.SetPosNew(tr.GetPos());
       // Extrapolate to ETOF
-      //Double_t zTof = ((MpdEtofHit*)fTofHits->First())->GetZ();
+      //Double_t zTof = ((MpdTofHit*)fTofHits->First())->GetZ();
       Double_t zTof = ((FairMCPoint*)fTofPoints->First())->GetZ();
       zTof = TMath::Sign (TMath::Abs(zTof),track->GetParam(3));
       MpdKalmanHit hitTmp;
@@ -2532,7 +2532,7 @@ void MpdEctTrackFinderCpc::GoOutward()
       /*
 	Int_t nTof = fTofHits->GetEntriesFast();
 	for (Int_t jh = 0; jh < nTof; ++jh) {
-	MpdEtofHit *tofHit = (MpdEtofHit*) fTofHits->UncheckedAt(jh);
+	MpdTofHit *tofHit = (MpdTofHit*) fTofHits->UncheckedAt(jh);
 	Int_t nLinks = tofHit->GetNLinks();
 	for (Int_t lnk = 0; lnk < nLinks; ++lnk) {
 	FairLink link = tofHit->GetLink(lnk);

@@ -34,7 +34,11 @@ MpdTofHitProducer.cxx
 MpdTofHitProducerIdeal.cxx 
 MpdTofPoint.cxx
 MpdTofUtils.cxx
+MpdTofGeoUtils.cxx
 MpdTofMatching.cxx
+MpdTofMatchingData.cxx
+MpdTofMatchingQA.cxx
+MpdTofHitProducerQA.cxx 
 )
 
 # fill list of header files from list of source files

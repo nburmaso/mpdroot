@@ -25,14 +25,13 @@ ${ROOT_LIBRARY_DIR}
 link_directories( ${LINK_DIRECTORIES})
 
 set(ETOF_SRCS
-MpdEtofGeo.cxx 
-MpdEtofGeoPar.cxx 
-MpdEtof.cxx 
-MpdEtofContFact.cxx 
-MpdEtofHit.cxx 
-MpdEtofHitProducer.cxx 
-MpdEtofHitProducerIdeal.cxx 
-MpdEtofPoint.cxx
+MpdEtofGeo.cxx
+MpdEtofGeoPar.cxx
+MpdEtof.cxx
+MpdEtofContFact.cxx
+MpdEtofHitProducer.cxx
+MpdEtofHitProducerIdeal.cxx
+MpdEtofGeoUtils.cxx
 MpdEtofMatching.cxx
 )
 

@@ -7,8 +7,7 @@
 #include "MpdFillDstTask.h"
 #include "MpdKalmanTrack.h"
 #include "MpdEctKalmanTrack.h"
-#include "MpdTofMatching.h"
-#include "MpdEtofMatching.h"
+#include "MpdTofMatchingData.h"
 #include "MpdVertex.h"
 #include "MpdParticleIdentification.h"
 
@@ -25,13 +24,18 @@
 #include "TGeoBBox.h"
 #include "TGeoTube.h"
 
+#include <assert.h>
 #include <set>
 #include <iostream>
 #include <algorithm>
 #include <vector>
 
-using std::cout;
-using std::endl;
+using namespace std;
+
+//using std::cout;
+//using std::flush;
+//using std::endl;
+
 
 // -----   constructor with names ------------------------------------
 
@@ -207,7 +211,7 @@ void MpdFillDstTask::Exec(Option_t * option) {
 
 
     Int_t nEMatching = fEtofMatching ? fEtofMatching->GetEntries() : 0;
-    MpdEtofMatchingData *pEMatchingData;
+    MpdTofMatchingData *pEMatchingData;
 
     for (Int_t i = 0; i < nEctReco; i++) {
         MpdKalmanTrack *kftrack = (MpdKalmanTrack*) fKFEctTracks->UncheckedAt(i);
@@ -217,7 +221,7 @@ void MpdFillDstTask::Exec(Option_t * option) {
         track->SetNofHits(kftrack->GetNofHits());
         matchingDataExist = false;
         for (Int_t etofIndex = 0; etofIndex < nEMatching; etofIndex++) {
-            pEMatchingData = (MpdEtofMatchingData*) fEtofMatching->UncheckedAt(etofIndex);
+            pEMatchingData = (MpdTofMatchingData*) fEtofMatching->UncheckedAt(etofIndex);
             if (pEMatchingData->GetKFTrackIndex() == i) {
                 matchingDataExist = true;
                 break;

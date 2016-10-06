@@ -9,40 +9,45 @@
 #include "MpdTofUtils.h"
 #include "MpdTofHit.h"
 #include "MpdTofPoint.h"
+#include "MpdTofHitProducerQA.h"
 
 #include "MpdTofHitProducerIdeal.h"
 
 ClassImp(MpdTofHitProducerIdeal)
 //------------------------------------------------------------------------------------------------------------------------
-MpdTofHitProducerIdeal::MpdTofHitProducerIdeal(const char *name, Int_t verbose, Bool_t test, Bool_t merge) 
- : FairTask(name, verbose), fDoTest(test), fDoMergeHits(merge), fTestFlnm("test.MpdTofHitProducerIdeal.root"), aTofPoints(nullptr), aMCTracks(nullptr), aTofHits(nullptr)
+MpdTofHitProducerIdeal::MpdTofHitProducerIdeal(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, Bool_t merge, const char *flnm, bool IsEndcap) 
+ : FairTask(name, verbose), fDoTest(test), fDoMergeHits(merge),  fUseMCData(useMCdata),
+   aMcPoints(nullptr), aMcTracks(nullptr), aExpDigits(nullptr), aTofHits(nullptr)
 { 
-        if(fDoTest)
-    	{
-    		h1TestOccup = new TH1D("TestOccup", "occupancy per strips;occupancy;Events", 100, -0.5, 99.5); 									fList.Add(h1TestOccup); 
-       		h2TestMergedTimes = new TH2D("TestMergedTimes", "Merged hits on strip times test;faster hit time, ns;slower hit time, ns", 1000, 5., 105., 1000, 5., 105.);	fList.Add(h2TestMergedTimes); 	
-	
-    	}
+        pHitProducerQA = fDoTest ? new MpdTofHitProducerQA(flnm, IsEndcap) : nullptr;
+
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducerIdeal::~MpdTofHitProducerIdeal() 
 { 
-
+	delete pHitProducerQA;
 }
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus	MpdTofHitProducerIdeal::Init() 
 {
 	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducerIdeal::Init] Begin initialization.");
 
-	FairRootManager *ioman = FairRootManager::Instance(); assert(ioman);
-  	aTofPoints  = (TClonesArray *) ioman->GetObject("TOFPoint");
-  	aMCTracks   = (TClonesArray *) ioman->GetObject("MCTrack"); 
-
-  	if(!aTofPoints || !aMCTracks){ FairLogger::GetLogger()->Error(MESSAGE_ORIGIN, " Branch not found!"); return kERROR; }
+	if(fUseMCData)
+	{
+    		aMcPoints = (TClonesArray*) FairRootManager::Instance()->GetObject("TOFPoint");
+    		aMcTracks = (TClonesArray*) FairRootManager::Instance()->GetObject("MCTrack");
+assert(aMcPoints);
+assert(aMcTracks);
+	}
+	else
+	{
+    		aExpDigits = (TClonesArray*) FairRootManager::Instance()->GetObject("??????");// FIXME: NOW unknown name
+assert(aExpDigits);	
+	}
 	
         // Create and register output array
         aTofHits = new TClonesArray("MpdTofHit");
-        ioman->Register("TOFHit", "Tof", aTofHits, kTRUE);
+        FairRootManager::Instance()->Register("TOFHit", "Tof", aTofHits, kTRUE);
 
         FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducerIdeal::Init] Initialization finished succesfully.");
 
@@ -55,21 +60,25 @@ void 		MpdTofHitProducerIdeal::Exec(Option_t* opt)
 
 	aTofHits->Clear();
 
-	Int_t 		UID, trackID, nSingleHits = 0, nTofPoint = aTofPoints->GetEntriesFast();	
+	Int_t 		nSingleHits = 0;	
 	TVector3 	pos; 	
-	Double_t 	time;
-	MpdTofPoint 	*pPoint;
 	
-	for(Int_t pointIndex = 0; pointIndex < nTofPoint; pointIndex++ )  // cycle by TOF points
+	if(fUseMCData)
 	{
-		pPoint = (MpdTofPoint*) aTofPoints->UncheckedAt(pointIndex);
-		UID	= pPoint->GetDetectorID();
-		trackID = pPoint->GetTrackID();
-		time = pPoint->GetTime();		
-		pPoint->Position(pos);
+		for(Int_t pointIndex = 0, nTofPoint = aMcPoints->GetEntriesFast(); pointIndex < nTofPoint; pointIndex++ )  // cycle by TOF points
+		{
+			MpdTofPoint *pPoint = (MpdTofPoint*) aMcPoints->UncheckedAt(pointIndex);		
+			pPoint->Position(pos);
 		
-		AddHit(UID, pos, XYZ_err, pointIndex, trackID, time, MpdTofUtils::IsSingle);	
-		nSingleHits++;
+			AddHit(pPoint->GetDetectorID(), pos, XYZ_err, pointIndex, pPoint->GetTrackID(), pPoint->GetTime(), MpdTofUtils::IsSingle);	
+			nSingleHits++;
+		}
+	}
+	else //  exp. data used    
+	{
+		// FIXME: now not realized
+		//AddHit(Int_t detUID, const TVector3 &posHit, const TVector3 &posHitErr, Int_t expDigitIndex, Double_t time, Int_t flag)
+		assert(false);		
 	}
 	
 	int nFinally;
@@ -81,20 +90,12 @@ void 		MpdTofHitProducerIdeal::Exec(Option_t* opt)
 	else 
 		nFinally = aTofHits->GetEntriesFast();
 	
-        cout<<" -I- [MpdTofHitProducerIdeal::Exec] MCpoints= "<<nTofPoint<<", single hits= "<<nSingleHits<<", final hits= "<<nFinally<<endl;
+        cout<<" -I- [MpdTofHitProducerIdeal::Exec] single hits= "<<nSingleHits<<", final hits= "<<nFinally<<endl;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 			MpdTofHitProducerIdeal::Finish()
 {
-  	if(fDoTest)
-    	{
-      		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " [MpdTofHitProducerIdeal::Finish] Update  %s file. ", fTestFlnm.Data());
-		TFile *ptr = gFile;
-		TFile file(fTestFlnm.Data(), "RECREATE");
-		fList.Write(); 
-		file.Close();
-		gFile = ptr;
-	}
+	if(pHitProducerQA) pHitProducerQA->Finish(); 
 }
 //------------------------------------------------------------------------------------------------------------------------
 Int_t 			MpdTofHitProducerIdeal::MergeHitsOnStrip(void)
@@ -138,25 +139,36 @@ assert(nullptr != pHit);
 			fastHit->AddFlag(MpdTofUtils::HaveTail);					
 			it->second = fastHit;				// change pair value to current UID
 				
-			if(fDoTest) h2TestMergedTimes->Fill(fastHit->GetTime(), slowHit->GetTime());						 
+			if(pHitProducerQA) pHitProducerQA->GetMergedTimesHisto()->Fill(fastHit->GetTime(), slowHit->GetTime());						 
 		}
 		else fHits.insert(make_pair(UID, pHit)); 				// insert new detectorUID pair
 		
 	} // cycle by hits
-
-	// cycle by detector UIDs list
-	if(fDoTest) for(msUIDsType::const_iterator it = UIDs.begin(), itEnd = UIDs.end(); it != itEnd;  it = UIDs.upper_bound(*it))	h1TestOccup->Fill(UIDs.count(*it));
-
+	
+	if(pHitProducerQA)
+	{ 
+		for(msUIDsType::const_iterator it = UIDs.begin(), itEnd = UIDs.end(); it != itEnd;  it = UIDs.upper_bound(*it))	// cycle by detector UIDs list
+			 pHitProducerQA->GetOccupancyHisto()->Fill(UIDs.count(*it));
+	}
+	
 return 	mergedNmb;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void 			MpdTofHitProducerIdeal::AddHit(Int_t detUID, const TVector3 &posHit, const TVector3 &posHitErr, Int_t pointIndex, Int_t trackIndex, Double_t time, Int_t flag)
+void 			MpdTofHitProducerIdeal::AddHit(Int_t detUID, const TVector3 &posHit, const TVector3 &posHitErr, Int_t expDigitIndex, Double_t time, Int_t flag)
 {
-	MpdTofHit *pHit	= new  ((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofHit(detUID, posHit, posHitErr, pointIndex, time, flag);
+	MpdTofHit *pHit	= new  ((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofHit(detUID, posHit, posHitErr, expDigitIndex, time, flag);
 	
-	pHit->AddLink(FairLink(MpdTofUtils::IsTofPointIndex, pointIndex));
-	pHit->AddLink(FairLink(MpdTofUtils::IsMCTrackIndex, trackIndex));
-	pHit->AddLink(FairLink(MpdTofUtils::IsVolumeUID, detUID));	
+	pHit->AddLink(FairLink(MpdTofUtils::expDigitIndex, expDigitIndex));
+	pHit->AddLink(FairLink(MpdTofUtils::volumeUID, detUID));	
+}
+//------------------------------------------------------------------------------------------------------------------------
+void 			MpdTofHitProducerIdeal::AddHit(Int_t detUID, const TVector3 &posHit, const TVector3 &posHitErr, Int_t mcPointIndex, Int_t mcTrackIndex, Double_t time, Int_t flag)
+{
+	MpdTofHit *pHit	= new  ((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofHit(detUID, posHit, posHitErr, mcPointIndex, time, flag);
+	
+	pHit->AddLink(FairLink(MpdTofUtils::mcPointIndex, mcPointIndex));
+	pHit->AddLink(FairLink(MpdTofUtils::mcTrackIndex, mcTrackIndex));
+	pHit->AddLink(FairLink(MpdTofUtils::volumeUID, detUID));	
 }
 //------------------------------------------------------------------------------------------------------------------------
 Int_t 			MpdTofHitProducerIdeal::CompressHits() 
@@ -176,9 +188,10 @@ void			MpdTofHitProducerIdeal::Dump(const char* title, ostream& out) const
 	{
 		pHit->Position(hitPos);
 		out<<"\n    hit detUID = "<<pHit->GetDetectorID()<<", hit pos("<<hitPos.X()<<","<<hitPos.Y()<<","<<hitPos.Z()<<"), flag ="<<pHit->GetFlag();
-		if(aTofPoints)
+		
+		if(aMcPoints)
 		{
-			point = (MpdTofPoint*) aTofPoints->UncheckedAt(pHit->GetRefIndex());
+			point = (MpdTofPoint*) aMcPoints->UncheckedAt(pHit->GetRefIndex());
 			point->Position(pointPos);
 			out<<"\n point detUID = "<<point->GetDetectorID()<<", point pos("<<pointPos.X()<<","<<pointPos.Y()<<","<<pointPos.Z()<<"), dev="<<(hitPos-pointPos).Mag();
 		}
@@ -187,4 +200,6 @@ void			MpdTofHitProducerIdeal::Dump(const char* title, ostream& out) const
 	delete iter;
 }
 //------------------------------------------------------------------------------------------------------------------------
+
+
 

@@ -1,4 +1,4 @@
-void runRecoCpc(TString inFile = "evetest.root")
+void runRecoCpc(TString inFile = "mc.1k.root")
 {
 
   // ========================================================================
@@ -17,7 +17,7 @@ void runRecoCpc(TString inFile = "evetest.root")
 
   // Output file
   //TString outFile = "test.raw.1251-1500.root";
-  TString outFile = "tpc.reco.root";
+  TString outFile = "tpc.reco.1k.root";
   TString recoFile = TString(gSystem->Getenv("RECOFILE"));
   if (recoFile != "") outFile = recoFile;
 
@@ -35,9 +35,9 @@ void runRecoCpc(TString inFile = "evetest.root")
 //   gSystem->Load("libKalman");
 //   gSystem->Load("libLHETrack");
 
-  //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-  //mpdloadlibs(kTRUE);                 // load full set of main libraries
-  gROOT->ProcessLine(".x $HOME/mpd/loadlibs.C");
+  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+  mpdloadlibs(kTRUE);                 // load full set of main libraries
+ // gROOT->ProcessLine(".x $HOME/mpd/loadlibs.C");
   gSystem->Load("libXMLIO");
 
   gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
@@ -112,14 +112,11 @@ void runRecoCpc(TString inFile = "evetest.root")
   fRun->AddTask(findVtx);
 
   // TOF hit producers
-  //MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer", 1, true);
-  MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
-  //tofHit->SetParamFlnm("./tof.geom.par.xml");
-  //fRun->AddTask(tofHit);
+  MpdTofHitProducer* tofHit = new MpdTofHitProducer("TOF Hit producer");
+  fRun->AddTask(tofHit);
 
-  //MpdEtofHitProducer* etofHitProd = new MpdEtofHitProducer("ETOF HitProducer");
-  //etofHitProd->SetParamFlnm("etof.geo.par.xml");
-  //fRun->AddTask(etofHitProd);
+  MpdEtofHitProducer* etofHitProd = new MpdEtofHitProducer("ETOF HitProducer");
+  fRun->AddTask(etofHitProd);
 
   // Endcap tracking
   //*
@@ -135,22 +132,19 @@ void runRecoCpc(TString inFile = "evetest.root")
   //*/
 
   // TOF matching
-  //MpdTofMatching* tofMatch = new MpdTofMatching("TOF matching",1,true);
   MpdTofMatching* tofMatch = new MpdTofMatching("TOF matching");
-  //fRun->AddTask(tofMatch);
+  fRun->AddTask(tofMatch);
 
   // ETOF matching
-  /*
-  MpdEtofMatching* etofMatch = new MpdEtofMatching("ETOF matching",1,kTRUE);
-  //MpdEtofMatching* etofMatch = new MpdEtofMatching("ETOF matching");
-  //fRun->AddTask(etofMatch);
-  */
+  MpdEtofMatching* etofMatch = new MpdEtofMatching("ETOF matching");
+  fRun->AddTask(etofMatch);
+  
 
   FairTask* fillDST = new  MpdFillDstTask("MpdDst task");
   fRun->AddTask(fillDST);
 
   // Number of events to process
-  Int_t nEvents = 200; //55; //50; //250; //90;
+  Int_t nEvents = 1000; //55; //50; //250; //90;
   
   // -----   Intialise and run   --------------------------------------------
   fRun->Init();

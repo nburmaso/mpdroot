@@ -12,7 +12,7 @@
 #include <TClonesArray.h>
 //#include <TVector3.h>
 //class MpdEtofPoint;
-class MpdEtofHit;
+class FairHit;
 class TpcLheHit;
 class MpdTpcKalmanTrack;
 
@@ -25,9 +25,9 @@ class MpdEctKalmanTrack : public MpdKalmanTrack
   virtual ~MpdEctKalmanTrack(); ///< Destructor
   //MpdEctKalmanTrack(Int_t tpcIndx, const TpcLheKalmanTrack &tpcTrack); ///< Ctor from the TPC track
   MpdEctKalmanTrack(Int_t tpcIndx, const MpdTpcKalmanTrack &tpcTrack); ///< Ctor from TPC track
-  MpdEctKalmanTrack(Int_t tofIndx, Int_t tpcIndx, MpdEtofHit *tof, TpcLheHit *tpc, TVector3 &vert); ///< Ctor from ETOF and TPC hits
+  MpdEctKalmanTrack(Int_t tofIndx, Int_t tpcIndx, FairHit *tof, TpcLheHit *tpc, TVector3 &vert); ///< Ctor from ETOF and TPC hits
   //MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx, MpdEtofPoint *tof, MpdKalmanHitZ *ect, TVector3 &vert); ///< Ctor from ETOF and ECT hits
-  MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx, MpdEtofHit *tof, MpdKalmanHit *ect, TVector3 &vert); ///< Ctor from ETOF and ECT hits
+  MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx, FairHit *tof, MpdKalmanHit *ect, TVector3 &vert); ///< Ctor from ETOF and ECT hits
   MpdEctKalmanTrack (const MpdEctKalmanTrack& track); ///< copy constructor
   MpdEctKalmanTrack& operator=(const MpdEctKalmanTrack& track); // assignment operator
 
@@ -78,6 +78,6 @@ class MpdEctKalmanTrack : public MpdKalmanTrack
   TClonesArray *fTrHits; ///< track hits
   Double_t fParam1[5]; //!< track param at first hit
 
-  ClassDef(MpdEctKalmanTrack,1);
+  ClassDef(MpdEctKalmanTrack,2);
 };
 #endif

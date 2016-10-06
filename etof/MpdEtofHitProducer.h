@@ -33,18 +33,12 @@ class MpdEtofHitProducer : public MpdEtofHitProducerIdeal
 	Double_t 			fTimeSigma; 	// Uncertainties of time, gaus sigma [ns],  default: 100 ps
    	Double_t			fErrPhi, fErrR; 	// Uncertainties of coordinates, gaus sigma [cm], dR= 10./sqrt(12.) mm, default: dPhi= 5 mm. 	
 	TRandom2 			*pRandom;
-	
-	// QA test histos
-        TList				fList;		
-	TH1D				*h1TestDistance;
-	TH2D				*h2TestNeighborPair;
-	TH2D				*h2TestMergedTimes, *h2TestChainPID, *h2TestStrips;
 							
 	Bool_t 				HitExist(Double_t val); 
 	Bool_t 				DoubleHitExist(Double_t val);	
 	
 public:
-	MpdEtofHitProducer(const char *name = "ETOF HitProducer", Int_t verbose = 1, Bool_t DoTest = false);
+	MpdEtofHitProducer(const char *name = "ETOF HitProducer",  Bool_t useMCdata = true, Int_t verbose = 1, Bool_t DoTest = false, const char *flnm = "QA.MpdEtofHitProducer.root");
 	virtual ~MpdEtofHitProducer();
 
 	InitStatus		Init();
@@ -55,7 +49,7 @@ public:
 	void			SetAlongStripzResolution(Double_t err){ fErrPhi = err;};
 	void 			SetSeed(UInt_t seed = 0);
 
-ClassDef(MpdEtofHitProducer,2) // MpdEtofHitProducer
+ClassDef(MpdEtofHitProducer,2) 
 };
 //------------------------------------------------------------------------------------------------------------------------
 #endif 
