@@ -333,19 +333,15 @@ Int_t MpdGetNumEvents::GetNumURQMDEvents(char* fileName)
         sscanf(read, "%d", &ntracks);
         libz->gets(read, 200);
 
-        cout << ntracks << " ";
-        
         for(int itrack=0; itrack < ntracks; itrack++)
             libz->gets(read, 200);
 
         num++;
-        cout << num << endl;
     }
 
     libz->close();
     delete libz;
 
-    cout << num << " events in the file observed" << endl;
     return num;
 }
 
