@@ -311,6 +311,8 @@ Int_t MpdGetNumEvents::GetNumURQMDEvents(char* fileName)
     {
         // ---> Read and check first event header line from input file
         libz->gets(read, 200);
+        Int_t urqmdVersion = 0;
+        sscanf(read, "UQMD   version:       %d   1000  %d  output_file  14", &urqmdVersion, &urqmdVersion);
         if (libz->eof())
         {
             cout<<"End of input file reached."<<endl;
@@ -324,22 +326,26 @@ Int_t MpdGetNumEvents::GetNumURQMDEvents(char* fileName)
         }
 
         // ---> Read rest of event header
-        for (int iline=0; iline<13; iline++)
+        for (int iline = 0; iline < ((urqmdVersion == 30400) ? 16 : 13); iline++)
             libz->gets(read, 200);
 
         libz->gets(read, 200);
         sscanf(read, "%d", &ntracks);
         libz->gets(read, 200);
 
+        cout << ntracks << " ";
+        
         for(int itrack=0; itrack < ntracks; itrack++)
             libz->gets(read, 200);
 
         num++;
+        cout << num << endl;
     }
 
     libz->close();
     delete libz;
 
+    cout << num << " events in the file observed" << endl;
     return num;
 }
 
