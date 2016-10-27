@@ -313,12 +313,7 @@ Int_t MpdGetNumEvents::GetNumURQMDEvents(char* fileName)
         libz->gets(read, 200);
         Int_t urqmdVersion = 0;
         sscanf(read, "UQMD   version:       %d   1000  %d  output_file  14", &urqmdVersion, &urqmdVersion);
-        if (libz->eof())
-        {
-            cout<<"End of input file reached."<<endl;
-            libz->close();
-            return -1;
-        }
+       
         if (read[0] != 'U')
         {
             cout<<"Wrong event header"<<endl;
