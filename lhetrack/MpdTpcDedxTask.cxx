@@ -118,7 +118,8 @@ void MpdTpcDedxTask::Exec(Option_t * option)
 	  break;
 	}
       }
-      dedx[nOK++] = sig;
+      if (fHits && sig > 800) dedx[nOK++] = sig; // threshold
+      else if (!fHits) dedx[nOK++] = sig;
       hit->SetSignal(sig);
     }
     if (nOK == 0) continue;
