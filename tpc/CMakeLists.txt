@@ -51,6 +51,7 @@ MpdTpcSectorGeo.cxx
 MpdTpcDigitizerAZ.cxx
 MpdTpcClusterFinderAZ.cxx
 MpdTPCpid.cxx
+MpdTpcClusterFinderMlem.cxx
 )
 
 # fill list of header files from list of source files

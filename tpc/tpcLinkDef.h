@@ -28,6 +28,7 @@
 #pragma link C++ class MpdTpcDigitizerAZ+;
 #pragma link C++ class MpdTpcClusterFinderAZ+;
 #pragma link C++ class MpdTPCpid+;
+#pragma link C++ class MpdTpcClusterFinderMlem+;
 
 #endif
 
