@@ -340,6 +340,7 @@ void MpdTpcDigitizerAZ::Check4Edge(UInt_t iSec, TpcPoint* &prePoint, TpcPoint* v
   MpdTpcSectorGeo::Instance()->Local2Global(iSec%(nSectors/2), posL, posG);
   virtPoint->SetPosition(posG);
   virtPoint->SetTrackID(prePoint->GetTrackID());
+  prePoint->SetEnergyLoss(prePoint->GetEnergyLoss()*1.3); // 29.10.16 - correct for edge-effect
   prePoint = virtPoint;
 }
 
