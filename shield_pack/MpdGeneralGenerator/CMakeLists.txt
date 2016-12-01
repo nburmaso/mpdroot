@@ -6,8 +6,7 @@ set(INCLUDE_DIRECTORIES
     ${PLUTO_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/fairtools
     ${CMAKE_SOURCE_DIR}/geobase
-    ${CMAKE_SOURCE_DIR}/field
-    ${CMAKE_SOURCE_DIR}/base
+    ${CMAKE_SOURCE_DIR}/base/sim
     ${CMAKE_SOURCE_DIR}/generators
     ${CMAKE_SOURCE_DIR}/gconfig
 )

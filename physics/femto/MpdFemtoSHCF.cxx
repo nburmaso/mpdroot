@@ -862,7 +862,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 		if (recalccov) {
 			for (int ilmzero = 0; ilmzero < GetMaxJM(); ilmzero++)
 				for (int ilmprim = 0; ilmprim < GetMaxJM(); ilmprim++) {
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! RR " << ilmzero << " " << ilmprim << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -871,7 +871,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! RI " << ilmzero << " " << ilmprim << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -880,7 +880,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! IR " << ilmzero << " " << ilmprim << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -889,7 +889,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! II " << ilmzero << " " << ilmprim << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -907,7 +907,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 					covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 1)] /=
 							fNumReal[0]->GetEntries();
 
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! RR" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -916,7 +916,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! RI" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -925,7 +925,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! IR" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -934,7 +934,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! II" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -952,7 +952,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 					covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 1)] -= imag(
 							tTq0[ilmzero]) * imag(tTq0[ilmprim]);
 
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! RR" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -961,7 +961,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! RI" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -970,7 +970,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! IR" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -979,7 +979,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! II" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -997,7 +997,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 					covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 1)] /=
 							(fNumReal[0]->GetEntries() - 1);
 
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! RR" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -1006,7 +1006,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 0, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! RI" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -1015,7 +1015,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 0)])) {
 						// 	    std::cout << "NaN !!!! IR" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "
@@ -1024,7 +1024,7 @@ void MpdFemtoSHCF::RecalculateCF() {
 						// 		 << imag(tTq0[ilmzero]) << " "
 						// 		 << imag(tTq0[ilmprim]) << " " << std::endl;
 					}
-					if (isnan(
+                    if (std::isnan(
 							covmnum[GetBin(ibin - 1, ilmzero, 1, ilmprim, 1)])) {
 						// 	    std::cout << "NaN !!!! II" << std::endl;
 						// 	    std::cout << fNumReal[0]->GetEntries() << " "

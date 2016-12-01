@@ -12,6 +12,7 @@
 #include "TClonesArray.h"
 
 #include "FairRootManager.h"
+#include "FairLogger.h"
 
 #include "MpdTofUtils.h"
 #include "MpdTofHit.h"

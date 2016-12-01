@@ -76,7 +76,7 @@ void eventdisplay (char* sim_file = 0, char* dst_file = 0, char* out_file = 0)
   fMan->AddTask(TofPoint);
   FairMCPointDraw *ZdcPoint = new FairMCPointDraw("ZdcPoint", kOrange, kFullSquare);
   fMan->AddTask(ZdcPoint);
-  FairMCPointDraw *EmcPoint = new FairMCPointDraw("MpdEmcPoint", kOrange, kDot);
+  FairMCPointDraw *EmcPoint = new FairMCPointDraw("EmcPoint", kOrange, kDot);
   fMan->AddTask(EmcPoint);
 
   // draw MC geometry tracks
@@ -96,14 +96,34 @@ void eventdisplay (char* sim_file = 0, char* dst_file = 0, char* out_file = 0)
   //fMan->AddTask(MpdTpcHit);
 
   // DST tracks
-  MpdTrackDraw *MpdGlobalTrack = new MpdTrackDraw("GlobalTracks");
+  MpdGlobalTrackDraw *MpdGlobalTrack = new MpdGlobalTrackDraw("GlobalTracks");
   fMan->AddTask(MpdGlobalTrack);
 
-  if (gGeoManager)
-      gGeoManager->SetVisLevel(3);
+    // draw EMC towers : MpdEmcTowerDraw(TaskName, emcEnergyThreshold in GeV, 2)
+    MpdEmcTowerDraw *MpdEmcTower= new MpdEmcTowerDraw("MpdEmcTower", 0.0075, 2);
+    fMan->AddTask(MpdEmcTower);
+
+    // draw ZDC towers : MpdZdcTowerDraw(TaskName, zdcEnergyThreshold in GeV, kFALSE, 2)
+    MpdZdcTowerDraw *MpdZdcTower= new MpdZdcTowerDraw("MpdZdcTower", 0.0001, kFALSE, 2);
+    fMan->AddTask(MpdZdcTower);
+
+    if (gGeoManager)
+        gGeoManager->SetVisLevel(3);
 
   //fMan->background_color = 17;
 
   //FairEventManager::Init(Int_t visopt = 1, Int_t vislvl = 3, Int_t maxvisnds = 10000);
   fMan->Init();
+
+    // -----   Finish   -------------------------------------------------------
+    timer.Stop();
+    Double_t rtime = timer.RealTime();
+    Double_t ctime = timer.CpuTime();
+    cout << endl << endl;
+    cout << "Event Display was initialized successfully." << endl;
+    cout << "Output file is "    << outFile << endl;
+    cout << "Parameter file is " << parFile << endl;
+    cout << "Initialization: Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
+    cout << endl;
+    // ------------------------------------------------------------------------
 }

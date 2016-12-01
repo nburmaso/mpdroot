@@ -63,10 +63,7 @@ using namespace std;
 void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile = "mpddst.root", Int_t nStartEvent = 0, Int_t nEvents = 10, TString run_type = "local") {
     // ========================================================================
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
-    Int_t iVerbose = 1;
-
-    // Parameter file
-    TString parFile = inFile;
+    Int_t iVerbose = 0;
 
     // ----  Load libraries   -------------------------------------------------
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
@@ -92,24 +89,35 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
         run_type = run_type(0, ind);
     }
 
-    if (run_type != "proof")
+    FairRunAna* fRun;
+    if (run_type == "proof")
+    {
+        fRun = new FairRunAnaProof(proof_name);
+        fRun->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
+    }
+    else
+    {
         if (!CheckFileExist(inFile)) return;
+        fRun = new FairRunAna();
+    }
 
-    FairRunAna *fRun = new FairRunAna(run_type, proof_name);
-    fRun->SetInputFile(inFile);
-    //fRun->AddFriend(inFile);
+    FairSource* fFileSource = new FairFileSource(inFile);
+    fRun->SetSource(fFileSource);
     fRun->SetOutputFile(outFile);
-    fRun->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
+    fRun->SetGenerateRunInfo(false);
+    fRun->SetUseFairLinks(true);
     // ------------------------------------------------------------------------
+
+    // Parameter file
+    TString parFile = inFile;
 
     // -----  Parameter database   --------------------------------------------
     FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
-    FairParRootFileIo* parInput1 = new FairParRootFileIo();
-    parInput1->open(parFile.Data());
-    rtdb->setFirstInput(parInput1);
-
-    // fRun->LoadGeometry();  // EL
-
+    FairParRootFileIo* parIo1 = new FairParRootFileIo();
+    parIo1->open(parFile.Data());
+    rtdb->setFirstInput(parIo1);
+    rtdb->setOutput(parIo1);
+    rtdb->saveOutput();
     // ------------------------------------------------------------------------
 
     MpdKalmanFilter *kalman = MpdKalmanFilter::Instance("KF");
@@ -153,7 +161,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     // -----   Intialise   ----------------------------------------------------
     fRun->Init();
-    if (run_type != "proof") cout << "Field: " << fRun->GetField()->GetBz(0., 0., 0.) << endl;
+    if (run_type != "proof") cout<<"Field: "<<fRun->GetField()->GetBz(0., 0., 0.)<<endl;
     else {
         TProof* pProof = fRun->GetProof();
         pProof->SetParameter("PROOF_PacketizerStrategy", (Int_t) 0);
@@ -174,17 +182,14 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     // ------------------------------------------------------------------------
 
     // -----   Finish   -------------------------------------------------------
-
-    delete fRun;
-
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
     cout << endl << endl;
+    cout << "Macro finished succesfully." << endl;
     cout << "Output file is " << outFile << endl;
     cout << "Parameter file is " << parFile << endl;
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-    cout << "Macro finished succesfully." << endl;
     cout << endl;
     // ------------------------------------------------------------------------
 }

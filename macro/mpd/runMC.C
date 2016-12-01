@@ -303,7 +303,6 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "$V
     (TDatabasePDG::Instance())->WritePDGTable(Pdg_table_name.Data());
 #endif
 
-    Bool_t file = fRun->GetWriteRunInfoFile();
     timer.Stop();
     Double_t rtime = timer.RealTime(), ctime = timer.CpuTime();
     printf("RealTime=%f seconds, CpuTime=%f seconds\n", rtime, ctime);

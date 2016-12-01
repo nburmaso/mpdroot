@@ -30,6 +30,7 @@ class MpdZdcDigi: public TObject
 
 
   inline Int_t  GetDetectorID() { return fDetectorID; } 
+  inline Int_t  GetModuleID()  { return fModuleID; } 
   inline Int_t  GetChannelID()  { return fChannelID; } 
   inline Int_t  GetADCBits()    { return fADCBits; } 
   inline UInt_t GetELossDigi()  { return fELossDigi; } 

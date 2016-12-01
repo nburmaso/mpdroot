@@ -1,16 +1,10 @@
-// $Id: f_stccomm.c 478 2009-10-29 12:26:09Z linev $
-//-----------------------------------------------------------------------
-//       The GSI Online Offline Object Oriented (Go4) Project
-//         Experiment Data Processing at EE department, GSI
-//-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
-//                     Planckstr. 1, 64291 Darmstadt, Germany
-// Contact:            http://go4.gsi.de
-//-----------------------------------------------------------------------
-// This software can be used under the license agreements as stated
-// in Go4License.txt file which is part of the distribution.
-//-----------------------------------------------------------------------
-
+/********************************************************************************
+ *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
+ *                                                                              *
+ *              This software is distributed under the terms of the             * 
+ *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
+ *                  copied verbatim in the file "LICENSE"                       *
+ ********************************************************************************/
 #include "f_stccomm.h"
 
 CHARS c_msg[80];
@@ -497,10 +491,10 @@ struct s_tcpcomm* ps_client;
 {
 
 
-  INTS4 shut , retval ;
-  INTS4 thirty = 30;
+  INTS4 /*shut,*/ retval ;
+//  INTS4 thirty = 30;
   struct s_tcpcomm s_client;
-
+  memset(&s_client, 0, sizeof(s_client));
 
   /* ----------------------------------------------------------------------- */
   /*           init communication socket.              */
@@ -704,8 +698,8 @@ INTS4 f_stc_acceptclient( ps_server , pi_channel)
 struct s_tcpcomm* ps_server;
 INTS4* pi_channel;
 {
-  INTS4 i_socket;
-  struct hostent*  he;
+//  INTS4 i_socket;
+//  struct hostent*  he;
 
 #ifdef GSI__AIX
   *pi_channel = accept( ps_server->sock_rw,
@@ -714,7 +708,7 @@ INTS4* pi_channel;
 #else
   *pi_channel = accept( ps_server->sock_rw,
                         ( struct sockaddr*) &ps_server->sock_name,
-                        &ps_server->namelength);
+                        (uint*)&ps_server->namelength);
 #endif
   if( *pi_channel == -1) {
     switch( errno ) {
@@ -871,9 +865,10 @@ struct s_tcpcomm* ps_server;
 
 {
 
-  INTS4 retval , i , retry , on ;
-  struct protoent* p;
+  INTS4 retval, /*i,*/ retry, on ;
+//  struct protoent* p;
   struct s_tcpcomm s_server;
+  memset(&s_server, 0, sizeof(s_server));
 
 
 #ifdef GSI__WINNT

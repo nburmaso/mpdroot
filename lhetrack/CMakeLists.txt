@@ -1,10 +1,15 @@
 # Create a library called "libLHETrack" 
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR} 
+${ROOT_INCLUDE_DIR}
+${Boost_INCLUDE_DIRS}
 ${CMAKE_SOURCE_DIR}/geobase 
-${CMAKE_SOURCE_DIR}/parbase 
-${CMAKE_SOURCE_DIR}/base 
+${CMAKE_SOURCE_DIR}/parbase
+${CMAKE_SOURCE_DIR}/base/sim
+${CMAKE_SOURCE_DIR}/base/source
+${CMAKE_SOURCE_DIR}/base/steer
+${CMAKE_SOURCE_DIR}/base/event
+${CMAKE_SOURCE_DIR}/base/field 
 ${CMAKE_SOURCE_DIR}/mpdfield 
 ${CMAKE_SOURCE_DIR}/trackbase 
 ${CMAKE_SOURCE_DIR}/mcstack

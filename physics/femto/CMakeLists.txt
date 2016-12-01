@@ -7,9 +7,10 @@ ${ROOT_INCLUDE_DIR}
 ${GSL_DIR}/include
 ${CLHEP_INCLUDE_DIR} 
 ${CMAKE_SOURCE_DIR}/geobase 
-${CMAKE_SOURCE_DIR}/parbase 
-${CMAKE_SOURCE_DIR}/base 
-${CMAKE_SOURCE_DIR}/field
+${CMAKE_SOURCE_DIR}/parbase
+${CMAKE_SOURCE_DIR}/base/source
+${CMAKE_SOURCE_DIR}/base/steer
+${CMAKE_SOURCE_DIR}/base/event
 ${CMAKE_SOURCE_DIR}/mpdfield
 ${CMAKE_SOURCE_DIR}/mcstack
 ${CMAKE_SOURCE_DIR}/passive
@@ -21,13 +22,13 @@ ${CMAKE_SOURCE_DIR}/physics/femto
 ${CMAKE_SOURCE_DIR}/mpddata
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+include_directories(${INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 )
  
-link_directories( ${LINK_DIRECTORIES})
+link_directories(${LINK_DIRECTORIES})
 
 set(PHYS_FEMTO_SRCS
 MpdFemto.cxx

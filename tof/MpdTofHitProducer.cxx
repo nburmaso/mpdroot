@@ -11,8 +11,10 @@
 #include <TH2D.h>
 #include <TEfficiency.h>
 #include <TRandom2.h>
+#include <TClonesArray.h>
 
 #include "FairMCTrack.h"
+#include "FairLogger.h"
 
 #include "MpdTofUtils.h"
 #include "MpdTofPoint.h"
