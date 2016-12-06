@@ -55,6 +55,8 @@ public:
   void Clear();
   void Fill_TUBE(Double_t length_z, Double_t r_max, Double_t r_min);
   void Fill_TUBS(Double_t zmin, Double_t zmax, Double_t rmin,Double_t rmax, Double_t dr_st, Double_t dr_end);
+  void Fill_TRAP(Double_t dx11, Double_t dx12, Double_t dy1, Double_t dx21, Double_t dx22, 
+		 Double_t dy2, Double_t dz);
   void Fill_TRAP(Double_t x, Double_t X,Double_t x_small_f, Double_t x_large_f, Double_t yW, Double_t yW2,Double_t zW, Double_t zW2, Int_t ra);
   //void Fill_RECTRAP(Double_t x_small, Double_t x_large,Double_t xx_small, Double_t xx_large,
 	//	 Double_t yWidth, Double_t zWidth);	 

@@ -56,6 +56,8 @@ public:
   void Clear();
   void Fill_TUBE(Double_t length_z, Double_t r_max, Double_t r_min);
   void Fill_TUBS(Double_t zmin, Double_t zmax, Double_t rmin,Double_t rmax, Double_t dr_st, Double_t dr_end);
+  void Fill_TRAP(Double_t dx11, Double_t dx12, Double_t dy1, Double_t dx21, Double_t dx22, 
+		 Double_t dy2, Double_t dz);
   void Fill_TRAP(Double_t x, Double_t X,Double_t x_small_f, Double_t x_large_f, Double_t yW, Double_t yW2,Double_t zW, Double_t zW2, Int_t ra);
   //void Fill_RECTRAP(Double_t x_small, Double_t x_large,Double_t xx_small, Double_t xx_large,
 	//	 Double_t yWidth, Double_t zWidth);	 
@@ -282,6 +284,39 @@ void Mpdshape::Fill_PGON( Double_t zmin, Double_t zmax, Double_t rmin, Double_t 
     << zmax << " " << rmin << " " << rmax;
    fPoints = o.str();
    
+}
+
+//______________________________________________________________
+void Mpdshape::Fill_TRAP(Double_t dx11, Double_t dx12, Double_t dy1, Double_t dx21, Double_t dx22, 
+			 Double_t dy2, Double_t dz)
+{
+  // Fill trapezoid TRAP
+
+  fPoints.clear();
+  std::ostringstream o;
+  o.setf(ios::showpoint); 
+  o.setf(ios::fixed);
+  o.precision(10);
+
+  // trapezoid:    -dz                               dz                         
+           //     2*dx12                           2*dx22
+           // _____________  dy1              ________________  dy2
+           // \           / ^                 \              /  
+           //  \         /  | y  /z            \            /   ^
+           //   \       /                       \          /    | y
+           //    \_____/   -dy1                  \        /     |
+           //     2*dx11                          \      /
+           //                                      \____/      -dy2
+  o << dx11 << " " << -dy1 << " " << 0. << endl
+    << dx12 << " " << dy1 << " " << 0. << endl
+    << -dx12 << " " << dy1 << " " << 0. << endl
+    << -dx11 << " " << -dy1 << " " << 0. << endl
+    
+    << dx21 << " " << -dy2 << " " << dz << endl
+    << dx22 << " " << dy2 << " " << dz << endl
+    << -dx22 << " " << dy2 << " " << dz << endl
+    << -dx21 << " " << -dy2 << " " << dz;
+  fPoints = o.str();
 }
 
 //______________________________________________________________
