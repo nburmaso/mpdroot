@@ -307,6 +307,7 @@ void Mpdshape::Fill_TRAP(Double_t dx11, Double_t dx12, Double_t dy1, Double_t dx
            //    \_____/   -dy1                  \        /     |
            //     2*dx11                          \      /
            //                                      \____/      -dy2
+  /*
   o << dx11 << " " << -dy1 << " " << 0. << endl
     << dx12 << " " << dy1 << " " << 0. << endl
     << -dx12 << " " << dy1 << " " << 0. << endl
@@ -316,6 +317,16 @@ void Mpdshape::Fill_TRAP(Double_t dx11, Double_t dx12, Double_t dy1, Double_t dx
     << dx22 << " " << dy2 << " " << dz << endl
     << -dx22 << " " << dy2 << " " << dz << endl
     << -dx21 << " " << -dy2 << " " << dz;
+  */
+  o << dx11 << " " << 0 << " " << 0. << endl
+    << dx12 << " " << 2*dy1 << " " << 0. << endl
+    << -dx12 << " " << 2*dy1 << " " << 0. << endl
+    << -dx11 << " " << 0 << " " << 0. << endl
+    
+    << dx21 << " " << -dy2+dy1 << " " << dz << endl
+    << dx22 << " " << dy2+dy1 << " " << dz << endl
+    << -dx22 << " " << dy2+dy1 << " " << dz << endl
+    << -dx21 << " " << -dy2+dy1 << " " << dz;
   fPoints = o.str();
 }
 
