@@ -43,10 +43,10 @@ using namespace std;
 // flag_store_FairRadLenPoint
 // FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
 
-void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "$VMCWORKDIR/macro/mpd/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 1,
+void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VMCWORKDIR/macro/mpd/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 1,
         Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0) {
 
-#define URQMD
+#define HADGEN
     TStopwatch timer;
     timer.Start();
     gDebug = 0;
