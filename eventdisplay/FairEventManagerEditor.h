@@ -12,7 +12,6 @@
 #include "TGButton.h"
 #include "TEveGValuators.h"
 #include "TGLabel.h"
-#include "TMutex.h"
 #include "TSemaphore.h"
 #include "TGFileDialog.h"
 
@@ -40,8 +39,8 @@ class FairEventManagerEditor : public TGedFrame
     TGCheckButton* fVizPri;
     TEveGValuator* fMinEnergy, *fMaxEnergy;
     TGLabel* fEventTime;
-    TGCompositeFrame* title1;
-    TGGroupFrame* groupData;
+    TGHorizontalFrame* fGeometryFrame;
+    TGCheckButton* ShowMagnetButton;
     TGCheckButton* fShowMCPoints, *fShowMCTracks, *fShowRecoPoints, *fShowRecoTracks;
 
     // current event number
