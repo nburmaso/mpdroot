@@ -14,6 +14,7 @@
 #include "FairPrimaryGenerator.h"
 #include "TFile.h"
 #include "TChain.h"
+#include "MpdFreezoutGenerator.h"
 
 using namespace std;
 using namespace TMath;
@@ -48,9 +49,11 @@ private:
     Float_t fY[dim]; //!
     Float_t fZ[dim]; //!
     Float_t fE[dim]; //!
+    Float_t fT[dim]; //!
     Int_t fPID[dim]; //!
     Int_t fNpart; //!
     Int_t fEventNumber; //!
+    TClonesArray *fFreezout; //!
     TString fBranch; //! treefin corresponds to hydro + cascade, treeini -- to hydro calculations only
     
     void SetCascade(Bool_t flag) {

@@ -59,6 +59,7 @@ MpdGetNumEvents.cxx
 MpdHistoGenerator.cxx
 Mpd3fdGenerator.cxx
 MpdVHLLEGenerator.cxx
+MpdFreezoutGenerator.cxx
 )
 
 Set(HEADERS )

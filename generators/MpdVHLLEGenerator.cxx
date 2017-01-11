@@ -3,13 +3,15 @@
 MpdVHLLEGenerator::MpdVHLLEGenerator()
 : FairGenerator(),
 fInputFile(NULL),
-fFileName("") {
+fFileName("") ,
+fFreezout(NULL){
 }
 
 MpdVHLLEGenerator::MpdVHLLEGenerator(TString fileName, Bool_t isCascade)
 : FairGenerator(),
 fInputFile(NULL),
-fFileName(fileName) {
+fFileName(fileName),
+fFreezout(NULL){
     //  fFileName = fileName;
     cout << "-I MpdVHLLEGenerator: Opening input file " << fFileName << endl;
     fInputFile = new TFile(fFileName.Data());
@@ -31,10 +33,13 @@ fFileName(fileName) {
     fDstTree->SetBranchAddress("y", fY);
     fDstTree->SetBranchAddress("z", fZ);
     fDstTree->SetBranchAddress("E", fE);
+    fDstTree->SetBranchAddress("t", fT);
     fDstTree->SetBranchAddress("npart", &fNpart);
     fDstTree->SetBranchAddress("id", fPID);
 
     fEventNumber = 0;
+    MpdFreezoutGenerator *freezgen = MpdFreezoutGenerator::Instance();
+    fFreezout = freezgen->GetArray();
 }
 
 MpdVHLLEGenerator::~MpdVHLLEGenerator() {
@@ -66,9 +71,11 @@ Bool_t MpdVHLLEGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
         // event->SetB(b);
         event->MarkSet(kTRUE);
     }
-
+    fFreezout->Clear();
     for (Int_t iTrack = 0; iTrack < fNpart; iTrack++) {
         primGen->AddTrack(fPID[iTrack], fPx[iTrack], fPy[iTrack], fPz[iTrack], fX[iTrack], fY[iTrack], fZ[iTrack]);
+        TLorentzVector *freezpos = (TLorentzVector*)fFreezout->ConstructedAt(iTrack);
+        freezpos->SetXYZT(fX[iTrack],fY[iTrack],fZ[iTrack],fT[iTrack]);
         // cout << iTrack << " " << fPID[iTrack] << " " <<
         // fPx[iTrack] << " " << fPy[iTrack] << " " << fPz[iTrack] << " " <<
         // fX[iTrack] << " " << fY[iTrack] << " " << fZ[iTrack] << endl;
