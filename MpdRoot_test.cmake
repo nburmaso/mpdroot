@@ -1,63 +1,75 @@
-SET (CTEST_SOURCE_DIRECTORY $ENV{SOURCEDIR})
-SET (CTEST_BINARY_DIRECTORY $ENV{BUILDDIR})
-SET (CTEST_SITE $ENV{SITE})
-SET (CTEST_BUILD_NAME $ENV{LABEL})
-SET (CTEST_CMAKE_GENERATOR "Unix Makefiles")
-SET (CTEST_PROJECT_NAME "MPDROOT")
+Set(CTEST_SOURCE_DIRECTORY $ENV{SOURCEDIR})
+Set(CTEST_BINARY_DIRECTORY $ENV{BUILDDIR})
+Set(CTEST_SITE $ENV{SITE})
+Set(CTEST_BUILD_NAME $ENV{LABEL})
+Set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+Set(CTEST_PROJECT_NAME "MPDROOT")
 
-SET (CTEST_UPDATE_COMMAND "svn")
-If($ENV{ctest_model} MATCHES Continuous)
-  Set(CTEST_SVN_UPDATE_OPTIONS "$ENV{REVISION}")
-EndIf($ENV{ctest_model} MATCHES Continuous)
+Find_Program(CTEST_GIT_COMMAND NAMES git)
+Set(CTEST_UPDATE_COMMAND "${CTEST_GIT_COMMAND}")
 
-SET (BUILD_COMMAND "make")
-SET (CTEST_BUILD_COMMAND "${BUILD_COMMAND} -j$ENV{number_of_processors}")
+Set(BUILD_COMMAND "make")
+Set(CTEST_BUILD_COMMAND "${BUILD_COMMAND} -j$ENV{number_of_processors}")
 
-if($ENV{ctest_model} MATCHES Nightly)
+String(TOUPPER $ENV{ctest_model} _Model)
+Set(configure_options "-DCMAKE_BUILD_TYPE=${_Model}")
 
-Set (CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"${CTEST_SOURCE_DIRECTORY}\" \"-DCMAKE_BUILD_TYPE=NIGHTLY\" ")
+Set(USE_LAUNCHERS $ENV{USE_LAUNCHERS})
+If(USE_LAUNCHERS)
+  Set(CTEST_USE_LAUNCHERS 1)
+  Set(configure_options "${configure_options};-DCTEST_USE_LAUNCHERS=${CTEST_USE_LAUNCHERS}")
+EndIf()
 
-  # get the information about conflicting or localy modified files
-  # from svn, extract the relavant information about the file name
-  # and put the result in the output variable
-  execute_process(COMMAND svn stat -u  
-                  COMMAND grep ^[CM]
-                  COMMAND cut -c21- 
-                  OUTPUT_VARIABLE FILELIST
-                  )
+Set(EXTRA_FLAGS $ENV{EXTRA_FLAGS})
+If(EXTRA_FLAGS)
+  Set(configure_options "${configure_options};${EXTRA_FLAGS}") 
+EndIf()
 
-  # create out of the output a cmake list. This step is done to convert the
-  # stream into seperated filenames.
-  # The trick is to exchange an "\n" by an ";" which is the separartor in
-  # a list created by cmake 
-  STRING(REGEX REPLACE "\n" ";" _result "${FILELIST}")
+If($ENV{ctest_model} MATCHES Nightly OR $ENV{ctest_model} MATCHES Profile)
 
-  FOREACH(_file ${_result})
-    STRING(STRIP "${_file}" _file1)
-    SET (CTEST_NOTES_FILES ${CTEST_NOTES_FILES} "${CTEST_SOURCE_DIRECTORY}/${_file1}")
-  ENDFOREACH(_file ${_result})
+  Find_Program(GCOV_COMMAND gcov)
+  If(GCOV_COMMAND)
+    Message("Found GCOV: ${GCOV_COMMAND}")
+    Set(CTEST_COVERAGE_COMMAND ${GCOV_COMMAND})
+  EndIf(GCOV_COMMAND)
+
+  Set(ENV{ctest_model} Nightly)
 
   CTEST_EMPTY_BINARY_DIRECTORY(${CTEST_BINARY_DIRECTORY})
 
-else($ENV{ctest_model} MATCHES Nightly)
-Set (CTEST_CONFIGURE_COMMAND " \"${BUILD_COMMAND}\" \" -j$ENV{number_of_processors}\" \"${CTEST_BINARY_DIRECTORY}\" ")
-endif($ENV{ctest_model} MATCHES Nightly)
-MESSAGE("MpdRoot_test::  CTEST_CONFIGURE_COMMAND='${CTEST_CONFIGURE_COMMAND}'")
+EndIf()
 
-configure_file(${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake
+Configure_File(${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake
                ${CTEST_BINARY_DIRECTORY}/CTestCustom.cmake
               )
-ctest_read_custom_files("${CTEST_BINARY_DIRECTORY}")
 
-CTEST_START ($ENV{ctest_model})
+# Copy CTestConfig.cmake to build directory.
+# When building with launchers send the results to the alternative cdash server.
+File(READ ${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake f0 )
+File(WRITE ${CTEST_BINARY_DIRECTORY}/CTestConfig.cmake "${f0}")
+
+Ctest_Read_Custom_Files("${CTEST_BINARY_DIRECTORY}")
+
+Ctest_Start($ENV{ctest_model})
+
 If(NOT $ENV{ctest_model} MATCHES Experimental)
-  CTEST_UPDATE (SOURCE "${CTEST_SOURCE_DIRECTORY}")
-EndIf(NOT $ENV{ctest_model} MATCHES Experimental)
-# CTEST_CONFIGURE (BUILD "${CTEST_BINARY_DIRECTORY}")
-CTEST_CONFIGURE ()
-CTEST_BUILD (BUILD "${CTEST_BINARY_DIRECTORY}")
+  Ctest_Update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
+EndIf()
+
+Ctest_Configure(BUILD "${CTEST_BINARY_DIRECTORY}"
+                OPTIONS "${configure_options}"
+               )
+
+Ctest_Build(BUILD "${CTEST_BINARY_DIRECTORY}")
+
 MESSAGE("MpdRoot_test::  CTEST_TEST started...")
-CTEST_TEST (BUILD "${CTEST_BINARY_DIRECTORY}")
-# CTEST_TEST (BUILD "${CTEST_BINARY_DIRECTORY}" PARALLEL_LEVEL $ENV{number_of_processors})
+
+Ctest_Test(BUILD "${CTEST_BINARY_DIRECTORY}")
+
+If(GCOV_COMMAND)
+  Ctest_Coverage(BUILD "${CTEST_BINARY_DIRECTORY}")
+EndIf()
+
 MESSAGE("MpdRoot_test::  CTEST_TEST finished...")
-CTEST_SUBMIT ()
+
+Ctest_Submit()
