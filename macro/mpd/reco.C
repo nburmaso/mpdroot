@@ -186,7 +186,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
     cout << endl << endl;
-    cout << "Macro finished succesfully." << endl;
+    cout << "Macro finished successfully." << endl;      // marker of successful execution for CDASH
     cout << "Output file is " << outFile << endl;
     cout << "Parameter file is " << parFile << endl;
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;

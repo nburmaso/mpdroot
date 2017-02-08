@@ -42,7 +42,8 @@ fCoefficients(NULL) {
 }
 
 MpdTPCpid::~MpdTPCpid() {
-    fCoefficients->Delete();
+    delete fCoefficients;
+    fCoefficients = 0;
 }
 
 Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi, Float_t& Pk, Float_t& Pp, Float_t& Pe, Int_t method) {

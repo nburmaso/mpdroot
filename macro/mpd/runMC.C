@@ -306,8 +306,7 @@ void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VM
     timer.Stop();
     Double_t rtime = timer.RealTime(), ctime = timer.CpuTime();
     printf("RealTime=%f seconds, CpuTime=%f seconds\n", rtime, ctime);
-
-    cout << "Macro finished succesfully." << endl;
+    cout << "Macro finished successfully." << endl;     // marker of successful execution for CDASH
 
     gApplication->Terminate();
 }
