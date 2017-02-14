@@ -239,5 +239,22 @@ Int_t MpdTpcKalmanTrack::Compare(const TObject* track) const
   else if (ptthis > pt) return -1;
   return 0;
 }
+//__________________________________________________________________________
+Bool_t MpdTpcKalmanTrack::GetRecoQuality(Double_t dist, Double_t percentage)
+{
+  /// returns kTRUE if number of hits closer to boundaries than dist divided by nHits is larger than percentage
+
+  MpdKalmanHit *hit = NULL;
+  Int_t nCloseHits = 0;
+  Int_t nTrHits = fTrHits->GetEntries();
+  if (nTrHits == 0) {cout << "NO KALMAN HITS ARE FOUND" << endl; return kTRUE;}
+  for (Int_t itr = 0; itr < nTrHits; itr++)
+    {
+      hit = (MpdKalmanHit*) fTrHits->UncheckedAt(itr);
+      if (TMath::Abs(hit->GetEdge()) < dist) nCloseHits++;
+    }
+  if ((Double_t)(nCloseHits/(Double_t)nTrHits) > percentage) return kTRUE;
+  else return kFALSE;
+}
 
 ClassImp(MpdTpcKalmanTrack)

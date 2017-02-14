@@ -1039,8 +1039,12 @@ void MpdTpcKalmanFilter::MakeKalmanHitsModul()
     //TpcPadID padIDobj = TpcPadID::numberToPadID(padID);
     //padID = padIDobj.sector();
     padID = fSecGeo->Sector(padID);
+    Double_t xsec = (hit->GetLocalY() + fSecGeo->GetMinY()) * TMath::Tan(fSecGeo->Dphi()/2);
+    Double_t xloc = hit->GetLocalX(); Double_t edge = 0.0; // distance to sector boundary
+    if (xloc < 0) edge = xloc + xsec;
+    else edge = xloc - xsec;
     MpdKalmanHit *hitK = new ((*fKHits)[nKh++]) 
-      MpdKalmanHit(lay*1000000+padID, 2, MpdKalmanHit::kFixedP, meas, err, cossin, hit->GetEnergyLoss()/hit->GetStep(), hit->GetLocalY(), j);
+      MpdKalmanHit(lay*1000000+padID, 2, MpdKalmanHit::kFixedP, meas, err, cossin, hit->GetEnergyLoss()/hit->GetStep(), hit->GetLocalY(), j, edge);
     hitK->SetLength(hit->GetLength());
     //hitK->SetDedx (hit->GetEdep()/hit->GetStep());
     //MpdKalmanFilter::Instance()->GetGeo()->SetGlobalPos(hitK,TVector3(hit->GetX(),hit->GetY(),hit->GetZ()));

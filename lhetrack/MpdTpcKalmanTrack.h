@@ -33,6 +33,7 @@ class MpdTpcKalmanTrack : public MpdKalmanTrack
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* track) const; ///< sort in descending order in Pt
   void Reset(); ///< reset track (similar to destructor)
+  Bool_t GetRecoQuality(Double_t dist = 1.5, Double_t percentage = 0.5); ///< returns kTRUE if number of hits closer to boundaries than dist divided by nHits is larger than percentage
 
  private:
 

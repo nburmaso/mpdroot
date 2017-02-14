@@ -16,7 +16,8 @@ MpdKalmanHit::MpdKalmanHit()
     fHitType(kFixedP),
     fNofDim(2),
     fSignal(0.),
-    fDist(0.)
+    fDist(0.),
+    fEdge(99.)
 {
   /// Default constructor
   
@@ -26,7 +27,7 @@ MpdKalmanHit::MpdKalmanHit()
 
 //__________________________________________________________________________
 MpdKalmanHit::MpdKalmanHit(Int_t detID, Int_t nDim, HitType hitType, Double_t *meas, Double_t *err,
-			   Double_t *cosSin, Double_t signal, Double_t dist, Int_t index)
+			   Double_t *cosSin, Double_t signal, Double_t dist, Int_t index, Double_t edge)
   : TObject(),
     fDetectorID(detID),
     fFlag(1),
@@ -35,7 +36,8 @@ MpdKalmanHit::MpdKalmanHit(Int_t detID, Int_t nDim, HitType hitType, Double_t *m
     fHitType(hitType),
     fNofDim(nDim),
     fSignal(signal),
-    fDist(dist)
+    fDist(dist),
+    fEdge(edge)
 {
   /// Constructor
 
@@ -57,7 +59,8 @@ MpdKalmanHit::MpdKalmanHit (const MpdKalmanHit& hit)
     fHitType(hit.fHitType),
     fNofDim(hit.fNofDim),
     fSignal(hit.fSignal),
-    fDist(hit.fDist)
+    fDist(hit.fDist),
+    fEdge(hit.fEdge)
 {
   ///copy constructor
 
