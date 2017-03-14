@@ -55,7 +55,7 @@ public:
 
     Bool_t Find2DClusters(vector<MpdTpc2dCluster*> *extClust, DigOrigArray **digArr, UInt_t row, UInt_t sec);
     void FindPeaksInCluster(MpdTpc2dCluster* clust, vector<MpdTpcPeak*> *peakList, DigOrigArray** fOriginsArray);
-    void FindPeaksInClusterNew(MpdTpc2dCluster* clust, vector<MpdTpcPeak*> *peakList, DigOrigArray** fOriginsArray);
+    //void FindPeaksInClusterNew(MpdTpc2dCluster* clust, vector<MpdTpcPeak*> *peakList, DigOrigArray** fOriginsArray);
     void CollectPeaks(vector<MpdTpcPeak*> peakList, MpdTpc2dCluster* clust, vector<MpdTpcPeak*> *collectedPeakList);
     void CreateHit(vector<MpdTpcPeak*> collectedPeakList, MpdTpc2dCluster* clust, vector<MpdTpcFoundHit*> *hitList, DigOrigArray** fOriginsArray);
     Bool_t GetNextDigit(UInt_t* currDig, MpdTpc2dCluster* Clus2d, DigOrigArray **digArr, Bool_t **fADCMarks);

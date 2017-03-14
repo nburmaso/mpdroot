@@ -35,7 +35,10 @@ const Double_t kProtonMass = 0.938272013;
 const Double_t kNeutronMass = 0.93957;
 
 // -----   Default constructor   ------------------------------------------
-MpdLAQGSMGenerator::MpdLAQGSMGenerator() {}
+MpdLAQGSMGenerator::MpdLAQGSMGenerator() :
+    fInputFile(NULL),
+    fGZInputFile(NULL)
+{}
 // ------------------------------------------------------------------------
 
 
@@ -43,7 +46,9 @@ MpdLAQGSMGenerator::MpdLAQGSMGenerator() {}
 // -----   Standard constructor   -----------------------------------------
 MpdLAQGSMGenerator::MpdLAQGSMGenerator(const char* fileName, const Bool_t use_collider_system, Int_t QGSM_format_ID,Int_t Max_Event_Number ) : 
    FairGenerator(),
-   fIonMap()
+   fIonMap(),
+   fInputFile(NULL),
+   fGZInputFile(NULL)
 {
 
   //AZ memset(la_tab,0,sizeof(la_tab));
@@ -52,9 +57,6 @@ MpdLAQGSMGenerator::MpdLAQGSMGenerator(const char* fileName, const Bool_t use_co
 
   fFileName  = fileName;
   cout << "-I- MpdLAQGSMGenerator: Opening input file " << fileName << endl;
-
-  fInputFile=NULL;
-  fGZInputFile = NULL;
 
   TString sFileName = fileName;
   if (sFileName.Contains(".gz"))

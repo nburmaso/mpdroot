@@ -25,7 +25,7 @@ public:
 
     EmcClusterCollection();
     EmcClusterCollection(Int_t uid);
-    EmcClusterCollection(TString name);
+    //EmcClusterCollection(TString name);
     
     virtual ~EmcClusterCollection();
 
