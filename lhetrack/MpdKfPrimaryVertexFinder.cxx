@@ -140,7 +140,7 @@ void MpdKfPrimaryVertexFinder::EvalVertex()
   /// Primary vertex position evaluator
 
   Int_t nTracks = fTracks->GetEntriesFast();
-  Double_t dMax = 0., dMin = 0.1, xyzM[3], xyzF[3], xyz[3];
+  Double_t dMax = 0., dMin = 0.1, xyzM[3], xyzF[3] = {0,0,0}, xyz[3];
   TAxis *axis[3];
   for (Int_t i = 0; i < 3; ++i) {
     axis[i] = fHist[i]->GetXaxis();

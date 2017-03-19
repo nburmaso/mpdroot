@@ -55,9 +55,15 @@ MpdEtofMatching::MpdEtofMatching(const char *name, Int_t verbose, Bool_t test, c
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofMatching::~MpdEtofMatching()
 {
-    	delete pMF;
-    	delete pRandom;    
-    	delete pMatchingQA;
+    delete pMF;
+    delete pRandom;
+    delete pMatchingQA;
+    if (aTofMatchings != nullptr)
+    {
+        aTofMatchings->Delete();
+        delete aTofMatchings;
+        aTofMatchings = nullptr;
+    }
 }
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus	  MpdEtofMatching::Init()
@@ -65,9 +71,9 @@ InitStatus	  MpdEtofMatching::Init()
   	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofMatching::Init] Begin initialization.");
 
   	aMcPoints = 	(TClonesArray*) FairRootManager::Instance()->GetObject("ETOFPoint");
-   	aMcTracks   = 	(TClonesArray*) FairRootManager::Instance()->GetObject("MCTrack");  	
+    aMcTracks   = 	(TClonesArray*) FairRootManager::Instance()->GetObject("MCTrack");
 	aTofHits  = 	(TClonesArray*) FairRootManager::Instance()->GetObject("ETOFHit");
-	aKFectTracks   = (TClonesArray*) FairRootManager::Instance()->GetObject("EctTrack"); 	
+    aKFectTracks   = (TClonesArray*) FairRootManager::Instance()->GetObject("EctTrack");
 	
 	if(aMcPoints && aMcTracks) fUseMCData = true;
 	
@@ -91,7 +97,7 @@ return kSUCCESS;
 //------------------------------------------------------------------------------------------------------------------------
 void 		MpdEtofMatching::Exec(Option_t *option)
 {
-	fDoMCTest = fUseMCData && fDoTest;
+    fDoMCTest = fUseMCData && fDoTest;
 		
 	// Reset event
         aTofMatchings->Clear();
@@ -141,8 +147,8 @@ void 		MpdEtofMatching::Exec(Option_t *option)
         Int_t		mcTrackIndex = -1,  mcPID = -1;        
         TVector3 	mcPosition;			 
         Int_t		mcNpoints = -1; 			
-        bool		mcTofTouch, mcIsSameIDs, mcHaveCand, mcHaveTrueCand;
-        Int_t 		mcPadUID; 
+        bool		mcTofTouch, mcIsSameIDs, mcHaveCand = false, mcHaveTrueCand = false;
+        Int_t 		mcPadUID = -1;
    	 	
 //cout<<"\n ------------------------------------------------------------------------------------------------------------->> EVENT";  
 //mDetectorsR->dump("\n\n ----->>>	mDetectorsR INTERVALS");
@@ -239,7 +245,7 @@ void 		MpdEtofMatching::Exec(Option_t *option)
 			
 		} // have overlaped segments both R and Phi
 		
-		if(fDoMCTest && mcTofTouch) pMatchingQA->FillCandidates(mcHaveTrueCand, mcHaveCand, pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());			
+        if(fDoMCTest && mcTofTouch) pMatchingQA->FillCandidates(mcHaveTrueCand, mcHaveCand, pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
 	
 	} // cycle by KF tracks
 

@@ -129,6 +129,7 @@ void MpdEctTrackFinderCpc::Reset()
   }
   fTrackCand->Delete();
   delete [] fLayPointers;
+  fLayPointers = 0x0;   // memory segmentation fault was in 'delete' above because of double deletion ('Exec' function with return before 'new')
 }
 
 //__________________________________________________________________________
@@ -1668,7 +1669,11 @@ void MpdEctTrackFinderCpc::SelectTracks(Int_t iPass)
   index = new Int_t [nFound];
   for (Int_t i = 0; i < nFound; ++i) {
     MpdEctKalmanTrack *track = (MpdEctKalmanTrack*) fTracks->UncheckedAt(i);
-    if (track->GetTofIndex() < 0) continue; // track from TPC
+    if (track->GetTofIndex() < 0)   // track from TPC
+    {
+        nh[i] = 0;
+        continue;
+    }
     nh[i] = track->GetNofHits();
     etas[i] = TMath::Abs (track->Momentum3().Eta());
   }

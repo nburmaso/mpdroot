@@ -26,7 +26,13 @@ MpdTofHitProducerIdeal::MpdTofHitProducerIdeal(const char *name, Bool_t useMCdat
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducerIdeal::~MpdTofHitProducerIdeal() 
 { 
-	delete pHitProducerQA;
+    if (pHitProducerQA != nullptr) delete pHitProducerQA;
+    if (aTofHits != nullptr)
+    {
+        aTofHits->Delete();
+        delete aTofHits;
+        aTofHits = nullptr;
+    }
 }
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus	MpdTofHitProducerIdeal::Init() 

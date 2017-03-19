@@ -11,7 +11,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class ClusterElement;
+#pragma link C++ class ClusterElement+;
 #pragma link C++ class Cluster;
 #pragma link C++ class ClusterCollection;
 #pragma link C++ class ClManager;

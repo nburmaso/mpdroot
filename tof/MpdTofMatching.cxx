@@ -160,8 +160,8 @@ Int_t		MpdTofMatching::ExecByIntervalTree(const TsPt& tids, const TmmD2H& dets, 
         Int_t		mcTrackIndex = -1,  mcPID = -1;        
         TVector3 	mcPosition;			 
         Int_t		mcNpoints = -1; 			
-        bool		mcTofTouch, mcIsSameIDs, mcHaveCand, mcHaveTrueCand;
-        Int_t 		mcPadUID;
+        bool		mcTofTouch, mcIsSameIDs, mcHaveCand = false, mcHaveTrueCand = false;
+        Int_t 		mcPadUID = -1;
      
 //cout<<"\n ------------------------------------------------------------------------------------------------------------->> EVENT";    
 //mDetectorsZ->dump("\n\n ----->>>	mDetectorsZ INTERVALS");
