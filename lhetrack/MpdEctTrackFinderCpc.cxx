@@ -1172,7 +1172,8 @@ Int_t MpdEctTrackFinderCpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
   if (trackDir == MpdKalmanTrack::kOutward) {
     layEnd = layMax + 1;
     dLay = 1;
-    if (track->GetPosNew() > 0 && layMax > fgkNlays2) layEnd -= fgkNlays2;
+    //AZ if (track->GetPosNew() > 0 && layMax > fgkNlays2) layEnd -= fgkNlays2;
+    if (track->GetPosNew() > 0 && layMax >= fgkNlays2) layEnd = fgkNlays2; //AZ - 28/03/17
   }
   
   //Int_t indxOK = hits->IndexOf(hitOK);
@@ -2234,7 +2235,7 @@ void MpdEctTrackFinderCpc::MergeWithTpc(MpdEctKalmanTrack *track)
   nAcc = nOld;
   map<Int_t,Double_t>& stepMap = track->GetSteps();
   for (Int_t j = 0; j < nHits; ++j) {
-    MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(j);
+    hit = (MpdKalmanHit*) hits->UncheckedAt(j);
     lay0 = lay;
     lay = hit->GetLayer();
     //if (!MpdKalmanFilter::Instance()->PropagateToHit(track,hit,kFALSE)) continue;
@@ -2384,12 +2385,11 @@ void MpdEctTrackFinderCpc::GoOutward()
   /// Propagate tracks outward (for matching with outer detectors)
 
   const Double_t cutChi2 = 15.;
-  Bool_t ok = 0;
   Int_t nReco = fTracks->GetEntriesFast();
   FairMCEventHeader *mchead = (FairMCEventHeader*) FairRootManager::Instance()->GetObject("MCEventHeader.");
 
-  for (Int_t i = 0; i < nReco; ++i) {
-    MpdEctKalmanTrack *track = (MpdEctKalmanTrack*) fTracks->UncheckedAt(i);
+  for (Int_t itr = 0; itr < nReco; ++itr) {
+    MpdEctKalmanTrack *track = (MpdEctKalmanTrack*) fTracks->UncheckedAt(itr);
     //if (track->IsFromTpc()) continue; // track from TPC
     MpdEctKalmanTrack tr = *track;
     tr.SetParam(*tr.GetParamAtHit());
@@ -2427,7 +2427,7 @@ void MpdEctTrackFinderCpc::GoOutward()
     trhits->Sort();
     Int_t nTpc = 0, nEct = 0, nHits = trhits->GetEntriesFast();
     for (Int_t jh = 0; jh < nHits; ++jh) {
-      MpdKalmanHit *hit = (MpdKalmanHit*) trhits->UncheckedAt(jh);
+      hit = (MpdKalmanHit*) trhits->UncheckedAt(jh);
       if (hit->GetType() == MpdKalmanHit::kFixedR || hit->GetType() == MpdKalmanHit::kFixedP) ++nTpc;
       else ++nEct;
     }
@@ -2442,7 +2442,7 @@ void MpdEctTrackFinderCpc::GoOutward()
       ok = MpdKalmanFilter::Instance()->Refit(&tr,-1,kTRUE);
       if (!ok) {
 	cout << " Go outward: refit failed !!!" << endl; 
-	fTracks->RemoveAt(i);
+	fTracks->RemoveAt(itr);
 	continue;
       }
       // Go to TPC end-plate
@@ -2475,9 +2475,9 @@ void MpdEctTrackFinderCpc::GoOutward()
       }
       TMatrixDSym pointWeight(5);
       TMatrixD param(5,1);
-      Bool_t ok = kTRUE;
+      Bool_t ok1 = kTRUE;
       for (Int_t jh = nEct - 1; jh >= 0; --jh) {
-	MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(jh);
+	hit = (MpdKalmanHit*) hits->UncheckedAt(jh);
 	//if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kFALSE)) continue;
 	if (!MpdKalmanFilter::Instance()->PropagateToHit(&tr,hit,kTRUE)) continue;
 	PassWall(&tr, 0.001);
@@ -2486,8 +2486,8 @@ void MpdEctTrackFinderCpc::GoOutward()
 	tr.SetParamNew(param);
 	if (tr.GetParamNew(3) * fZplanes[hit->GetLayer()-1] < 0) {
 	  cout << " *** GoOutward: going in wrong direction - removing track " << tr.GetParam(3) << " " << fZplanes[hit->GetLayer()-1] << endl;
-	  fTracks->RemoveAt(i);
-	  ok = kFALSE;
+	  fTracks->RemoveAt(itr);
+	  ok1 = kFALSE;
 	  //cout << hit->GetLayer() << " " << tr.GetParam(4) << endl;
 	  //exit(0);
 	  break;
@@ -2495,8 +2495,8 @@ void MpdEctTrackFinderCpc::GoOutward()
 	(*tr.GetWeight()) += pointWeight;
 	tr.SetChi2(tr.GetChi2()+dChi2);
       }
-      if (!ok) continue;
-    }
+      if (!ok1) continue;
+    } // if (nEct > 0)
     printf("MpdEctTrackFinderCpc::GoOutward(): %6d %2d %2d %10.3f %7.3f %1d \n", tr.GetTrackID(), 
 	   nTpc, nEct, tr.GetChi2(), tr.Pt(), ok);
     // Set params at hit
