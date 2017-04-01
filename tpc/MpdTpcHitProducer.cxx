@@ -85,7 +85,7 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
   cout << "\n-I- MpdTpcHitProducer: Event No. " << FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() << " " << ++eventNo << endl;
 
   // Reset output array
-  fHitArray->Delete(); //AZ
+  fHitArray->Delete();
 
   /// Merge hits if they belong to the same track and
   /// not too far from each other in Z: digitization emulation (interim solution).
@@ -321,7 +321,8 @@ void MpdTpcHitProducer::ExecModular()
   for (Int_t j = 0; j < nPoints; ++j ) {
   //for (Int_t j = 0; j < 1000; ++j ) {
     TpcPoint* point = (TpcPoint*) fPointArray->UncheckedAt(j);
-    //if (point->GetTrackID() != 1) continue; /// 
+    //if (point->GetTrackID() != 1) continue; ///
+    if (point->GetTrackID() < 0) continue; /// strange case - protection
     point->Position(p3);
     Int_t padID = secGeo->Global2Local(p3, p3local);
     //if (padID < 0) {cout << j << " " << p3.X() << " " << p3.Y() << " " << p3local.X() << " " << p3local.Y() << endl; continue; }// outside sector boundaries
