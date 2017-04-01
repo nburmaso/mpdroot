@@ -1029,7 +1029,9 @@ void MpdEctTrackFinderCpc::DoTracking(Int_t iPass)
     //Int_t laySkip = 2, layMax = ((MpdKalmanHit*)fKHits->Last())->GetLayer(), lay0 = layMax;
     Int_t laySkip = 2, layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer(), lay0 = layMax;
     if (hit) lay0 = hit->GetLayer() - 1;
-    else if (track->GetPos() > 0 && layMax > fgkNlays2) lay0 = layMax - fgkNlays2;
+    //AZ else if (track->GetPos() > 0 && layMax > fgkNlays2) lay0 = layMax - fgkNlays2;
+    else if (track->GetPos() > 0 && layMax > fgkNlays2) lay0 = fgkNlays2; // AZ - 31.03.17
+    else if (track->GetPos() < 0 && layMax <= fgkNlays2) continue; // AZ - 31.03.17 - empty ECT at Z<0
     MpdEctKalmanTrack tracks[10];
 
     for (Int_t j = 0; j < laySkip; ++j) {
@@ -1153,7 +1155,7 @@ void MpdEctTrackFinderCpc::DoTracking(Int_t iPass)
       track->Print("");
       */
     }
-  }
+  } // for (Int_t i = 0; i < nCand;
 }
     
 //__________________________________________________________________________
@@ -1163,17 +1165,18 @@ Int_t MpdEctTrackFinderCpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
 
   const Double_t rMin = 49.2, rMax = 110.5; // min and max radial size of ECT - to be taken elsewhere
   //cout << fHits->GetEntriesFast() << endl;
-  Int_t layMax = ((MpdKalmanHit*)fKHits->Last())->GetLayer();
+  Int_t layMax = ((MpdKalmanHit*)fKHits->Last())->GetLayer(); // min. layer
   MpdKalmanHit *hitOK = 0x0;
   MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
   //Int_t layBeg = layMax, layEnd = -1, dLay = -1, layOK = -1;
   Int_t layEnd = -1, dLay = -1, layOK = -1;
   if (track->GetPosNew() < 0) layEnd = fgkNlays2;
   if (trackDir == MpdKalmanTrack::kOutward) {
-    layEnd = layMax + 1;
     dLay = 1;
+    //AZ layEnd = layMax + 1;
     //AZ if (track->GetPosNew() > 0 && layMax > fgkNlays2) layEnd -= fgkNlays2;
-    if (track->GetPosNew() > 0 && layMax >= fgkNlays2) layEnd = fgkNlays2; //AZ - 28/03/17
+    layEnd = ((MpdKalmanHit*)fKHits->First())->GetLayer() + 1; //AZ - 31/03/17
+    if (track->GetPosNew() > 0 && layEnd > fgkNlays2+1) layEnd = fgkNlays2 + 1; //AZ - 31/03/17
   }
   
   //Int_t indxOK = hits->IndexOf(hitOK);
