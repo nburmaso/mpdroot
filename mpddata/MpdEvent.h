@@ -48,6 +48,7 @@ class MpdEvent : public TNamed {
  public:
  
   MpdEvent(); // Default constructor
+  MpdEvent& operator=(const MpdEvent &event);
   virtual ~MpdEvent(); // Destructor
 
   void Reset();
