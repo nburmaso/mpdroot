@@ -1,0 +1,79 @@
+To use ZDC (FHCAL) in mpdroot with new ZDC geometry and new algorithm of collecting hits:
+
+
+Files were changed (orig means files before any ZDC/FWall changes were applied):
+-rw-r--r--. 1 marina users  1983 Nov 13 10:16 MpdZdcPoint.h.orig
+-rw-r--r--. 1 marina users  8120 Nov 13 10:16 MpdZdcDigiProducer.cxx.orig
+-rw-r--r--. 1 marina users  3209 Nov 13 10:16 MpdZdcDigi.h.orig
+-rw-r--r--. 1 marina users 10241 Nov 13 10:16 MpdZdc.cxx.orig
+-rw-r--r--. 1 marina users  3601 Jan 15 11:13 MpdZdc.h.orig
+-rw-r--r--. 1 marina users  2292 Jan 28 15:01 MpdZdcPoint.cxx.orig
+
+
+cd mpdroot/zdc
+
+cp MpdZdcPoint.h.newProcHits_newgeomZDC MpdZdcPoint.h
+cp MpdZdcPoint.cxx.newProcHits_newgeomZDC MpdZdcPoint.cxx
+cp MpdZdc.h.newProcHits_newgeomZDC MpdZdc.h
+cp MpdZdc.cxx.newProcHits_newgeomZDC MpdZdc.cxx
+
+
+For reconstruction stage (temporary solution):
+cp MpdZdcDigi.h.newgeomZDC MpdZdcDigi.h
+cp MpdZdcDigiProducer.cxx.newgeomZDC MpdZdcDigiProducer.cxx
+
+
+If one does not need to write MCTracks into output mc.root file (for reco stage MCTrackes should be inside mc.root) :
+cd ../base
+cp FairMCApplication.cxx.noMCTracks FairMCApplication.cxx
+
+
+Then do make:
+cd ../build
+make
+
+________________________________________________
+
+To use FWall in mpdroot with new FWall geometry:
+
+cd mpdroot/zdc
+
+cp MpdZdc.h.FWall MpdZdc.h
+cp MpdZdc.cxx.FWall MpdZdc.cxx
+
+
+For reconstruction stage (temporary solution, FWall cells 5x5 cm):
+cp MpdZdcDigiProducer.cxx.newgeomFWall MpdZdcDigiProducer.cxx
+
+
+Other files should be copies of orig files
+
+
+Then do make:
+cd ../build
+make
+
+___________________________________________________
+
+
+One should not use special cuts (especially for ZDC):
+in mpdroot/gconfig/g4Config.C
+   TG4RunConfiguration* runConfiguration
+           = new TG4RunConfiguration("geomRoot", "FTFP_BERT");
+
+
+To have fPhi info in MpdMCEventHeader comment in runMC.C (if one uses LA-QGSM generator):
+    //MpdMCEventHeader* mcHeader = new MpdMCEventHeader();
+    //FairMCEventHeader* mcHeader = new FairMCEventHeader();
+                                                                         
+    //fRun->SetMCEventHeader(mcHeader);
+
+
+ZDC and FWall geometry files:
+
+mpdroot/geometry/zdc_oldnames_7sect_v1.root;
+mpdroot/macro/mpd/geometry/create_rootgeom_zdc_oldnames_7sect_v1.C
+
+mpdroot/geometry/wall_oldnames_v1.root;
+mpdroot/macro/mpd/geometry/create_rootgeom_wall_oldnames_v1.C
+
