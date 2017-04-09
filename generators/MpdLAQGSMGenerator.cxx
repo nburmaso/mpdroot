@@ -12,6 +12,7 @@
 
 #include "MpdLAQGSMGenerator.h"
 #include "MpdHypYPtGenerator.h" //AZ
+#include "MpdMCEventHeader.h" //MG
 
 #include "FairPrimaryGenerator.h"
 #include "FairIon.h"
@@ -411,6 +412,12 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     event->SetB(b);
     //    event->SetPhi(bb.Phi());    // MG
     event->MarkSet(kTRUE);
+    // fill extra //from MpdPHSDGenerator.cxx
+    MpdMCEventHeader *extraEventHeader = dynamic_cast<MpdMCEventHeader*> (event);
+    if (extraEventHeader)
+    {
+      extraEventHeader->SetPhi(bb.Phi());
+    }
   }
 
   /*

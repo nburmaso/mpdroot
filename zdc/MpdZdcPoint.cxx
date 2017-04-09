@@ -21,21 +21,32 @@ MpdZdcPoint::MpdZdcPoint() : FairMCPoint() {
 //   fTime       =  0.;
 //   fLength     =  0.;
 //   fELoss      =  0.;
+//   fEventId
  
   nCopy = -1;
-  nCopyMother=-1;
+  nCopyMother=-1; //module
+  nCopyZdc=-1; //zdc (left,right)
+
+  //nCopy_h = -1;
+  //nCopyMother_h=-1; //module with hole
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Standard constructor   ------------------------------------------
-MpdZdcPoint::MpdZdcPoint(Int_t trackID, Int_t detID, Int_t copyNo, Int_t copyNoMother, TVector3 pos,
-                        TVector3 mom, Double_t tof, Double_t length,
-			 Double_t eLoss, UInt_t EventId) 
+//MpdZdcPoint::MpdZdcPoint(Int_t trackID, Int_t detID, Int_t copyNo, Int_t copyNoMother,  Int_t copyNo_h, Int_t copyNoMother_h, TVector3 pos,TVector3 mom, Double_t tof, Double_t length,Double_t eLoss, UInt_t EventId) 
+//MpdZdcPoint::MpdZdcPoint(Int_t trackID, Int_t detID, Int_t copyNo, Int_t copyNoMother, TVector3 pos,TVector3 mom, Double_t tof, Double_t length,Double_t eLoss, UInt_t EventId) 
+MpdZdcPoint::MpdZdcPoint(Int_t trackID, Int_t detID, Int_t copyNo, Int_t copyNoMother, Int_t copyNoZdc, TVector3 pos,TVector3 mom, Double_t tof, Double_t length,Double_t eLoss, UInt_t EventId) 
   : FairMCPoint(trackID, detID, pos, mom, tof, length, eLoss, EventId) {
   nCopy = copyNo;
   nCopyMother =  copyNoMother;
+  nCopyZdc =  copyNoZdc;
+
+  //nCopy_h = copyNo_h;
+  //nCopyMother_h =  copyNoMother_h;
+  //nCopy_h = copyNo;
+  //nCopyMother_h =  copyNoMother;
   //  fTrackID    = trackID;
   //  fDetectorID = detID; 
   
@@ -48,6 +59,7 @@ MpdZdcPoint::MpdZdcPoint(Int_t trackID, Int_t detID, Int_t copyNo, Int_t copyNoM
   //  fTime       = tof;
   //  fLength     = length;
   //  fELoss      = eLoss;
+  //  fEventId
  
 }
 
@@ -59,13 +71,14 @@ MpdZdcPoint::~MpdZdcPoint() { }
 // -----   Public method Print   -------------------------------------------
 void MpdZdcPoint::Print(const Option_t* opt) const {
   cout << "-I- MpdZdcPoint: MUO Point for track " << fTrackID 
-       << " in detector " << fDetectorID << endl;
+       << " in detector " << fDetectorID <<" " <<nCopyMother <<" " <<nCopy <<" " <<nCopyZdc << endl;
   cout << "    Position (" << fX << ", " << fY << ", " << fZ
        << ") cm" << endl;
   cout << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
        << ") GeV" << endl;
   cout << "    Time " << fTime << " ns,  Length " << fLength 
-       << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << endl;
+       //<< " cm,  Energy loss " << fELoss*1.0e06 << " keV" << endl;
+       << " cm,  Energy loss " << fELoss << " GeV" << endl;
 }
 // -------------------------------------------------------------------------
 
