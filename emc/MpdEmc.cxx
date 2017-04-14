@@ -115,8 +115,8 @@ void MpdEmc::Register() {
     only during the simulation. 
 */
  
-  FairRootManager::Instance()->Register("MpdEmcPoint", "MpdEmc",
-				       fMpdEmcPointCollection, kTRUE);
+  FairRootManager::Instance()->Register("EmcPoint", "MpdEmc",
+					fMpdEmcPointCollection, kTRUE);
  
 }
 

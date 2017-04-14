@@ -31,6 +31,7 @@
 #pragma link C++ class  MpdTpcDedxTask+;
 #pragma link C++ class  MpdKfV0Fitter+;
 #pragma link C++ class  MpdEctTrackFinderTof+;
+#pragma link C++ class  MpdEctTrackFinderCpc+;
 #pragma link C++ class  MpdMotherFitterPart+;
 //#pragma link C++ class  MpdMotherFitterTrac+;
 #pragma link C++ class  MpdCellAutomat+;

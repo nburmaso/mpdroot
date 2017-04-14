@@ -149,7 +149,7 @@ void MpdMultiField::GetFieldValue(const Double_t point[3], Double_t* bField)
 void MpdMultiField::Print() {  
   for (Int_t n=0; n<=fNoOfMaps; n++){
     FairField *fieldMap = dynamic_cast<FairField *>(fMaps->At(n));
-    if(fieldMap) fieldMap->Print();
+    if(fieldMap) fieldMap->Print("");
   }
 }
 

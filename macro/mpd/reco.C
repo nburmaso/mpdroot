@@ -59,132 +59,137 @@ using namespace std;
 //      "proof:user@proof.server:21001" - to run on the PROOF cluster created with PoD (under user 'MPD', default port - 21001)
 //      "proof:user@proof.server:21001:workers=10" - to run on the PROOF cluster created with PoD with 10 workers (under USER, default port - 21001)
 //	nc-farm : proof:mpd@nc10.jinr.ru:21001
-void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile = "mpddst.root", Int_t nStartEvent = 0, Int_t nEvents = 1, TString run_type="local")
-{
-  // ========================================================================
-  // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
-  Int_t iVerbose = 1;
 
-  // Parameter file
-  TString parFile = inFile;
+void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile = "mpddst.root", Int_t nStartEvent = 0, Int_t nEvents = 10, TString run_type = "local") {
+    // ========================================================================
+    // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
+    Int_t iVerbose = 0;
 
-  // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-  mpdloadlibs(kTRUE);       // load full set of main libraries
+    // ----  Load libraries   -------------------------------------------------
+    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+    mpdloadlibs(kTRUE); // load full set of main libraries
 
-  gSystem->Load("libXMLIO");
+    gSystem->Load("libXMLIO");
 
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
-  geometry_stage1(0x0, kFALSE);
-  // ------------------------------------------------------------------------
+    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
+    geometry_stage1(0x0, kFALSE);
+    // ------------------------------------------------------------------------
 
-  // -----   Timer   --------------------------------------------------------
-  TStopwatch timer;
-  timer.Start();
-  // ------------------------------------------------------------------------
+    // -----   Timer   --------------------------------------------------------
+    TStopwatch timer;
+    timer.Start();
+    // ------------------------------------------------------------------------
 
-  // -----   Digitization run   -------------------------------------------
-  // define parallel or sequential execution
-  int ind = run_type.Index(':');
-  TString proof_name = "";
-  if (ind >= 0){
-      proof_name = run_type(ind+1,run_type.Length()-ind-1);
-      run_type = run_type(0, ind);
-  }
-
-  if (run_type != "proof")
-      if (!CheckFileExist(inFile)) return;
-
-  FairRunAna *fRun= new FairRunAna(run_type, proof_name);
-  fRun->SetInputFile(inFile);
-  //fRun->AddFriend(inFile);
-  fRun->SetOutputFile(outFile);
-  fRun->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
-  // ------------------------------------------------------------------------
-
-  // -----  Parameter database   --------------------------------------------
-  FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
-  FairParRootFileIo* parInput1 = new FairParRootFileIo();
-  parInput1->open(parFile.Data());
-  rtdb->setFirstInput(parInput1);
-
-  // fRun->LoadGeometry();  // EL
-
-  // ------------------------------------------------------------------------
-
-  MpdKalmanFilter *kalman = MpdKalmanFilter::Instance("KF");
-  fRun->AddTask(kalman);
-
-  //FairTask* trackMS = new TpcLheHitsMaker("Hit producer");
-  //fRun->AddTask(trackMS);
-
-//  MpdTpcClusterFinderTask *tpcClusterFinder = new MpdTpcClusterFinderTask();
-//  tpcClusterFinder->SetDebug(kFALSE);
-//  tpcClusterFinder->SetMakeQA(kTRUE);
-//  tpcClusterFinder->SetCalcResiduals(kFALSE);
-//  fRun->AddTask(tpcClusterFinder);
-
-  MpdTpcHitProducer* hitPr = new MpdTpcHitProducer();
-  hitPr->SetModular(0);
-  fRun->AddTask(hitPr);
-
-  FairTask* vertZ = new MpdVertexZfinder();
-  fRun->AddTask(vertZ);
-
-  FairTask* recoKF = new MpdTpcKalmanFilter("Kalman filter");
-  fRun->AddTask(recoKF);
-
-  FairTask* findVtx = new MpdKfPrimaryVertexFinder("Vertex finder");
-  fRun->AddTask(findVtx);
-
-  // TOF hit producers
-  MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
-  fRun->AddTask(tofHit);
-
-  // TOF matching
-  MpdTofMatching* tofMatch = new MpdTofMatching("TOF matching");
-  fRun->AddTask(tofMatch);
-
-  FairTask *tdigi= new MpdZdcDigiProducer("MpdZdcDigiProducer");
-  fRun->AddTask(tdigi);
-
-  MpdFillDstTask* fillDST = new MpdFillDstTask("MpdDst task");
-  fRun->AddTask(fillDST);
-
-  // -----   Intialise   ----------------------------------------------------
-  fRun->Init();
-  if (run_type != "proof") cout << "Field: " << fRun->GetField()->GetBz(0.,0.,0.) << endl;
-  else{
-    TProof* pProof = fRun->GetProof();
-    pProof->SetParameter("PROOF_PacketizerStrategy", (Int_t)0);
-    ind = proof_name.Index(":workers=");
-    if (ind >= 0){
-	TString worker_count = proof_name(ind+9,proof_name.Length()-ind-9);
-	if (worker_count.IsDigit())
-	   pProof->SetParallel(worker_count.Atoi());
+    // -----   Digitization run   -------------------------------------------
+    // define parallel or sequential execution
+    int ind = run_type.Index(':');
+    TString proof_name = "";
+    if (ind >= 0) {
+        proof_name = run_type(ind + 1, run_type.Length() - ind - 1);
+        run_type = run_type(0, ind);
     }
-  }
 
-  // if nEvents is equal 0 then all events of the given file starting with "nStartEvent" should be processed
-  if (nEvents == 0)
-      nEvents = MpdGetNumEvents::GetNumROOTEvents(inFile.Data()) - nStartEvent;
+    FairRunAna* fRun;
+    if (run_type == "proof")
+    {
+        fRun = new FairRunAnaProof(proof_name);
+        fRun->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
+    }
+    else
+    {
+        if (!CheckFileExist(inFile)) return;
+        fRun = new FairRunAna();
+    }
 
-  // -----   Run   ______________--------------------------------------------
-  fRun->Run(nStartEvent, nStartEvent+nEvents);
-  // ------------------------------------------------------------------------
+    FairSource* fFileSource = new FairFileSource(inFile);
+    fRun->SetSource(fFileSource);
+    fRun->SetOutputFile(outFile);
+    fRun->SetGenerateRunInfo(false);
+    fRun->SetUseFairLinks(true);
+    // ------------------------------------------------------------------------
 
-  // -----   Finish   -------------------------------------------------------
+    // Parameter file
+    TString parFile = inFile;
 
-  delete fRun;
+    // -----  Parameter database   --------------------------------------------
+    FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+    FairParRootFileIo* parIo1 = new FairParRootFileIo();
+    parIo1->open(parFile.Data());
+    rtdb->setFirstInput(parIo1);
+    rtdb->setOutput(parIo1);
+    rtdb->saveOutput();
+    // ------------------------------------------------------------------------
 
-  timer.Stop();
-  Double_t rtime = timer.RealTime();
-  Double_t ctime = timer.CpuTime();
-  cout << endl << endl;
-  cout << "Output file is "    << outFile << endl;
-  cout << "Parameter file is " << parFile << endl;
-  cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-  cout << "Macro finished succesfully." << endl;
-  cout << endl;
-  // ------------------------------------------------------------------------
+    MpdKalmanFilter *kalman = MpdKalmanFilter::Instance("KF");
+    fRun->AddTask(kalman);
+
+    //  MpdTpcClusterFinderTask *tpcClusterFinder = new MpdTpcClusterFinderTask();
+    //  tpcClusterFinder->SetDebug(kFALSE);
+    //  tpcClusterFinder->SetMakeQA(kTRUE);
+    //  tpcClusterFinder->SetCalcResiduals(kFALSE);
+    //  fRun->AddTask(tpcClusterFinder);
+
+    MpdTpcHitProducer* hitPr = new MpdTpcHitProducer();
+    hitPr->SetModular(0);
+    fRun->AddTask(hitPr);
+
+    FairTask* vertZ = new MpdVertexZfinder();
+    fRun->AddTask(vertZ);
+
+    FairTask* recoKF = new MpdTpcKalmanFilter("Kalman filter");
+    fRun->AddTask(recoKF);
+
+    FairTask* findVtx = new MpdKfPrimaryVertexFinder("Vertex finder");
+    fRun->AddTask(findVtx);
+
+    // TOF hit producers
+    MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
+    fRun->AddTask(tofHit);
+
+    // TOF matching
+    MpdTofMatching* tofMatch = new MpdTofMatching("TOF matching");
+    fRun->AddTask(tofMatch);
+
+    FairTask *emcHP = new MpdEmcHitProducer();
+    fRun->AddTask(emcHP);
+
+    FairTask *tdigi = new MpdZdcDigiProducer("MpdZdcDigiProducer");
+    fRun->AddTask(tdigi);
+
+    MpdFillDstTask* fillDST = new MpdFillDstTask("MpdDst task");
+    fRun->AddTask(fillDST);
+
+    // -----   Intialise   ----------------------------------------------------
+    fRun->Init();
+    if (run_type != "proof") cout<<"Field: "<<fRun->GetField()->GetBz(0., 0., 0.)<<endl;
+    else {
+        TProof* pProof = fRun->GetProof();
+        pProof->SetParameter("PROOF_PacketizerStrategy", (Int_t) 0);
+        ind = proof_name.Index(":workers=");
+        if (ind >= 0) {
+            TString worker_count = proof_name(ind + 9, proof_name.Length() - ind - 9);
+            if (worker_count.IsDigit())
+                pProof->SetParallel(worker_count.Atoi());
+        }
+    }
+
+    // if nEvents is equal 0 then all events of the given file starting with "nStartEvent" should be processed
+    if (nEvents == 0)
+        nEvents = MpdGetNumEvents::GetNumROOTEvents(inFile.Data()) - nStartEvent;
+
+    // -----   Run   ______________--------------------------------------------
+    fRun->Run(nStartEvent, nStartEvent + nEvents);
+    // ------------------------------------------------------------------------
+
+    // -----   Finish   -------------------------------------------------------
+    timer.Stop();
+    Double_t rtime = timer.RealTime();
+    Double_t ctime = timer.CpuTime();
+    cout << endl << endl;
+    cout << "Macro finished successfully." << endl;      // marker of successful execution for CDASH
+    cout << "Output file is " << outFile << endl;
+    cout << "Parameter file is " << parFile << endl;
+    cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
+    cout << endl;
+    // ------------------------------------------------------------------------
 }

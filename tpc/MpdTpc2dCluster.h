@@ -20,6 +20,11 @@
 
 class MpdTpc2dCluster : public TObject
 {
+
+ public:
+  enum Masks {kOverflowM = 5, kVirtualM = 1, kEdgeM = 1};
+  enum Shifts {kOverflowS = 1, kVirtualS = kOverflowS+kOverflowM, kEdgeS = kVirtualS+1};
+
  public:
   MpdTpc2dCluster() {;}
   MpdTpc2dCluster(Int_t row, Int_t sec);
@@ -29,6 +34,10 @@ class MpdTpc2dCluster : public TObject
   Bool_t Insert(Int_t sec, Int_t row, Int_t col, Int_t bkt,  Float_t adc);
   
  public:
+  UInt_t Flag     () const { return fFlag; }
+  Int_t Overflows () const { return (fFlag >> kOverflowS) & kOverflowM; }
+  Int_t Virtual   () const { return (fFlag >> kVirtualS) & kVirtualM; }
+  Int_t Edge      () const { return (fFlag >> kEdgeS) & kEdgeM; }
   Int_t ID        () const {return fId;}
   Int_t NDigits   () const {return fAdcList.size();}
   Int_t Row       () const {return Row(0);}
@@ -36,6 +45,7 @@ class MpdTpc2dCluster : public TObject
   Int_t MaxCol    () const {return fMaxCol;}
   Int_t MinBkt    () const {return fMinBkt;}
   Int_t MaxBkt    () const {return fMaxBkt;}
+  Int_t NTracks   () const;
 //  Int_t ADCSum    () const {return fADCSum;}
 
 //  Float_t AvgCol () const {return fAvgCol;}
@@ -48,8 +58,11 @@ class MpdTpc2dCluster : public TObject
   Int_t Col(Int_t i) const; 
   Int_t Bkt(Int_t i) const; 
   Int_t Sec(Int_t i) const;
- 
 
+  void SetFlag     (UInt_t i) { fFlag = i; }
+  void SetOverflows(Int_t i) { fFlag |= (i << kOverflowS); }
+  void SetVirtual  (Int_t i = 1) { fFlag |= (i << kVirtualS); }
+  void SetEdge     (Int_t i = 1) { fFlag |= (i << kEdgeS); }
   void SetID       (Int_t i) {fId = i;}
   void SetMinCol   (Int_t i) {fMinCol = i;}
   void SetMaxCol   (Int_t i) {fMaxCol = i;}
@@ -59,6 +72,7 @@ class MpdTpc2dCluster : public TObject
 //  void SetSigCol   (Float_t val) {fSigCol = val;}
 //  void SetAvgBkt   (Float_t val) {fAvgBkt = val;}
 //  void SetSigBkt   (Float_t val) {fSigBkt = val;}
+  void SetCorrel (Float_t val) { fCorrel = val; }
   
   void SetX (Float_t val) {fX = val;}
   void SetY (Float_t val) {fY = val;}
@@ -88,9 +102,11 @@ class MpdTpc2dCluster : public TObject
   Int_t GetSect () const {return fSector;}
   Float_t GetADC () const {return fADCSum;}  
   Int_t GetId () const {return fId;}
+  Float_t GetCorrel() const { return fCorrel; } // pad-time correlation
   
  private:
 
+  UInt_t fFlag;
   Int_t fId;
   Int_t fMinBkt; 
   Int_t fMaxBkt; 
@@ -107,10 +123,9 @@ class MpdTpc2dCluster : public TObject
   std::vector<Int_t> fBktList;
   std::vector<Float_t> fAdcList;
   Int_t fSector;
-  Float_t fADCSum;
-  Float_t fAvgCol, fSigCol, fAvgBkt, fSigBkt;
+  Float_t fADCSum, fAvgCol, fSigCol, fAvgBkt, fSigBkt, fCorrel;
 
-  ClassDef(MpdTpc2dCluster, 1)
+  ClassDef(MpdTpc2dCluster, 2)
 };
 
 #endif 

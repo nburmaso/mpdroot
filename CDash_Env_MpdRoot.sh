@@ -8,15 +8,15 @@ fi
 
 export SIMPATH=/opt/fairsoft/install
 export SOURCEDIR=$CDASHUSERPATH
-export BUILDDIR=$HOME/build
+export BUILDDIR=$HOME/CDASH/mpdroot_build_$(hostname -s)
 export LINUX_FLAVOUR=$(uname -o)
-export FAIRSOFT_VERSION=apr13 
+export FAIRSOFT_VERSION=may16
 
 if [ "$#" -gt "1" ]; then
 if [ "$#" -gt "2" ]; then
 export FAIRSOFT_VERSION=$3
 else
-export FAIRSOFT_VERSION=apr13
+export FAIRSOFT_VERSION=may16
 fi
 export BUILDDIR=$2
 fi

@@ -11,6 +11,7 @@
 
 #include "MpdTpcDedxTask.h"
 #include "MpdTpcKalmanTrack.h"
+#include "MpdTpcHit.h"
 
 #include "FairRootManager.h"
 
@@ -46,6 +47,7 @@ InitStatus MpdTpcDedxTask::Init()
   fTracks = 0x0;
   fTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("ItsTrack");
   if (fTracks == 0x0) fTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("TpcKalmanTrack");
+  fHits = (TClonesArray *) FairRootManager::Instance()->GetObject("TpcRecPoint");
 
   fMCTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("MCTrack");
 
@@ -73,8 +75,8 @@ void MpdTpcDedxTask::Finish()
 void MpdTpcDedxTask::Exec(Option_t * option)
 {
 
-  static Int_t eventCounter = 0;    
   const Double_t trunc = 0.7; // truncation parameter
+  static Int_t eventCounter = 0;    
   cout << " MpdTpcDedxTask event " << ++eventCounter << endl;
 
   Reset();
@@ -90,7 +92,35 @@ void MpdTpcDedxTask::Exec(Option_t * option)
       //cout << j << " " << hit->GetUniqueID() << " " << hit->GetDedx() << endl;
       if (hit->GetUniqueID() == 1) continue; // ITS hit
       if (hit->GetSignal() <= 0.) continue; // strange
-      dedx[nOK++] = hit->GetSignal();
+      Double_t sig = hit->GetSignal();
+      if (fHits) {
+	// For clusters: correct for track angles
+	while (1) {
+	  MpdKalmanHit *hit1 = NULL;
+	  if (j == 0) hit1 = (MpdKalmanHit*) hits->UncheckedAt(1);
+	  else hit1 = (MpdKalmanHit*) hits->UncheckedAt(j-1);
+	  Int_t isec = hit->GetDetectorID() % 1000000;
+	  Int_t isec1 = hit1->GetDetectorID() % 1000000;
+	  if (isec != isec1 && TMath::Abs(isec-isec1) != 12) {
+	    if (j == 0 || j == nHits - 1) break; // no correction
+	    hit1 = (MpdKalmanHit*) hits->UncheckedAt(j+1);
+	    isec1 = hit1->GetDetectorID() % 1000000;
+	    if (isec != isec1 && TMath::Abs(isec-isec1) != 12) break; // no correction
+	  }
+	  MpdTpcHit *thit = (MpdTpcHit*) fHits->UncheckedAt(hit->GetIndex());
+	  MpdTpcHit *thit1 = (MpdTpcHit*) fHits->UncheckedAt(hit1->GetIndex());
+	  Double_t padh = thit->GetStep();
+	  Double_t dx = thit->GetLocalX() - thit1->GetLocalX();
+	  Double_t dz = thit->GetLocalZ() - thit1->GetLocalZ();
+	  Double_t tancros = dx / padh;
+	  Double_t tandip = dz / padh;
+	  sig /= TMath::Sqrt (1 + tancros * tancros + tandip * tandip);
+	  break;
+	}
+      }
+      if (fHits && sig > 800) dedx[nOK++] = sig; // threshold
+      else if (!fHits) dedx[nOK++] = sig;
+      hit->SetSignal(sig);
     }
     if (nOK == 0) continue;
     Int_t *indx = new Int_t [nOK];

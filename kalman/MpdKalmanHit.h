@@ -20,7 +20,7 @@ class MpdKalmanHit : public TObject
  public:
   
   MpdKalmanHit(); ///< Default ctor
-  MpdKalmanHit(Int_t detID, Int_t nDim, HitType hitType, Double_t *meas, Double_t *err, Double_t *cosSin, Double_t signal, Double_t dist, Int_t index); ///< Ctor
+  MpdKalmanHit(Int_t detID, Int_t nDim, HitType hitType, Double_t *meas, Double_t *err, Double_t *cosSin, Double_t signal, Double_t dist, Int_t index, Double_t edge = 99.); ///< Ctor
   MpdKalmanHit (const MpdKalmanHit& hit); ///< copy constructor
   virtual ~MpdKalmanHit(); ///< Destructor
   Int_t GetDetectorID() const { return fDetectorID; } ///< get detector ID
@@ -39,6 +39,7 @@ class MpdKalmanHit : public TObject
   Double_t GetSignal() const { return fSignal; } ///< Signal value
   Double_t GetDist() const { return fDist; } ///< Distance to interaction point
   Double_t GetPos() const; ///< Distance to interaction point
+  Double_t GetEdge() const { return fEdge; } ///< Distance to sector boundary
   //Double_t GetXY(Int_t indx) const { return fXY[indx]; } ///< get wire X or Y
 
   void SetDetectorID(Int_t detID) { fDetectorID = detID; } ///< set detector ID
@@ -54,6 +55,7 @@ class MpdKalmanHit : public TObject
   void SetDist(Double_t dist) { fDist = dist; } ///< set distance
   void SetPos(Double_t pos) { fDist = pos; } ///< set distance
   void SetIndex(Int_t indx); ///< Add index of detector hit
+  void SetEdge(Double_t edge) { fEdge = edge; } ///< set distance to sector boundary
 
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* hit) const; ///< sort in descending order in detector ID
@@ -74,8 +76,9 @@ class MpdKalmanHit : public TObject
   Double32_t fCosSin[2]; ///< rotation factors (for stereo measurements)
   Double32_t fSignal; ///< signal
   Double32_t fDist; ///< distance to interaction point
+  Double32_t fEdge; ///< distance to sector boundary
   //Double_t fXY[2]; ///< X and Y of some point on the wire (for stereo measurements)
 
-  ClassDef(MpdKalmanHit,3);
+  ClassDef(MpdKalmanHit,4);
 };
 #endif

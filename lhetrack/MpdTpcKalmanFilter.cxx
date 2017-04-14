@@ -1039,8 +1039,12 @@ void MpdTpcKalmanFilter::MakeKalmanHitsModul()
     //TpcPadID padIDobj = TpcPadID::numberToPadID(padID);
     //padID = padIDobj.sector();
     padID = fSecGeo->Sector(padID);
+    Double_t xsec = (hit->GetLocalY() + fSecGeo->GetMinY()) * TMath::Tan(fSecGeo->Dphi()/2);
+    Double_t xloc = hit->GetLocalX(); Double_t edge = 0.0; // distance to sector boundary
+    if (xloc < 0) edge = xloc + xsec;
+    else edge = xloc - xsec;
     MpdKalmanHit *hitK = new ((*fKHits)[nKh++]) 
-      MpdKalmanHit(lay*1000000+padID, 2, MpdKalmanHit::kFixedP, meas, err, cossin, hit->GetEnergyLoss()/hit->GetStep(), hit->GetLocalY(), j);
+      MpdKalmanHit(lay*1000000+padID, 2, MpdKalmanHit::kFixedP, meas, err, cossin, hit->GetEnergyLoss()/hit->GetStep(), hit->GetLocalY(), j, edge);
     hitK->SetLength(hit->GetLength());
     //hitK->SetDedx (hit->GetEdep()/hit->GetStep());
     //MpdKalmanFilter::Instance()->GetGeo()->SetGlobalPos(hitK,TVector3(hit->GetX(),hit->GetY(),hit->GetZ()));
@@ -1684,6 +1688,7 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
     track->SetParamNew(param);
     //if (i == 0 && iDir > 0) track->SetLength(0.); // for correct track length
     // Correct dE/dx for step length (for clusters) - due to track angles
+    /* Angle corrections moved to Dedx task
     if (!fUseMCHit && corDedx) {
       Double_t cosTh = TMath::Cos(track->GetParamNew(3));
       Double_t phi = track->GetParamNew(2);
@@ -1693,6 +1698,7 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
       if (cosPhi < 0.1) { cout << " oops " << secPhi << " " << phi << " " << track->Pt() << endl; cosPhi = 1; }
       hit->SetSignal(hit->GetSignal() * cosTh * cosPhi);
     }
+    */
   }
   // Save track params at last hit
   track->SetLengAtHit(track->GetLength());

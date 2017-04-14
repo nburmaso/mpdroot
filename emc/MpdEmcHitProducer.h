@@ -2,116 +2,61 @@
 // -----                 MpdEmcHitproducer header file                 -----
 // -------------------------------------------------------------------------
 
-#ifndef CBMHYPHITPRODUCER_H
-#define CBMHYPHITPRODUCER_H 1
+#ifndef MPDEMCHITPRODUCER_H
+#define MPDEMCHITPRODUCER_H 1
 
-
-#include <map>
 #include <iostream>
 #include "FairTask.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TList.h"
-//*
-#include "TNtuple.h"
-#include "TTree.h"
-//*
-#include "TFile.h"
 #include "MpdEmcHit.h"
-#include "TVector3.h"
+#include "MpdEmcGeoPar.h"
+
 
 class TClonesArray;
-class TObjectArray;
 
-class MpdEmcHitProducer : public FairTask
-{
+class MpdEmcHitProducer : public FairTask {
+public:
 
- public:
-
-  /** Default constructor **/  
-  MpdEmcHitProducer(const char* fileGeo);
+    /** Default constructor **/
+    MpdEmcHitProducer();
 
 
-  /** Destructor **/
-  ~MpdEmcHitProducer();
+    /** Destructor **/
+    ~MpdEmcHitProducer();
 
 
-  /** Virtual method Init **/
-  virtual InitStatus Init();
+    /** Virtual method Init **/
+    virtual InitStatus Init();
 
 
-  /** Virtual method Exec **/
-  virtual void Exec(Option_t* opt);
+    /** Virtual method Exec **/
+    virtual void Exec(Option_t* opt);
+    void virtual Finish();
 
-  MpdEmcHit* AddHit(Int_t trackID, Int_t detID, Float_t energy);
-  void CreateStructure();
+private:
 
+    /** Input array of MpdEmcPoints **/
+    TClonesArray* fPointArray;
+    /** Input array of MCTracks **/
+    TClonesArray* fMcTrackArray;
 
-  void virtual FinishTask();
-  void virtual Finish();
-  void MakeHists();
-  
+    /** Output array of MpdEmcHit **/
+    TClonesArray* fDigiArray;
 
- private: 
-   
-  virtual void SetParContainers();
-
-  /** Input array of MpdEmcPoints **/
-  TClonesArray* fPointArray;
-
-  /** Output array of MpdEmcHit **/
-  TClonesArray* fDigiArray;  
-
-  TObjArray *fVolumeArray;
- 
-  /** Geo file to use **/
-  TString fFileGeo; 
-  Float_t eneThr;
-//_______Ntuple______________
-  //TNtuple* nt;
- // TNtuple* ntxyz;
-  //TNtuple* nl;
-  
-
- 
-  TNtuple *nt;  
-  //TNtuple *ntxyz;
+    UInt_t GetSecId(Float_t x, Float_t y, Float_t z);
+    UInt_t GetRowId(Float_t z);
+    UInt_t GetSupModId(Float_t x, Float_t y, Float_t z, UInt_t sec);
+    UInt_t GetModId(Float_t x, Float_t y, UInt_t supMod, UInt_t sec);
 
 
-  //_____ Histograms_____________ 
-  TList *hlist; 
-  TH1F *ffELoss;
-  TH1F *fZ;
-  TH1F *fR;
-  TH2F *fZYp;
-  TH2F *fXYp;
-  TH2F *fZYm;
-  TH2F *fXYm;
- 
+    Float_t CalcZCenter(UInt_t sec, UInt_t row, UInt_t mod);
+    Float_t CalcPhiCenter(UInt_t sec, UInt_t supMod, UInt_t mod);
 
+    MpdEmcHit* SearchHit(UInt_t sec, UInt_t supMod, UInt_t row, UInt_t mod);
 
-  TH2F *fXZ;
+    MpdEmcGeoPar* fGeoPar;
 
-  TH2F *fRphi;
-  Float_t fArgs[4];
-  Float_t fxyz[9];
-  
- 
-    
-//  Float_t fELossXYZ[4];
-  Float_t nnPoints;
-  typedef std::map<Int_t, Float_t> mapper;
-  
-  mapper emcX, emcY, emcZ, emcTheta, emcPhi, emcTau;
-/*   map<Int_t, Float_t> emcX; */
-/*   map<Int_t, Float_t> emcY; */
-/*   map<Int_t, Float_t> emcZ; */
-/*   map<Int_t, Float_t> emcTheta; */
-/*   map<Int_t, Float_t> emcPhi; */
-/*   map<Int_t, Float_t> emcTau; */
-  
-  ClassDef(MpdEmcHitProducer,1);
-  
+    ClassDef(MpdEmcHitProducer, 2);
+
 };
 
 #endif

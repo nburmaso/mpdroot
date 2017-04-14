@@ -1,9 +1,11 @@
-void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
+void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
 {
   // Load basic libraries
   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
   basiclibs();
+
   // Load other libraries
+  gSystem->Load("libCluster.so");
   gSystem->Load("libFairTools");
   gSystem->Load("libGeoBase");
   gSystem->Load("libParBase");
@@ -15,35 +17,44 @@ void mpdloadlibs (Bool_t reco=kFALSE,Bool_t detectors=kFALSE )
   gSystem->Load("libTrkBase");
   gSystem->Load("libMpdBase");
   gSystem->Load("libMpdData");
-  gSystem->Load("libMpdgenerators");
 
+  // HADGEN
   gSystem->Load("libHADGEN.so");
   gSystem->Load("libTHadgen.so");
   gSystem->Load("libMpdGeneralGenerator.so");
 
-  if (reco) {
+  // FEMTOSCOPY
+  gSystem->Load("libMpdFemto.so");
+  
+  gSystem->Load("libTof");  // used by libLHETrack ??
+  
+  // RECONSTRUCTION
+  if (reco)
+  {
     gSystem->Load("libKalman");
     gSystem->Load("libtpc");
     gSystem->Load("libLHETrack");
     gSystem->Load("libGeane");
   }
 
-  if (detectors) {
+  // DETECTORS
+  if (detectors)
+  {
     gSystem->Load("libtpc");
     gSystem->Load("libTof");
-    //gSystem->Load("libEtof");
+    gSystem->Load("libEtof");
     gSystem->Load("libEmc");
-    //gSystem->Load("libStrawendcap");
+    gSystem->Load("libStrawendcap");
     //gSystem->Load("libStt");
-    //gSystem->Load("libSts");
+    gSystem->Load("libSts");
     //gSystem->Load("libBbc");
     gSystem->Load("libZdc");
     //gSystem->Load("libFsa");
     gSystem->Load("libFfd");
-    //gSystem->Load("libCpc");
+    gSystem->Load("libCpc");
     //gSystem->Load("libNDet");
     //gSystem->Load("libSft");
-	 gSystem->Load("libStrawECT");
+    gSystem->Load("libStrawECT");
   }
 }
 

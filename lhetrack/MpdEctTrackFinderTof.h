@@ -10,7 +10,7 @@
 
 class MpdKalmanHit;
 class MpdKalmanTrack;
-class MpdEtofHit;
+class MpdTofHit;
 class MpdEctKalmanTrack;
 class FairGeoTransform;
 class TClonesArray;
@@ -65,9 +65,9 @@ class MpdEctTrackFinderTof :public FairTask
   void GetTrackSeeds(Int_t iPass); // build track seeds                         
   void DoTracking(Int_t iPass); // run tracking                                 
   void MakeKalmanHits(); // create Kalman hits                                  
-  void EvalParams(const MpdEtofHit *tof, const MpdKalmanHit *ect, MpdEctKalmanTrack *track, 
+  void EvalParams(const MpdTofHit *tof, const MpdKalmanHit *ect, MpdEctKalmanTrack *track, 
 		  Double_t rEct, Double_t phEct); // evaluate params 
-  void EvalCovar(const MpdEtofHit *tof, const MpdKalmanHit *ect, MpdEctKalmanTrack *track,
+  void EvalCovar(const MpdTofHit *tof, const MpdKalmanHit *ect, MpdEctKalmanTrack *track,
 		 Double_t rEct, Double_t phEct); // eval. covariance
   Int_t RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layBeg); ///< run Kalman filter       
   void RemoveDoubles(); ///< remove double tracks

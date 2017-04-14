@@ -77,7 +77,7 @@ private:
   void FindHits(); // find hits
   void FindHitsLocMax(); // find hits (local maxima)
   void PeakAndValley(const MpdTpc2dCluster* clus, std::multimap<Double_t,Int_t> &localMax); // peak-and-valley
-  void CorrectReco(TVector3 &p3loc, TVector3 &p3err, Int_t nPads, Double_t adc); // correct reco coordinates and errors
+  void CorrectReco(TVector3 &p3loc, TVector3 &p3err, Int_t nPads, Double_t &adc); // correct reco charge, coordinates and errors
 
   ClassDef(MpdTpcClusterFinderAZ,1)
 

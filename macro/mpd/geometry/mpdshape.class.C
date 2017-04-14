@@ -4,7 +4,10 @@
 *****************************************************************************/ 
 class FairGeoRotation;
 
+#include <TVector3.h>
+
 #include <iostream>
+#include <fstream>
 #include <string>
 
 class Mpdshape: public TObject {
@@ -53,15 +56,19 @@ public:
   void Clear();
   void Fill_TUBE(Double_t length_z, Double_t r_max, Double_t r_min);
   void Fill_TUBS(Double_t zmin, Double_t zmax, Double_t rmin,Double_t rmax, Double_t dr_st, Double_t dr_end);
-   void Fill_TRAP(Double_t x, Double_t X, Double_t yW, Double_t zW, Int_t ra);
-  // void Fill_TRAP(Double_t x_small, Double_t x_large, Double_t yWidth, Double_t zWidth);
+  void Fill_TRAP(Double_t dx11, Double_t dx12, Double_t dy1, Double_t dx21, Double_t dx22, 
+		 Double_t dy2, Double_t dz);
+  void Fill_TRAP(Double_t x, Double_t X,Double_t x_small_f, Double_t x_large_f, Double_t yW, Double_t yW2,Double_t zW, Double_t zW2, Int_t ra);
   //void Fill_RECTRAP(Double_t x_small, Double_t x_large,Double_t xx_small, Double_t xx_large,
 	//	 Double_t yWidth, Double_t zWidth);	 
-  void Fill_PGON( Double_t zmin, Double_t zmax, Double_t rmin, Double_t rmax, Double_t phi1, Int_t nEdges = 12);
-  void Fill_BOX(Double_t xWidth, Double_t yWidth, Double_t zWidth);
+  void Fill_SPHE( Double_t rzmin, Double_t rmax, Double_t thetamin, Double_t thetamax, Double_t phimin, Double_t phimax);
+  void Fill_PGON( Double_t zmin, Double_t zmax, Double_t rmin, Double_t rmax, Double_t phi1);
+  //void Fill_BOX(Double_t x, Double_t y, Double_t z);
+  void Fill_BRIK(Double_t xWidth1, Double_t xWidth2, Double_t yWidth, Double_t zWidth1, Double_t zWidth2, Int_t ra);
+  
   
 protected:
-  ofstream* fFile;
+  std::ofstream* fFile;
   std::string  fVolumeName;
   std::string  fMotherVolumeName;
   std::string  fShape;
@@ -73,7 +80,18 @@ protected:
   Int_t fMotherSegment;
   FairGeoRotation* rot;
     
+  ClassDef(Mpdshape,0)
 };
+
+ClassImp(Mpdshape)
+
+#include "FairGeoRotation.h"
+
+#include <TROOT.h>
+#include <TSystem.h>
+
+#include <sstream>
+using namespace std;
 
 Mpdshape::Mpdshape() {
 
@@ -182,7 +200,7 @@ void Mpdshape::SetRotation(Double_t z, Double_t y1, Double_t z1) {
   std::ostringstream o;
   o.setf(ios::showpoint); 
   o.setf(ios::fixed);
-  o << setprecision(10);
+  o.precision(10);
   for (Int_t i = 0; i < 9; i++) {
     o << rot->operator()(i) << " ";
   }
@@ -204,6 +222,7 @@ void Mpdshape::Clear() {
   fMotherSegment = 0;
   fPoints.clear(); fPosition.clear(); fRotation.clear();
 }
+
 
 //______________________________________________________________
 void Mpdshape::Fill_TUBE(Double_t length_z, Double_t r_in, Double_t r_out) {
@@ -238,14 +257,29 @@ void Mpdshape::Fill_TUBS(Double_t zmin,Double_t zmax, Double_t rmin, Double_t rm
 }
 
 //_______________________________________________________________
-void Mpdshape::Fill_PGON( Double_t zmin, Double_t zmax, Double_t rmin, Double_t rmax, Double_t phi1, Int_t nEdges) {
+void Mpdshape::Fill_SPHE( Double_t rm, Double_t rx, Double_t thm, Double_t thx, Double_t phim, Double_t phix) {
+  fPoints.clear();
+  std::ostringstream o;
+  o.setf(ios::showpoint); 
+  o.setf(ios::fixed);
+  o.precision(10);
+  
+  o << rm   << " "  << rx   <<   endl
+    << thm  << " "  << thx  <<   endl
+    << phim  << " "  << phix;
+    fPoints = o.str();
+   
+}
+
+//_______________________________________________________________
+void Mpdshape::Fill_PGON( Double_t zmin, Double_t zmax, Double_t rmin, Double_t rmax, Double_t phi1) {
   fPoints.clear();
   std::ostringstream o;
   o.setf(ios::showpoint); 
   o.setf(ios::fixed);
   o.precision(10);
   o << "2 " << endl
-    << phi1 << " 360 " << nEdges << endl
+     << phi1 << " 360 12 " << endl
     << zmin << " " << rmin << " " << rmax << endl
     << zmax << " " << rmin << " " << rmax;
    fPoints = o.str();
@@ -253,9 +287,52 @@ void Mpdshape::Fill_PGON( Double_t zmin, Double_t zmax, Double_t rmin, Double_t 
 }
 
 //______________________________________________________________
+void Mpdshape::Fill_TRAP(Double_t dx11, Double_t dx12, Double_t dy1, Double_t dx21, Double_t dx22, 
+			 Double_t dy2, Double_t dz)
+{
+  // Fill trapezoid TRAP
+
+  fPoints.clear();
+  std::ostringstream o;
+  o.setf(ios::showpoint); 
+  o.setf(ios::fixed);
+  o.precision(10);
+
+  // trapezoid:    -dz                               dz                         
+           //     2*dx12                           2*dx22
+           // _____________  dy1              ________________  dy2
+           // \           / ^                 \              /  
+           //  \         /  | y  /z            \            /   ^
+           //   \       /                       \          /    | y
+           //    \_____/   -dy1                  \        /     |
+           //     2*dx11                          \      /
+           //                                      \____/      -dy2
+  /*
+  o << dx11 << " " << -dy1 << " " << 0. << endl
+    << dx12 << " " << dy1 << " " << 0. << endl
+    << -dx12 << " " << dy1 << " " << 0. << endl
+    << -dx11 << " " << -dy1 << " " << 0. << endl
+    
+    << dx21 << " " << -dy2 << " " << dz << endl
+    << dx22 << " " << dy2 << " " << dz << endl
+    << -dx22 << " " << dy2 << " " << dz << endl
+    << -dx21 << " " << -dy2 << " " << dz;
+  */
+  o << dx11 << " " << 0 << " " << 0. << endl
+    << dx12 << " " << 2*dy1 << " " << 0. << endl
+    << -dx12 << " " << 2*dy1 << " " << 0. << endl
+    << -dx11 << " " << 0 << " " << 0. << endl
+    
+    << dx21 << " " << -dy2+dy1 << " " << dz << endl
+    << dx22 << " " << dy2+dy1 << " " << dz << endl
+    << -dx22 << " " << dy2+dy1 << " " << dz << endl
+    << -dx21 << " " << -dy2+dy1 << " " << dz;
+  fPoints = o.str();
+}
+
 //______________________________________________________________
-void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,
-			 Double_t yWidth, Double_t zWidth,
+void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,Double_t x_large_f, Double_t x_small_f,
+			 Double_t yWidth, Double_t yWidth2,Double_t zWidth, Double_t /*zWidth2*/,
 			 Int_t right_angled) {
   //
   fPoints.clear();
@@ -274,17 +351,17 @@ void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,
            //    \_____/
            //       x
 
-  o << x_small << " " << -yWidth << " " << -zWidth << endl
+  o << x_small << " " << 0. << " " << -zWidth << endl
    << x_large << " " << yWidth << " " << -zWidth << endl
    << -x_large << " " << yWidth << " " << -zWidth << endl
-   << -x_small << " " << -yWidth << " " << -zWidth << endl
+   << -x_small << " " << 0. << " " << -zWidth << endl
 
-   << x_small << " " << -yWidth << " " << zWidth << endl
+   << x_small << " " << 0. << " " << zWidth << endl
    << x_large << " " << yWidth << " " << zWidth << endl
    << -x_large << " " << yWidth << " " << zWidth << endl
-   << -x_small << " " << -yWidth << " " << zWidth;
+   << -x_small << " " << 0. << " " << zWidth;
   }
-  else {
+   if (right_angled == 1) {
 
   // right-angled trapezoid
            // _____________
@@ -294,21 +371,70 @@ void Mpdshape::Fill_TRAP(Double_t x_small, Double_t x_large,
            // \________/
            //       x
 
-  o << x_small << " " << -yWidth << " " << -zWidth << endl
+  o << x_small << " " << 0 << " " << -zWidth << endl
    << x_large << " " << yWidth << " " << -zWidth << endl
    << -x_small << " " << yWidth << " " << -zWidth << endl
-   << -x_small << " " << -yWidth << " " << -zWidth << endl
+   << -x_small << " " << 0 << " " << -zWidth << endl
 
-   << x_small << " " << -yWidth << " " << zWidth << endl
+   << x_small << " " << 0 << " " << zWidth << endl
    << x_large << " " << yWidth << " " << zWidth << endl
    << -x_small << " " << yWidth << " " << zWidth << endl
-   << -x_small << " " << -yWidth << " " << zWidth;
+   << -x_small << " " << 0 << " " << zWidth;
   }
+  
+  
+  if (right_angled == 2){
+    
+  // trapezoid
+           //  _______________
+           //  \             / ^     
+           //   \           /  | y  /z   
+           //    \         /
+           //     \_______/
+           //       x    
+   
+  o << x_small << " " << 0 << " " << -zWidth << endl
+   << x_large << " " << yWidth << " " << -zWidth << endl
+   << x_large_f << " " << yWidth << " " << -zWidth << endl
+   << x_small_f << " " << 0 << " " << -zWidth << endl
 
+   << x_small << " " << 0 << " " << zWidth << endl
+   << x_large << " " << yWidth << " " << zWidth << endl
+   << x_large_f << " " << yWidth << " " << zWidth << endl
+   << x_small_f << " " << 0 << " " << zWidth;  
+  
+  
+  }
+  if (right_angled == 3){
+
+//BOX
+ o << x_small << " " << 0. << " " << -zWidth << endl
+   << x_small << " " << yWidth << " " << -zWidth << endl
+   << -x_small << " " << yWidth << " " << -zWidth << endl
+   << -x_small << " " << 0. << " " << -zWidth << endl
+
+   << x_small << " " << 0. << " " << zWidth << endl
+   << x_small << " " << yWidth << " " << zWidth << endl
+   << -x_small << " " << yWidth << " " << zWidth << endl
+   << -x_small << " " << 0. << " " << zWidth;
+  }
+  if (right_angled == 4) {
+  o << x_small   << " "  << yWidth      << " "  <<  -zWidth     << endl
+    << x_large   << " "  << yWidth2     << " "  <<  -zWidth    << endl
+    << -x_large  << " "  << yWidth2    << " "   <<  -zWidth    << endl
+    << -x_small  << " "  << yWidth     << " "   <<  -zWidth     << endl
+   
+    << x_small   << " "  << yWidth      << " "  <<  zWidth      << endl
+    << x_large   << " "  << yWidth2     << " "  <<  zWidth     << endl
+    << -x_large  << " "  << yWidth2    << " "   <<  zWidth     << endl
+    << -x_small  << " "  << yWidth     << " "   <<  zWidth      << endl;
+  }
    fPoints = o.str();
 }
 
 
+
+/*
 //______________________________________________________________
 void Mpdshape::Fill_BOX(Double_t xWidth, Double_t yWidth, Double_t zWidth) {
 
@@ -317,24 +443,58 @@ void Mpdshape::Fill_BOX(Double_t xWidth, Double_t yWidth, Double_t zWidth) {
   std::ostringstream o;
   o.setf(ios::showpoint); 
   o.setf(ios::fixed);
-  o.precision(6);
+  o.precision(10);
 
-  o << xWidth << " " << -yWidth << " " << -zWidth << endl
+
+  o << xWidth << " " <<  yWidt<< " " << -zWidth << endl
     << xWidth << " " << yWidth << " " << -zWidth << endl
     << -xWidth << " " << yWidth << " " << -zWidth << endl
-    << -xWidth << " " << -yWidth << " " << -zWidth << endl
-    << xWidth << " " << -yWidth << " " << zWidth << endl
+    << -xWidth << " " << yWidt << " " << -zWidth << endl
+    << xWidth << " " << yWidt << " " << zWidth << endl
     << xWidth << " " << yWidth << " " << zWidth << endl
     << -xWidth << " " << yWidth << " " << zWidth << endl
-    << -xWidth << " " << -yWidth << " " << zWidth;
-   fPoints = o.str();
+    << -xWidth << " " <<yWidt << " " << zWidth;
+  
+    fPoints = o.str();
+
+}
+*/
+
+//______________________________________________________________
+void Mpdshape::Fill_BRIK(Double_t xWidth1, Double_t xWidth2, Double_t yWidth, Double_t zWidth1, Double_t zWidth2, Int_t right_angled) {
+
+  // box
+  fPoints.clear();
+  std::ostringstream o;
+  o.setf(ios::showpoint); 
+  o.setf(ios::fixed);
+  o.precision(10);
+
+  if( right_angled == 0){
+      o << xWidth1  << " " <<   0.      << " " << -zWidth1 << endl
+        << xWidth1  << " " << yWidth    << " " << -zWidth1 << endl
+        << -xWidth1 << " " << yWidth    << " " << -zWidth1 << endl
+        << -xWidth1 << " " <<   0.      << " " << -zWidth1 << endl
+        << xWidth1  << " " <<   0.      << " " << zWidth1 << endl
+        << xWidth1  << " " << yWidth    << " " << zWidth1 << endl
+        << -xWidth1 << " " << yWidth    << " " << zWidth1 << endl
+        << -xWidth1 << " " <<   0.      << " " << zWidth1;
+        fPoints = o.str();
+  }
+  if( right_angled == 1){
+    o << xWidth1  << " " <<   0.      << " " << -zWidth1 << endl
+        << xWidth2  << " " << yWidth    << " " << -zWidth2 << endl
+        << -xWidth2 << " " << yWidth    << " " << -zWidth2 << endl
+        << -xWidth1 << " " <<   0.      << " " << -zWidth1 << endl
+        << xWidth1  << " " <<   0.      << " " << zWidth1 << endl
+        << xWidth2  << " " << yWidth    << " " << zWidth2 << endl
+        << -xWidth2 << " " << yWidth    << " " << zWidth2 << endl
+        << -xWidth1 << " " <<   0.      << " " << zWidth1;
+        fPoints = o.str();
+  }
 }
 
-
-//=============================================================
-//=============================================================
-//=============================================================
-
+//============================================================
 TVector3 LineCrossesCircle(TVector3 CircleCenter, Double_t CircleRadius,
 			   TVector3 LineStart, TVector3 LineEnd) {
 

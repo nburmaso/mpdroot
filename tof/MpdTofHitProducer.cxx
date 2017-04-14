@@ -11,12 +11,16 @@
 #include <TH2D.h>
 #include <TEfficiency.h>
 #include <TRandom2.h>
+#include <TClonesArray.h>
 
 #include "FairMCTrack.h"
+#include "FairLogger.h"
 
 #include "MpdTofUtils.h"
 #include "MpdTofPoint.h"
 #include "MpdTofHit.h"
+#include "MpdTofGeoUtils.h"
+#include "MpdTofHitProducerQA.h"
 
 #include "MpdTofHitProducer.h"
 
@@ -24,50 +28,49 @@ using namespace std;
 
 ClassImp(MpdTofHitProducer)
 //------------------------------------------------------------------------------------------------------------------------
-MpdTofHitProducer::MpdTofHitProducer(const char *name, Int_t verbose, Bool_t test)
-  : MpdTofHitProducerIdeal(name, verbose, test, true), fTimeSigma(0.100), fErrZ(1./sqrt(12.)), fErrX(0.5),  pRandom(new TRandom2), h2TestStrips(nullptr) , h1TestDistance(nullptr), h2TestNeighborPair(nullptr)
+MpdTofHitProducer::MpdTofHitProducer(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, const char *flnm)
+  : MpdTofHitProducerIdeal(name, useMCdata, verbose, test, true, flnm, false), fTimeSigma(0.100), fErrZ(1./sqrt(12.)), fErrX(0.5),  pRandom(new TRandom2)
 {
-        if(fDoTest)
-    	{
-    	    	effTestEfficiencySingleHit = new TEfficiency("effSingleHit", "Efficiency single hit;R, cm;Side", 1000, -0.1, 1.); 						fList.Add(effTestEfficiencySingleHit);
-		effTestEfficiencyDoubleHit = new TEfficiency("effDoubleHit", "Efficiency double hit;R, cm;Side", 1000, -0.1, 1.); 						fList.Add(effTestEfficiencyDoubleHit);
-		
-    		h1TestDistance = new TH1D("TestDistance", "Distance between strips;M, cm;Side", 1000, 0., 100.); 								fList.Add(h1TestDistance); 
-     		h2TestStrips = new TH2D("TestStrips", ";Z, cm;#phi, rads", 2000, -300., 300., 500, -3.5, 3.5);									fList.Add(h2TestStrips);    		
-    		h2TestMergedTimes = new TH2D("TestMergedTimes", "Merged hits on strip times test;faster hit time, ns;slower hit time, ns", 1000, 5., 105., 1000, 5., 105.);	fList.Add(h2TestMergedTimes);
-		h2TestChainPID = new TH2D("TestChainPID", "Merged hits on strip pids test;pid;pid", 2000, -2250.5, 2250.5, 2000, -2250.5, 2250.5);				fList.Add(h2TestChainPID);
-		h2TestNeighborPair = new TH2D("TestNeighborPair", "Neighbor strip pairs test;stripID1;stripID2", 30, -0.5, 29.5, 30, -0.5, 29.5);				fList.Add(h2TestNeighborPair);    
-		h2TestXYSmeared = new TH2D("TestXYSmeared", "Smeared XY (single hit) test;#Delta, cm;#DeltaZ, cm", 1000, 0., 5., 1000, -1., 1.);				fList.Add(h2TestXYSmeared);
-		h2TestXYSmeared2 = new TH2D("TestXYSmeared2", "Smeared XY (single hit) test;X, cm;Y, cm", 1000, -150., 150., 1000, -150., 150.);				fList.Add(h2TestXYSmeared2);		
-		h2TestXYSmearedDouble = new TH2D("TestXYSmearedDouble", "Smeared XY (double hit) test;#Delta, cm;#DeltaZ, cm", 1000, 0., 5., 1000, -3., 3.);			fList.Add(h2TestXYSmearedDouble);
-		h2TestXYSmearedDouble2 = new TH2D("TestXYSmearedDouble2", "Smeared XY (double hit) test;X, cm;Y, cm", 1000, -150., 150., 1000, -150., 150.);			fList.Add(h2TestXYSmearedDouble2);		
-		h2TestEtaPhi = new TH2D("TestEtaPhi", ";#eta;#phi, degree", 1000, -1.6, 1.6, 1000, -181., 181.);								fList.Add(h2TestEtaPhi);
-		h2TestRZ = new TH2D("TestRZ", ";Z, cm;R, cm", 1000, -300., 300., 1000, 100., 200.);										fList.Add(h2TestRZ);				
-    	}
+
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducer::~MpdTofHitProducer()
 {
 	delete pRandom;
-	fList.Delete();
 }
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus MpdTofHitProducer::Init()
 {
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducer::Init] Begin initialization.");
+	TString buf = "[MpdTofHitProducer::Init] Begin initialization."; buf += GetParameters();
+	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, buf.Data());
 
-	FairRootManager *ioman = FairRootManager::Instance(); assert(ioman);
-  	aTofPoints  = (TClonesArray *) ioman->GetObject("TOFPoint");
-  	aMCTracks   = (TClonesArray *) ioman->GetObject("MCTrack"); 
+    //	if(fOnlyPrimary) cout<<" Only primary particles are processed!!! \n"; // FIXME NOT used now ADDD
 
-  	if(!aTofPoints || !aMCTracks){ FairLogger::GetLogger()->Error(MESSAGE_ORIGIN, " Branch not found!"); return kERROR; }
+	if(fUseMCData)
+	{
+    		aMcPoints = (TClonesArray*) FairRootManager::Instance()->GetObject("TOFPoint");
+    		aMcTracks = (TClonesArray*) FairRootManager::Instance()->GetObject("MCTrack");
+assert(aMcPoints);
+assert(aMcTracks);
+	}
+	else
+	{
+    		aExpDigits = (TClonesArray*) FairRootManager::Instance()->GetObject("??????");// FIXME: NOW unknown name
+assert(aExpDigits);	
+	}
 	
         // Create and register output array
         aTofHits = new TClonesArray("MpdTofHit");
-        ioman->Register("TOFHit", "Tof", aTofHits, kTRUE);
+        FairRootManager::Instance()->Register("TOFHit", "Tof", aTofHits, kTRUE);
 
-	MpdTof::ParseTGeoManager(h2TestStrips, true);
-	MpdTof::FindNeighborStrips(h1TestDistance, h2TestNeighborPair, fDoTest);
+	MpdTofGeoUtils::Instance()->ParseTGeoManager(	fUseMCData, 
+							pHitProducerQA ? pHitProducerQA->GetStripLocationHisto() : nullptr, 
+							true); // forced
+							
+	MpdTofGeoUtils::Instance()->FindNeighborStrips(	0.8,	// 0.8 [cm] <--- thresh. distance between neighbor strips,  (see h1TestDistance histo)
+							pHitProducerQA ? pHitProducerQA->GetDistanceHisto() : nullptr, 
+							pHitProducerQA ? pHitProducerQA->GetNeighborPairHisto(): nullptr, 
+							true); // forced
 
         FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducer::Init] Initialization finished succesfully.");
 
@@ -120,93 +123,84 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 
 	aTofHits->Clear();
 	
-	Int_t 		nTofPoint = aTofPoints->GetEntriesFast();  
 	Int_t 		UID, CrossUID, trackID;	
 	TVector3 	pos, XYZ_smeared; 	
     	int		nSingleHits = 0, nDoubleHits = 0;
 	
-	for(Int_t pointIndex = 0; pointIndex < nTofPoint; pointIndex++ )  // cycle by TOF points
-	{
-		MpdTofPoint *pPoint = (MpdTofPoint*) aTofPoints->UncheckedAt(pointIndex);
-		
-		if(fVerbose > 2) pPoint->Print(""); 		
-  
-		trackID = pPoint->GetTrackID();	
-		UID	= pPoint->GetDetectorID();
-		Double_t time = pRandom->Gaus(pPoint->GetTime(), fTimeSigma); // 100 ps		
-		pPoint->Position(pos);
-	
-		const LStrip *pStrip = MpdTof::FindStrip(UID);
-		double perpPhi = pStrip->perp.Phi(); // [rad]
-		
-		TVector3 posRotated(pos);
-		posRotated.RotateZ(-perpPhi);
-		
-		XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
-		XYZ_smeared.RotateZ(perpPhi);
-
-		LStrip::Side_t side;
-		Double_t distance = pStrip->MinDistanceToEdge(&pos, side); // [cm]
-
-		bool passed;
-		if(passed = HitExist(distance)) // check efficiency 
+	if(fUseMCData)
+	{	
+		for(Int_t pointIndex = 0, nTofPoint = aMcPoints->GetEntriesFast(); pointIndex < nTofPoint; pointIndex++ )  // cycle by TOF points
 		{
-		 	AddHit(UID, XYZ_smeared, XYZ_err, pointIndex, trackID, time, MpdTofUtils::IsSingle); 	
-		 	nSingleHits++;
-
-		 	if(fDoTest)
-		 	{
-		 		h2TestXYSmeared->Fill((pos - XYZ_smeared).Mag(), pos.Z() - XYZ_smeared.Z());
-		 		h2TestXYSmeared2->Fill(XYZ_smeared.X(), XYZ_smeared.Y());
-		 		h2TestEtaPhi->Fill(pos.Eta(), pos.Phi()*TMath::RadToDeg());
-		 		h2TestRZ->Fill(pos.Z(), pos.Perp());
-		 	}
-		} 
+			MpdTofPoint *pPoint = (MpdTofPoint*) aMcPoints->UncheckedAt(pointIndex);
 		
-		if(fDoTest) effTestEfficiencySingleHit->Fill(passed, distance);
-        	
-        	if(passed = DoubleHitExist(distance)) // check cross hit
-        	{
-        		Int_t CrossUID = (side == LStrip::kRight) ? pStrip->neighboring[LStrip::kRight] : pStrip->neighboring[LStrip::kLeft];
-  			
-  			if(LStrip::kInvalid  == CrossUID) continue; // last strip on module
-  			
-  			pStrip = MpdTof::FindStrip(CrossUID);
-        		XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
-        		XYZ_smeared.RotateZ(perpPhi);
-        			
-        		AddHit(CrossUID, XYZ_smeared, XYZ_err, pointIndex, trackID, time, MpdTofUtils::IsDouble); 
-        		nDoubleHits++;
-  		
-        		if(fDoTest)
-        		{
-        			h2TestXYSmearedDouble->Fill((pos - XYZ_smeared).Mag(), pos.Z() - XYZ_smeared.Z());
-        			h2TestXYSmearedDouble2->Fill(XYZ_smeared.X(), XYZ_smeared.Y());
-        		}
-        	}
-        	
-        	if(fDoTest) effTestEfficiencyDoubleHit->Fill(passed, distance);
+			if(fVerbose > 2) pPoint->Print(""); 		
+  
+			trackID = pPoint->GetTrackID();	
+			UID	= pPoint->GetDetectorID();
+			Double_t time = pRandom->Gaus(pPoint->GetTime(), fTimeSigma); // 100 ps		
+			pPoint->Position(pos);
+	
+			const LStrip *pStrip = MpdTofGeoUtils::Instance()->FindStrip(UID);
+			double perpPhi = pStrip->perp.Phi(); // [rad]
+		
+			TVector3 posRotated(pos);
+			posRotated.RotateZ(-perpPhi);
+		
+			XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
+			XYZ_smeared.RotateZ(perpPhi);
 
-	}	// cycle by the TOF points
+			LStrip::Side_t side;
+			Double_t distance = pStrip->MinDistanceToEdge(&pos, side); // [cm]
+
+			bool passed;
+			if(passed = HitExist(distance)) // check efficiency 
+			{
+			 	AddHit(UID, XYZ_smeared, XYZ_err, pointIndex, trackID, time, MpdTofUtils::IsSingle); 	
+			 	nSingleHits++;
+			 	
+			 	if(pHitProducerQA) pHitProducerQA->FillSingleHitPosition(pos, XYZ_smeared);			 	
+			} 
+		
+			if(pHitProducerQA) pHitProducerQA->GetSingleHitEfficiency()->Fill(passed, distance);
+        		
+        		if(passed = DoubleHitExist(distance)) // check cross hit
+        		{
+        			Int_t CrossUID = (side == LStrip::kRight) ? pStrip->neighboring[LStrip::kRight] : pStrip->neighboring[LStrip::kLeft];
+  			
+  				if(LStrip::kInvalid  == CrossUID) continue; // last strip on module
+  			
+  				pStrip = MpdTofGeoUtils::Instance()->FindStrip(CrossUID);
+        			XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
+        			XYZ_smeared.RotateZ(perpPhi);
+        			
+        			AddHit(CrossUID, XYZ_smeared, XYZ_err, pointIndex, trackID, time, MpdTofUtils::IsDouble); 
+        			nDoubleHits++;
+        			
+        			if(pHitProducerQA) pHitProducerQA->FillDoubleHitPosition(pos, XYZ_smeared);        			
+        		}
+        	
+        		if(pHitProducerQA) pHitProducerQA->GetDoubleHitEfficiency()->Fill(passed, distance);
+
+		}	// cycle by the TOF points
+	
+	}
+	else	//  exp. data used    
+	{
+		// FIXME: now not realized
+		//AddHit(Int_t detUID, const TVector3 &posHit, const TVector3 &posHitErr, Int_t expDigitIndex, Double_t time, Int_t flag)
+		assert(false);
+	}
 	
 	MergeHitsOnStrip(); // save only the fastest hit in the strip
 
 	int nFinally = CompressHits(); // remove blank slotes
 
-        cout<<" -I- [MpdTofHitProducer::Exec] MCpoints= "<<nTofPoint<<", single hits= "<<nSingleHits<<", double hits= "<<nDoubleHits<<", final hits= "<<nFinally<<endl;
+        cout<<" -I- [MpdTofHitProducer::Exec] single hits= "<<nSingleHits<<", double hits= "<<nDoubleHits<<", final hits= "<<nFinally<<endl;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 			MpdTofHitProducer::Finish()
 {
-  	if(fDoTest)
-    	{
-      		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, " [MpdTofHitProducer::Finish] Update  %s file. ", fTestFlnm.Data());
-		TFile *ptr = gFile;
-		TFile file(fTestFlnm.Data(), "RECREATE");
-		fList.Write(); 
-		file.Close();
-		gFile = ptr;
-	}
+	if(pHitProducerQA) pHitProducerQA->Finish(); 
 }
 //--------------------------------------------------------------------------------------------------------------------------------------
 void 		MpdTofHitProducer::SetSeed(UInt_t seed)

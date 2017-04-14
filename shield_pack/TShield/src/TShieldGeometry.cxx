@@ -86,8 +86,8 @@ Geant4ShieldData zoneDataToShield(zoneData data) {
         zoneVector.clear();
         currentPair = data.at(kk); // This is data for one volume
         geoData = std::set<std::vector<zoneElement> >(currentPair.first.begin(), currentPair.first.end());
-        for (std::set<std::vector<zoneElement> >::const_iterator k = geoData.cbegin(); k != geoData.cend(); ++k) {
-            curSet = std::set<zoneElement>(k->cbegin(), k->cend()); //As fact, removing duplicates of zoneElements
+        for (std::set<std::vector<zoneElement> >::const_iterator k = geoData.begin(); k != geoData.end(); ++k) {
+            curSet = std::set<zoneElement>((std::vector<zoneElement>::const_iterator)k->begin(), (std::vector<zoneElement>::const_iterator)k->end()); //As fact, removing duplicates of zoneElements
             for (std::set<zoneElement>::const_iterator i = curSet.begin(); i != curSet.end(); ++i) {
                 zoneVector.push_back(i->first);
                 bodyVector.push_back(i->second);

@@ -325,11 +325,14 @@ void MpdTpcDigitizerAZ::Check4Edge(UInt_t iSec, TpcPoint* &prePoint, TpcPoint* v
   TVector3 mom, posL1;
   prePoint->Momentum(mom);
   if (mom.Pt() < 0.02) return; // do not adjust for very low-Pt tracks 
+  if (posL[1] < 0.01) return; // do not adjust - almost at the entrance
 
   posG += mom;
   MpdTpcSectorGeo::Instance()->Global2Local(posG, posL1, iSec%(nSectors/2));
   mom = posL1;
   mom -= posL; // momentum in sector frame
+  if (mom[1] < 0.02) return; // do not adjust - going inward or parallel to sector lower edge
+
   Double_t scale = mom[1] / posL[1];
   mom.SetMag(mom.Mag() / scale);
   posL -= mom;
@@ -337,6 +340,7 @@ void MpdTpcDigitizerAZ::Check4Edge(UInt_t iSec, TpcPoint* &prePoint, TpcPoint* v
   MpdTpcSectorGeo::Instance()->Local2Global(iSec%(nSectors/2), posL, posG);
   virtPoint->SetPosition(posG);
   virtPoint->SetTrackID(prePoint->GetTrackID());
+  prePoint->SetEnergyLoss(prePoint->GetEnergyLoss()*1.3); // 29.10.16 - correct for edge-effect
   prePoint = virtPoint;
 }
 
@@ -567,7 +571,7 @@ void MpdTpcDigitizerAZ::GetArea(Float_t xEll, Float_t yEll, Float_t radius, vect
     for (Int_t ip = -1; ip < 2; ++ip) {
       Int_t pad1 = pad + ip;
       if (pad1 < 0) continue;
-      if (pad1 >= MpdTpcSectorGeo::Instance()->NPadsInRows()[row1]) break;
+      if (pad1 >= MpdTpcSectorGeo::Instance()->NPadsInRows()[row1] * 2) break;
       padIDs.push_back(pad1);
       rowIDs.push_back(row1);
     }    
@@ -852,6 +856,12 @@ void MpdTpcDigitizerAZ::TpcProcessing(const TpcPoint* prePoint, const TpcPoint* 
 	if (secGeo->Global2Local(electronPos.Vect(), xyzLoc, secID % secGeo->NofSectors()) < 0) continue;
 	localX = xyzLoc[0];
 	localY = xyzLoc[1];
+	if (!TMath::Finite(localX) || !TMath::Finite(localY)) {
+	  // Debug
+	  cout << " !!! Not finite " << secID % secGeo->NofSectors() << endl;
+	  electronPos.Vect().Print();
+	  diffuse.Print();
+	}
 	UInt_t curTimeID = UInt_t (secGeo->T2TimeBin(electronPos.T()));
 	//cout << localX << " " << xyzLoc[0] << " " << localY << " " << xyzLoc[1] << " " << curTimeID << " " << timeBin << endl;
 	//AZ

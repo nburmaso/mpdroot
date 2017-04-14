@@ -4,11 +4,15 @@
 
 set(INCLUDE_DIRECTORIES
 ${ROOT_INCLUDE_DIR} 
-${CLHEP_INCLUDE_DIR} 
+${CLHEP_INCLUDE_DIR}
+${Boost_INCLUDE_DIRS}
 ${CMAKE_SOURCE_DIR}/geobase 
 ${CMAKE_SOURCE_DIR}/parbase 
-${CMAKE_SOURCE_DIR}/base 
-${CMAKE_SOURCE_DIR}/field
+${CMAKE_SOURCE_DIR}/base/sim
+${CMAKE_SOURCE_DIR}/base/source
+${CMAKE_SOURCE_DIR}/base/steer
+${CMAKE_SOURCE_DIR}/base/event
+${CMAKE_SOURCE_DIR}/base/field
 ${CMAKE_SOURCE_DIR}/mpdfield
 ${CMAKE_SOURCE_DIR}/mcstack
 ${CMAKE_SOURCE_DIR}/passive
@@ -18,13 +22,13 @@ ${CMAKE_SOURCE_DIR}/lhetrack
 ${CMAKE_SOURCE_DIR}/kalman
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+include_directories(${INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 )
  
-link_directories( ${LINK_DIRECTORIES})
+link_directories(${LINK_DIRECTORIES})
 
 set(TPC_SRCS
 TaskHelpers.cxx
@@ -50,6 +54,8 @@ MpdTpcHitProducer.cxx
 MpdTpcSectorGeo.cxx
 MpdTpcDigitizerAZ.cxx
 MpdTpcClusterFinderAZ.cxx
+MpdTPCpid.cxx
+MpdTpcClusterFinderMlem.cxx
 )
 
 # fill list of header files from list of source files

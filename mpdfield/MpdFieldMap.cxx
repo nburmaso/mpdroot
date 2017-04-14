@@ -552,4 +552,10 @@ void MpdFieldMap::GetFieldValue(const Double_t point[3], Double_t* bField) {
   bField[2] = GetBz(point[0], point[1], point[2]);
 }
 
+Double_t MpdFieldMap::Interpolate(Double_t dx, Double_t dy, Double_t dz)
+{
+    cout<<"MpdFieldMap::Interpolate( is not implemented!!!"<<endl;
+    return 0;
+}
+
 ClassImp(MpdFieldMap)

@@ -14,7 +14,7 @@
 #include "MpdKalmanHit.h"
 #include "MpdEctKalmanTrack.h"
 #include "MpdTpcKalmanFilter.h"
-#include "MpdEtofHit.h"
+#include "FairHit.h"
 #include "TpcLheHit.h"
 
 #include "FairMCPoint.h"
@@ -229,7 +229,7 @@ void MpdSftTrackFinderTpc::GetTrackSeeds(Int_t iPass)
     indx0[lay] = GetHitsInLayer(layMax-lay);
   }
   */
-  MpdEtofHit hitTmp;
+  FairHit hitTmp;
   TpcLheHit hit1Tmp;
   for (Int_t i = 0; i < nLay[0]; ++i) {
     // Loop over hits in the downstream SFT

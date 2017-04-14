@@ -3,8 +3,11 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR} 
-${CMAKE_SOURCE_DIR}/base 
+${ROOT_INCLUDE_DIR}
+${CMAKE_SOURCE_DIR}/base/source
+${CMAKE_SOURCE_DIR}/base/steer
+${CMAKE_SOURCE_DIR}/base/event
+${CMAKE_SOURCE_DIR}/base/field 
 ${CMAKE_SOURCE_DIR}/parbase 
 ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/mpdfield 

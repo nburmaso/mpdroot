@@ -14,7 +14,6 @@ using namespace std;
 //------------------------------------------------------------------------------------------------------------------------
 class MpdTofPoint : public FairMCPoint
 {
-
 public:
 
   /** Constructor with arguments
@@ -26,8 +25,8 @@ public:
    *@param length   Track length since creation [cm]
    *@param eLoss    Energy deposit [GeV]
    **/
-  	MpdTofPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss);
-  	MpdTofPoint(const MpdTofPoint& point) { *this = point; };
+  	MpdTofPoint(Int_t mcTrackIndex, Int_t detUID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss);
+  //	MpdTofPoint(const MpdTofPoint& point) { *this = point; };
 
   	MpdTofPoint();	
   	virtual ~MpdTofPoint();
@@ -36,10 +35,18 @@ public:
   	virtual void Print(const Option_t* opt) const;
 
  	// CATION:  MAX_VALUE = 255(0xFF)
+ 	
+ 	// MpdTof --------------------------------
   	// strip 	[1,...,24],	0x000000FF
   	// detector 	[1,...,6],	0x0000FF00
   	// box		[1,...,2],	0x00FF0000
   	// sector 	[1,...,24],	0xFF000000
+ 
+ 	// MpdEtof -------------------------------- 
+   	// strip 	[1,...,131],	0x000000FF
+    	// detector 	[1,...,1],	0x0000FF00 	
+  	// box		[1,...,30],	0x00FF0000
+  	// sector 	[1,...,2],	0xFF000000
   	
   	//Int_t GetGap() const    {return (fDetectorID & 15);};
   	Int_t GetSector() const   {		return ((fDetectorID & 0xFF000000) >> 24);};
@@ -47,7 +54,7 @@ public:
   	Int_t GetDetector() const {		return ((fDetectorID & 0x0000FF00) >> 8);};
    	Int_t GetStrip() const {		return ( fDetectorID & 0x000000FF);}; 	
    	
-  	Int_t GetDetectorID() const {return fDetectorID;};
+  	Int_t GetVolumeUID() const {return fDetectorID;};
   
     	static Int_t GetSector(Int_t uid){ 	return ((uid & 0xFF000000) >> 24);};
    	static Int_t GetBox(Int_t uid){ 	return ((uid & 0x00FF0000) >> 16);};

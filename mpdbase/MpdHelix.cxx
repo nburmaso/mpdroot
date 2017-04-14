@@ -310,11 +310,11 @@ pair<double, double> MpdHelix::pathLength(double r) const
 	//   Solution can be off by +/- one period, select smallest
 	//
 	double p = period();
-	if (!isnan(value.first)) {
+    if (!std::isnan(value.first)) {
 	    if (fabs(value.first-p) < fabs(value.first)) value.first = value.first-p;
 	    else if (fabs(value.first+p) < fabs(value.first)) value.first = value.first+p;
 	}
-	if (!isnan(value.second)) {
+    if (!std::isnan(value.second)) {
 	    if (fabs(value.second-p) < fabs(value.second)) value.second = value.second-p;
 	    else if (fabs(value.second+p) < fabs(value.second)) value.second = value.second+p;
 	}

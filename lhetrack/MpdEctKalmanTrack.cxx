@@ -9,8 +9,8 @@
 /// \author Alexander Zinchenko (LHE, JINR, Dubna)
 
 #include "MpdEctKalmanTrack.h"
-#include "MpdEtofHit.h"
-#include "MpdEtofPoint.h"
+#include "FairHit.h"
+
 #include "MpdKalmanFilter.h"
 #include "MpdKalmanTrack.h"
 //#include "MpdKalmanHitZ.h"
@@ -78,7 +78,7 @@ MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tpcIndx, const MpdTpcKalmanTrack &tra
 
 //__________________________________________________________________________
 MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tofIndx, Int_t tpcIndx, 
-				     MpdEtofHit *tof, TpcLheHit *tpc, TVector3 &vert)
+				     FairHit *tof, TpcLheHit *tpc, TVector3 &vert)
   : MpdKalmanTrack(tof->GetZ(),vert),
     fLastLay(0),
     fTpcIndex(tpcIndx),
@@ -100,7 +100,7 @@ MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tofIndx, Int_t tpcIndx,
 //__________________________________________________________________________
 MpdEctKalmanTrack::MpdEctKalmanTrack(Int_t tofIndx, Int_t ectIndx, 
 				     //MpdEtofPoint *tof, MpdKalmanHitZ *ect, TVector3 &vert)
-				     MpdEtofHit *tof, MpdKalmanHit *ect, TVector3 &vert)
+				     FairHit *tof, MpdKalmanHit *ect, TVector3 &vert)
   : MpdKalmanTrack(tof->GetZ(),vert),
     fLastLay(-1),
     fTpcIndex(ectIndx),

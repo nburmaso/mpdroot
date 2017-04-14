@@ -103,7 +103,6 @@ inline Double_t MpdTpcSectorGeo::T2TimeBin(Double_t time)
 {
   // Time-to-Time bin conversion
 
-  //return (fTimeMax - time) / fTimeBin; 
   return time / fTimeBin; 
 }
 
@@ -112,8 +111,8 @@ inline Double_t MpdTpcSectorGeo::TimeBin2Z(Double_t timeBin)
 {
   // Time bin-to-Z conversion
 
-  //return (fNTimeBins - timeBin - 0.5) / fZ2TimeBin;
-  return (fTimeBinMax - timeBin - 0.5) / fZ2TimeBin;
+  //return (fTimeBinMax - timeBin - 0.5) / fZ2TimeBin;
+  return (fTimeBinMax - timeBin - 0.5 + 0.037) / fZ2TimeBin; // extra correction
 }
 
 //__________________________________________________________________________

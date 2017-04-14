@@ -3,6 +3,7 @@
 #include "MpdTpcSector.h"
 #include <iostream>
 #include <iomanip>
+#include <set>
 
 ClassImp(MpdTpc2dCluster);
 
@@ -10,7 +11,7 @@ using namespace std;
 
 //......................................................................
 
-MpdTpc2dCluster::MpdTpc2dCluster(Int_t row, Int_t sec) : fId(0), fSecList(0), fRowList(0), fColList(0), fBktList(0), fAdcList(0), fSector(sec), fADCSum(0) {
+MpdTpc2dCluster::MpdTpc2dCluster(Int_t row, Int_t sec) : fFlag(0), fId(0), fSecList(0), fRowList(0), fColList(0), fBktList(0), fAdcList(0), fSector(sec), fADCSum(0), fCorrel(0) {
     fMinBkt = 1000;
     fMaxBkt = -1;
     fMinCol = 1000;
@@ -21,6 +22,7 @@ MpdTpc2dCluster::MpdTpc2dCluster(Int_t row, Int_t sec) : fId(0), fSecList(0), fR
 
 MpdTpc2dCluster::MpdTpc2dCluster(const MpdTpc2dCluster& cl) :
 TObject((const TObject&) cl) {
+    fFlag = cl.fFlag;
     fId = cl.fId;
     fMinBkt = cl.fMinBkt;
     fMaxBkt = cl.fMaxBkt;
@@ -31,6 +33,7 @@ TObject((const TObject&) cl) {
     fSigCol = cl.fSigCol;
     fAvgBkt = cl.fAvgBkt;
     fSigBkt = cl.fSigBkt;
+    fCorrel = cl.fCorrel;
 
     for (int i = 0; i < cl.GetNumDigits(); ++i) {
         fSecList.push_back(cl.fSecList[i]);
@@ -90,6 +93,18 @@ Bool_t MpdTpc2dCluster::Insert(Int_t sec, Int_t row, Int_t col, Int_t bkt, Float
 
   Insert(row, col, bkt, adc);
   fSecList.push_back(sec);
+}
+
+//......................................................................
+
+Int_t MpdTpc2dCluster::NTracks() const
+{
+  // Get number of track contributors to this cluster
+
+  std::set<Int_t> ids;
+  Int_t ndig = fSecList.size();
+  for (Int_t i = 0; i < ndig; ++i) ids.insert(fSecList[i]);
+  return ids.size();
 }
 
 //......................................................................

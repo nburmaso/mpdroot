@@ -55,6 +55,17 @@ Bool_t  MpdFfd::ProcessHits(FairVolume* vol)
 {
 	Int_t gap, cell, module, region;
 	TString Volname;
+	TLorentzVector tPos1, tMom1;
+
+	//#define EDEBUG
+#ifdef EDEBUG
+  static Int_t lEDEBUGcounter=0;
+  if (lEDEBUGcounter<100) {
+    std::cout << "EDEBUG-- MpdFfd::ProcessHits: entered" << gMC->CurrentVolPath() << "  ::: " ; // << endl;
+  std::cout << gMC->IsTrackEntering() << " " << gMC->IsTrackExiting() << " " << gMC->IsTrackStop() << " " << gMC->IsTrackDisappeared()<< endl;
+  }
+  lEDEBUGcounter++;
+#endif
 
 	// Set parameters at entrance of volume. Reset ELoss.
 	if(gMC->IsTrackEntering()) 
@@ -75,23 +86,39 @@ Bool_t  MpdFfd::ProcessHits(FairVolume* vol)
 //	if(gMC->TrackCharge() != 0 &&  (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()) ) 
 	
         // Create MpdFfdPoint at ENTER of active volume; fELoss INVALID!!!
-	if(gMC->IsTrackEntering()) 
-	{
+  if ( gMC->IsTrackExiting()    ||
+       gMC->IsTrackStop()       ||
+       gMC->IsTrackDisappeared()   ) {
+    //	if(gMC->IsTrackEntering()) 	{
 		fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
 		Volname = vol->getRealName();        // EL
-		region = Volname[5] - '0';   //?????????????????????????
-		gMC->CurrentVolID(gap);
-		gMC->CurrentVolOffID(1, cell);
-		gMC->CurrentVolOffID(2, module);
+		//		region = Volname[5] - '0';   //?????????????????????????
+		// gMC->CurrentVolID(gap);
+		// gMC->CurrentVolOffID(1, cell);
+		// gMC->CurrentVolOffID(2, module);
+		gMC->CurrentVolID(cell);
+		gMC->CurrentVolOffID(1, module);
+		gMC->CurrentVolOffID(2, region);
+#ifdef EDEBUG
+  if (lEDEBUGcounter<100) {
+		std::cout << Volname << " " << region << " " << module << " " << 
+		  cell << " " << fTrackID << " " << fPos.Z() << endl;
+  }
+#endif
     
-		fVolumeID = ((region-1)<<24);////////////// + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
+		//		fVolumeID = ((region-1)<<24);////////////// + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
+		fVolumeID = ((region-1)<<12) + ((module-1)<<4) + (cell-1); //  EL
+		gMC->TrackPosition(tPos1);  // EL
+		gMC->TrackMomentum(tMom1);  // EL
 
-		AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
-	   		TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, fELoss);
+		//		AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
+		//	   		TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, fELoss);
+		AddHit(fTrackID, fVolumeID, TVector3(tPos1.X(),  tPos1.Y(),  tPos1.Z()),
+	   		TVector3(tMom1.Px(), tMom1.Py(), tMom1.Pz()), fTime, fLength, fELoss);
 
 		((FairStack*)gMC->GetStack())->AddPoint(kFFD);
 
-    		ResetParameters();
+		//   		ResetParameters();
   	}
 
 
@@ -121,6 +148,16 @@ void MpdFfd::Print() const
 	
 	if(fVerboseLevel > 1)
                 for(Int_t i=0; i<nHits; i++) (*fFfdCollection)[i]->Print();
+}
+
+// -----   Public method Intialize   ---------------------------------------
+void MpdFfd::Initialize() {
+  // Init function
+  
+  FairDetector::Initialize();
+  FairRun* sim = FairRun::Instance();
+  FairRuntimeDb* rtdb=sim->GetRuntimeDb();
+  MpdFfdGeoPar* par=(MpdFfdGeoPar*)(rtdb->getContainer("MpdFfdGeoPar"));
 }
 //------------------------------------------------------------------------------------------------------------------------
 void MpdFfd::Reset(){ fFfdCollection->Clear(); ResetParameters(); }

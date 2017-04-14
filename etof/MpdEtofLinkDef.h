@@ -10,12 +10,9 @@
 #pragma link C++ class MpdEtofGeoPar;
 #pragma link C++ class MpdEtof+;
 #pragma link C++ class MpdEtofContFact;
-#pragma link C++ class MpdEtofHit+;
 #pragma link C++ class MpdEtofHitProducer+;
 #pragma link C++ class MpdEtofHitProducerIdeal+;
-#pragma link C++ class MpdEtofPoint+;
 #pragma link C++ class MpdEtofMatching+;
-#pragma link C++ class MpdEtofMatchingData+;
 
 #endif
 

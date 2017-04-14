@@ -3,22 +3,29 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR} 
+${ROOT_INCLUDE_DIR}
+${Boost_INCLUDE_DIRS}
 ${CMAKE_SOURCE_DIR}/emc 
 ${CMAKE_SOURCE_DIR}/geobase 
 ${CMAKE_SOURCE_DIR}/parbase 
-${CMAKE_SOURCE_DIR}/base 
+${CMAKE_SOURCE_DIR}/base/sim
+${CMAKE_SOURCE_DIR}/base/source
+${CMAKE_SOURCE_DIR}/base/steer
+${CMAKE_SOURCE_DIR}/base/event
 ${CMAKE_SOURCE_DIR}/mcstack 
 ${CMAKE_SOURCE_DIR}/fairtools
+${CMAKE_SOURCE_DIR}/clustering
+${CMAKE_SOURCE_DIR}/emc/hitmaker
+${CMAKE_SOURCE_DIR}/emc/clustering
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+include_directories(${INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ) 
 
-link_directories( ${LINK_DIRECTORIES})
+link_directories(${LINK_DIRECTORIES})
 
 set(MPDEMC_SRCS
 MpdEmcContFact.cxx
@@ -28,6 +35,18 @@ MpdEmcGeoPar.cxx
 MpdEmcPoint.cxx
 MpdEmcHit.cxx
 MpdEmcHitProducer.cxx
+
+hitmaker/MpdEmcHitA.cxx
+hitmaker/MpdEmcHitProducerA.cxx
+hitmaker/MpdEmcHitCont.cxx
+hitmaker/MpdEmcGeoParWrapper.cxx
+
+clustering/EmcClManager.cxx
+clustering/EmcClusterElement.cxx
+clustering/EmcCluster.cxx
+clustering/EmcClusterCollection.cxx
+clustering/EmcClusterInfo.cxx
+clustering/EmcCLinfo.cxx
 )
 
 # fill list of header files from list of source files

@@ -217,7 +217,7 @@ TVector2 MpdTpcSectorGeo::LocalPadPosition(Int_t padID)
 
   Int_t row = PadRow(padID);
   Double_t x = 0.0, y = 0.0;
-  if (row <= fNrows[0]) y = fPadH[0] * (row + 0.5);
+  if (row < fNrows[0]) y = fPadH[0] * (row + 0.5);
   else y = fYsec[1] - fYsec[0] + fPadH[1] * (row - fNrows[0] + 0.5);
   return TVector2(x,y);
 }

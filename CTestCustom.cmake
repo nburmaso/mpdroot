@@ -6,13 +6,20 @@
 # -- Number of warnings to display
 # -----------------------------------------------------------
 
-set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS "999" )
+#set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS "999" )
 
 # -----------------------------------------------------------
 # -- Number of errors to display
 # -----------------------------------------------------------
 
-set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_ERRORS   "0" )
+#set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_ERRORS   "0" )
+
+# -----------------------------------------------------------
+# -- Maximum size of passed and failed tests output
+# -----------------------------------------------------------
+
+set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE   "102400")
+set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE   "102400")
 
 # -----------------------------------------------------------
 # -- Warning execptions

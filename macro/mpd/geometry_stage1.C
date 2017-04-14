@@ -32,16 +32,20 @@ geometry_stage1(FairRunSim *fRun, Bool_t build)
     //fRun->AddModule(Ffd);
 
     FairDetector *Tpc = new TpcDetector("TPC", kTRUE);
-    Tpc->SetGeometryFileName("tpc_v6.geo");
+    Tpc->SetGeometryFileName("tpc_v7.root");
     fRun->AddModule(Tpc);
   
     FairDetector *Tof= new MpdTof("TOF", kTRUE );
-    Tof->SetGeometryFileName("tof_v4.root");
+    Tof->SetGeometryFileName("tof_v7.root");
     fRun->AddModule(Tof);
 
     FairDetector *Emc= new MpdEmc("ECAL", kTRUE);
-    Emc->SetGeometryFileName("emc_tr.geo");
+    Emc->SetGeometryFileName("emc_tr_400_3.geo");
     fRun->AddModule(Emc);
+
+    FairDetector *EmcEmpty= new MpdEmc("ECAL", kFALSE);
+    EmcEmpty->SetGeometryFileName("emc_tr_400_3_empty.geo");
+    fRun->AddModule(EmcEmpty);
 	
     FairDetector *Zdc = new MpdZdc("ZDC",kTRUE );
     Zdc->SetGeometryFileName("zdc_10x10_modules96_layers40_16_4.geo");

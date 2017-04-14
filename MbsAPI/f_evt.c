@@ -1,16 +1,10 @@
-// $Id: f_evt.c 640 2010-06-17 09:00:52Z linev $
-//-----------------------------------------------------------------------
-//       The GSI Online Offline Object Oriented (Go4) Project
-//         Experiment Data Processing at EE department, GSI
-//-----------------------------------------------------------------------
-// Copyright (C) 2000- GSI Helmholtzzentrum für Schwerionenforschung GmbH
-//                     Planckstr. 1, 64291 Darmstadt, Germany
-// Contact:            http://go4.gsi.de
-//-----------------------------------------------------------------------
-// This software can be used under the license agreements as stated
-// in Go4License.txt file which is part of the distribution.
-//-----------------------------------------------------------------------
-
+/********************************************************************************
+ *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
+ *                                                                              *
+ *              This software is distributed under the terms of the             * 
+ *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
+ *                  copied verbatim in the file "LICENSE"                       *
+ ********************************************************************************/
 #include "typedefs.h"
 #include "f_stccomm.h"
 
@@ -163,9 +157,9 @@
 #include "fLmd.h"
 // -- DABC
 
-#include "gps_sc_def.h"
+//#include "gps_sc_def.h"
 #include "f_evt.h"
-#include "f_evcli.h"
+//#include "f_evcli.h"
 #include "portnum_def.h"
 
 INTS4 f_evt_get_newbuf(s_evt_channel*);
@@ -177,7 +171,7 @@ INTS4 f_ut_utime(INTS4, INTS4, CHARS*);
 static struct s_tcpcomm s_tcpcomm_st_evt;
 static CHARS c_temp[MAX_BUF_LGTH];
 static int l_gl_rev_port = PORT__EVENT_SERV;
-static int l_gl_evt_check = 0;
+//static int l_gl_evt_check = 0;
 
 /*1+ C Procedure *************+****************************************/
 /*                                                                    */
@@ -239,7 +233,7 @@ INTS4 f_evt_get_subevent(s_ve10_1* ps_ve10_1, INTS4 l_subevent, INTS4** pl_se, I
 {
   s_ves10_1* ps_ves10_1;
   INTS4      l_total,l_sub,l_sum;
-  INTS4      l,ll,l_status,*pl_next;
+  INTS4      /*l,*/ll,/*l_status,*/*pl_next;
 
   if(ps_ve10_1 == NULL) { return(GETEVT__FAILURE); }
   pl_next = (INTS4*) (ps_ve10_1 + 1);
@@ -301,9 +295,9 @@ INTS4 f_evt_type(s_bufhe* ps_bufhe,s_evhe* ps_evhe, INTS4 l_subid,INTS4 l_long,I
   s_ves10_1* ps_ves10_1;
   s_ve10_1*  ps_ve10_1;
   s_filhe* ps_filhe;
-  INTS2*     pi_data;
+//  INTS2*     pi_data;
   INTS4*     pl_data;
-  INTS4      l_mode,l_s;
+  INTS4      /*l_mode,*/l_s;
   INTS4      l,ll,l_status,l_ldata,l_used;
   CHARS c_line[132];
   CHARS c_full[132];
@@ -322,6 +316,13 @@ INTS4 f_evt_type(s_bufhe* ps_bufhe,s_evhe* ps_evhe, INTS4 l_subid,INTS4 l_long,I
     if(ll%512 > 0) { ll += 512-ll%512; }
     /* file header */
     l_status = f_ut_utime(ps_bufhe->l_time[0],ps_bufhe->l_time[1],c_time);
+
+#ifdef VMS
+    if(1 != l_status) printf("f_evt_type: error in f_ut_utime!");
+#else
+    if(0 != l_status) printf("f_evt_type: error in f_ut_utime!");
+#endif
+ 
     if(ps_bufhe->i_type == 2000) {
       ps_filhe=(s_filhe*)ps_bufhe;
       sprintf(c_line,"File header info:");
@@ -516,15 +517,29 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
 {
 
   INTS4 l_swap, l_swap_head, l_is_goosybuf, l_filehead=0, l_size, l_size_head, l_dummy, l_header_size;
-  INTS2* pi;
+//  INTS2* pi;
   CHARS c_file[256], *pc_temp;
   s_filhe* ps_filhe;
   struct s_varstr {
     INTS2 i_varstr;
     CHARS c_varstr[128];
-  } s_varstr_file;
-  INTS4 l_status,ll;
+  }/* s_varstr_file*/;
+  INTS4 l_status;//,ll;
+  int val;
 
+// P.-A. Loizeau, 2015/11/26:
+//    In case of STREAM mode, catch the case where the user provided
+//    a nonstandard stream port, extract the value and clean the server
+//    name. Usefull with DABC MBS streams where the port can be user set.
+   INTS4 i_streamport = PORT__STREAM_SERV;
+   if( (GETEVT__STREAM == l_mode ) && ( (pc_temp=strchr(pc_server,':')) != NULL )) {
+//      printf("input string: %s!\n", pc_server);
+      pc_server = strtok( pc_server, ":");
+      CHARS* pc_streamport  = strtok( NULL, ":");
+
+      i_streamport = atoi(pc_streamport);
+//      printf("output string: %s! Port: %s %i\n", pc_server, pc_streamport, i_streamport);
+   }
 
 #ifndef GSI__WINNT
 // disable automatic detection of RFIO on Windows while file name can contain ":"
@@ -544,10 +559,12 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
   if(ps_info != NULL) { *ps_info=NULL; }
   // when timeout is already set by f_evt_timeout(), do not overwrite
   if(ps_chan->l_timeout==0) { ps_chan->l_timeout=-1; } /* no timeout */
-  strcpy(ps_chan->c_channel,pc_server);
+
+  strncpy(ps_chan->c_channel,pc_server,sizeof(ps_chan->c_channel));
   switch(l_mode) {
   case GETEVT__FILE :
-    strcpy(c_file,pc_server);
+
+    strncpy(c_file,pc_server,sizeof(c_file));
     if(strlen(c_file) < 5) { strcat(c_file,".lmd"); }
     else {
       pc_temp = (CHARS*) &c_file[strlen(c_file)-4];
@@ -587,7 +604,11 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
 
     /* read file header and first buffer and check for goosy header */
     if(l_filehead == 1) {
-      lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+      val = lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+      if(-1 == val)
+      {
+        return(GETEVT__FAILURE);
+      }
       l_header_size=l_size_head;
       if(((s_filhe*)c_temp)->filhe_dlen > MAX__DLEN) {
         l_header_size=((s_filhe*)c_temp)->filhe_used*2+48;
@@ -613,7 +634,11 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
       }
     }/* check buffer behind header */
     ps_chan->l_buf_size=l_size_head;
-    lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+    val = lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+    if(-1 == val)
+    {
+      return(GETEVT__FAILURE);
+    }
     if(ps_info != NULL) { *ps_info=NULL; }
     /* found file header */
     if(l_filehead == 1) {
@@ -653,7 +678,12 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
     break;
   case GETEVT__STREAM :
     /* initialize connection with stream server                  */
-    if(f_stc_connectserver(pc_server,PORT__STREAM_SERV,&ps_chan->l_channel_no,
+// P.-A. Loizeau, 2015/11/26:
+//    In case of STREAM mode, catch the case where the user provided
+//    a nonstandard stream port, extract the value and clean the server
+//    name. Usefull with DABC MBS streams where the port can be user set.
+//    if(f_stc_connectserver(pc_server,PORT__STREAM_SERV,&ps_chan->l_channel_no,
+    if(f_stc_connectserver(pc_server,i_streamport,&ps_chan->l_channel_no,
                            &s_tcpcomm_st_evt)!=STC__SUCCESS) {
       return(GETEVT__NOSERVER);
     }
@@ -710,15 +740,16 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
 // -- DABC
     break;
   case GETEVT__REVSERV  :
-    if(f_evcli_con(ps_chan, pc_server, l_gl_rev_port, -1, l_sample)!=STC__SUCCESS) {
-      return(GETEVT__NOSERVER);
-    }
+//    if(f_evcli_con(ps_chan, pc_server, l_gl_rev_port, -1, l_sample)!=STC__SUCCESS) {
+//      return(GETEVT__NOSERVER);
+//    }
     break;
   case GETEVT__EVENT  :
-    if(f_evcli_con(ps_chan, pc_server, l_gl_rev_port, -1, l_sample)!=STC__SUCCESS) {
-      return(GETEVT__NOSERVER);
-    }
+//    if(f_evcli_con(ps_chan, pc_server, l_gl_rev_port, -1, l_sample)!=STC__SUCCESS) {
+//      return(GETEVT__NOSERVER);
+//    }
     break;
+#ifdef RFIO
   case GETEVT__RFIO   :
     ps_chan->l_channel_no=-1;
     ps_chan->l_channel_no=RFIO_open(pc_server,GET__OPEN_FLAG,0);
@@ -740,7 +771,11 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
     }
     /* read file header and first buffer and check for goosy header */
     if(l_filehead == 1) {
-      RFIO_lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+      val = RFIO_lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+      if(-1 == val)
+      {
+        return(GETEVT__FAILURE);
+      }
       if(RFIO_read(ps_chan->l_channel_no,c_temp,l_size_head)!=l_size_head) {
         printf("LMD format error: no LMD file: %s\n",pc_server);
         RFIO_close(ps_chan->l_channel_no);
@@ -761,7 +796,11 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
       }
     }/* check buffer behind header */
     ps_chan->l_buf_size=l_size_head;
-    RFIO_lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+    val = RFIO_lseek(ps_chan->l_channel_no, 0, SEEK_SET);  /* rewind file */
+    if(-1 == val)
+    {
+      return(GETEVT__FAILURE);
+    }
     if(ps_info != NULL) { *ps_info=NULL; }
     /* found file header */
     if(l_filehead == 1) {
@@ -795,6 +834,7 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
     }/* file header */
     ps_chan->l_io_buf_size=ps_chan->l_buf_size;
     break;
+#endif
   default             :
     if(ps_info != NULL) { *ps_info=NULL; }
     return(GETEVT__NOSERVER);
@@ -844,9 +884,9 @@ INTS4 f_evt_get_open(INTS4 l_mode, CHARS* pc_server, s_evt_channel* ps_chan,
 /*1- C Main ****************+******************************************/
 INTS4 f_evt_get_event(s_evt_channel* ps_chan, INTS4** ppl_buffer, INTS4** ppl_goobuf)
 {
-  INTS4 l_temp,l_prev_ok=1, l_stat, l_used;
+  INTS4 l_temp,l_prev_ok=1, l_stat=LMD__SUCCESS, l_used;
   s_bufhe* ps_bufhe_cur;
-  s_ve10_1* ps_ve10_1;
+//  s_ve10_1* ps_ve10_1;
   sMbsHeader* pevt;
 
 // DABC
@@ -857,6 +897,8 @@ INTS4 f_evt_get_event(s_evt_channel* ps_chan, INTS4** ppl_buffer, INTS4** ppl_go
       l_stat=fLmdGetMbsEvent(ps_chan->pLmd, &pevt);
     } else if(ps_chan->l_server_type == GETEVT__FILE) {
       l_stat=fLmdGetElement(ps_chan->pLmd,LMD__NO_INDEX, &pevt);
+    } else {
+      pevt = NULL;
     }
 
 // any error, then pointer is null
@@ -877,16 +919,16 @@ INTS4 f_evt_get_event(s_evt_channel* ps_chan, INTS4** ppl_buffer, INTS4** ppl_go
     return(GETEVT__SUCCESS);
   }
 // -- DABC
-  if((ps_chan->l_server_type == GETEVT__EVENT)|(ps_chan->l_server_type == GETEVT__REVSERV)) {
-    *ppl_goobuf = NULL;
-    if(f_evcli_evt(ps_chan) != STC__SUCCESS) { /* no more event, get new buffer */
-      l_stat=f_evcli_buf(ps_chan);
-      if(l_stat == STC__TIMEOUT) { return(GETEVT__TIMEOUT); }
-      if(l_stat != STC__SUCCESS) { return(GETEVT__FAILURE); }
-    }
-    *ppl_buffer = (INTS4*) ps_chan->pc_evt_buf;
-    return(GETEVT__SUCCESS);
-  }
+//  if((ps_chan->l_server_type == GETEVT__EVENT)|(ps_chan->l_server_type == GETEVT__REVSERV)) {
+//    *ppl_goobuf = NULL;
+//    if(f_evcli_evt(ps_chan) != STC__SUCCESS) { /* no more event, get new buffer */
+//      l_stat=f_evcli_buf(ps_chan);
+//      if(l_stat == STC__TIMEOUT) { return(GETEVT__TIMEOUT); }
+//      if(l_stat != STC__SUCCESS) { return(GETEVT__FAILURE); }
+//    }
+//    *ppl_buffer = (INTS4*) ps_chan->pc_evt_buf;
+//    return(GETEVT__SUCCESS);
+//  }
 
   /* e.g. read_buffer is 16384, GOOSY buffer may be only 2048,   *
    * this ps_chan->l_io_buf_posi indicats when the read_buffer is finished */
@@ -1024,7 +1066,7 @@ INTS4 f_evt_get_event(s_evt_channel* ps_chan, INTS4** ppl_buffer, INTS4** ppl_go
 INTS4 f_evt_get_close(s_evt_channel* ps_chan)
 {
   INTS4 l_close_failure;
-  INTS4 l_status;
+//  INTS4 l_status;
 
 // DABC
   if(ps_chan->pLmd != NULL) {
@@ -1046,7 +1088,7 @@ INTS4 f_evt_get_close(s_evt_channel* ps_chan)
       break;
     case GETEVT__STREAM :
       /* disconnect with stream server                              */
-      f_stc_write("CLOSE", 12, ps_chan->l_channel_no);
+      f_stc_write("CLOSE", 6, ps_chan->l_channel_no);
       if(f_stc_discclient(ps_chan->l_channel_no)!=STC__SUCCESS) { l_close_failure=1; }
       if(f_stc_close(&s_tcpcomm_st_evt)!=STC__SUCCESS) { l_close_failure=1; }
       if(ps_chan->pc_io_buf  != NULL) { free(ps_chan->pc_io_buf); }
@@ -1061,7 +1103,7 @@ INTS4 f_evt_get_close(s_evt_channel* ps_chan)
       break;
     case GETEVT__REVSERV  :
     case GETEVT__EVENT  :
-      if(f_evcli_close(ps_chan)!=STC__SUCCESS) { l_close_failure=1; }
+//      if(f_evcli_close(ps_chan)!=STC__SUCCESS) { l_close_failure=1; }
       break;
     case GETEVT__RFIO :
       RFIO_close(ps_chan->l_channel_no);
@@ -1116,7 +1158,7 @@ INTS4 f_evt_put_open(CHARS* pc_file, INTS4 l_size, INTS4 l_stream,
 {
   s_filhe* ps_file_head;
   INTS4 l_write_size;
-  INTS4 l_status,ll;
+  INTS4 l_status;//,ll;
   time_t s_timet;
   struct timeb s_timeb;
   /* because "timeb" is not "typedef", so we must use "struct" */
@@ -1125,7 +1167,7 @@ INTS4 f_evt_put_open(CHARS* pc_file, INTS4 l_size, INTS4 l_stream,
   struct s_varstr {
     INTS2 i_varstr;
     CHARS c_varstr[128];
-  } s_varstr_file;
+  }/* s_varstr_file*/;
 
 // DABC
   ps_chan->pLmd=NULL;
@@ -1149,7 +1191,12 @@ INTS4 f_evt_put_open(CHARS* pc_file, INTS4 l_size, INTS4 l_stream,
     exit(2);
   }
 
-  strcpy(c_file,pc_file);
+  size_t len=strlen(pc_file);
+  if (len < sizeof(c_file)) {
+    strncpy(c_file,pc_file, len);
+  } else {
+    strncpy(c_file,pc_file, sizeof(c_file)-1);
+  }
   if(strlen(c_file) < 5) { strcat(c_file,".lmd"); }
   else {
     pc_temp = (CHARS*) &c_file[strlen(c_file)-4];
@@ -1172,7 +1219,7 @@ INTS4 f_evt_put_open(CHARS* pc_file, INTS4 l_size, INTS4 l_stream,
         memcpy(ps_file_head, ps_filhe,ps_chan->l_buf_size );
       } else {
         memset( ps_file_head, '\0', ps_chan->l_buf_size);
-        sprintf(ps_file_head->filhe_run, "Pid %d\0", getpid());
+        sprintf(ps_file_head->filhe_run, "Pid %d", getpid());
         ps_file_head->filhe_run_l=strlen(ps_file_head->filhe_run);
       }
       ps_file_head->filhe_dlen=ps_chan->l_buf_size/2;
@@ -1184,7 +1231,16 @@ INTS4 f_evt_put_open(CHARS* pc_file, INTS4 l_size, INTS4 l_stream,
       ps_file_head->filhe_free[0]=1;
       ps_file_head->filhe_file_l=strlen(c_file);/* not include \0 */
       strcpy(ps_file_head->filhe_file, c_file);
-      strcpy(ps_file_head->filhe_user, getenv("USER"));/* user name */
+      char* username = getenv("USER");
+      if (username) {
+        size_t len = strlen(username);
+        // maximum length for user array in s_filhe is 30
+        if (len < sizeof(ps_file_head->filhe_user) ) {
+          strncpy(ps_file_head->filhe_user, username, len);/* user name */
+        } else {
+          strncpy(ps_file_head->filhe_user, username, sizeof(ps_file_head->filhe_user)-1);/* user name */
+        }  
+      }
       ps_file_head->filhe_user_l=strlen(ps_file_head->filhe_user);
       time(&s_timet);/* get calendar time */
       strcpy(c_mode, ctime(&s_timet));
@@ -1360,9 +1416,9 @@ INTS4 f_evt_put_event(s_evt_channel* ps_chan, INTS4* pl_evt_buf)
 
 INTS4 f_evt_put_buffer(s_evt_channel* ps_chan, s_bufhe* ps_bufhe)
 {
-  INTS4 l_write_size, l_temp, l_free;
+  INTS4 l_write_size;//, l_temp, l_free;
   INTS4 l_status;
-  CHARS* pc_addr;
+//  CHARS* pc_addr;
 
 // DABC
   if(ps_chan->pLmd != NULL) {
@@ -1406,7 +1462,7 @@ INTS4 f_evt_put_close(s_evt_channel* ps_chan)
 {
   INTS4 l_write_size, l_temp, l_temp2;
   INTS4 l_status;
-  CHARS* pc_addr;
+//  CHARS* pc_addr;
 
 // DABC
   if(ps_chan->pLmd != NULL) {
@@ -1631,7 +1687,7 @@ INTS4 f_evt_get_buffer(s_evt_channel* ps_chan, INTS4* ps_buffer)
     break;
   case GETEVT__STREAM :
     if(ps_chan->l_stream_bufs == 0)
-      if(f_stc_write("GETEVT", 12, ps_chan->l_channel_no)!=STC__SUCCESS) {
+      if(f_stc_write("GETEVT", 7, ps_chan->l_channel_no)!=STC__SUCCESS) {
         return(GETEVT__FAILURE);
       }
 
@@ -1683,7 +1739,7 @@ INTS4 f_evt_skip_buffer(s_evt_channel* ps_chan, INTS4 l_buffer)
 {
   INTS4 l_temp;
   CHARS* pc_temp;
-  INTS4 l_status,ii;
+//  INTS4 l_status,ii;
 
   pc_temp=(CHARS*)ps_chan->pc_io_buf;
   switch(ps_chan->l_server_type) {
@@ -1791,7 +1847,7 @@ INTS4 f_evt_swap(CHARS* pc_source, INTS4 l_length)
 /*1- C Procedure ***********+******************************************/
 INTS4 f_evt_swap_filhe(s_bufhe* ps_bufhe)
 {
-  CHARS* p_s, * p_d;
+//  CHARS* p_s, * p_d;
   INTS4 ii;
   INTS2* pi;
   s_filhe* ps_filhe;
@@ -1866,7 +1922,7 @@ INTS4 f_evt_get_newbuf(s_evt_channel* ps_chan)
     } /* end of while(1) */
     break;
   case GETEVT__STREAM :
-    if(f_stc_write("GETEVT", 12, ps_chan->l_channel_no)!=STC__SUCCESS) {
+    if(f_stc_write("GETEVT", 7, ps_chan->l_channel_no)!=STC__SUCCESS) {
       return(GETEVT__FAILURE);
     }
 
@@ -2104,15 +2160,17 @@ INTS4 f_evt_tag_filter(s_ve10_1* ps_ve10_1)
 INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
 {
   INTS4 ii,l_take_it,l_temp,l_chan,l_out,l_file_pos=0,l_bufnr=0,l_events=0;
-  INTS4 l_firste,*pl,l_len,l_last=-1,l_lin=0,l_fragsize, la_head[2];
+  INTS4 l_firste,*pl,l_len,l_last=-1,l_lin=0,l_fragsize;//, la_head[2];
   INTS4 l_swap, l_swap_head, l_is_goosybuf, l_filehead=0, l_size, l_size_head, l_dummy, l_evsize,l_evt_buf_size=0;
-  INTS2* pi;
+//  INTS2* pi;
   INTU4* ps,*pd;
-  CHARS c_lmd[128], c_tag[128], *pc_temp,*pc_evt_buf=NULL;
+  CHARS /*c_lmd[128], c_tag[128], *pc_temp,*/*pc_evt_buf=NULL;
   s_ve10_1* ps_ve10_1;
   s_bufhe* ps_bufhe;
   s_taghe s_taghe;
+  memset(&s_taghe, 0, sizeof(s_taghe));
   s_tag s_tag;
+  int val;
 
   ps_bufhe = (s_bufhe*)c_temp;
   printf("LMD file %s, TAG file %s\n",pc_lmd,pc_tag);
@@ -2132,7 +2190,12 @@ INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
   }
   /* read file header and first buffer and check for goosy header */
   if(l_filehead == 1) {
-    lseek(l_chan, 0, SEEK_SET);  /* rewind file */
+    val = lseek(l_chan, 0, SEEK_SET);  /* rewind file */
+    if(-1 == val)
+    {
+      close(l_chan);
+      return(GETEVT__FAILURE);
+    }
     if(read(l_chan,c_temp,l_size_head)!=l_size_head) {
       close(l_chan);
       return(GETEVT__RDERR);
@@ -2148,8 +2211,17 @@ INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
       return(GETEVT__NOLMDFILE);
     }
   }/* check buffer behind header */
+  else {
+    l_size = 0;
+    l_swap = 0;
+  }
 
-  lseek(l_chan, 0, SEEK_SET);  /* rewind file */
+  val = lseek(l_chan, 0, SEEK_SET);  /* rewind file */
+  if(-1 == val)
+  {
+    close(l_chan);
+    return(GETEVT__FAILURE);
+  }
 
   printf("Buffer swap %d, File header %d, LMD buffer %d, size %d[b]\n",l_swap,l_filehead,l_is_goosybuf,l_size);
 
@@ -2164,11 +2236,21 @@ INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
   }
 
   /* Open and create tag file */
-  if((l_out=open(pc_tag,PUT__CRT_FLAG,DEF_FILE_ACCE))== -1) { return(GETEVT__NOFILE); }
-  write(l_out,(CHARS*)&s_taghe,sizeof(s_taghe));
+  if((l_out=open(pc_tag,PUT__CRT_FLAG,DEF_FILE_ACCE))== -1)
+  {
+    close(l_chan);
+    return(GETEVT__NOFILE);
+  }
+  ssize_t wcount = write(l_out,(CHARS*)&s_taghe,sizeof(s_taghe));
+  if(wcount != sizeof(s_taghe))
+  {
+    close(l_chan);
+    close(l_out);
+    return(GETEVT__TAGWRERR);
+  }
 
   /* Initialize filter function */
-  if(e_filter != NULL) { ii=(*e_filter)(NULL); }
+  //if(e_filter != NULL) { ii=(*e_filter)(NULL); }
 
   while(read(l_chan,c_temp,l_size)==l_size) {
     l_file_pos=l_bufnr*l_size;
@@ -2232,6 +2314,11 @@ INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
             l_evt_buf_size=l_evsize*2;
             pc_evt_buf=(CHARS*)malloc(l_evt_buf_size);
           }
+          if(NULL == pc_evt_buf)
+          {
+            l_evt_buf_size=l_evsize*2;
+            pc_evt_buf=(CHARS*)malloc(l_evt_buf_size);
+          }
           /* copy event fragment to buffer */
           ps=(INTU4*)ps_ve10_1;
           pd=(INTU4*)pc_evt_buf;
@@ -2253,7 +2340,16 @@ INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
           ps_ve10_1->l_dlen=l_evsize-4;
           /* rewind last buffer, will be read again by while loop */
           l_bufnr--;
-          lseek(l_chan, -l_size, SEEK_CUR);
+          val = lseek(l_chan, -l_size, SEEK_CUR);
+          if(-1 == val)
+          {
+            free(pc_evt_buf);
+            ps_ve10_1 = NULL;
+            pd = NULL;
+            close(l_chan);
+            close(l_out);
+            return(GETEVT__FAILURE);
+          }
         }
         s_tag.l_offset=-l_file_pos;
         /* printf("Event %10d pos %10d Buffer -%6d\n",ps_ve10_1->l_count, l_file_pos,l_bufnr);*/
@@ -2281,7 +2377,13 @@ INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
     l_bufnr++;
     /*      if(l_bufnr > 3) break; */
   }
-  lseek(l_out, 0, SEEK_SET);  /* rewind file */
+  val = lseek(l_out, 0, SEEK_SET);  /* rewind file */
+  if(-1 == val)
+  {
+    close(l_chan);
+    close(l_out);
+    return(GETEVT__FAILURE);
+  }
   s_taghe.l_endian   = 1;
   s_taghe.l_version  = 1;
   s_taghe.l_bufsize  = l_size;
@@ -2339,7 +2441,7 @@ INTS4 f_evt_cre_tagfile(CHARS* pc_lmd, CHARS* pc_tag,INTS4 (*e_filter)())
 /*1- C Main ****************+******************************************/
 INTS4 f_evt_get_tagopen(s_evt_channel* ps_chan,CHARS* pc_tag,CHARS* pc_lmd, CHARS** ps_head, INTS4 l_prihe)
 {
-  INTS4 l_temp,ii;
+  INTS4 /*l_temp,*/ii;
   s_bufhe* ps_bufhe;
 
   ps_chan->ps_tag = NULL; /* tagfile buffer */
@@ -2376,6 +2478,11 @@ INTS4 f_evt_get_tagopen(s_evt_channel* ps_chan,CHARS* pc_tag,CHARS* pc_lmd, CHAR
     close(ps_chan->l_tagfile_no);
     return(GETEVT__TAGRDERR);
   }
+  if(NULL == ps_chan->ps_taghe)
+  {
+    close(ps_chan->l_tagfile_no);
+    return(GETEVT__TAGRDERR);
+  }
   if(ps_chan->ps_taghe->l_endian != 1) { ps_chan->l_tagswap=1; }
   if(ps_chan->l_tagswap) { f_evt_swap((CHARS*)ps_chan->ps_taghe,sizeof(s_taghe)); }
   if(l_prihe) {
@@ -2396,25 +2503,31 @@ INTS4 f_evt_get_tagopen(s_evt_channel* ps_chan,CHARS* pc_tag,CHARS* pc_lmd, CHAR
   }
   /* read buffer header to check if we have to swap */
   ps_bufhe  = (s_bufhe*)c_temp;
-  if(read(ps_chan->l_channel_no,c_temp,ps_chan->ps_taghe->l_bufsize)!=ps_chan->ps_taghe->l_bufsize) {
-    if(ps_chan->ps_taghe != NULL) { free(ps_chan->ps_taghe); }
-    ps_chan->ps_taghe = NULL;
-    if(ps_chan->ps_tag != NULL) { free(ps_chan->ps_tag); }
-    ps_chan->ps_tag = NULL;
-    close(ps_chan->l_tagfile_no);
-    close(ps_chan->l_channel_no);
-    return(GETEVT__RDERR);
-  }
-  if(ps_chan->ps_taghe->l_linear == 0) {
-    ps_chan->ps_tag = (s_tag*)malloc(ps_chan->ps_taghe->l_filesize);
-    if(read(ps_chan->l_tagfile_no,(CHARS*)ps_chan->ps_tag,ps_chan->ps_taghe->l_filesize)!=ps_chan->ps_taghe->l_filesize) {
+  if (ps_chan->ps_taghe->l_bufsize >=0 && ps_chan->ps_taghe->l_bufsize < sizeof(c_temp)) {
+    if(read(ps_chan->l_channel_no,c_temp,ps_chan->ps_taghe->l_bufsize)!=ps_chan->ps_taghe->l_bufsize) {
       if(ps_chan->ps_taghe != NULL) { free(ps_chan->ps_taghe); }
       ps_chan->ps_taghe = NULL;
       if(ps_chan->ps_tag != NULL) { free(ps_chan->ps_tag); }
       ps_chan->ps_tag = NULL;
       close(ps_chan->l_tagfile_no);
       close(ps_chan->l_channel_no);
-      return(GETEVT__TAGRDERR);
+      return(GETEVT__RDERR);
+    }
+  }
+  if(ps_chan->ps_taghe != NULL) {
+    if(ps_chan->ps_taghe->l_linear == 0) {
+      if (ps_chan->ps_taghe->l_filesize >=0 && ps_chan->ps_taghe->l_filesize < sizeof(s_tag)) {
+        ps_chan->ps_tag = (s_tag*)malloc(ps_chan->ps_taghe->l_filesize);
+        if(read(ps_chan->l_tagfile_no,(CHARS*)ps_chan->ps_tag,ps_chan->ps_taghe->l_filesize)!=ps_chan->ps_taghe->l_filesize) {
+          if(ps_chan->ps_taghe != NULL) { free(ps_chan->ps_taghe); }
+          ps_chan->ps_taghe = NULL;
+          if(ps_chan->ps_tag != NULL) { free(ps_chan->ps_tag); }
+          ps_chan->ps_tag = NULL;
+          close(ps_chan->l_tagfile_no);
+          close(ps_chan->l_channel_no);
+          return(GETEVT__TAGRDERR);
+        }
+      }
     }
   }
   if(ps_bufhe->l_free[0] != 1) { ps_chan->l_lmdswap=1; }
@@ -2455,7 +2568,7 @@ INTS4 f_evt_get_tagopen(s_evt_channel* ps_chan,CHARS* pc_tag,CHARS* pc_lmd, CHAR
 /*1- C Main ****************+******************************************/
 INTS4 f_evt_get_tagnext(s_evt_channel* ps_chan,INTS4 l_skip, INTS4** pl_event)
 {
-  INTS4 ii,*pl,kk;
+  INTS4 ii = 0,*pl=NULL,kk;
   /* no tagfile */
   /*=============================================*/
   if(ps_chan->ps_taghe == NULL) {
@@ -2501,15 +2614,15 @@ INTS4 f_evt_get_tagnext(s_evt_channel* ps_chan,INTS4 l_skip, INTS4** pl_event)
 /*1- C Main ****************+******************************************/
 INTS4 f_evt_get_tagevent(s_evt_channel* ps_chan,INTS4 l_value, INTS4 l_type, INTS4** pl_event)
 {
-  INTS4 l_temp,l_chan,l_tag,ii,kk,lb,l_tagbufs,l_tagrest,l_evt,l_off,l_typ,l_val,l_evsize,l_fragsize;
+  INTS4 /*l_temp,l_chan,l_tag,*/ii,kk,/*lb,l_tagbufs,l_tagrest,*/l_evt,l_off,l_typ,l_val,l_evsize,l_fragsize;
   INTS4 la_head[2],*pl;
   CHARS* pc;
   s_ve10_1* ps_ve10_1;
   s_bufhe* ps_bufhe;
   s_tag* ps_tag;
   s_tag s_tag_l;
-  s_filhe* ps_filhe;
-  s_evt_channel s_chan_i;
+//  s_filhe* ps_filhe;
+//  s_evt_channel s_chan_i;
 
   l_typ=l_type;
   l_val=l_value;
@@ -2553,7 +2666,11 @@ INTS4 f_evt_get_tagevent(s_evt_channel* ps_chan,INTS4 l_value, INTS4 l_type, INT
     }
     if(l_val == 0) { l_val=1; }
     ps_tag=(s_tag*)&s_tag_l;
-    lseek(ps_chan->l_tagfile_no, (l_val-1)*sizeof(s_tag)+sizeof(s_taghe), SEEK_SET);  /* set file offset*/
+    int val = lseek(ps_chan->l_tagfile_no, (l_val-1)*sizeof(s_tag)+sizeof(s_taghe), SEEK_SET);  /* set file offset*/
+    if(-1 == val)
+    {
+      return(GETEVT__TAGRDERR);
+    }
     if(read(ps_chan->l_tagfile_no,(CHARS*)ps_tag,sizeof(s_tag))!=sizeof(s_tag)) {
       return(GETEVT__TAGRDERR);
     }
@@ -2576,9 +2693,14 @@ INTS4 f_evt_get_tagevent(s_evt_channel* ps_chan,INTS4 l_value, INTS4 l_type, INT
   if(l_off < 0) { l_off=((-l_off)/ps_chan->ps_taghe->l_bufsize)*ps_chan->ps_taghe->l_bufsize; }
   l_evt=ps_tag->l_event;
   /* full event in buffer, read */
+  int val;
   if(ps_tag->l_offset > 0) {
     ps_ve10_1 = (s_ve10_1*)c_temp;
-    lseek(ps_chan->l_channel_no, l_off, SEEK_SET);  /* set file offset*/
+    val = lseek(ps_chan->l_channel_no, l_off, SEEK_SET);  /* set file offset*/
+    if(-1 == val)
+    {
+      return(GETEVT__TAGRDERR);
+    }
     if(read(ps_chan->l_channel_no,c_temp,8)!=8) { return(GETEVT__RDERR); }
     if(ps_chan->l_lmdswap) { f_evt_swap(c_temp,8); }
     if(read(ps_chan->l_channel_no,(CHARS*)&c_temp[8],ps_ve10_1->l_dlen*2)!=ps_ve10_1->l_dlen*2) { return(GETEVT__RDERR); }
@@ -2587,7 +2709,11 @@ INTS4 f_evt_get_tagevent(s_evt_channel* ps_chan,INTS4 l_value, INTS4 l_type, INT
   } else
     /* spanning event begin, read to event buffer */
   {
-    lseek(ps_chan->l_channel_no, l_off, SEEK_SET);  /* set file offset to buffer begin */
+    val = lseek(ps_chan->l_channel_no, l_off, SEEK_SET);  /* set file offset to buffer begin */
+    if(-1 == val)
+    {
+      return(GETEVT__TAGRDERR);
+    }
     if(read(ps_chan->l_channel_no,c_temp,sizeof(s_bufhe))!=sizeof(s_bufhe)) { return(GETEVT__RDERR); }
     if(ps_chan->l_lmdswap) { f_evt_swap(c_temp,sizeof(s_bufhe)); }
     /* is event buffer big enough? */
@@ -2599,7 +2725,11 @@ INTS4 f_evt_get_tagevent(s_evt_channel* ps_chan,INTS4 l_value, INTS4 l_type, INT
     }
     l_fragsize=0;
     ps_ve10_1 = (s_ve10_1*)ps_chan->pc_evt_buf;
-    lseek(ps_chan->l_channel_no, -ps_tag->l_offset, SEEK_SET);  /* set file offset*/
+    val = lseek(ps_chan->l_channel_no, -ps_tag->l_offset, SEEK_SET);  /* set file offset*/
+    if(-1 == val)
+    {
+      return(GETEVT__TAGRDERR);
+    }
     if(read(ps_chan->l_channel_no,ps_chan->pc_evt_buf,8)!=8) { return(GETEVT__RDERR); }
     if(ps_chan->l_lmdswap) { f_evt_swap(ps_chan->pc_evt_buf,8); }
     pc=ps_chan->pc_evt_buf+8;
@@ -2611,7 +2741,11 @@ INTS4 f_evt_get_tagevent(s_evt_channel* ps_chan,INTS4 l_value, INTS4 l_type, INT
     /* loop over fragments */
     while(l_fragsize < l_evsize) {
       l_off += ps_chan->ps_taghe->l_bufsize; /* next buffer absolut address */
-      lseek(ps_chan->l_channel_no,l_off+sizeof(s_bufhe), SEEK_SET);  /* set file offset*/
+      val = lseek(ps_chan->l_channel_no,l_off+sizeof(s_bufhe), SEEK_SET);  /* set file offset*/
+      if(-1 == val)
+      {
+        return(GETEVT__TAGRDERR);
+      }
       if(read(ps_chan->l_channel_no,(CHARS*)&la_head,8)!=8) { return(GETEVT__RDERR); }
       if(ps_chan->l_lmdswap) { f_evt_swap((CHARS*)&la_head,8); }
       if(read(ps_chan->l_channel_no,pc,la_head[0]*2)!=la_head[0]*2) { return(GETEVT__RDERR); }
