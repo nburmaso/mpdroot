@@ -17,6 +17,7 @@
 #pragma link C++ class MpdTofMatching+;
 #pragma link C++ class MpdTofMatchingData+;
 #pragma link C++ class MpdTofUtils+;
+#pragma link C++ class MpdTOFpid+;
 
 #endif
 

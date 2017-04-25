@@ -33,21 +33,23 @@ public:
   Float_t BetheBlochFunction(Float_t x, Float_t *p);
   Int_t BayesFunction(Float_t *measProb, Float_t *aprioriProb, Float_t *bayesProb, Int_t N);
   void ReadTPCResponse(); 
- 
+  void SetNSigmaDedx( Float_t n) { fn = n; }
+
 private:
+ 
 
-  Float_t ProtonPar[5];
-  Float_t PionPar[5];
-  Float_t KaonPar[5];
-  Float_t ElectronPar[5]; 
-   //const Int_t Nintervals = 10; 
-   Float_t sigmasPi[10];
-   Float_t sigmasPr[10]; 
-   Float_t sigmasKa[10];
-   Float_t sigmasEl[10];
-   
-   TFile* fCoefficients;
+  Float_t fn; // number of sigmas for n-sigma method
+  
+  Float_t ProtonPar[6];
+  Float_t PionPar[6];
+  Float_t KaonPar[6];
+  Float_t ElectronPar[6]; 
 
+  Float_t sigmasPi[72];
+  Float_t sigmasPr[72]; 
+  Float_t sigmasKa[72];
+  Float_t sigmasEl[72];
+    
 public:
   ClassDef(MpdTPCpid, 1)
 

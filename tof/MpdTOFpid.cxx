@@ -24,34 +24,33 @@
 #include <TH2.h>
 #include <TGraphErrors.h>
 // This Class' Header ------------------
-#include "MpdTPCpid.h"
+#include "MpdTOFpid.h"
 
 using namespace std;
 using namespace TMath;
 
 // Class Member definitions -----------
 
-MpdTPCpid::MpdTPCpid() :
-fn(1.),
-ProtonPar(),
-PionPar(),
-KaonPar(),
-ElectronPar(),
-sigmasPi(),
-sigmasPr(),
-sigmasKa(),
-sigmasEl()
+MpdTOFpid::MpdTOFpid() :
+fnBeta(1.),
+ProtonParHyper(),
+PionParHyper(),
+KaonParHyper(),
+ElectronParHyper(),
+sigmasTofPi(),
+sigmasTofPr(),
+sigmasTofKa(),
+sigmasTofEl()
 {
-    ReadTPCResponse();
+    ReadTOFResponse();
 }
 
-MpdTPCpid::~MpdTPCpid() {
+MpdTOFpid::~MpdTOFpid() {
     
 }
 
-Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi, Float_t& Pk, Float_t& Pp, Float_t& Pe, Int_t method) {
-
-
+Int_t MpdTOFpid::GetTofProbs(Float_t P, Float_t beta, Float_t& Ppi, Float_t& Pk, Float_t& Pp, Float_t& Pe, Int_t method) {
+              
     const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
     Float_t resultProb[Ntypes];
     
@@ -60,9 +59,9 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
 1.11,1.14,1.17,1.2,1.23,1.26,1.29,1.32,1.35,1.38,1.41,1.44,1.47,1.5,1.53,1.56,1.59,1.62,1.65,1.68,1.71,1.74,1.77,1.8,1.83,1.86,1.89,1.92,1.95,1.98,2.01,2.04,2.07,2.1,
 2.13,2.16,2.19,2.22, 3};
 
-
-    //default sigmas
-    Float_t sigma = 0.07 * dedx;
+    
+    if (Abs(beta) < 1e-6) return 1;
+    const Float_t oneOverBeta = 1.0 / beta;
 
     Float_t sum = 0.0; // for normalizing
 
@@ -77,21 +76,19 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
 
     switch (method) {
 
-        case 0: //bethe-bloch approximation equal bayesian coefficients
-
-            if (P > 3) i_p = 71;
-            for (Int_t k = 0; k < Nintervals; k++) if (P >= P_int[k] && P < P_int[k + 1]) i_p = k;
-
+        case 0: //Hyperbolic (1/beta vs p) with bayesian coefficients
 
             bayesAprioriCoefficients[0] = 1.0;
             bayesAprioriCoefficients[1] = 1.0;
             bayesAprioriCoefficients[2] = 1.0;
             bayesAprioriCoefficients[3] = 1.0;
 
-            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar), sigmasPi[i_p], kTRUE); // kTRUE = normilized by sqrt(2*Pi)*sigma.
-            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar), sigmasKa[i_p], kTRUE);
-            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar), sigmasPr[i_p], kTRUE);
-            gausProb[3] = Gaus(dedx, BetheBlochFunction(P, ElectronPar), sigmasEl[i_p], kTRUE);
+            if (P > 3) i_p = 71;
+            for (Int_t k = 0; k < Nintervals; k++) if (P >= P_int[k] && P < P_int[k + 1]) i_p = k;
+            gausProb[0] = Gaus(oneOverBeta, HyperbolicFunction(P, PionParHyper), sigmasTofPi[i_p], kTRUE);
+            gausProb[1] = Gaus(oneOverBeta, HyperbolicFunction(P, KaonParHyper), sigmasTofKa[i_p], kTRUE);
+            gausProb[2] = Gaus(oneOverBeta, HyperbolicFunction(P, ProtonParHyper), sigmasTofPr[i_p], kTRUE);
+            gausProb[3] = Gaus(oneOverBeta, HyperbolicFunction(P, ElectronParHyper), sigmasTofEl[i_p], kTRUE);
 
             sum = gausProb[0] + gausProb[1] + gausProb[2] + gausProb[3];
             if (sum == 0.) return 1;
@@ -101,7 +98,7 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
             gausProb[3] /= sum;
             break;
 
-        case 1: //bethe-bloch approximation with special byesian coefficients
+        case 1: //Hyperbolic (1/beta vs p) with special byesian coefficients
 
             if (P > 3) i_p = 71;
             for (Int_t k = 0; k < Nintervals; k++) if (P >= P_int[k] && P < P_int[k + 1]) i_p = k;
@@ -158,10 +155,10 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
                 bayesAprioriCoefficients[3] = 0.08;
             }
 
-            gausProb[0] = Gaus(dedx, BetheBlochFunction(P, PionPar), sigmasPi[i_p], kTRUE);
-            gausProb[1] = Gaus(dedx, BetheBlochFunction(P, KaonPar), sigmasKa[i_p], kTRUE);
-            gausProb[2] = Gaus(dedx, BetheBlochFunction(P, ProtonPar), sigmasPr[i_p], kTRUE);
-            gausProb[3] = Gaus(dedx, BetheBlochFunction(P, ElectronPar), sigmasEl[i_p], kTRUE);
+            gausProb[0] = Gaus(oneOverBeta, HyperbolicFunction(P, PionParHyper), sigmasTofPi[i_p], kTRUE);
+            gausProb[1] = Gaus(oneOverBeta, HyperbolicFunction(P, KaonParHyper), sigmasTofKa[i_p], kTRUE);
+            gausProb[2] = Gaus(oneOverBeta, HyperbolicFunction(P, ProtonParHyper), sigmasTofPr[i_p], kTRUE);
+            gausProb[3] = Gaus(oneOverBeta, HyperbolicFunction(P, ElectronParHyper), sigmasTofEl[i_p], kTRUE);
 
             sum = gausProb[0] + gausProb[1] + gausProb[2] + gausProb[3];
             if (sum == 0.) return 1;
@@ -170,8 +167,8 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
             gausProb[2] /= sum;
             gausProb[3] /= sum;
             break;
-
-        case 2:  // n-sigma method,
+           
+         case 2:  // n-sigma method,
          Float_t delta[Ntypes];
         
          bayesAprioriCoefficients[0] = 1.0;
@@ -182,13 +179,13 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
          if (P > 3) i_p = 71;
          for (Int_t k = 0; k < Nintervals; k++) if (P >= P_int[k] && P < P_int[k + 1]) i_p = k;
 
-         delta[0]=TMath::Abs(dedx-BetheBlochFunction(P, PionPar))/sigmasPi[i_p];
-         delta[1]=TMath::Abs(dedx-BetheBlochFunction(P, KaonPar))/sigmasKa[i_p];
-         delta[2]=TMath::Abs(dedx-BetheBlochFunction(P, ProtonPar))/sigmasPr[i_p];
-         delta[3]=TMath::Abs(dedx-BetheBlochFunction(P, ElectronPar))/sigmasEl[i_p];
+         delta[0]=TMath::Abs(oneOverBeta - HyperbolicFunction(P, PionParHyper))/sigmasTofPi[i_p];
+         delta[1]=TMath::Abs(oneOverBeta - HyperbolicFunction(P, KaonParHyper))/sigmasTofKa[i_p];
+         delta[2]=TMath::Abs(oneOverBeta - HyperbolicFunction(P, ProtonParHyper))/sigmasTofPr[i_p];
+         delta[3]=TMath::Abs(oneOverBeta - HyperbolicFunction(P, ElectronParHyper))/sigmasTofEl[i_p];
 
         for(Int_t ii=0; ii<4; ii++) {
-          if(delta[ii]<fn) gausProb[ii]=1;
+          if(delta[ii]<fnBeta) gausProb[ii]=1;
         }  
           Int_t c=0;
         for(Int_t ii=0; ii<4; ii++){
@@ -198,14 +195,12 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
          }
         }      
       
-       // cout<<"gausProb[ii] "<< gausProb[0]<<" "<<gausProb[1]<<" "<<gausProb[2]<<" "<<gausProb[3]<<endl;  
-       //   cout << sigmasPi[i_p] << endl; 
         break; 
 
     }
 
     if(method!=0 && method!=1 && method!=2) { 
-      printf("No TPC method matches.\n");
+      printf("No TOF method matches.\n");
     }
 
     else { 
@@ -220,39 +215,16 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
     return 0;
 }
 
-/*
-Float_t MpdTPCpid::BetheBlochFunction(Float_t x, Float_t *p) {
-    //Float_t b = 1 / (x / Sqrt(1 + x * x));
-    Float_t b = x / TMath::Sqrt(p[0]* p[0] + x * x);
-    return p[1] / Power(b, p[4]) * (p[2] - Power(b, p[4]) - Log(p[3] + Power(1 / x, p[5])));
+
+Float_t MpdTOFpid::HyperbolicFunction(Float_t x, Float_t *p) {
+    return Sqrt(1 + p[0]*p[0] / (x * x)) + p[1];  //p[0]=m, p[1]=additive const
 }
-*/
 
-Float_t MpdTPCpid::BetheBlochFunction(Float_t x, Float_t *par) {
-  Float_t p=x;//kaon momentum
-  Float_t mass=par[0];//Mass of particle 
-  Float_t beta=p/TMath::Sqrt(p*p+mass*mass);
-  Float_t gamma=1/TMath::Sqrt(1-beta*beta);
-  Float_t bg=beta*gamma;
-
-  Float_t kp1=par[1];
-  Float_t kp2=par[2];
-  Float_t kp3=par[3];
-  Float_t kp4=par[4];
-  Float_t kp5=par[5];
-
-  beta = bg/TMath::Sqrt(1.+ bg*bg);
-  Float_t aa = TMath::Power(beta,kp4);
-  Float_t bb = TMath::Power(1./bg,kp5);
-
-  bb=TMath::Log(kp3+bb);
-  return (kp2-aa-bb)*kp1/aa;
-}
 
 /*Bayes function for probabilities calculation*/
-Int_t MpdTPCpid::BayesFunction(Float_t *measProb, Float_t *aprioriProb, Float_t *bayesProb, Int_t N) {
+Int_t MpdTOFpid::BayesFunction(Float_t *measProb, Float_t *aprioriProb, Float_t *bayesProb, Int_t N) {
 
-    /*measProb    - measured probabilities from TPC/TOF/etc*/
+    /*measProb    - measured probabilities from TOF/TOF/etc*/
     /*aprioriProb - a priori probabilities from some magic*/
     /*bayesProb   - result bayes probabilities */
     /*N           - number of types {pion, kaon, proton, electron} */
@@ -271,18 +243,18 @@ Int_t MpdTPCpid::BayesFunction(Float_t *measProb, Float_t *aprioriProb, Float_t 
     return 0;
 }
 
-void MpdTPCpid::ReadTPCResponse() {
+void MpdTOFpid::ReadTOFResponse() {
    
    std::string s(100,' '); 
 
- /* Accessing the DeDx response */
+ /* Accessing the oneOverBeta response */
   TString dir = getenv("VMCWORKDIR");
-  TString dEdxFile = dir + "/input/MPDTPCPidResponseVhelle.txt";
+  TString BetaFile = dir + "/input/MPDTOFPidResponseVhelle.txt";
   ifstream input;
-  input.open(dEdxFile);
+  input.open(BetaFile);
 
   if (!input.is_open()) { 
-    cerr<<"PID: READ TPC RESPONSE: Cannot open file "<<dEdxFile.Data()<<endl;
+    cerr<<"PID: READ TOF RESPONSE: Cannot open file "<<BetaFile.Data()<<endl;
    }    
 
    const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
@@ -290,36 +262,36 @@ void MpdTPCpid::ReadTPCResponse() {
   if(input) {
    
    getline(input, s);
-   for(Int_t j=0; j<6; j++) input>>PionPar[j]; 
+   for(Int_t j=0; j<2; j++) input>>PionParHyper[j]; 
    getline(input,s); 
    getline(input,s); 
-   for(Int_t j=0; j<6; j++) input>>KaonPar[j];
+   for(Int_t j=0; j<2; j++) input>>KaonParHyper[j];
    getline(input,s); 
    getline(input,s); 
-   for(Int_t j=0; j<6; j++) input>>ProtonPar[j];
+   for(Int_t j=0; j<2; j++) input>>ProtonParHyper[j];
    getline(input,s); 
    getline(input,s); 
-   for(Int_t j=0; j<6; j++) input>>ElectronPar[j];
+   for(Int_t j=0; j<2; j++) input>>ElectronParHyper[j];
 
    getline(input, s);
    getline(input,s); 
-   for(Int_t j=0; j<72; j++) input>>sigmasPi[j];
+   for(Int_t j=0; j<72; j++) input>>sigmasTofPi[j];
    getline(input, s);
    getline(input,s); 
-   for(Int_t j=0; j<72; j++) input>>sigmasKa[j];
+   for(Int_t j=0; j<72; j++) input>>sigmasTofKa[j];
    getline(input, s);
    getline(input,s); 
-   for(Int_t j=0; j<72; j++) input>>sigmasPr[j];
+   for(Int_t j=0; j<72; j++) input>>sigmasTofPr[j];
    getline(input, s);
    getline(input,s); 
-   for(Int_t j=0; j<72; j++) input>>sigmasEl[j];
+   for(Int_t j=0; j<72; j++) input>>sigmasTofEl[j];
 
    input.close();
  
 }
-/*
-   //  Draw response 
 
+   //  Draw response 
+/*
     const Int_t Nintervals = 72;
     Double_t P_int[Nintervals + 1] = {0.09,0.12,0.15,0.18,0.21,0.24,0.27,0.3,0.33,0.36,0.39,0.42,0.45,0.48,0.51,0.54,0.57,0.6,0.63,0.66,0.69,0.72,0.75,0.78,0.81,0.84,0.87,0.9,0.93,0.96,0.99,1.02,1.05,1.08,
 1.11,1.14,1.17,1.2,1.23,1.26,1.29,1.32,1.35,1.38,1.41,1.44,1.47,1.5,1.53,1.56,1.59,1.62,1.65,1.68,1.71,1.74,1.77,1.8,1.83,1.86,1.89,1.92,1.95,1.98,2.01,2.04,2.07,2.1,
@@ -331,22 +303,22 @@ void MpdTPCpid::ReadTPCResponse() {
   for(Int_t i=0; i<72; i++){
    P[i]=P_int[i]+0.5*(P_int[i+1]-P_int[i]);
    P_err[i]=0;
-   mean_pi[i]=BetheBlochFunction(P[i], PionPar);
-   mean_ka[i]=BetheBlochFunction(P[i], KaonPar);
-   mean_pr[i]=BetheBlochFunction(P[i], ProtonPar);
-   mean_el[i]=BetheBlochFunction(P[i], ElectronPar);
+   mean_pi[i]=HyperbolicFunction(P[i], PionParHyper);
+   mean_ka[i]=HyperbolicFunction(P[i], KaonParHyper);
+   mean_pr[i]=HyperbolicFunction(P[i], ProtonParHyper);
+   mean_el[i]=HyperbolicFunction(P[i], ElectronParHyper);
    }
 
   
-   TGraphErrors *pi= new TGraphErrors(72, P, mean_pi, P_err, sigmasPi);
+   TGraphErrors *pi= new TGraphErrors(72, P, mean_pi, P_err, sigmasTofPi);
    pi->SetMarkerColor(2);
    pi->SetLineColor(2);
    pi->SetMarkerStyle(20);
    pi->SetMarkerSize(0.5); 
-  // pi->SetFillColor(1);
-  // pi->SetFillStyle(3002);
+   pi->SetFillColor(1);
+   pi->SetFillStyle(3002);
 
-   TGraphErrors *ka= new TGraphErrors(72, P, mean_ka, P_err, sigmasKa);
+   TGraphErrors *ka= new TGraphErrors(72, P, mean_ka, P_err, sigmasTofKa);
    ka->SetMarkerColor(2);
    ka->SetLineColor(2);
    ka->SetMarkerStyle(20);
@@ -354,7 +326,7 @@ void MpdTPCpid::ReadTPCResponse() {
    ka->SetFillColor(1);
    ka->SetFillStyle(3002);
 
-   TGraphErrors *pr= new TGraphErrors(72, P, mean_pr, P_err, sigmasPr);
+   TGraphErrors *pr= new TGraphErrors(72, P, mean_pr, P_err, sigmasTofPr);
    pr->SetMarkerColor(2);
    pr->SetLineColor(2);
    pr->SetMarkerStyle(20);
@@ -362,7 +334,7 @@ void MpdTPCpid::ReadTPCResponse() {
    pr->SetFillColor(1);
    pr->SetFillStyle(3002);
 
-   TGraphErrors *el= new TGraphErrors(72, P, mean_el, P_err, sigmasEl);
+   TGraphErrors *el= new TGraphErrors(72, P, mean_el, P_err, sigmasTofEl);
    el->SetMarkerColor(2);
    el->SetLineColor(2);
    el->SetMarkerStyle(20);
@@ -370,7 +342,7 @@ void MpdTPCpid::ReadTPCResponse() {
    el->SetFillColor(1);
    el->SetFillStyle(3002);
 
-   pr->Draw("C3same");
+   pr->Draw("AC3");
    ka->Draw("3Csame");
    pi->Draw("3Csame");
    el->Draw("3Csame");
@@ -379,8 +351,8 @@ void MpdTPCpid::ReadTPCResponse() {
   // ka->Draw("LXsame");
   // pi->Draw("LXsame");
   // el->Draw("LXsame");
-*/
 
+*/
 }
 
-ClassImp(MpdTPCpid);
+ClassImp(MpdTOFpid);
