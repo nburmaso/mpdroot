@@ -175,8 +175,21 @@ void MpdMotherFitterPart::WeightAtDca(MpdParticle *part, MpdKalmanTrack &tr)
 
   TMatrixD tmp(g,TMatrixD::kMult,jacob); // WD
   TMatrixD weight1(jacob,TMatrixD::kTransposeMult,tmp); // DtWD
+  //part->SetG (weight1);
+
+  // Add multiple scattering 
+  weight1.Invert(); // covar
+  Double_t step = tr.GetPos(); // radius of TPC inner layer
+  Double_t x0 = 13363.6; // rad. length - TPCMixture
+  TString mass2;
+  mass2 += (part->GetMass() * part->GetMass());
+  Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(&tr, x0, step, mass2);
+  Double_t th = tr.GetParamNew(3);
+  Double_t cosTh = TMath::Cos(th);
+  weight1(2,2) += (angle2 / cosTh / cosTh);
+  weight1(3,3) += angle2;
+  weight1.Invert(); // weight
   part->SetG (weight1);
-  //return kTRUE;
 }
 
 
@@ -271,7 +284,8 @@ Double_t MpdMotherFitterPart::FindVertex(vector<MpdParticle*> vDaught, TVector3 
 
     chi2o = chi2;
     chi2 = 0.;
-    //c(0,0) = c(1,1) = c(2,2) = 1; // new
+    //c.Zero(); // new 05.06.17
+    c(0,0) = c(1,1) = c(2,2) = 100; // new 05.06.17
     if (ipass == 0) cov = TMatrixD(TMatrixD::kInverted,c);
 
     Int_t ibeg = 0, iend = nDaught, istep = 1;
