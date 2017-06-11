@@ -969,7 +969,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
   TH2D *hXY = (TH2D*) gROOT->FindObject("hTimePad");
   TH2D *hMlem = (TH2D*) gROOT->FindObject("hMlem1");
   //if (hMlem == NULL) hMlem = (TH2D*) gROOT->FindObject("hMlem1");
-  Double_t scale = hXY->GetBinWidth(1) / hMlem->GetBinWidth(1);
+  Double_t scale = hXY->GetXaxis()->GetBinWidth(1) / hMlem->GetXaxis()->GetBinWidth(1);
 
   multimap<Double_t,Int_t>::reverse_iterator rit = localMax.rbegin();
   //vector<Int_t> vecDig;
