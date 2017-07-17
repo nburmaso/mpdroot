@@ -4,35 +4,29 @@
 
 //#define DEBUG_ZDC_TOWERS
 #include "MpdZdcTowerDraw.h"
-#include "TEveManager.h"                // for TEveManager, gEve
-#include "TEvePointSet.h"               // for TEvePointSet
-#include "TEveTreeTools.h"              // for TEvePointSelectorConsumer, etc
-#include "TGeoManager.h"
 #include "MpdZdcDigi.h"
-#include "MpdZdcDigiScheme.h"
-#include "FairEventManagerEditor.h"
 
-#include "TEveProjections.h"
+#include "FairEventManagerEditor.h"
+#include "FairLogger.h"
+
+#include "TEveManager.h"    // for gEve
+#include "TEveTreeTools.h"  // for TEvePointSelectorConsumer
+#include "TGeoManager.h"    // for gGeoManager
 #include "TEveCaloData.h"
 #include "TEveCalo.h"
-#include "TEveBrowser.h"
 #include "TEveViewer.h"
+#include "TGeoBBox.h"
 #include "TH2F.h"
 #include "TRandom.h"
+//#include <TMath.h>
 
-#include "TGeoBBox.h"
-
-#include <TMath.h>
-
-#include <assert.h>
 #include <iostream>
 using namespace std;
-using namespace TMath;
 
 // -----   Default constructor   -------------------------------------------
 MpdZdcTowerDraw::MpdZdcTowerDraw()
   : FairTask("MpdZdcTowerDraw", 0),
-    fVerboselvl(0),
+    fVerbose(0),
     fShadow(kFALSE),
     fResetRequiredFlag(kFALSE),
     fDigitList(NULL),
@@ -46,7 +40,7 @@ MpdZdcTowerDraw::MpdZdcTowerDraw()
 // -----   Standard constructor   ------------------------------------------
 MpdZdcTowerDraw::MpdZdcTowerDraw(const char* name, Double_t zdcMinEnergyThreshold, Bool_t shadow, Int_t verbose)
   : FairTask(name, verbose),
-    fVerboselvl(verbose),
+    fVerbose(verbose),
     fShadow(shadow),
     fResetRequiredFlag(kFALSE),
     fDigitList(NULL),
@@ -59,22 +53,20 @@ MpdZdcTowerDraw::MpdZdcTowerDraw(const char* name, Double_t zdcMinEnergyThreshol
 // -------------------------------------------------------------------------
 InitStatus MpdZdcTowerDraw::Init()
 {
-    if (GetVerboselvl() > 1)
-        cout<<"MpdZdcTowerDraw::Init()"<<endl;    
+    if (GetVerboselvl() > 1) cout<<"MpdZdcTowerDraw::Init()"<<endl;
 
     fEventManager = FairEventManager::Instance();
-    fEventManager->fgRedrawRecoPointsReqired=kTRUE;
-    if (GetVerboselvl() > 1)
-        cout<<"MpdZdcTowerDraw::Init() get instance of EventManager: "<<fEventManager<<endl;
+    if (GetVerboselvl() > 1) cout<<"MpdZdcTowerDraw::Init() get instance of EventManager: "<<fEventManager<<endl;
+
+    fEventManager->fgRedrawRecoPointsReqired = kTRUE;
 
     FairRootManager* fManager = FairRootManager::Instance();
-    if (GetVerboselvl() > 1)
-        cout<<"MpdZdcTowerDraw::Init() get instance of FairRootManager: "<<fManager<<endl;    
+    if (GetVerboselvl() > 1) cout<<"MpdZdcTowerDraw::Init() get instance of FairRootManager: "<<fManager<<endl;
 
-    fDigitList = (TClonesArray*)fManager->GetObject("ZdcDigi");
-    if(fDigitList == 0)
+    fDigitList = (TClonesArray*) fManager->GetObject("ZdcDigi");
+    if (fDigitList == 0)
     {
-        cout << "MpdZdcTowerDraw::Init()  branch ZdcDigit Not found! Task will be deactivated "<< endl;
+        LOG(ERROR)<<"MpdZdcTowerDraw::Init() branch ZdcDigit not found! Task will be deactivated"<<FairLogger::endl;
         SetActive(kFALSE);
     }
     
@@ -84,7 +76,6 @@ InitStatus MpdZdcTowerDraw::Init()
     fEneArr = new Double_t[GetNumModules()*2];
     for (Int_t i = 0; i < GetNumModules()*2; ++i)
         SetEneArr(i,0);
-    
     
     fq = 0;
     
@@ -96,8 +87,8 @@ void MpdZdcTowerDraw::Exec(Option_t* option)
     if (IsActive())
     {   
         Reset();
-        if (GetVerboselvl() > 1)
-            cout<<"MpdZdcTowerDraw::Exec() current visibility level = "<<gGeoManager->GetVisLevel()<<endl;             
+        if (GetVerboselvl() > 1) cout<<"MpdZdcTowerDraw::Exec() current visibility level = "<<gGeoManager->GetVisLevel()<<endl;
+
         if (fEventManager->fgShowRecoPointsIsShow)
         {
             UInt_t fNhits = fDigitList->GetEntriesFast();
@@ -233,10 +224,11 @@ void MpdZdcTowerDraw::Exec(Option_t* option)
             fEventManager->GetEventEditor()->fShowRecoPoints->SetEnabled(kTRUE);
         }
         
-        gEve->AddElement(q, fEventManager->EveRecoPoints);
-        
-        gEve->FullRedraw3D();
+        gEve->AddElement(q, fEventManager->EveRecoPoints); 
+
         fq = q;
+
+        gEve->FullRedraw3D();
     }
 }
 

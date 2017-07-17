@@ -9,7 +9,9 @@
 #include "MpdTpcHit.h"
 #include "MpdEvent.h"
 #include "MpdTpcKalmanTrack.h"
+
 #include "FairEventManagerEditor.h"
+#include "FairLogger.h"
 
 #include "TEveManager.h"
 #include "TEvePathMark.h"
@@ -27,7 +29,6 @@ MpdGlobalTrackDraw::MpdGlobalTrackDraw()
     fTrPr(NULL),
     fEventManager(NULL),
     fEveTrList(NULL),
-    fEvent(""),
     fTrList(NULL),
     MinEnergyLimit(-1.),
     MaxEnergyLimit(-1.),
@@ -42,7 +43,6 @@ MpdGlobalTrackDraw::MpdGlobalTrackDraw(const char* name, Int_t iVerbose)
     fTrPr(NULL),
     fEventManager(NULL),
     fEveTrList(new TObjArray(16)),
-    fEvent(""),
     fTrList(NULL),
     MinEnergyLimit(-1.),
     MaxEnergyLimit(-1.),
@@ -53,8 +53,7 @@ MpdGlobalTrackDraw::MpdGlobalTrackDraw(const char* name, Int_t iVerbose)
 // initialization of the track drawing task
 InitStatus MpdGlobalTrackDraw::Init()
 {
-    if (fVerbose > 1)
-        cout<<"MpdGlobalTrackDraw::Init()"<<endl;
+    if (fVerbose > 1) cout<<"MpdGlobalTrackDraw::Init()"<<endl;
 
     FairRootManager* fManager = FairRootManager::Instance();
 
@@ -63,32 +62,28 @@ InitStatus MpdGlobalTrackDraw::Init()
     fTrackList = fDstEvent->GetGlobalTracks();
     if (fTrackList == 0)
     {
-        cout<<"MpdGlobalTrackDraw::Init() branch "<<GetName()<<" not found! Task will be deactivated"<<endl;
+        LOG(ERROR)<<"MpdGlobalTrackDraw::Init() branch "<<GetName()<<" not found! Task will be deactivated"<<FairLogger::endl;
         SetActive(kFALSE);
     }
-    fKalmanTrackList = (TClonesArray*)fManager->GetObject("TpcKalmanTrack");
+    if (fVerbose > 2) cout<<"MpdGlobalTrackDraw::Init() get track list "<<fTrackList<<endl;
+
+    fKalmanTrackList = (TClonesArray*) fManager->GetObject("TpcKalmanTrack");
     if (fKalmanTrackList == 0)
     {
-        cout<<"MpdGlobalTrackDraw::Init() branch TpcKalmanTrack not found! Task will be deactivated"<<endl;
+        LOG(ERROR)<<"MpdGlobalTrackDraw::Init() branch TpcKalmanTrack not found! Task will be deactivated"<<FairLogger::endl;
         SetActive(kFALSE);
-    }
-    fTpcHitList = (TClonesArray*)fManager->GetObject("TpcHit");
+    } 
+
+    fTpcHitList = (TClonesArray*) fManager->GetObject("TpcHit");
     if (fTpcHitList == 0)
     {
-        cout<<"MpdGlobalTrackDraw::Init() branch TpcHit not found! Task will be deactivated"<<endl;
+        LOG(ERROR)<<"MpdGlobalTrackDraw::Init() branch TpcHit not found! Task will be deactivated"<<FairLogger::endl;
         SetActive(kFALSE);
     }
 
-    if(fVerbose > 2)
-        cout<<"MpdGlobalTrackDraw::Init() get track list "<<fTrackList<<endl;
-    if(fVerbose > 2)
-        cout<<"MpdGlobalTrackDraw::Init() create propagator"<<endl;
-
     fEventManager = FairEventManager::Instance();
-    if(fVerbose > 2)
-        cout<<"MpdGlobalTrackDraw::Init() get instance of FairEventManager "<<endl;
+    if (fVerbose > 2) cout<<"MpdGlobalTrackDraw::Init() get instance of FairEventManager"<<endl;
 
-    fEvent = "Current Event";
     MinEnergyLimit = fEventManager->GetEvtMinEnergy();
     MaxEnergyLimit = fEventManager->GetEvtMaxEnergy();
     PEnergy = 0;
@@ -99,20 +94,18 @@ InitStatus MpdGlobalTrackDraw::Init()
         return kERROR;
 }
 // -------------------------------------------------------------------------
-void MpdGlobalTrackDraw::Exec(Option_t* option)
+void MpdGlobalTrackDraw::Exec(Option_t* /*option*/)
 {
-    if (!IsActive()) return;
-    if (fVerbose > 1)
-        cout<<" MpdGlobalTrackDraw::Exec "<<endl;
+    if (!IsActive())
+        return;
+    if (fVerbose > 1) cout<<" MpdGlobalTrackDraw::Exec "<<endl;
 
     Reset();
 
     MpdTrack* tr;
-
     for (Int_t i = 0; i < fTrackList->GetEntriesFast(); i++)
     {
-        if (fVerbose > 2)
-            cout<<"FairMCTracks::Exec "<<i<<endl;
+        if (fVerbose > 2) cout<<"FairMCTracks::Exec "<<i<<endl;
 
         tr = (MpdTrack*)fTrackList->At(i);
 
@@ -169,17 +162,14 @@ void MpdGlobalTrackDraw::Exec(Option_t* option)
         PEnergy = energy;
         MinEnergyLimit = TMath::Min(PEnergy, MinEnergyLimit);
         MaxEnergyLimit = TMath::Max(PEnergy, MaxEnergyLimit);
-        if (fVerbose > 2)
-            cout<<"MinEnergyLimit "<<MinEnergyLimit<<" MaxEnergyLimit "<<MaxEnergyLimit<<endl;
+        if (fVerbose > 2) cout<<"MinEnergyLimit "<<MinEnergyLimit<<" MaxEnergyLimit "<<MaxEnergyLimit<<endl;
 
         // skip secondary tracks if primary flag is set
         if (fEventManager->IsPriOnly() && (!isPrimary))
             continue;
-
         // skip particles with unequal PDG if PDG number is set
         if ((fEventManager->GetCurrentPDG() != 0) && (fEventManager->GetCurrentPDG() != particlePDG))
             continue;
-
         // skip tracks whose energy doesn't lie in selected limits
         if (fVerbose > 2)
             cout<<"PEnergy "<<PEnergy<<" Min "<<fEventManager->GetMinEnergy()<<" Max "<<fEventManager->GetMaxEnergy()<<endl;
@@ -230,7 +220,7 @@ void MpdGlobalTrackDraw::Exec(Option_t* option)
     fEventManager->SetEvtMinEnergy(MinEnergyLimit);
 
     // redraw EVE scenes
-    gEve->Redraw3D(kFALSE);
+    //gEve->Redraw3D(kFALSE);
 }
 
 // destructor
@@ -254,7 +244,6 @@ void MpdGlobalTrackDraw::Reset()
         TEveTrackList*  ele = (TEveTrackList*) fEveTrList->At(i);
         gEve->RemoveElement(ele, fEventManager->EveRecoTracks);
     }
-
     fEveTrList->Clear();
 }
 

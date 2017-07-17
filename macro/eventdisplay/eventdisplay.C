@@ -85,12 +85,12 @@ void eventdisplay(char* sim_file = "$VMCWORKDIR/macro/mpd/evetest.root", char* r
     MpdGlobalTrackDraw *MpdGlobalTrack = new MpdGlobalTrackDraw("GlobalTracks");
     fMan->AddTask(MpdGlobalTrack);
 
-    // draw EMC towers : MpdEmcTowerDraw(TaskName, emcEnergyThreshold in GeV, 2)
-    MpdEmcTowerDraw *MpdEmcTower= new MpdEmcTowerDraw("MpdEmcTower", 0.0075, 2);
+    // draw EMC towers
+    MpdEmcTowerDraw *MpdEmcTower= new MpdEmcTowerDraw("MpdEmcTower", 0.0075 /*energy threshold, GeV*/, 1);
     fMan->AddTask(MpdEmcTower);
 
-    // draw ZDC towers : MpdZdcTowerDraw(TaskName, zdcEnergyThreshold in GeV, kFALSE, 2)
-    MpdZdcTowerDraw *MpdZdcTower= new MpdZdcTowerDraw("MpdZdcTower", 0.0001, kFALSE, 2);
+    // draw ZDC towers
+    MpdZdcTowerDraw *MpdZdcTower= new MpdZdcTowerDraw("MpdZdcTower", 0.0001 /*energy threshold, GeV*/, kFALSE, 1);
     fMan->AddTask(MpdZdcTower);
 
     // save EventDisplay Screenshot
@@ -101,7 +101,6 @@ void eventdisplay(char* sim_file = "$VMCWORKDIR/macro/mpd/evetest.root", char* r
     //WebScreenshots->SetPort(8016); // 8016 by default
     //fMan->AddTask(WebScreenshots);
 
-
     //if (gGeoManager)
     //    gGeoManager->SetVisLevel(3);
 
@@ -109,8 +108,6 @@ void eventdisplay(char* sim_file = "$VMCWORKDIR/macro/mpd/evetest.root", char* r
     fMan->Init();
 
     // -----   Finish   -------------------------------------------------------
-    cout << endl << endl;
-    cout << "Event Display was initialized successfully." << endl;
-    cout << endl;
+    cout<<endl<<endl<<"Event Display was initialized successfully."<<endl<<endl;
     // ------------------------------------------------------------------------
 }
