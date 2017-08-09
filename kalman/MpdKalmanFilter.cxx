@@ -2558,5 +2558,26 @@ L100:
     delete [] localVERTpp;
     ifail = 1;
 } /* mnvertLocal */
+//__________________________________________________________________________
+
+Double_t* MpdKalmanFilter::ExtrapOneStep(MpdKalmanTrack *track, Double_t step, Int_t flag)
+{
+  // Extrapolate one step: if flag!=0 then use the cached parameters
+
+  Double_t vect[7], charge;
+
+  if (flag == 0) {
+    if (track->GetType() == MpdKalmanTrack::kBarrel) SetGeantParamB(track, vect, 1);
+    else SetGeantParamE(track, vect, 1);
+    charge = fVectorG[7] = -TMath::Sign(1.0,track->GetParam(4));
+  } else {
+    for (Int_t j = 0; j < 7; ++j) vect[j] = fVectorG[j];
+    charge = fVectorG[7];
+  }
+
+  ExtrapOneStepRungekutta(charge, step, vect, fVectorG);
+  return fVectorG;
+}
+//__________________________________________________________________________
 
 ClassImp(MpdKalmanFilter)
