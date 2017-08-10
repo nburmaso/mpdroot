@@ -4,7 +4,7 @@ FAIREXTERNALS=$1
 
 SIMMACHINE=$(uname -n)
 
-export SIMPATH=/opt/fairsoft/install
+export SIMPATH=/home/luis/fairsoft/install
 export ROOTSYS=$SIMPATH
 	
 export PATH=$SIMPATH/bin:$PATH
