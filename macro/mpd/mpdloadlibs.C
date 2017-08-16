@@ -33,7 +33,6 @@ void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
   {
     gSystem->Load("libKalman");
     gSystem->Load("libtpc");
-    gSystem->Load("libbmd");
     gSystem->Load("libLHETrack");
     gSystem->Load("libGeane");
   }
@@ -43,7 +42,6 @@ void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
   {
     gSystem->Load("libtpc");
     gSystem->Load("libTof");
-    gSystem->Load("libbmd");
     gSystem->Load("libEtof");
     gSystem->Load("libEmc");
     gSystem->Load("libStrawendcap");
