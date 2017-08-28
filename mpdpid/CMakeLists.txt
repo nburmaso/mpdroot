@@ -33,6 +33,8 @@ link_directories( ${LINK_DIRECTORIES} )
 
 set(MPDPID_SRCS
 MpdPid.cxx
+MpdPidQA.cxx
+MpdPid_AZ.cxx
 )
 
 # fill list of header files from list of source files

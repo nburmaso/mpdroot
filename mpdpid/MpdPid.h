@@ -51,136 +51,129 @@ class MpdPid : public TObject
 {
 	public:
 	
-   //void Pidcheck(TString, Int_t);
-   
-   TF1 *parElBB;
-   TF1 *parMuBB;
-   TF1 *parPiBB1;
-   TF1 *parPiBB2;
-   TF1 *parPiBB3;
-   TF1 *parPiBB4;
-   TF1 *parKaBB1;
-   TF1 *parKaBB2;
-   TF1 *parKaBB3;
-   TF1 *parKaBB4;
-   TF1 *parPrBB1;
-   TF1 *parPrBB2;
-   TF1 *parPrBB3;
-   TF1 *parPrBB4;
-   TF1 *parDeBB;
-   TF1 *parTrBB;
-   TF1 *parHe3BB;
-   TF1 *parHe4BB;
-   
-   TF1 *parElNegMom;
-   TF1 *parElPosMom;
-   TF1 *parMuNegMom;
-   TF1 *parMuPosMom;
-   TF1 *parPiNegMom;
-   TF1 *parPiPosMom;
-   TF1 *parKaNegMom;
-   TF1 *parKaPosMom;
-   TF1 *parPrPosMom;
-   TF1 *parPrNegMom;
-   TF1 *parDeMom;
-   TF1 *parTrMom;
-   TF1 *parHe3Mom;
-   TF1 *parHe4Mom;
-   
-   MpdPid();
-   
-   MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, Double_t koef = 1., TString Generator = "DEFAULT", TString Tracking = "CF");
-   // generators: "URQMD", "LAQGSM" ("QGSM"), "DEFAULT"
-   // tracking: "HP" (Hit Producer), "CF" (Cluster Finder)
-   
-   virtual ~MpdPid(){}
-   Bool_t FillProbs(MpdTrack*);
-   Bool_t FillProbs(MpdTrack*, Double_t);
-   Bool_t FillProbs(Double_t, Double_t, Double_t, Int_t); 
-   // variables: full momentum, eta, dE/dx, charge
-   Bool_t FillProbs(Double_t, Double_t, Double_t, Double_t, Int_t); 
-   // variables: full momentum, eta, dE/dx, mass squared, charge
-   Double_t GetProbPi(void){return fProbPi;}
-   Double_t GetProbMu(void){return fProbMu;}
-   Double_t GetProbPr(void){return fProbPr;}
-   Double_t GetProbKa(void){return fProbKa;}
-   Double_t GetProbEl(void){return fProbEl;}
-   Double_t GetProbDe(void){return fProbDe;}
-   Double_t GetProbTr(void){return fProbTr;}
-   Double_t GetProbHe3(void){return fProbHe3;}
-   Double_t GetProbHe4(void){return fProbHe4;}
-   Long_t GetMaxProb();
-   
-   Double_t GetDedxPiParam(Double_t);
-   Double_t GetDedxPiParam(Double_t, Double_t);
-   Double_t GetDedxMuParam(Double_t);
-   Double_t GetDedxPrParam(Double_t);
-   Double_t GetDedxPrParam(Double_t, Double_t);
-   Double_t GetDedxKaParam(Double_t);
-   Double_t GetDedxKaParam(Double_t, Double_t);
-   Double_t GetDedxElParam(Double_t);
-   Double_t GetDedxDeParam(Double_t);
-   Double_t GetDedxTrParam(Double_t);
-   Double_t GetDedxHe3Param(Double_t);
-   Double_t GetDedxHe4Param(Double_t);
-
-   Double_t GetPrRat() {return prrat;}
-   void SetPrRat(Double_t PrRat) {prrat=PrRat; parPrNegMom->SetParameter(0, (parPrPosMom->GetParameter(0) / prrat));}
-   
-   Double_t MomPi(Double_t *x, Double_t *par);
-   Double_t MomPr(Double_t *x, Double_t *par);
-   
-   private:
-   
-   TF1 *parElM2;
-   TF1 *parMuM2;
-   TF1 *parPiLowPM2;
-   TF1 *parPiHighPM2;
-   TF1 *parKaM2;
-   TF1 *parPrLowPM2;
-   TF1 *parPrHighPM2;
-   TF1 *parDeM2;
-   TF1 *parTrM2;
-   TF1 *parHe3M2;
-   TF1 *parHe4M2;
-   
-   TF1 *fgaus;
-   TF2 *fgaus2;
-   
-   Double_t fProbEl;
-   Double_t fProbMu;
-   Double_t fProbPi;
-   Double_t fProbKa;
-   Double_t fProbPr;
-   Double_t fProbDe;
-   Double_t fProbTr;
-   Double_t fProbHe3;
-   Double_t fProbHe4;
-   
-   Double_t prrat; // rat is pos./neg.
-   Double_t fSigmaDedx_1, fSigmaDedx_2, fSigmaDedx_3;
-   Double_t fKoef; // scale of dedx
-   
-   Double_t kSigmaTof;
-   Double_t kSigmaEloss;
-   
-   Int_t fCharge;
-   
-   Double_t fEnergy;
-   
-   void Init(TString, TString);
-   Double_t GetDedxProb(Double_t, Double_t, Double_t, Double_t, Double_t);
-   Double_t GetCombProb(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
-   
-   //void CheckMethodOne(TString, Int_t);
-   //void CheckMethodTwo(TString, Int_t);
-   TH1D* GetHist(Int_t, Int_t, TH2D*);
-   TH1D* GetMass2Width(TH2D*, Int_t, Int_t, Double_t, Double_t, Double_t, Double_t);
-   TH1D* GetPidNormAmpls(Int_t, Double_t, Int_t, Int_t);
-   TGraphErrors* GetTGraphErrors (TH2D*, TH2D*, Double_t, TF1*, Int_t);
-   TGraphErrors* GetTGraphErrors (TH2D*, Double_t, TF1*, Int_t);
-   
-   ClassDef(MpdPid,1);
+	MpdPid(); /// default ctor
+	
+	MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, /// generators: "URQMD", "LAQGSM" ("QGSM"), "DEFAULT", "NSIG" (for n-sigma method)
+		Double_t koef = 1., TString Generator = "DEFAULT", TString Tracking = "CF", /// tracking: "HP" (Hit Producer), "CF" (Cluster Finder)
+		TString NSigPart = "pikapr"); /// possible expressions: el, mu, pi, ka, pr, de, tr, he3, he4
+	
+	virtual ~MpdPid(){} /// destructor
+	
+	/// Returns pos./neg. ratio for protons
+	Double_t GetPrRat() {return prrat;}
+	/// Set pos./neg. ratio for protons
+	void SetPrRat(Double_t PrRat) {prrat=PrRat; parPrNegMom->SetParameter(0, (parPrPosMom->GetParameter(0) / prrat));}
+	
+	/// Polynomials for asymmetry description
+	TF1 *fAsymmetryElLowP; TF1 *fAsymmetryElMidP; TF1 *fAsymmetryElHighP; /// electrons
+	TF1 *fAsymmetryMuLowP; TF1 *fAsymmetryMuMidP; TF1 *fAsymmetryMuHighP; /// muons
+	TF1 *fAsymmetryPiLowP; TF1 *fAsymmetryPiMidP; TF1 *fAsymmetryPiHighP; /// pions
+	TF1 *fAsymmetryKaLowP; TF1 *fAsymmetryKaMidP; TF1 *fAsymmetryKaHighP; /// kaons
+	TF1 *fAsymmetryPrLowP; TF1 *fAsymmetryPrMidP; TF1 *fAsymmetryPrHighP; /// protons
+	
+	/// Bethe-Bloch functions for mean energy deposit description
+	TF1 *parElBB; TF1 *parMuBB; TF1 *parPiBB; TF1 *parKaBB; TF1 *parPrBB;
+	TF1 *parDeBB; TF1 *parTrBB; TF1 *parHe3BB; TF1 *parHe4BB;
+	
+	/// Functions for multiplicity description
+	TF1 *parElNegMom; TF1 *parElPosMom; TF1 *parMuNegMom; TF1 *parMuPosMom;
+	TF1 *parPiNegMom; TF1 *parPiPosMom; TF1 *parKaNegMom; TF1 *parKaPosMom;
+	TF1 *parPrPosMom; TF1 *parPrNegMom;
+	TF1 *parDeMom; TF1 *parTrMom; TF1 *parHe3Mom; TF1 *parHe4Mom;
+	
+	/// Functions for m2 width description
+	TF1 *parElM2; TF1 *parMuM2; TF1 *parPiLowPM2; TF1 *parPiHighPM2;
+	TF1 *parKaM2; TF1 *parPrLowPM2; TF1 *parPrHighPM2;
+	TF1 *parDeM2; TF1 *parTrM2; TF1 *parHe3M2; TF1 *parHe4M2;
+	
+	/// Subsidiary functions for multiplicity description
+	Double_t MomPi(Double_t *x, Double_t *par);
+	Double_t MomPr(Double_t *x, Double_t *par);
+	
+	/// Fill array of probabilities, otherwise return kFALSE
+	Bool_t FillProbs(MpdTrack*);
+	Bool_t FillProbs(MpdTrack*, Double_t);
+	Bool_t FillProbs(Double_t, Double_t, Int_t); /// variables: full momentum, dE/dx, charge
+	Bool_t FillProbs(Double_t, Double_t, Double_t, Int_t); /// variables: full momentum, dE/dx, mass squared, charge
+	
+	/// Return probabilities 
+	Double_t GetProbPi(void){return fProbPi;}
+	Double_t GetProbMu(void){return fProbMu;}
+	Double_t GetProbPr(void){return fProbPr;}
+	Double_t GetProbKa(void){return fProbKa;}
+	Double_t GetProbEl(void){return fProbEl;}
+	Double_t GetProbDe(void){return fProbDe;}
+	Double_t GetProbTr(void){return fProbTr;}
+	Double_t GetProbHe3(void){return fProbHe3;}
+	Double_t GetProbHe4(void){return fProbHe4;}
+	
+	/// Returns the most probable pdg code
+	Long_t GetMaxProb();
+	
+	/// Return expected dE/dx values (variable: full momentum)
+	Double_t GetDedxPiParam(Double_t);
+	Double_t GetDedxPrParam(Double_t);
+	Double_t GetDedxKaParam(Double_t);
+	Double_t GetDedxElParam(Double_t);
+	Double_t GetDedxMuParam(Double_t);
+	Double_t GetDedxDeParam(Double_t);
+	Double_t GetDedxTrParam(Double_t);
+	Double_t GetDedxHe3Param(Double_t);
+	Double_t GetDedxHe4Param(Double_t);
+	
+	/// Returns expected asymmetry value delta (variables: full momentum, specie)
+	Double_t GetTailValue(Double_t, Int_t);
+	
+	/// Returns expected dE/dx width (variables: full momentum, specie)
+	Double_t GetDedxWidthValue(Double_t, Int_t);
+	
+	protected:
+	
+	TF1 *fgaus;
+	TF2 *fgaus2;
+	TF1 *fasymgaus;
+	TF2 *fasymgaus2;
+	
+	/// dE/dx width
+	TF1* elSigmaLowP; TF1* elSigmaMidP; TF1* elSigmaHighP;
+	TF1* muSigmaLowP; TF1* muSigmaMidP; TF1* muSigmaHighP;
+	TF1* piSigmaLowP; TF1* piSigmaMidP; TF1* piSigmaHighP;
+	TF1* prSigmaLowP; TF1* prSigmaHighP;
+	TF1* kaSigmaLowP; TF1* kaSigmaHighP;
+	
+	Double_t fProbEl;
+	Double_t fProbMu;
+	Double_t fProbPi;
+	Double_t fProbKa;
+	Double_t fProbPr;
+	Double_t fProbDe;
+	Double_t fProbTr;
+	Double_t fProbHe3;
+	Double_t fProbHe4;
+	
+	Double_t prrat; /// rat is pos./neg.
+	Double_t fSigmaDedx_1, fSigmaDedx_2, fSigmaDedx_3;
+	Double_t fKoef; /// scale of dedx
+	
+	Double_t kSigmaTof;
+	Double_t kSigmaEloss;
+	
+	Bool_t fTracking;
+	Int_t fCharge;
+	Int_t Multiplicities[14];
+	Double_t fEnergy;
+	Double_t AsymGaus(Double_t*, Double_t*);
+	Double_t AsymGaus2(Double_t*, Double_t*);
+	
+	void Init(TString, TString, TString);
+	
+	/// GetDedxProb_asym variables: cut_dedx, p, dedx, n, emean, sige, specie
+	Double_t GetDedxProb_asym(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Int_t); 
+	
+	/// GetCombProb_asym variables: cut_dedx, cut_m2, p, dedx, m2, n, emean, mmean, sige, sigm, specie
+	Double_t GetCombProb_asym(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Int_t);
+	
+	ClassDef(MpdPid,3);
 };
 
 #endif

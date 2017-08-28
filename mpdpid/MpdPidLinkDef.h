@@ -7,6 +7,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class MpdPid+;
+#pragma link C++ class MpdPidQA+;
+#pragma link C++ class MpdPid_AZ+;
 
 #endif
 
