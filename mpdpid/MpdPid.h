@@ -70,10 +70,16 @@ class MpdPid : public TObject
 	TF1 *fAsymmetryPiLowP; TF1 *fAsymmetryPiMidP; TF1 *fAsymmetryPiHighP; /// pions
 	TF1 *fAsymmetryKaLowP; TF1 *fAsymmetryKaMidP; TF1 *fAsymmetryKaHighP; /// kaons
 	TF1 *fAsymmetryPrLowP; TF1 *fAsymmetryPrMidP; TF1 *fAsymmetryPrHighP; /// protons
+	TF1 *fAsymmetryDeLowP; TF1 *fAsymmetryDeHighP; /// deuterons
+	TF1 *fAsymmetryTrLowP; TF1 *fAsymmetryTrMidP; TF1 *fAsymmetryTrHighP; /// tritons
+	TF1 *fAsymmetryHe3LowP; TF1 *fAsymmetryHe3MidP; TF1 *fAsymmetryHe3HighP; /// he3
+	TF1 *fAsymmetryHe4LowP; TF1 *fAsymmetryHe4MidP; TF1 *fAsymmetryHe4HighP; /// he4
 	
 	/// Bethe-Bloch functions for mean energy deposit description
 	TF1 *parElBB; TF1 *parMuBB; TF1 *parPiBB; TF1 *parKaBB; TF1 *parPrBB;
 	TF1 *parDeBB; TF1 *parTrBB; TF1 *parHe3BB; TF1 *parHe4BB;
+	TF1 *parDePol1; TF1 *parDePol2; TF1 *parTrPol1; TF1 *parTrPol2;
+	TF1 *parHe3Pol1; TF1 *parHe3Pol2; TF1 *parHe3Pol3; TF1 *parHe4Pol1; TF1 *parHe4Pol2;
 	
 	/// Functions for multiplicity description
 	TF1 *parElNegMom; TF1 *parElPosMom; TF1 *parMuNegMom; TF1 *parMuPosMom;
@@ -84,7 +90,7 @@ class MpdPid : public TObject
 	/// Functions for m2 width description
 	TF1 *parElM2; TF1 *parMuM2; TF1 *parPiLowPM2; TF1 *parPiHighPM2;
 	TF1 *parKaM2; TF1 *parPrLowPM2; TF1 *parPrHighPM2;
-	TF1 *parDeM2; TF1 *parTrM2; TF1 *parHe3M2; TF1 *parHe4M2;
+	TF1 *parDeLowPM2; TF1 *parDeHighPM2; TF1 *parTrM2; TF1 *parHe3M2; TF1 *parHe4M2;
 	
 	/// Subsidiary functions for multiplicity description
 	Double_t MomPi(Double_t *x, Double_t *par);
@@ -140,6 +146,10 @@ class MpdPid : public TObject
 	TF1* piSigmaLowP; TF1* piSigmaMidP; TF1* piSigmaHighP;
 	TF1* prSigmaLowP; TF1* prSigmaHighP;
 	TF1* kaSigmaLowP; TF1* kaSigmaHighP;
+	TF1* deSigmaLowP; TF1* deSigmaMidP; TF1* deSigmaHighP;
+	TF1* trSigmaLowP; TF1* trSigmaMidP; TF1* trSigmaHighP;
+	TF1* he3SigmaLowP; TF1* he3SigmaMidP; TF1* he3SigmaHighP;
+	TF1* he4SigmaLowP; TF1* he4SigmaMid1P; TF1* he4SigmaMid2P; TF1* he4SigmaHighP;
 	
 	Double_t fProbEl;
 	Double_t fProbMu;

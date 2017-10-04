@@ -63,6 +63,22 @@ Double_t MpdPid::GetDedxWidthValue(Double_t p, Int_t specie)
 		if ((p >= muSigmaMidP->GetXmin()) && (p <= muSigmaMidP->GetXmax())) WidthValue = muSigmaMidP->Eval(p);
 		if ((p >= muSigmaHighP->GetXmin()) && (p <= muSigmaHighP->GetXmax())) WidthValue = muSigmaHighP->Eval(p);
 	}
+	if (specie == 6)
+	{
+		WidthValue = 0.15;
+	}
+	if (specie == 7)
+	{
+		WidthValue = 0.18;
+	}
+	if (specie == 8)
+	{
+		WidthValue = 0.18;
+	}
+	if (specie == 9)
+	{
+		WidthValue = 0.15;
+	}
 	
 	return WidthValue;
 }
@@ -101,6 +117,33 @@ Double_t MpdPid::GetTailValue(Double_t p, Int_t specie)
 		if (p < fAsymmetryMuLowP->GetXmax()) TailValue = fAsymmetryMuLowP->Eval(p);
 		if ( (p >= fAsymmetryMuMidP->GetXmin()) && (p < fAsymmetryMuMidP->GetXmax()) ) TailValue = fAsymmetryMuMidP->Eval(p);
 		if ( (p >= fAsymmetryMuHighP->GetXmin()) && (p <= fAsymmetryMuHighP->GetXmax()) ) TailValue = fAsymmetryMuHighP->Eval(p);
+	}
+	if (specie == 6)
+	{
+		if (p < fAsymmetryDeLowP->GetXmin()) TailValue = 1.5;
+		if ( (p >= fAsymmetryDeLowP->GetXmin()) && (p < fAsymmetryDeLowP->GetXmax()) ) TailValue = fAsymmetryDeLowP->Eval(p);
+		if ( (p >= fAsymmetryDeHighP->GetXmin()) && (p <= fAsymmetryDeHighP->GetXmax()) ) TailValue = fAsymmetryDeHighP->Eval(p);
+	}
+	if (specie == 7)
+	{
+		if (p < fAsymmetryTrLowP->GetXmin()) TailValue = 1.;
+		if ( (p >= fAsymmetryTrLowP->GetXmin()) && (p < fAsymmetryTrLowP->GetXmax()) ) TailValue = fAsymmetryTrLowP->Eval(p);
+		if ( (p >= fAsymmetryTrMidP->GetXmin()) && (p < fAsymmetryTrMidP->GetXmax()) ) TailValue = fAsymmetryTrMidP->Eval(p);
+		if ( (p >= fAsymmetryTrHighP->GetXmin()) && (p <= fAsymmetryTrHighP->GetXmax()) ) TailValue = fAsymmetryTrHighP->Eval(p);
+	}
+	if (specie == 8)
+	{
+		if (p < fAsymmetryHe3LowP->GetXmin()) TailValue = 1.;
+		if ( (p >= fAsymmetryHe3LowP->GetXmin()) && (p < fAsymmetryHe3LowP->GetXmax()) ) TailValue = fAsymmetryHe3LowP->Eval(p);
+		if ( (p >= fAsymmetryHe3MidP->GetXmin()) && (p < fAsymmetryHe3MidP->GetXmax()) ) TailValue = fAsymmetryHe3MidP->Eval(p);
+		if ( (p >= fAsymmetryHe3HighP->GetXmin()) && (p <= fAsymmetryHe3HighP->GetXmax()) ) TailValue = fAsymmetryHe3HighP->Eval(p);
+	}
+	if (specie == 9)
+	{
+		if (p < fAsymmetryHe4LowP->GetXmax()) TailValue = fAsymmetryHe4LowP->Eval(p);
+		if ( (p >= fAsymmetryHe4MidP->GetXmin()) && (p < fAsymmetryHe4MidP->GetXmax()) ) TailValue = fAsymmetryHe4MidP->Eval(p);
+		if ( (p >= fAsymmetryHe4HighP->GetXmin()) && (p <= fAsymmetryHe4HighP->GetXmax()) ) TailValue = fAsymmetryHe4HighP->Eval(p);
+		if (p > fAsymmetryHe4HighP->GetXmax()) TailValue = -0.1;
 	}
 	
 	return TailValue;
@@ -197,10 +240,14 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	parPiBB = new TF1("parPiBB","[0]/pow(x/sqrt(x*x+0.01949),[3])*([1]-pow(x/sqrt(x*x+0.01949),[3])-log([2]+pow(1./(x/0.1396),[4])) )",PMIN,PMAX);
 	parKaBB = new TF1("parKaBB","[0]/pow(x/sqrt(x*x+0.2437),[3])*([1]-pow(x/sqrt(x*x+0.2437),[3])-log([2]+pow(1./(x/0.4937),[4])) )",PMIN,PMAX);
 	parPrBB = new TF1("parPrBB","[0]/pow(x/sqrt(x*x+0.88),[3])*([1]-pow(x/sqrt(x*x+0.88),[3])-log([2]+pow(1./(x/0.9383),[4])) )",PMIN,PMAX);
+	parDePol1 = new TF1("parDePol1", "pol1(0)", 0., 0.225); parDePol2 = new TF1("parDePol2", "pol1(0)", 0.225, 0.375);
 	parDeBB = new TF1("parDeBB","[0]/pow(x/sqrt(x*x+3.52),[3])*([1]-pow(x/sqrt(x*x+3.52),[3])-log([2]+pow(1./(x/1.876),[4])) )",PMIN,PMAX);
+	parTrPol1 = new TF1("parTrPol1", "pol1(0)", 0., 0.3); parTrPol2 = new TF1("parTrPol2", "pol1(0)", 0.3, 0.525);
 	parTrBB = new TF1("parTrBB","[0]/pow(x/sqrt(x*x+7.89),[3])*([1]-pow(x/sqrt(x*x+7.89),[3])-log([2]+pow(1./(x/2.81),[4])) )",PMIN,PMAX);
 	/// Double charged have p_reco= p_MC/2
+	parHe3Pol1 = new TF1("parHe3Pol1", "pol1(0)", 0., 0.24); parHe3Pol2 = new TF1("parHe3Pol2", "pol1(0)", 0.24, 0.325); parHe3Pol3 = new TF1("parHe3Pol3", "pol1(0)", 0.325, 0.55);
 	parHe3BB = new TF1("parHe3BB","[0]*((1+(x/1.4047)**2)/pow(x/1.4047,[3])*([1]+[2]*log(1+pow(x/1.4047,2)))-1.)",PMIN,PMAX);
+	parHe4Pol1 = new TF1("parHe4Pol1", "pol1(0)", 0., 0.32); parHe4Pol2 = new TF1("parHe4Pol2", "pol1(0)", 0.32, 0.5);
 	parHe4BB = new TF1("parHe4BB","[0]*((1+(x/1.863)**2)/pow(x/1.863,[3])*([1]+[2]*log(1+pow(x/1.863,2)))-1.)",PMIN,PMAX);
 	
 	///
@@ -214,7 +261,8 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	parKaM2=new TF1("parKaM2","pol2(0)",PMIN,PMAX);
 	parPrLowPM2=new TF1("parPrLowPM2","pol3(0)",PMIN,PMAX);  
 	parPrHighPM2=new TF1("parPrHighPM2","pol2(0)",PMIN,PMAX);  
-	parDeM2=new TF1("parDeM2","pol3(0)",PMIN,PMAX);  
+	parDeLowPM2=new TF1("parDeLowPM2","pol3(0)",PMIN,PMAX);  
+	parDeHighPM2=new TF1("parDeHighPM2","pol1(0)",PMIN,PMAX);  
 	parTrM2=new TF1("parTrM2","pol3(0)",PMIN,PMAX);  
 	parHe3M2=new TF1("parHe3M2","pol3(0)",PMIN,PMAX);  
 	parHe4M2=new TF1("parHe4M2","pol3(0)",PMIN,PMAX);  
@@ -261,7 +309,8 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		parKaM2->SetParameters(0.00144014, 0.0183536, 0.0161613);
 		parPrLowPM2->SetParameters(0.0777042, -0.123828, 0.139278, -0.0338542);
 		parPrHighPM2->SetParameters(0.0244298, 0.018534, 0.0174998);
-		parDeM2->SetParameters(0.535691,-0.529882,0.293807,-0.0428139);
+		parDeLowPM2->SetParameters(0.535691,-0.529882,0.293807,-0.0428139);
+		parDeHighPM2->SetParameters(0.535691,-0.529882);
 		parTrM2->SetParameters(0.422,0.3,-0.202,0.0524);
 		parHe3M2->SetParameters(0.17,-0.0,0.0,-0.00);
 		parHe4M2->SetParameters(0.3,-0.0,0.0,-0.00);
@@ -280,6 +329,19 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		prSigmaHighP = new TF1("prSigmaHighP", "pol1(0)", 0.2, 3.0); prSigmaHighP->SetParameters(0.0476193, -0.000557916);
 		kaSigmaLowP = new TF1("kaSigmaLowP", "pol1(0)", 0., 0.2); kaSigmaLowP->SetParameters(0.149889, -0.465214);
 		kaSigmaHighP = new TF1("kaSigmaHighP", "pol1(0)", 0.2, 3.0); kaSigmaHighP->SetParameters(0.0486608, -0.000571203);
+		deSigmaLowP = new TF1("deSigmaLowP", "pol1(0)", 0., 0.475); deSigmaLowP->SetParameters(0.05, 0.);
+		deSigmaMidP = new TF1("deSigmaMidP", "pol1(0)", 0.475, 0.8); deSigmaMidP->SetParameters(0.05, 0.);
+		deSigmaHighP = new TF1("deSigmaHighP", "pol1(0)", 0.8, 3.0); deSigmaHighP->SetParameters(0.05, 0.);
+		trSigmaLowP = new TF1("trSigmaLowP", "pol1(0)", 0., 0.625); trSigmaLowP->SetParameters(0.05, 0.);
+		trSigmaMidP = new TF1("trSigmaMidP", "pol1(0)", 0.625, 1.5); trSigmaMidP->SetParameters(0.05, 0.);
+		trSigmaHighP = new TF1("trSigmaHighP", "pol1(0)", 1.5, 3.0); trSigmaHighP->SetParameters(0.05, 0.);
+		he3SigmaLowP = new TF1("he3SigmaLowP", "pol1(0)", 0., 0.675); he3SigmaLowP->SetParameters(0.05, 0.);
+		he3SigmaMidP = new TF1("he3SigmaMidP", "pol1(0)", 0.675, 1.475); he3SigmaMidP->SetParameters(0.05, 0.);
+		he3SigmaHighP = new TF1("he3SigmaHighP", "pol1(0)", 1.475, 3.0); he3SigmaHighP->SetParameters(0.05, 0.);
+		he4SigmaLowP = new TF1("he4SigmaLowP", "pol1(0)", 0., 0.475); he4SigmaLowP->SetParameters(0.05, 0.);
+		he4SigmaMid1P = new TF1("he4SigmaMid1P", "pol1(0)", 0.475, 0.7); he4SigmaMid1P->SetParameters(0.05, 0.);
+		he4SigmaMid2P = new TF1("he4SigmaMid2P", "pol1(0)", 0.7, 0.925); he4SigmaMid2P->SetParameters(0.05, 0.);
+		he4SigmaHighP = new TF1("he4SigmaHighP", "pol1(0)", 0.925, 3.0); he4SigmaHighP->SetParameters(0.05, 0.);
 		
 		/// Asymmetry
 		fAsymmetryElLowP = new TF1("fAsymmetryElLowP", "pol1(0)", 0., 0.5); fAsymmetryElLowP->SetParameters(0.456871, -0.0424708);
@@ -297,6 +359,17 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		fAsymmetryKaLowP = new TF1("fAsymmetryKaLowP", "pol1(0)", 0., 0.45); fAsymmetryKaLowP->SetParameters(3.21698, -6.37965);
 		fAsymmetryKaMidP = new TF1("fAsymmetryKaMidP", "pol1(0)", 0.45, 1.05); fAsymmetryKaMidP->SetParameters(0.237053, 0.143231);
 		fAsymmetryKaHighP = new TF1("fAsymmetryKaHighP", "pol1(0)", 1.05, 3.); fAsymmetryKaHighP->SetParameters(0.252239, 0.0558685);
+		fAsymmetryDeLowP = new TF1("fAsymmetryDeLowP", "pol1(0)", 0., 0.585); fAsymmetryDeLowP->SetParameters(0., 0.);
+		fAsymmetryDeHighP = new TF1("fAsymmetryDeHighP", "pol1(0)", 0.585, 3.); fAsymmetryDeHighP->SetParameters(0., 0.);
+		fAsymmetryTrLowP = new TF1("fAsymmetryTrLowP", "pol1(0)", 0., 0.575); fAsymmetryTrLowP->SetParameters(0., 0.);
+		fAsymmetryTrMidP = new TF1("fAsymmetryTrMidP", "pol1(0)", 0.575, 0.84); fAsymmetryTrMidP->SetParameters(0., 0.);
+		fAsymmetryTrHighP = new TF1("fAsymmetryTrHighP", "pol1(0)", 0.84, 3.); fAsymmetryTrHighP->SetParameters(0., 0.);
+		fAsymmetryHe3LowP = new TF1("fAsymmetryHe3LowP", "pol1(0)", 0., 0.685); fAsymmetryHe3LowP->SetParameters(0., 0.);
+		fAsymmetryHe3MidP = new TF1("fAsymmetryHe3MidP", "pol1(0)", 0.685, 0.99); fAsymmetryHe3MidP->SetParameters(0., 0.);
+		fAsymmetryHe3HighP = new TF1("fAsymmetryHe3HighP", "pol1(0)", 0.99, 3.); fAsymmetryHe3HighP->SetParameters(0., 0.);
+		fAsymmetryHe4LowP = new TF1("fAsymmetryHe4LowP", "pol1(0)", 0., 0.575); fAsymmetryHe4LowP->SetParameters(0., 0.);
+		fAsymmetryHe4MidP = new TF1("fAsymmetryHe4MidP", "pol1(0)", 0.575, 0.875); fAsymmetryHe4MidP->SetParameters(0., 0.);
+		fAsymmetryHe4HighP = new TF1("fAsymmetryHe4HighP", "pol1(0)", 0.875, 3.); fAsymmetryHe4HighP->SetParameters(0., 0.);
 	}
 	else /// Tracking == "CF" is default
 	{
@@ -321,17 +394,35 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		dedxParam = fKoef*(-2328.44);
 		parPrBB->SetParameters(dedxParam,-0.054584,1.15196,0.819829,2.74767);
 		/// deuterons
-		dedxParam = fKoef*3.27e-07;
-		parDeBB->SetParameters(dedxParam,3.74,-0.23,2.32,0.987);
+		dedxParam = fKoef*(112.e+04); parDePol1->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-4466.666e+03); parDePol1->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(215507.); parDePol2->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-474223.); parDePol2->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(-2768.77);
+		parDeBB->SetParameters(dedxParam,0.233707,1.35426,0.543618,3.17898);
 		/// tritons
-		dedxParam = fKoef*2.59e-07;
-		parTrBB->SetParameters(dedxParam,5.06,0.0001,2.2,1.056);
+		dedxParam = fKoef*(1.094542e+06); parTrPol1->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-1.81963e+06); parTrPol1->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(226703.); parTrPol2->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-362129.); parTrPol2->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(-6467.59);
+		parTrBB->SetParameters(dedxParam,1.83428,3.94612,0.0819389,3.2898);
 		/// He3
-		dedxParam = fKoef*2.86201e-06;
-		parHe3BB->SetParameters(dedxParam,2.10168e+00,2.74807e-01,1.86774e+00);
+		dedxParam = fKoef*(3.09e+06); parHe3Pol1->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-10.833333e+06); parHe3Pol1->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(1.403646e+06); parHe3Pol2->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-3.806859e+06); parHe3Pol2->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(333495.); parHe3Pol3->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-514085.); parHe3Pol3->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(-19120.8);
+		parHe3BB->SetParameters(dedxParam,-0.183431,0.323092,2.41984);
 		/// He4
-		dedxParam = fKoef*2.96e-06;
-		parHe4BB->SetParameters(dedxParam,2.085,0.256,1.85);
+		dedxParam = fKoef*(3.243636e+06); parHe4Pol1->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-8.636364e+06); parHe4Pol1->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(1.100082e+06); parHe4Pol2->SetParameter(0, dedxParam);
+		dedxParam = fKoef*(-1.937756e+06); parHe4Pol2->SetParameter(1, dedxParam);
+		dedxParam = fKoef*(-16150.2);
+		parHe4BB->SetParameters(dedxParam,-0.0645649,-0.0213786,3.61265);
 		
 		/// m2
 		parElM2->SetParameters(0.001227,-0.000973509,0.0314155);
@@ -341,10 +432,11 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		parKaM2->SetParameters(-1.25162e-05, 0.0206642, 0.0187346);
 		parPrLowPM2->SetParameters(0.0752714, -0.115864, 0.139697, -0.033123);
 		parPrHighPM2->SetParameters(0.0130241, 0.0302837, 0.0207017);
-		parDeM2->SetParameters(0.535691,-0.529882,0.293807,-0.0428139);
-		parTrM2->SetParameters(0.422,0.3,-0.202,0.0524);
-		parHe3M2->SetParameters(0.17,-0.0,0.0,-0.00);
-		parHe4M2->SetParameters(0.3,-0.0,0.0,-0.00);
+		parDeLowPM2->SetParameters(0.479328,-0.538336,0.314051,-0.0467689);
+		parDeHighPM2->SetParameters(0.180558,0.0772852);
+		parTrM2->SetParameters(1.03599,-0.663541,0.199024,0.);
+		parHe3M2->SetParameters(0.13,-0.0,0.0,-0.00);
+		parHe4M2->SetParameters(0.24,-0.0,0.0,-0.00);
 		
 		/// dE/dx width
 		elSigmaLowP = new TF1("elSigmaLowP", "pol1(0)", 0., 0.55); elSigmaLowP->SetParameters(0.0747217, -0.0308101);
@@ -360,6 +452,19 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		prSigmaHighP = new TF1("prSigmaHighP", "pol1(0)", 0.2, 3.0); prSigmaHighP->SetParameters(0.0623534, 0.00287991);
 		kaSigmaLowP = new TF1("kaSigmaLowP", "pol1(0)", 0., 0.2); kaSigmaLowP->SetParameters(0.120409, -0.289855);
 		kaSigmaHighP = new TF1("kaSigmaHighP", "pol1(0)", 0.2, 3.0); kaSigmaHighP->SetParameters(0.0630206, -0.00374603);
+		deSigmaLowP = new TF1("deSigmaLowP", "pol1(0)", 0., 0.475); deSigmaLowP->SetParameters(0.450833, -0.833333);
+		deSigmaMidP = new TF1("deSigmaMidP", "pol1(0)", 0.475, 0.8); deSigmaMidP->SetParameters(0.0154167, 0.0833333);
+		deSigmaHighP = new TF1("deSigmaHighP", "pol1(0)", 0.8, 3.0); deSigmaHighP->SetParameters(0.0638808, -0.00180077);
+		trSigmaLowP = new TF1("trSigmaLowP", "pol1(0)", 0., 0.625); trSigmaLowP->SetParameters(0.50625, -0.65);
+		trSigmaMidP = new TF1("trSigmaMidP", "pol1(0)", 0.625, 1.5); trSigmaMidP->SetParameters(0.137969, -0.05625);
+		trSigmaHighP = new TF1("trSigmaHighP", "pol1(0)", 1.5, 3.0); trSigmaHighP->SetParameters(0.0510345, 0.0039953);
+		he3SigmaLowP = new TF1("he3SigmaLowP", "pol1(0)", 0., 0.675); he3SigmaLowP->SetParameters(0.44225, -0.47);
+		he3SigmaMidP = new TF1("he3SigmaMidP", "pol1(0)", 0.675, 1.475); he3SigmaMidP->SetParameters(0.17984375, -0.08125);
+		he3SigmaHighP = new TF1("he3SigmaHighP", "pol1(0)", 1.475, 3.0); he3SigmaHighP->SetParameters(-0.261818, 0.21818);
+		he4SigmaLowP = new TF1("he4SigmaLowP", "pol1(0)", 0., 0.475); he4SigmaLowP->SetParameters(0.37188, -0.225);
+		he4SigmaMid1P = new TF1("he4SigmaMid1P", "pol1(0)", 0.475, 0.7); he4SigmaMid1P->SetParameters(0.19375, 0.15);
+		he4SigmaMid2P = new TF1("he4SigmaMid2P", "pol1(0)", 0.7, 0.925); he4SigmaMid2P->SetParameters(0.72231, -0.6025);
+		he4SigmaHighP = new TF1("he4SigmaHighP", "pol1(0)", 0.925, 3.0); he4SigmaHighP->SetParameters(0.32477, -0.17273);
 		
 		/// Asymmetry
 		fAsymmetryElLowP = new TF1("fAsymmetryElLowP", "pol1(0)", 0., 0.5); fAsymmetryElLowP->SetParameters(-0.340074, 1.04407);
@@ -377,6 +482,17 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		fAsymmetryKaLowP = new TF1("fAsymmetryKaLowP", "pol1(0)", 0., 0.5); fAsymmetryKaLowP->SetParameters(2.3588, -4.87114);
 		fAsymmetryKaMidP = new TF1("fAsymmetryKaMidP", "pol1(0)", 0.5, 1.05); fAsymmetryKaMidP->SetParameters(0.00526557, 0.239378);
 		fAsymmetryKaHighP = new TF1("fAsymmetryKaHighP", "pol1(0)", 1.05, 3.); fAsymmetryKaHighP->SetParameters(0.0892569, 0.119403);
+		fAsymmetryDeLowP = new TF1("fAsymmetryDeLowP", "pol1(0)", 0.375, 0.585); fAsymmetryDeLowP->SetParameters(0., 0.); //fAsymmetryDeLowP->SetParameters(24.7375, -42.5);
+		fAsymmetryDeHighP = new TF1("fAsymmetryDeHighP", "pol1(0)", 0.585, 3.); fAsymmetryDeHighP->SetParameters(0., 0.); //fAsymmetryDeHighP->SetParameters(-0.238221, 0.186621);
+		fAsymmetryTrLowP = new TF1("fAsymmetryTrLowP", "pol1(0)", 0.425, 0.575); fAsymmetryTrLowP->SetParameters(0., 0.); //fAsymmetryTrLowP->SetParameters(-10.2906, 25.9162);
+		fAsymmetryTrMidP = new TF1("fAsymmetryTrMidP", "pol1(0)", 0.575, 0.84); fAsymmetryTrMidP->SetParameters(0., 0.); //fAsymmetryTrMidP->SetParameters(15.51, -18.8);
+		fAsymmetryTrHighP = new TF1("fAsymmetryTrHighP", "pol1(0)", 0.84, 3.); fAsymmetryTrHighP->SetParameters(0., 0.); //fAsymmetryTrHighP->SetParameters(0.0510345, 0.0039953);
+		fAsymmetryHe3LowP = new TF1("fAsymmetryHe3LowP", "pol1(0)", 0.525, 0.685); fAsymmetryHe3LowP->SetParameters(0., 0.); //fAsymmetryHe3LowP->SetParameters(-5.60648, 13.1829);
+		fAsymmetryHe3MidP = new TF1("fAsymmetryHe3MidP", "pol1(0)", 0.685, 0.99); fAsymmetryHe3MidP->SetParameters(0., 0.); //fAsymmetryHe3MidP->SetParameters(11.275, -11.666);
+		fAsymmetryHe3HighP = new TF1("fAsymmetryHe3HighP", "pol1(0)", 0.99, 3.); fAsymmetryHe3HighP->SetParameters(0., 0.); //fAsymmetryHe3HighP->SetParameters(-0.231232, -0.0431765);
+		fAsymmetryHe4LowP = new TF1("fAsymmetryHe4LowP", "pol1(0)", 0., 0.575); fAsymmetryHe4LowP->SetParameters(0., 0.); //fAsymmetryHe4LowP->SetParameters(1.45, -2.);
+		fAsymmetryHe4MidP = new TF1("fAsymmetryHe4MidP", "pol1(0)", 0.575, 0.875); fAsymmetryHe4MidP->SetParameters(0., 0.); //fAsymmetryHe4MidP->SetParameters(-3.10941, 5.73622);
+		fAsymmetryHe4HighP = new TF1("fAsymmetryHe4HighP", "pol1(0)", 0.875, 1.25); fAsymmetryHe4HighP->SetParameters(0., 0.); //fAsymmetryHe4HighP->SetParameters(7.47211, -6.09903);
 	}
 	
 	/// Particle yields versus momentum (close to a thermal function).
@@ -745,28 +861,57 @@ Double_t MpdPid::GetDedxPrParam(Double_t p)
 	return dedx;
 }
 
-Double_t MpdPid::GetDedxDeParam(Double_t p){
-   Double_t dedx=parDeBB->Eval(p);
-   if (p<0.25) dedx *= 0.83;
-   return dedx;
+Double_t MpdPid::GetDedxDeParam(Double_t p)
+{
+	Double_t dedx;
+	if (fTracking)
+	{
+		if (p<parDePol1->GetXmax()) dedx=parDePol1->Eval(p);
+		else if ( (p>=parDePol2->GetXmin()) && (p<parDePol2->GetXmax()) ) dedx=parDePol2->Eval(p);
+		else dedx=parDeBB->Eval(p);
+	}
+	else dedx=parDeBB->Eval(p);
+	return dedx;
 }
 
-Double_t MpdPid::GetDedxTrParam(Double_t p){
-   Double_t dedx=parTrBB->Eval(p);
-   if (p<0.5) dedx *= 0.91;
-   return dedx;
+Double_t MpdPid::GetDedxTrParam(Double_t p)
+{
+	Double_t dedx;
+	if (fTracking)
+	{
+		if (p<parTrPol1->GetXmax()) dedx=parTrPol1->Eval(p);
+		else if ( (p>=parTrPol2->GetXmin()) && (p<parTrPol2->GetXmax()) ) dedx=parTrPol2->Eval(p);
+		else dedx=parTrBB->Eval(p);
+	}
+	else dedx=parTrBB->Eval(p);
+	return dedx;
 }
 
-Double_t MpdPid::GetDedxHe3Param(Double_t p){
-   Double_t dedx=parHe3BB->Eval(p);
-   if (p<0.35) dedx *= 0.88;
-   return dedx;
+Double_t MpdPid::GetDedxHe3Param(Double_t p)
+{
+	Double_t dedx;
+	if (fTracking)
+	{
+		if (p<parHe3Pol1->GetXmax()) dedx=parHe3Pol1->Eval(p);
+		else if ( (p>=parHe3Pol2->GetXmin()) && (p<parHe3Pol2->GetXmax()) ) dedx=parHe3Pol2->Eval(p);
+		else if ( (p>=parHe3Pol3->GetXmin()) && (p<parHe3Pol3->GetXmax()) ) dedx=parHe3Pol3->Eval(p);
+		else dedx=parHe3BB->Eval(p);
+	}
+	else dedx=parHe3BB->Eval(p);
+	return dedx;
 }
 
-Double_t MpdPid::GetDedxHe4Param(Double_t p){
-   Double_t dedx=parHe4BB->Eval(p);
-   if (p>0.0) dedx *= 1.12;
-   return dedx;
+Double_t MpdPid::GetDedxHe4Param(Double_t p)
+{
+	Double_t dedx;
+	if (fTracking)
+	{
+		if (p<parHe4Pol1->GetXmax()) dedx=parHe4Pol1->Eval(p);
+		else if ( (p>=parHe4Pol2->GetXmin()) && (p<parHe4Pol2->GetXmax()) ) dedx=parHe4Pol2->Eval(p);
+		else dedx=parHe4BB->Eval(p);
+	}
+	else dedx=parHe4BB->Eval(p);
+	return dedx;
 }
 
 Bool_t MpdPid::FillProbs(MpdTrack* track)
@@ -877,13 +1022,6 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Int_t charge){
 	if (kSigmaEloss>0.1) cut = kSigmaEloss;
 	else return kFALSE;
 	
-	sigede=fSigmaDedx_1;
-	sigetr=fSigmaDedx_1;
-	sigehe3=fSigmaDedx_1;
-	sigehe4=fSigmaDedx_1;
-	if (p<0.15)sigede=fSigmaDedx_2;
-	if (p<0.45){sigede=fSigmaDedx_2; sigetr=fSigmaDedx_2; sigehe3=fSigmaDedx_2; sigehe4=fSigmaDedx_2;}
-	
 	if (!fTracking)
 	{
 		sigemu=fSigmaDedx_1; if (p<0.15) sigemu=fSigmaDedx_2;
@@ -892,6 +1030,12 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Int_t charge){
 		sigeka=fSigmaDedx_1;
 		sigepr=fSigmaDedx_1;
 		if (p<0.15){ sigepi=fSigmaDedx_2; sigepr=fSigmaDedx_2; sigeka=fSigmaDedx_2; }
+		sigede=fSigmaDedx_1;
+		if (p<0.15)sigede=fSigmaDedx_2;
+		if (p<0.45){sigede=fSigmaDedx_2; sigetr=fSigmaDedx_2; sigehe3=fSigmaDedx_2; sigehe4=fSigmaDedx_2;}
+		sigetr=fSigmaDedx_1;
+		sigehe3=fSigmaDedx_1;
+		sigehe4=fSigmaDedx_1;
 	}
 	else
 	{
@@ -900,6 +1044,10 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Int_t charge){
 		sigepr=GetDedxWidthValue(p,3);
 		sigeel=GetDedxWidthValue(p,4);
 		sigemu=GetDedxWidthValue(p,5);
+		sigede=GetDedxWidthValue(p,6);
+		sigetr=GetDedxWidthValue(p,7);
+		sigehe3=GetDedxWidthValue(p,8);
+		sigehe4=GetDedxWidthValue(p,9);
 	}
 	
 	///
@@ -998,6 +1146,12 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Double_t m2, Int_t charge){
 		sigeka=fSigmaDedx_1;
 		sigepr=fSigmaDedx_1;
 		if (p<0.15) {sigepi=fSigmaDedx_2; sigepr=fSigmaDedx_2; sigeka=fSigmaDedx_2;}
+		sigede=fSigmaDedx_1;
+		sigetr=fSigmaDedx_1;
+		sigehe3=fSigmaDedx_1;
+		sigehe4=fSigmaDedx_1;
+		if (p<0.15) sigede=fSigmaDedx_2;
+		if (p<0.45){ sigede=fSigmaDedx_2; sigetr=fSigmaDedx_2; sigehe3=fSigmaDedx_2; sigehe4=fSigmaDedx_2; }
 	}
 	else
 	{
@@ -1006,14 +1160,11 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Double_t m2, Int_t charge){
 		sigepr=GetDedxWidthValue(p,3);
 		sigeel=GetDedxWidthValue(p,4);
 		sigemu=GetDedxWidthValue(p,5);
+		sigede=GetDedxWidthValue(p,6);
+		sigetr=GetDedxWidthValue(p,7);
+		sigehe3=GetDedxWidthValue(p,8);
+		sigehe4=GetDedxWidthValue(p,9);
 	}
-	sigede=fSigmaDedx_1;
-	sigetr=fSigmaDedx_1;
-	sigehe3=fSigmaDedx_1;
-	sigehe4=fSigmaDedx_1;
-	
-	if (p<0.15) sigede=fSigmaDedx_2;
-	if (p<0.45){ sigede=fSigmaDedx_2; sigetr=fSigmaDedx_2; sigehe3=fSigmaDedx_2; sigehe4=fSigmaDedx_2; }
 	
 	Double_t p_calc = 3.0; /// Above p=3.0 GeV/c param. for sig_M2 is bad!
 	if (p < p_calc) p_calc = p;
@@ -1024,7 +1175,10 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Double_t m2, Int_t charge){
 	Double_t sigmka=parKaM2->Eval(p_calc);
 	Double_t sigmpr;
 	if(p<=1.4) sigmpr=parPrLowPM2->Eval(p_calc); else sigmpr=parPrHighPM2->Eval(p_calc);
-	Double_t sigmde=parDeM2->Eval(p_calc), sigmtr=parTrM2->Eval(p_calc);
+	Double_t sigmde;
+	if (fTracking) sigmde = p_calc < 2.5 ? parDeLowPM2->Eval(p_calc) : parDeHighPM2->Eval(p_calc);
+	else sigmde = parDeLowPM2->Eval(p_calc);
+	Double_t sigmtr=parTrM2->Eval(p_calc);
 	Double_t sigmhe3=parHe3M2->Eval(p_calc), sigmhe4=parHe4M2->Eval(p_calc);
 	
 	Double_t fel=0.,fmu=0.,fpi=0.,fka=0.,fpr=0.,fde=0.,ftr=0.,fhe3=0.,fhe4=0.;
