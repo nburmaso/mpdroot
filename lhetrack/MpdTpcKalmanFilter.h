@@ -48,7 +48,7 @@ class MpdTpcKalmanFilter : public FairTask
   TClonesArray* GetTracks() { return fTracks; } ///< get array of tracks
   Int_t RunKalmanFilter(MpdTpcKalmanTrack *track); ///< run Kalman filter
   Int_t GetParticleId(Int_t id); ///< particle ID for track id
-  Int_t SetModular(Int_t modular) { fModular = modular; } ///< set != 0 if modular geom. of r/out chambers
+  void SetModular(Int_t modular) { fModular = modular; } ///< set != 0 if modular geom. of r/out chambers
   void SetSectorGeo(MpdTpcSectorGeo *secGeo) { fSecGeo = secGeo; } ///< set sector geometry
   Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE); ///< refit track using its points for given particle mass and charge
   Int_t GetHitID(MpdKalmanHit *hit); // get hit ID from MC point ID

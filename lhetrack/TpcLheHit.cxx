@@ -3,6 +3,8 @@
 
 #include "TpcLheHit.h"
 
+using namespace std;
+
 ClassImp(TpcLheHit)
 
 //________________________________________________________________

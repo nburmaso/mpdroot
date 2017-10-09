@@ -4,6 +4,8 @@
 #include "TpcLheHit.h"
 #include "TpcLheCMPoint.h"
 
+using namespace std;
+
 ClassImp(TpcLheCMPoint)
 
 //________________________________________________________________

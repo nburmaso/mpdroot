@@ -53,8 +53,7 @@ BmnTrackDrawH::BmnTrackDrawH(const char* name, TString hitsBranchName, Int_t iVe
 // initialization of the track drawing task
 InitStatus BmnTrackDrawH::Init()
 {
-    if (fVerbose > 0)
-        cout<<"BmnTrackDrawH::Init()"<<endl;
+    if (fVerbose > 0) cout<<"BmnTrackDrawH::Init()"<<endl;
 
     fEventManager = FairEventManager::Instance();
     if (fVerbose > 1) cout<<"BmnTrackDrawH::Init() get instance of EventManager: "<<fEventManager<<endl;
@@ -88,21 +87,19 @@ InitStatus BmnTrackDrawH::Init()
 // -------------------------------------------------------------------------
 void BmnTrackDrawH::Exec(Option_t* option)
 {
-    if (fVerbose > 0)
-        cout<<" BmnTrackDrawH::Exec "<<endl;
+    if (fVerbose > 0) cout<<"BmnTrackDrawH::Exec() "<<endl;
 
     if (!IsActive())
         return;
 
     Reset();
 
+    if (fVerbose > 0) cout<<"BmnTrackDrawH::Exec(): the number of tracks is "<<fTrackList->GetEntriesFast()<<endl;
+
     BmnTrack* current_track;
-    if (fVerbose > 1)
-        cout<<" BmnTrackDrawH::Exec: the number of tracks is "<<fTrackList->GetEntriesFast()<<endl;
     for (Int_t i = 0; i < fTrackList->GetEntriesFast(); i++)
     {
-        if (fVerbose > 2)
-            cout<<"BmnTrackDrawH::Exec "<<i<<endl;
+        if (fVerbose > 2) cout<<"BmnTrackDrawH::Exec() "<<i<<endl;
 
         current_track = (BmnTrack*) fTrackList->At(i);
         const FairTrackParam* pParamFirst = current_track->GetParamFirst();
@@ -132,11 +129,12 @@ void BmnTrackDrawH::Exec(Option_t* option)
         TEveTrack* track = new TEveTrack(P, particlePDG, fTrPr);
         // set line color corresponding PDG particle code
         track->SetLineColor(fEventManager->Color(particlePDG));
+        track->SetLineWidth(2);
 
         Int_t Np = current_track->GetNHits();
 
         // cycle: add hits (points) to EVE path for this track
-        if (fVerbose > 2) cout<<"BmnTrackDrawH::Exec: number of track hits = "<<Np<<endl;
+        if (fVerbose > 2) cout<<"BmnTrackDrawH::Exec(): number of track hits = "<<Np<<endl;
         for (Int_t n = 0; n < Np; n++)
         {
             FairHit* pHit = NULL;
@@ -146,7 +144,7 @@ void BmnTrackDrawH::Exec(Option_t* option)
 
             TEvePathMark* path = new TEvePathMark();
             TEveVector pos = TEveVector(pHit->GetX(), pHit->GetY(), pHit->GetZ());
-            if (fVerbose > 3) cout<<"BmnTrackDrawH::Exec: point "<<n<<": X="<<pHit->GetX()<<" Y="<<pHit->GetY()<<" Z="<<pHit->GetZ()<<endl;
+            if (fVerbose > 3) cout<<"BmnTrackDrawH::Exec(): point "<<n<<": X="<<pHit->GetX()<<" Y="<<pHit->GetY()<<" Z="<<pHit->GetZ()<<endl;
             path->fV = pos;
             path->fTime = pHit->GetTimeStamp();
             if (n == 0)
@@ -192,7 +190,6 @@ void BmnTrackDrawH::Reset()
         TEveTrackList*  ele = (TEveTrackList*) fEveTrList->At(i);
         gEve->RemoveElement(ele, fEventManager->EveRecoTracks);
     }
-
     fEveTrList->Clear();
 }
 
@@ -217,19 +214,12 @@ TEveTrackList* BmnTrackDrawH::GetTrGroup(TParticle* P)
     {
         fTrPr = new TEveTrackPropagator();
         fTrList = new  TEveTrackList(P->GetName(), fTrPr);
+        // set track color by particle PDG from FairEventManager
         fTrList->SetMainColor(fEventManager->Color(P->GetPdgCode()));
         fEveTrList->Add(fTrList);
-
-        if (fEventManager->EveRecoTracks == NULL)
-        {
-            fEventManager->EveRecoTracks = new TEveElementList("Reco tracks");
-            gEve->AddElement(fEventManager->EveRecoTracks, fEventManager);
-            fEventManager->EveRecoTracks->SetRnrState(kFALSE);
-            fEventManager->GetEventEditor()->fShowRecoTracks->SetEnabled(kTRUE);
-        }
-
-        gEve->AddElement(fTrList, fEventManager->EveRecoTracks);
         fTrList->SetRnrLine(kTRUE);
+
+        fEventManager->AddEventElement(fTrList, RecoTrackList);
     }
 
     return fTrList;

@@ -25,7 +25,6 @@
 #include <sstream>
 
 FairEventManager* FairEventManager::fgRinstance = 0;
-//_____________________________________________________________________________
 FairEventManager* FairEventManager::Instance() { return fgRinstance; }
 
 // convert string with hexadecimal presentation without "0x" to integer
@@ -62,8 +61,6 @@ FairEventManager::FairEventManager()
    fMultiRhoZView(0),
    fRPhiGeomScene(0),
    fRhoZGeomScene(0),
-   //fRPhiEventScene(0),
-   //fRhoZEventScene(0),
 
    EveMCPoints(NULL),
    EveMCTracks(NULL),
@@ -239,8 +236,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
         TEveProjectionAxes* fAxesRho = new TEveProjectionAxes(fRhoZMng);
         fAxesRho->SetMainColor(kRed);
 
-        Double_t eqRPhi[4] = {0, 0, 10/*1*/, 0};
-        // add window in EventDisplay for RPhi projection
+        // ADD WINDOW in EventDisplay for RPhi projection
         TEveWindowSlot *RPhiSlot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
         TEveWindowPack *RPhiPack = RPhiSlot->MakePack();
         RPhiPack->SetElementName("RPhi View");
@@ -248,9 +244,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
         RPhiPack->NewSlot()->MakeCurrent();
         fRPhiView = gEve->SpawnNewViewer("RPhi View", "");
         fRPhiView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-        // set clip plane and camera parameters
-        fRPhiView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
-        fRPhiView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRPhi);
+        // set camera parameters
         fRPhiView->GetGLViewer()->GetCameraOverlay()->SetOrthographicMode(TGLCameraOverlay::kAxis);
         fRPhiView->GetGLViewer()->GetCameraOverlay()->SetShowOrthographic(kTRUE);
         // switch off left, right, top and bottom light sources
@@ -274,18 +268,20 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
         fRPhiView->AddScene(gEve->GetGlobalScene());
         fRPhiView->AddScene(gEve->GetEventScene());
 
-        Double_t eqRhoZ[4] = {-1, 0, 0, 0};
-        // add window in EvenDisplay for RhoZ projection
+        // set clip plane
+        Double_t eqRPhi[4] = {0, 0, 1, 0};
+        fRPhiView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
+        fRPhiView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRPhi);
+
+        // ADD WINDOW in EvenDisplay for RhoZ projection
         TEveWindowSlot *RhoZSlot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
         TEveWindowPack *RhoZPack = RhoZSlot->MakePack();
         RhoZPack->SetElementName("RhoZ View");
         RhoZPack->SetShowTitleBar(kFALSE);
         RhoZPack->NewSlot()->MakeCurrent();
         fRhoZView = gEve->SpawnNewViewer("RhoZ View", "");
-        fRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoZOY);   
-        // set clip plane and camera parameters
-        fRhoZView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
-        fRhoZView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRhoZ);
+        fRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoZOY);
+        // set camera parameters
         fRhoZView->GetGLViewer()->GetCameraOverlay()->SetOrthographicMode(TGLCameraOverlay::kAxis);
         fRhoZView->GetGLViewer()->GetCameraOverlay()->SetShowOrthographic(kTRUE);
         // switch off left, right and front light sources
@@ -308,7 +304,12 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
         fRhoZView->AddScene(gEve->GetGlobalScene());
         fRhoZView->AddScene(gEve->GetEventScene());
 
-        // add window in EvenDisplay for MultiView
+        // set clip plane
+        Double_t eqRhoZ[4] = {-1, 0, 0, 0};
+        fRhoZView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
+        fRhoZView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRhoZ);
+
+        // ADD WINDOW in EvenDisplay for MultiView
         TEveWindowSlot *MultiSlot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
         TEveWindowPack *MultiPack = MultiSlot->MakePack();
         MultiPack->SetElementName("Multi View");
@@ -332,9 +333,7 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
         MultiPack->NewSlot()->MakeCurrent();
         fMultiRPhiView = gEve->SpawnNewViewer("RPhi View (multi)", "");
         fMultiRPhiView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-        // set clip plane and camera parameters
-        fMultiRPhiView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
-        fMultiRPhiView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRPhi);
+        // set camera parameters
         fMultiRPhiView->GetGLViewer()->GetCameraOverlay()->SetOrthographicMode(TGLCameraOverlay::kAxis);
         fMultiRPhiView->GetGLViewer()->GetCameraOverlay()->SetShowOrthographic(kTRUE);
         // switch off left, right, top and bottom light sources
@@ -352,13 +351,15 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
         fMultiRPhiView->AddScene(gEve->GetGlobalScene());
         fMultiRPhiView->AddScene(gEve->GetEventScene());
 
+        // set clip plane
+        fMultiRPhiView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
+        fMultiRPhiView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRPhi);
+
         // add slot for RhoZ projection on Multi View tab
         MultiPack->NewSlot()->MakeCurrent();
         fMultiRhoZView = gEve->SpawnNewViewer("RhoZ View (multi)", "");
         fMultiRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoZOY);
-        // set clip plane and camera parameters
-        fMultiRhoZView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
-        fMultiRhoZView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRhoZ);
+        // set camera parameters
         fMultiRhoZView->GetGLViewer()->GetCameraOverlay()->SetOrthographicMode(TGLCameraOverlay::kAxis);
         fMultiRhoZView->GetGLViewer()->GetCameraOverlay()->SetShowOrthographic(kTRUE);
         // switch off left, right and front light sources
@@ -374,6 +375,10 @@ void FairEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
         //fMultiRhoZView->AddScene(fRhoZEventScene);
         fMultiRhoZView->AddScene(gEve->GetGlobalScene());
         fMultiRhoZView->AddScene(gEve->GetEventScene());
+
+        // set clip plane
+        fMultiRhoZView->GetGLViewer()->GetClipSet()->SetClipType(TGLClip::kClipPlane);
+        fMultiRhoZView->GetGLViewer()->GetClipSet()->SetClipState(TGLClip::kClipPlane, eqRhoZ);
 
         // copy geometry and event scene for RPhi and RhoZ views from global scene (3D)
         //fRPhiGeomScene->AddElement(gEve->GetGlobalScene());
@@ -853,7 +858,7 @@ Int_t FairEventManager::Color(int pdg)
     case   1000020030   :
         return  55;
     case   0:
-        return  27;    // Rootino
+        return  391;    // Rootino
     default  :
         return 0;
     }//switch
@@ -889,6 +894,65 @@ void FairEventManager::AddParticlesToPdgDataBase(Int_t pdg)
 
     if (!pdgDB->GetParticle(50000051))
         pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton", 0, kFALSE, 0, 0, "Special", 50000051);
+}
+
+void FairEventManager::AddEventElement(TEveElement* element, ElementList element_list)
+{
+    switch (element_list)
+    {
+        case MCPointList:
+        {
+            if (EveMCPoints == NULL)
+            {
+                EveMCPoints = new TEveElementList("MC points");
+                gEve->AddElement(EveMCPoints, this);
+                EveMCPoints->SetRnrState(kFALSE);
+                GetEventEditor()->fShowMCPoints->SetEnabled(kTRUE);
+            }
+
+            gEve->AddElement(element, EveMCPoints);
+            break;
+        }
+        case MCTrackList:
+        {
+            if (EveMCTracks == NULL)
+            {
+                EveMCTracks = new TEveElementList("MC tracks");
+                gEve->AddElement(EveMCTracks, this);
+                EveMCTracks->SetRnrState(kFALSE);
+                GetEventEditor()->fShowMCTracks->SetEnabled(kTRUE);
+            }
+
+            gEve->AddElement(element, EveMCTracks);
+            break;
+        }
+        case RecoPointList:
+        {
+            if (EveRecoPoints == NULL)
+            {
+                EveRecoPoints = new TEveElementList("Reco points");
+                gEve->AddElement(EveRecoPoints, this);
+                EveRecoPoints->SetRnrState(kFALSE);
+                GetEventEditor()->fShowRecoPoints->SetEnabled(kTRUE);
+            }
+
+            gEve->AddElement(element, EveRecoPoints);
+            break;
+        }
+        case RecoTrackList:
+        {
+            if (EveRecoTracks == NULL)
+            {
+                EveRecoTracks = new TEveElementList("Reco tracks");
+                gEve->AddElement(EveRecoTracks, this);
+                EveRecoTracks->SetRnrState(kFALSE);
+                GetEventEditor()->fShowRecoTracks->SetEnabled(kTRUE);
+            }
+
+            gEve->AddElement(element, EveRecoTracks);
+            break;
+        }
+    }
 }
 
 ClassImp(FairEventManager)

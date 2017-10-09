@@ -4,6 +4,8 @@
 #include "TpcLheCMTrack.h"
 #include "TpcLheCMPoint.h"
 
+using namespace std;
+
 ClassImp(TpcLheCMTrack)
 
 #define PR(x) cout << #x " = " << x << "\n";

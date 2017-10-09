@@ -26,23 +26,14 @@ FairHitPointSetDraw::~FairHitPointSetDraw()
 TVector3 FairHitPointSetDraw::GetVector(TObject* obj)
 {
     FairHit* hit = (FairHit*) obj;
-    if (fVerbose > 1) cout<<"-I- FairHitPointSetDraw::GetVector: "<<hit->GetX()<<" "<<hit->GetY()<<" "<<hit->GetZ()<<endl;
+    if (fVerbose > 2) cout<<"FairHitPointSetDraw::GetVector(): "<<hit->GetX()<<" "<<hit->GetY()<<" "<<hit->GetZ()<<endl;
 
     return TVector3(hit->GetX(), hit->GetY(), hit->GetZ());
 }
 
 void FairHitPointSetDraw::AddEveElementList()
 {
-    if (fEventManager->EveRecoPoints == NULL)
-    {
-        fEventManager->EveRecoPoints = new TEveElementList("Reco points");
-        gEve->AddElement(fEventManager->EveRecoPoints, fEventManager);
-        fEventManager->EveRecoPoints->SetRnrState(kFALSE);
-        fEventManager->GetEventEditor()->fShowRecoPoints->SetEnabled(kTRUE);
-    }
-
-    gEve->AddElement(fq, fEventManager->EveRecoPoints);
-
+    fEventManager->AddEventElement(fq, RecoPointList);
     return;
 }
 

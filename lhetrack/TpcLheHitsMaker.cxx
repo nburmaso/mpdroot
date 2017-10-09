@@ -19,9 +19,9 @@
 #include "TH1F.h"
 
 #include <iomanip>
-
-
 //#include "lhe.h"
+
+using namespace std;
 
 //#define TST
 //#define TPC

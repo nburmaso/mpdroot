@@ -49,29 +49,28 @@ BmnGlobalTrackDraw::BmnGlobalTrackDraw(const char* name, Int_t iVerbose)
 // initialization of the track drawing task
 InitStatus BmnGlobalTrackDraw::Init()
 {
-    if (fVerbose > 1) cout<<"BmnGlobalTrackDraw::Init()"<<endl;
+    if (fVerbose > 0) cout<<"BmnGlobalTrackDraw::Init()"<<endl;
 
     FairRootManager* fManager = FairRootManager::Instance();
 
-    fTrackList = (TClonesArray*) fManager->GetObject("GlobalTrack");
+    fTrackList = (TClonesArray*) fManager->GetObject(GetName());
     if (fTrackList == 0)
     {
         LOG(ERROR)<<"BmnGlobalTrackDraw::Init()  branch GlobalTrack not found! Task will be deactivated"<<FairLogger::endl;
         SetActive(kFALSE);
         return kERROR;
     }
-    if (fVerbose > 2) cout<<"BmnGlobalTrackDraw::Init() get track list "<<fTrackList<<endl;
+    if (fVerbose > 1) cout<<"BmnGlobalTrackDraw::Init() get track list "<<fTrackList<<endl;
 
-    fGemTrackList = (TClonesArray*) fManager->GetObject("BmnGemTracks");
+    fGemTrackList = (TClonesArray*) fManager->GetObject("BmnGemTrack");
     fGemHitList = (TClonesArray*) fManager->GetObject("BmnGemStripHit");
 
-    fTof1HitList = (TClonesArray*) fManager->GetObject("TOF1Hit");
-    fTof2HitList = (TClonesArray*) fManager->GetObject("BmnTof2Hit");
-    fDch1HitList = (TClonesArray*) fManager->GetObject("BmnDch1Hit0");
-    fDch2HitList = (TClonesArray*) fManager->GetObject("BmnDch2Hit0");
+    fTof1HitList = (TClonesArray*) fManager->GetObject("BmnTof1Hit");
+    fTof2HitList = (TClonesArray*) fManager->GetObject("BmnTofHit");
+    fDchHitList = (TClonesArray*) fManager->GetObject("BmnDchHit");
 
     fEventManager = FairEventManager::Instance();
-    if (fVerbose > 2) cout<<"BmnGlobalTrackDraw::Init() get instance of FairEventManager "<<endl;
+    if (fVerbose > 1) cout<<"BmnGlobalTrackDraw::Init() get instance of FairEventManager "<<endl;
 
     MinEnergyLimit = fEventManager->GetEvtMinEnergy();
     MaxEnergyLimit = fEventManager->GetEvtMaxEnergy();
@@ -85,8 +84,7 @@ void BmnGlobalTrackDraw::Exec(Option_t* option)
     if (!IsActive())
         return;
 
-    if (fVerbose > 1)
-        cout<<" BmnGlobalTrackDraw::Exec "<<endl;
+    if (fVerbose > 1) cout<<" BmnGlobalTrackDraw::Exec "<<endl;
 
     Reset();
 
@@ -94,14 +92,13 @@ void BmnGlobalTrackDraw::Exec(Option_t* option)
     //cout<<"fTrackList->GetEntriesFast(): "<<fTrackList->GetEntriesFast()<<". fTrackList->GetEntries(): "<<fTrackList->GetEntries()<<endl;
     for (Int_t i = 0; i < fTrackList->GetEntriesFast(); i++)
     {
-        if (fVerbose > 2)
-            cout<<"BmnGlobalTrackDraw::Exec "<<i<<endl;
+        if (fVerbose > 1) cout<<"BmnGlobalTrackDraw::Exec "<<i<<endl;
 
-        tr = (BmnGlobalTrack*)fTrackList->At(i);
+        tr = (BmnGlobalTrack*) fTrackList->At(i);
         const FairTrackParam* pParamFirst = tr->GetParamFirst();
 
         // define whether track is primary
-        bool isPrimary = ( (TMath::Abs(pParamFirst->GetX())<10) && (TMath::Abs(pParamFirst->GetY())<10) && (TMath::Abs(pParamFirst->GetZ())<10) );
+        bool isPrimary = ( (TMath::Abs(pParamFirst->GetX()) < 10) && (TMath::Abs(pParamFirst->GetY()) < 10) && (TMath::Abs(pParamFirst->GetZ()) < 10) );
 
         // skip secondary tracks if primary flag is set
         if (fEventManager->IsPriOnly() && (!isPrimary))
@@ -125,6 +122,7 @@ void BmnGlobalTrackDraw::Exec(Option_t* option)
         TEveTrack* track = new TEveTrack(P, particlePDG, fTrPr);
         // set line color corresponding PDG particle code
         track->SetLineColor(fEventManager->Color(particlePDG));
+        track->SetLineWidth(2);
 
         // get GEM track for global track
         BmnGemTrack* pGemTrack = (BmnGemTrack*) fGemTrackList->UncheckedAt(tr->GetGemTrackIndex());
@@ -151,8 +149,7 @@ void BmnGlobalTrackDraw::Exec(Option_t* option)
             // add path marker for current EVE track
             track->AddPathMark(*path);
 
-            if (fVerbose > 3)
-                cout<<"Path marker added "<<path<<endl;
+            if (fVerbose > 2) cout<<"Path marker added "<<path<<endl;
         }
 
         // add TOF1 hit
@@ -181,36 +178,11 @@ void BmnGlobalTrackDraw::Exec(Option_t* option)
             n++;
         }
 
-        // add DCH1 hit
+
+        // add DCH hit
         if (tr->GetDch1HitIndex() > -1)
         {
-            FairHit* pHit = (FairHit*) fDch1HitList->UncheckedAt(tr->GetDch1HitIndex());
-
-            track->SetPoint(n, pHit->GetX(), pHit->GetY(), pHit->GetZ());
-
-            TEvePathMark* path = new TEvePathMark();
-            TEveVector pos = TEveVector(pHit->GetX(), pHit->GetY(), pHit->GetZ());
-            path->fV = pos;
-            path->fTime = pHit->GetTimeStamp();
-            if (n == 0)
-            {
-                TEveVector Mom = TEveVector(px, py, pz);
-                path->fP = Mom;
-            }
-
-            // add path marker for current EVE track
-            track->AddPathMark(*path);
-
-            if (fVerbose > 3)
-                cout<<"Path marker added "<<path<<endl;
-
-            n++;
-        }
-
-        // add DCH2 hit
-        if (tr->GetDch2HitIndex() > -1)
-        {
-            FairHit* pHit = (FairHit*) fDch2HitList->UncheckedAt(tr->GetDch2HitIndex());
+            FairHit* pHit = (FairHit*) fDchHitList->UncheckedAt(tr->GetDch1HitIndex());
 
             track->SetPoint(n, pHit->GetX(), pHit->GetY(), pHit->GetZ());
 
@@ -318,17 +290,9 @@ TEveTrackList* BmnGlobalTrackDraw::GetTrGroup(TParticle* P)
         fTrList = new  TEveTrackList(P->GetName(), fTrPr);
         fTrList->SetMainColor(fEventManager->Color(P->GetPdgCode()));
         fEveTrList->Add(fTrList);
-
-        if (fEventManager->EveRecoTracks == NULL)
-        {
-            fEventManager->EveRecoTracks = new TEveElementList("Reco tracks");
-            gEve->AddElement(fEventManager->EveRecoTracks, fEventManager);
-            fEventManager->EveRecoTracks->SetRnrState(kFALSE);
-            fEventManager->GetEventEditor()->fShowRecoTracks->SetEnabled(kTRUE);
-        }
-
-        gEve->AddElement(fTrList, fEventManager->EveRecoTracks);
         fTrList->SetRnrLine(kTRUE);
+
+        fEventManager->AddEventElement(fTrList, RecoTrackList);
     }
 
     return fTrList;

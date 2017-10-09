@@ -17,6 +17,8 @@
 
 #include "TpcLheCMPoint.h"
 
+using namespace std;
+
 class TpcLheSegments {
 
 protected:

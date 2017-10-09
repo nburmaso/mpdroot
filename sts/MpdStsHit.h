@@ -65,7 +65,7 @@ class MpdStsHit : public FairHit
   void SetStrip(Int_t strip)         { fStrip = strip; }
   void SetSignal(Double_t signal)    { fSignal = signal; }
   void SetLocalX(Double_t x)         { fLocalX = x; }
-  Int_t SetDetId(Int_t detID)        { fDetectorID = detID; } ///111
+  void SetDetId(Int_t detID)        { fDetectorID = detID; } ///111
   Int_t SetDetId(Int_t sectorType, Int_t layer, Int_t ladder, Int_t det, Int_t side); ///< helper for the tracking
   Int_t SetLadder(Int_t detID, Int_t layer) const { return detID & ~ (kLadderM << kLadderS) | (layer << kLadderS); }
   Int_t SetSensor(Int_t detID, Int_t sensor) const { return detID & ~(kSensorM << kSensorS) | (sensor << kSensorS); }

@@ -12,6 +12,8 @@
 
 #include "TH2F.h"
 
+using namespace std;
+
 // ---------------------------------------------------------------
 // --- Interface with TrackFinder and output ---
 

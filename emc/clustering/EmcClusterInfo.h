@@ -43,7 +43,7 @@ public:
     inline Int_t   GetPhi()      const { return fPhi; }
     inline Int_t   GetZ()        const { return fZ; }
     
-    const CLPointsMap& GetPointsMap() const { fPoints; }
+    const CLPointsMap& GetPointsMap() const { return fPoints; }
     
 protected:
   
