@@ -37,7 +37,7 @@ MpdKalmanFilter* MpdKalmanFilter::fgKF = 0x0;
 //__________________________________________________________________________
 MpdKalmanFilter::MpdKalmanFilter(const char *name,
 				 const char *title)
-  : FairTask(name),
+  : FairTask("Kalman Filter engine"),
     fGeoScheme(new MpdKalmanGeoScheme), fNumer(1)
 {
   /// Constructor
