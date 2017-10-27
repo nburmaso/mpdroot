@@ -1,9 +1,4 @@
-// Macro for running Fair  with Geant3  or Geant4 (M. Al-Turany , D. Bertini)
-// Modified 22/06/2005 D.Bertini
-
-// Last modified 18/07/2013 P.Batyuk (MPD)
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined(__CINT__) && !defined(__CLING__)
 #include "TString.h"
 #include "TStopwatch.h"
 #include "TROOT.h"
@@ -36,14 +31,16 @@
 using namespace std;
 #endif
 
+#include "mpdloadlibs.C"
+#include "geometry_stage1.C"
+
 // inFile - input file with generator data, default: auau.09gev.mbias.98k.ftn14
 // nStartEvent - for compatibility, any number
 // nEvents - number of events to transport, default: 1
 // outFile - output file with MC data, default: evetest.root
 // flag_store_FairRadLenPoint
 // FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
-
-void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VMCWORKDIR/macro/mpd/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 1,
+void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VMCWORKDIR/macro/mpd/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 10,
         Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0) {
 
 #define HADGEN
@@ -51,11 +48,15 @@ void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VM
     timer.Start();
     gDebug = 0;
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+#endif
     mpdloadlibs(1, 1); // load main libraries
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
     //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
+#endif
 
     FairRunSim *fRun = new FairRunSim();
 

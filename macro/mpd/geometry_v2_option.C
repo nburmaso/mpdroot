@@ -1,4 +1,4 @@
-geometry_v2_option (FairRunSim *fRun, Bool_t build,
+void geometry_v2_option (FairRunSim *fRun, Bool_t build,
 		    char *option_changed_one="",char *option_geometry_file="",
 		    Bool_t use_other_detectors=kTRUE)
 {

@@ -1,10 +1,8 @@
-# Create a library called "libBase" which includes the source files given in
+# Create a library called "libTof" which includes the source files given in
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR}
-${Boost_INCLUDE_DIRS}
 ${CMAKE_SOURCE_DIR}/geobase 
 ${CMAKE_SOURCE_DIR}/parbase 
 ${CMAKE_SOURCE_DIR}/base/sim
@@ -20,15 +18,22 @@ ${CMAKE_SOURCE_DIR}/lhetrack
 ${CMAKE_SOURCE_DIR}/etof
 )
 
+Set(SYSTEM_INCLUDE_DIRECTORIES
+ ${ROOT_INCLUDE_DIR}
+ ${Boost_INCLUDE_DIRS}
+)
+
 include_directories(${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
+ ${ROOT_LIBRARY_DIR}
 )
  
 link_directories(${LINK_DIRECTORIES})
 
-set(TOF_SRCS
+# List of source files
+set(SRCS
 MpdTofGeo.cxx 
 MpdTofGeoPar.cxx 
 MpdTof.cxx 
@@ -46,22 +51,9 @@ MpdTofHitProducerQA.cxx
 MpdTOFpid.cxx
 )
 
-# fill list of header files from list of source files
-# by exchanging the file extension
-CHANGE_FILE_EXTENSION(*.cxx *.h TOF_HEADERS "${TOF_SRCS}")
+Set(HEADERS)
+Set(LINKDEF TofLinkDef.h)
+Set(LIBRARY_NAME Tof)
+Set(DEPENDENCIES Core Base)
 
-set(TOF_LINKDEF TofLinkDef.h)
-set(TOF_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/MpdTofDict.cxx) 
-
-ROOT_GENERATE_DICTIONARY("${TOF_HEADERS}" "${TOF_LINKDEF}" "${TOF_DICTIONARY}" "${INCLUDE_DIRECTORIES}")
-
-
-set(TOF_SRCS ${TOF_SRCS} ${TOF_DICTIONARY})
-
-
-add_library(Tof SHARED ${TOF_SRCS})
-target_link_libraries(Tof ${ROOT_LIBRARIES} Kalman)
-set_target_properties(Tof PROPERTIES ${FAIRROOT_LIBRARY_PROPERTIES})
-
-################ install ###################
-install(TARGETS Tof DESTINATION ${CMAKE_BINARY_DIR}/lib)
+GENERATE_LIBRARY()

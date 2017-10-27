@@ -1,3 +1,5 @@
+#include "../mpd/mpdloadlibs.C"
+
 // EVENT DISPLAY macro for MPD simulated data
 //
 // sim_file - path to the file with MC data and detector geometry
@@ -8,7 +10,9 @@ void eventdisplay(char* sim_file = "$VMCWORKDIR/macro/mpd/evetest.root", char* r
     gDebug = 0;
 
     // load main and detectors libraries
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+#endif
     mpdloadlibs(1,1);
 
     // load TEve libraries

@@ -1,7 +1,7 @@
 //*************************************************
 //  Version:    09-Jun-2012   (EL)
 //*************************************************
-geometry_v2_minimal (FairRunSim *fRun)
+void geometry_v2_minimal (FairRunSim *fRun)
 {
 
     // Set Material file Name

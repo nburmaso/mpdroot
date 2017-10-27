@@ -16,7 +16,6 @@ IF(${req_gcc_major_vers} MATCHES "4" AND NOT ${req_gcc_minor_vers} MATCHES "0")
 ENDIF(${req_gcc_major_vers} MATCHES "4" AND NOT ${req_gcc_minor_vers} MATCHES "0")
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR}
 ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/geobase
 ${CMAKE_SOURCE_DIR}/base/steer
@@ -27,14 +26,20 @@ ${CMAKE_SOURCE_DIR}/generators
 ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/config
 )
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+ ${ROOT_INCLUDE_DIR}
+)
+
 if(PLUTO_FOUND)
-set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_INCLUDE_DIR})
+set(SYSTEM_INCLUDE_DIRECTORIES ${SYSTEM_INCLUDE_DIRECTORIES} ${PLUTO_INCLUDE_DIR})
 EndIf(PLUTO_FOUND)
 
 include_directories(${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
+ ${ROOT_LIBRARY_DIR}
 )
 if(PLUTO_FOUND)
 set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_LIBRARY_DIR})
@@ -42,6 +47,7 @@ EndIf(PLUTO_FOUND)
  
 link_directories(${LINK_DIRECTORIES})
 
+# List of source files
 set(SRCS
 FairAsciiGenerator.cxx
 FairBoxGenerator.cxx

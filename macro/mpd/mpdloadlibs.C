@@ -1,15 +1,19 @@
-void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
+#include "../../gconfig/basiclibs.C"
+
+void mpdloadlibs(Bool_t reco = kFALSE, Bool_t detectors = kFALSE)
 {
   // Load basic libraries
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+#endif
   basiclibs();
 
   // Load other libraries
+  gSystem->Load("libBase");
   gSystem->Load("libCluster.so");
   gSystem->Load("libFairTools");
   gSystem->Load("libGeoBase");
   gSystem->Load("libParBase");
-  gSystem->Load("libBase");
   gSystem->Load("libMCStack");
   gSystem->Load("libMpdField");
   gSystem->Load("libPassive");

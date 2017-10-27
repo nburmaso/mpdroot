@@ -1,6 +1,4 @@
-// Macro for running reconstruction
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined(__CINT__) && !defined(__CLING__)
 // ROOT includes
 #include "TString.h"
 #include "TStopwatch.h"
@@ -49,6 +47,10 @@
 using namespace std;
 #endif
 
+#include "mpdloadlibs.C"
+#include "geometry_stage1.C"
+
+// Macro for running reconstruction:
 // inFile - input file with MC data, default: evetest.root
 // nStartEvent - number (start with zero) of first event to process, default: 0
 // nEvents - number of events to process, 0 - all events of given file will be proccessed, default: 1
@@ -59,19 +61,21 @@ using namespace std;
 //      "proof:user@proof.server:21001" - to run on the PROOF cluster created with PoD (under user 'MPD', default port - 21001)
 //      "proof:user@proof.server:21001:workers=10" - to run on the PROOF cluster created with PoD with 10 workers (under USER, default port - 21001)
 //	nc-farm : proof:mpd@nc10.jinr.ru:21001
-
 void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile = "mpddst.root", Int_t nStartEvent = 0, Int_t nEvents = 10, TString run_type = "local") {
     // ========================================================================
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
     Int_t iVerbose = 0;
 
     // ----  Load libraries   -------------------------------------------------
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+#endif
     mpdloadlibs(kTRUE); // load full set of main libraries
-
     gSystem->Load("libXMLIO");
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
+#endif
     geometry_stage1(0x0, kFALSE);
     // ------------------------------------------------------------------------
 
@@ -93,7 +97,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     if (run_type == "proof")
     {
         fRun = new FairRunAnaProof(proof_name);
-        fRun->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
+        ((FairRunAnaProof*)fRun)->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
     }
     else
     {
@@ -163,7 +167,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     fRun->Init();
     if (run_type != "proof") cout<<"Field: "<<fRun->GetField()->GetBz(0., 0., 0.)<<endl;
     else {
-        TProof* pProof = fRun->GetProof();
+        TProof* pProof = ((FairRunAnaProof*)fRun)->GetProof();
         pProof->SetParameter("PROOF_PacketizerStrategy", (Int_t) 0);
         ind = proof_name.Index(":workers=");
         if (ind >= 0) {
@@ -175,7 +179,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     // if nEvents is equal 0 then all events of the given file starting with "nStartEvent" should be processed
     if (nEvents == 0)
-        nEvents = MpdGetNumEvents::GetNumROOTEvents(inFile.Data()) - nStartEvent;
+        nEvents = MpdGetNumEvents::GetNumROOTEvents((char*)inFile.Data()) - nStartEvent;
 
     // -----   Run   ______________--------------------------------------------
     fRun->Run(nStartEvent, nStartEvent + nEvents);

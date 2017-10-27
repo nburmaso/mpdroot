@@ -1,6 +1,6 @@
-geometry_v2 (FairRunSim *fRun, Bool_t build){
+void geometry_v2(FairRunSim *fRun, Bool_t build)
+{
   // load libs and build detector geometry
-
   if (!build) {
     gSystem->Load("libtpc");
     gSystem->Load("libTof");
@@ -80,7 +80,5 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
     //FairDetector *Fsa = new MpdFsa("FSA",kTRUE );
     //Fsa->SetGeometryFileName("fsa.geo");
     //fRun->AddModule(Fsa);
-
   }
-
 }

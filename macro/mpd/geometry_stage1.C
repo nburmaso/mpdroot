@@ -1,4 +1,4 @@
-geometry_stage1(FairRunSim *fRun, Bool_t build)
+void geometry_stage1(FairRunSim *fRun, Bool_t build)
 {
   // load libs and build detector geometry
   if (!build){

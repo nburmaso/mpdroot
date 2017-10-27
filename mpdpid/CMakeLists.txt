@@ -3,7 +3,6 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR}
 ${CMAKE_SOURCE_DIR}/geobase
 ${CMAKE_SOURCE_DIR}/parbase
 ${CMAKE_SOURCE_DIR}/base/event
@@ -23,36 +22,29 @@ ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/mpdpid
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Set(SYSTEM_INCLUDE_DIRECTORIES
+ ${ROOT_INCLUDE_DIR}
+)
+
+include_directories(${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
+ ${ROOT_LIBRARY_DIR}
 )
  
-link_directories( ${LINK_DIRECTORIES} )
+link_directories(${LINK_DIRECTORIES} )
 
-set(MPDPID_SRCS
+# List of source files
+set(SRCS
 MpdPid.cxx
 MpdPidQA.cxx
 MpdPid_AZ.cxx
 )
 
-# fill list of header files from list of source files
-# by exchanging the file extension
-CHANGE_FILE_EXTENSION(*.cxx *.h MPDPID_HEADERS "${MPDPID_SRCS}")
+Set(HEADERS)
+Set(LINKDEF MpdPidLinkDef.h)
+Set(LIBRARY_NAME MpdPid)
+Set(DEPENDENCIES Core Base)
 
-set(MPDPID_LINKDEF MpdPidLinkDef.h)
-set(MPDPID_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/MpdPidDict.cxx) 
-
-ROOT_GENERATE_DICTIONARY("${MPDPID_HEADERS}" "${MPDPID_LINKDEF}" "${MPDPID_DICTIONARY}" "${INCLUDE_DIRECTORIES}")
-
-
-set(MPDPID_SRCS ${MPDPID_SRCS} ${MPDPID_DICTIONARY})
-
-
-add_library(MpdPid SHARED ${MPDPID_SRCS})
-target_link_libraries(MpdPid ${ROOT_LIBRARIES} )
-set_target_properties(MpdPid PROPERTIES VERSION 0.0.1 SOVERSION 0)
-
-################ install ###################
-install(TARGETS MpdPid DESTINATION ${CMAKE_BINARY_DIR}/lib)
+GENERATE_LIBRARY()
