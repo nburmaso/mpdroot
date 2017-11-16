@@ -12,6 +12,7 @@ endif (GENERATORS_LIBRARY_DIR)
 MESSAGE(STATUS "Looking for Pythia6...")
 
 FIND_PATH(PYTHIA6_LIBRARY_DIR NAMES libPythia6.so PATHS
+  $ENV{PYTHIA6_ROOT}/lib
   ${SIMPATH}/lib
   ${SIMPATH}/generators/lib
   NO_DEFAULT_PATH

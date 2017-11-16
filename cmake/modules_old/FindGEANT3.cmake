@@ -16,6 +16,8 @@
 
 INCLUDE(CheckCXXSourceCompiles)
 
+SET(GEANT3_ROOT $ENV{GEANT3_ROOT})
+
 MACRO (TEST_GEANT3_VERSION)
 
 # Check if SetCUTS from TGeant3 has 11 or 16 parameters
@@ -81,6 +83,7 @@ endif (GEANT3_INCLUDE_DIR AND GEANT3_LIBRARIES)
 MESSAGE(STATUS "Looking for GEANT3...")
 
 FIND_PATH(GEANT3_SYSTEM_DIR NAMES data PATHS
+  ${GEANT3_ROOT}
   ${GEANT3_PATH}/share/geant3
   ${SIMPATH}/share/geant3
   ${SIMPATH}/transport/geant3
@@ -88,6 +91,7 @@ FIND_PATH(GEANT3_SYSTEM_DIR NAMES data PATHS
 )
 
 FIND_PATH(GEANT3_INCLUDE_DIR NAMES TGeant3.h PATHS
+  ${GEANT3_ROOT}/include/TGeant3
   ${GEANT3_PATH}/include/TGeant3
   ${SIMPATH}/include/TGeant3
   ${SIMPATH}/transport/geant3/TGeant3
@@ -95,6 +99,7 @@ FIND_PATH(GEANT3_INCLUDE_DIR NAMES TGeant3.h PATHS
 )
 
 FIND_PATH(GEANT3_LIBRARY_DIR NAMES libgeant321.so PATHS
+  ${GEANT3_ROOT}/lib
   ${GEANT3_PATH}/lib
   ${SIMPATH}/lib
   ${SIMPATH}/transport/geant3/lib/tgt_linux
@@ -105,6 +110,7 @@ FIND_PATH(GEANT3_LIBRARY_DIR NAMES libgeant321.so PATHS
 )
 
 FIND_LIBRARY(GEANT3_LIB NAMES geant321 PATHS
+  ${GEANT3_ROOT}/lib
   ${GEANT3_PATH}/lib
   ${SIMPATH}/lib
   ${SIMPATH}/transport/geant3/lib/tgt_linux

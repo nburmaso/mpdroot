@@ -50,6 +50,7 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 Option(USE_PATH_INFO "Information from PATH and LD_LIBRARY_PATH are used." ON)
+Option(ALIBUILD "Flag if we are building with AliBuild." OFF)
 
 If(USE_PATH_INFO)
   Set(PATH $ENV{PATH})
@@ -74,11 +75,14 @@ ENDIF(NOT UNIX)
 
 #Check if necessary environment variables are set
 #If not stop execution
-IF(NOT DEFINED ENV{SIMPATH})
-  MESSAGE(FATAL_ERROR "You did not define the environment variable SIMPATH which is nedded to find the external packages. Please set this variable and execute cmake again.")
-ENDIF(NOT DEFINED ENV{SIMPATH})
-STRING(REGEX MATCHALL "[^:]+" PATH $ENV{PATH})
-SET(SIMPATH $ENV{SIMPATH})
+
+IF (NOT ALIBUILD)
+ IF(NOT DEFINED ENV{SIMPATH})
+   MESSAGE(FATAL_ERROR "You did not define the environment variable SIMPATH which is nedded to find the external packages. Please set this variable and execute cmake again.")
+ ENDIF(NOT DEFINED ENV{SIMPATH})
+ STRING(REGEX MATCHALL "[^:]+" PATH $ENV{PATH})
+ SET(SIMPATH $ENV{SIMPATH})
+ENDIF (NOT ALIBUILD)
 
 # Check if the external packages are installed into a separate install
 # directory
