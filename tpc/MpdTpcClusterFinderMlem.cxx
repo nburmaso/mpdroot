@@ -188,9 +188,9 @@ void MpdTpcClusterFinderMlem::ProcessPadrow(Int_t isec, Int_t irow)
       clus->SetErrY(fCharges[ipad][itime]); // ADC counts
       fFlags[ipad][itime] = -1;
       for (Int_t ip = 0; ip < 2; ++ip) {
-	for (Int_t it = 0; it < 2; ++it) {
-	  if (it == ip) continue;
-	  Int_t ip1 = ipad + ip, it1 = itime + it;
+	for (Int_t jt = 0; jt < 2; ++jt) {
+	  if (jt == ip) continue;
+	  Int_t ip1 = ipad + ip, it1 = itime + jt;
 	  if (ip1 >= fgkNpads) continue;
 	  if (it1 >= fgkNtimes) continue;
 	  if (fFlags[ip1][it1] <= 0) continue;
@@ -328,9 +328,9 @@ void MpdTpcClusterFinderMlem::FindHits()
     Double_t padMean = 0, timeMean = 0, adcTot = 0, sum2t = 0, sum2p = 0;
 
     // Process simple cluster (only 1 local max)
-    for (Int_t idig = 0; idig < nDigis; ++idig) {
-      Int_t ip = clus->Col(idig);
-      Int_t it = clus->Bkt(idig);
+    for (Int_t jdig = 0; jdig < nDigis; ++jdig) {
+      Int_t ip = clus->Col(jdig);
+      Int_t it = clus->Bkt(jdig);
       padMean += ip * fCharges[ip][it];
       timeMean += it * fCharges[ip][it];
       adcTot += fCharges[ip][it];
@@ -413,12 +413,12 @@ void MpdTpcClusterFinderMlem::FindHits()
     }
     Int_t ndig = vecDig.size();
     /*
-      for (Int_t idig = 0; idig < ndig; ++idig)
-      hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, clus->Sec(vecDig[idig]))); // trackID stored in Sec
+      for (Int_t jdig = 0; jdig < ndig; ++jdig)
+      hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, clus->Sec(vecDig[jdig]))); // trackID stored in Sec
     */
-    for (Int_t idig = 0; idig < ndig; ++idig) {
-      hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, vecDig[idig], idig)); // weight = idig
-      hit->AddID(vecDig[idig]);
+    for (Int_t jdig = 0; jdig < ndig; ++jdig) {
+      hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, vecDig[jdig], jdig)); // weight = jdig
+      hit->AddID(vecDig[jdig]);
     }
     //cout << hit->GetNLinks() << " " << *(vecDig.begin()) << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(0).GetIndex() << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(hit->GetNLinks()-1).GetIndex() << endl;
 
@@ -586,12 +586,12 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   Int_t ipad = clus->Col(idig);
   if (ipad-2 == 0 || ipad-2 == 2*fSecGeo->NPadsInRows()[clus->Row()] - 1) edge = 1; // extra shift
 
-  for (Int_t idig = 0; idig < nDigis; ++idig) {
-    Int_t ipad = clus->Col(idig);
-    Int_t itime = clus->Bkt(idig);
-    //fCharges[ipad][itime] = clus->Adc(idig);
+  for (Int_t jdig = 0; jdig < nDigis; ++jdig) {
+    ipad = clus->Col(jdig);
+    Int_t itime = clus->Bkt(jdig);
+    //fCharges[ipad][itime] = clus->Adc(jdig);
     //fFlags[ipad][itime] = 1;
-    //fDigis[ipad][itime] = idig;
+    //fDigis[ipad][itime] = jdig;
     if (fCharges[ipad][itime] < 0.1) continue;
     pixel pix;
     pix.ix = hXY->GetXaxis()->FindBin(itime+0.1);
@@ -639,6 +639,9 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   const Int_t ndiv = 3, ndiv2 = ndiv * ndiv, nloops = 2; // 
   Int_t icur = 0;
   TMatrixD cij(2,2);
+  vector<pair<Int_t,Int_t> > pairs;
+  const Double_t cijMin = 1.e-5;
+  //const Double_t cijMin = 0.001;
 
   for (Int_t iloop = 0; iloop < nloops; ++iloop) {
     if (iloop) {
@@ -693,7 +696,10 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
 	  Double_t y1 = hXY->GetYaxis()->GetBinCenter(bins[ibin].iy);
 	  cij(npix,ibin) = GetCij(x0, y0, x1, y1, sigt, sigp, correl);
 	  //?? pixels[icur][npix].vis += cij(npix,ibin); // visibility
-	  if (bins[ibin].qq < fgkOvfw - 1.5) pixels[icur][npix].vis += cij(npix,ibin); // visibility
+	  if (cij(npix,ibin) > cijMin) {
+	    if (bins[ibin].qq < fgkOvfw - 1.5) pixels[icur][npix].vis += cij(npix,ibin); // visibility
+	    pairs.push_back(pair<Int_t,Int_t>(npix,ibin));
+	  }
 	}
 	visMax = TMath::Max(visMax,pixels[icur][npix].vis);
 
@@ -707,17 +713,24 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
     //for (Int_t ipix = 0; ipix < npix; ++ipix) cout << ipix << " " << pixels[icur][ipix].vis << " " << pixels[icur][ipix].qq << " " << pixels[icur][ipix].ix << " " <<  pixels[icur][ipix].iy << endl;
 
     // MLEM procedure
-    Int_t niter = 10;
+    Int_t niter = 5; //10;
+    vector<pair<Int_t,Int_t> >::iterator vit;
+
     for (Int_t iter = 0; iter < niter; ++iter) {
 
       // Calculate expectations for all pads
       for (Int_t ibin = 0; ibin < nbins; ++ibin) {
 	bins[ibin].vis = 0.0;
-	for (Int_t i = 0; i < npix; ++i) bins[ibin].vis += (pixels[icur][i].qq * cij(i,ibin)); // bins[ibin].vis - just storage
+	//AZ for (Int_t i = 0; i < npix; ++i) bins[ibin].vis += (pixels[icur][i].qq * cij(i,ibin)); // bins[ibin].vis - just storage
 	//?? bins[ibin].vis = TMath::Min (bins[ibin].vis, fglOvfw);
+      }
+      for (vit = pairs.begin(); vit != pairs.end(); ++vit) {
+	Int_t i = vit->first, ibin = vit->second;
+	bins[ibin].vis += (pixels[icur][i].qq * cij(i,ibin)); // bins[ibin].vis - just storage
       }
 
       // Maximization
+      /*
       for (Int_t ipix = 0; ipix < npix; ++ipix) {
 	Double_t sum = 0.0;
 
@@ -728,6 +741,17 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
 	if (pixels[icur][ipix].vis > 1.e-6) pixels[icur][ipix].qq *= (sum / pixels[icur][ipix].vis);
 	//if (pixels[icur][ipix].vis > 1.e-6) pixels[icur][ipix].qq *= (sum / visMax);
       }
+      */
+      for (Int_t ipix = 0; ipix < npix; ++ipix) pixels[icur][ipix].sum = 0.0;
+
+      for (vit = pairs.begin(); vit != pairs.end(); ++vit) {
+	Int_t ipix = vit->first, ibin = vit->second;
+	if (bins[ibin].vis > 1.e-6) pixels[icur][ipix].sum += (bins[ibin].qq / bins[ibin].vis * cij(ipix,ibin));
+      }
+
+      for (Int_t ipix = 0; ipix < npix; ++ipix) 
+	if (pixels[icur][ipix].vis > 1.e-6) pixels[icur][ipix].qq *= (pixels[icur][ipix].sum / pixels[icur][ipix].vis);
+
     } // for (Int_t iter = 0; 
 
     // Visual control
@@ -762,7 +786,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   Int_t npix = pixels[icur].size();
 
   for (Int_t ipix = 0; ipix < npix; ++ipix) {
-    Int_t ipad = pixels[icur][ipix].iy - 1;
+    ipad = pixels[icur][ipix].iy - 1;
     Int_t itime = pixels[icur][ipix].ix - 1;
     charges[ipad][itime] = pixels[icur][ipix].qq;
     flags[ipad][itime] = ipix + 1;
@@ -770,15 +794,15 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
 
   // Exclude pads which are not local maxima
   for (Int_t ipix = 0; ipix < npix; ++ipix) {
-    Int_t ipad = pixels[icur][ipix].iy - 1;
+    ipad = pixels[icur][ipix].iy - 1;
     Int_t itime = pixels[icur][ipix].ix - 1;
     Int_t iok = 1;
 
     for (Int_t ip = -1; ip < 2; ++ip) {
-      for (Int_t it = -1; it < 2; ++it) {
-	if (TMath::Abs(it) == TMath::Abs(ip)) continue; // exclude diagonals
-	if (it == 0 && ip == 0) continue;
-	Int_t ip1 = ipad + ip, it1 = itime + it;
+      for (Int_t jt = -1; jt < 2; ++jt) {
+	if (TMath::Abs(jt) == TMath::Abs(ip)) continue; // exclude diagonals
+	if (jt == 0 && ip == 0) continue;
+	Int_t ip1 = ipad + ip, it1 = itime + jt;
 	if (ip1 < 0 || ip1 >= ny) continue;
 	if (it1 < 0 || it1 >= nx) continue;
 	if (flags[ip1][it1] == 0) continue;
@@ -793,7 +817,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   }
 
   for (Int_t ipix = 0; ipix < npix; ++ipix) {
-    Int_t ipad = pixels[icur][ipix].iy - 1;
+    ipad = pixels[icur][ipix].iy - 1;
     Int_t itime = pixels[icur][ipix].ix - 1;
     if (flags[ipad][itime] <= 0) continue;
     localMax.insert(pair<Double_t,Int_t>(pixels[icur][ipix].qq,ipix));
@@ -810,7 +834,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   CreateHits(pixels[icur], localMax, charges, flags, iclus, pixInMax);
 
   // Get correct charge 
-  ChargeMlem(nHits0, pixels[icur], bins, pixInMax, cij);
+  ChargeMlem(nHits0, pixels[icur], bins, pixInMax, cij, cijMin);
 }
 
 //__________________________________________________________________________
@@ -949,10 +973,10 @@ Double_t MpdTpcClusterFinderMlem::GetCij(Double_t x0, Double_t y0, Double_t x1, 
   dx /= sigt;
   dy /= sigp; 
 
-  if (TMath::Abs(correl) < 0.001) return TMath::Exp(-dx*dx/2 - dy*dy/2) / 2 / sigt / sigp / TMath::Pi();
+  if (TMath::Abs(correl) < 0.001) return TMath::Exp(-dx*dx/2 - dy*dy/2) / sigt / sigp / TMath::TwoPi();
   else {
     Double_t corr2 = 1 - correl * correl;
-    return TMath::Exp((-dx*dx/2 + correl*dx*dy - dy*dy/2)/corr2) / 2 / sigt / sigp / TMath::Pi() / TMath::Sqrt(corr2);
+    return TMath::Exp((-dx*dx/2 + correl*dx*dy - dy*dy/2)/corr2) / sigt / sigp / TMath::TwoPi() / TMath::Sqrt(corr2);
   }
 }
 
@@ -1173,7 +1197,7 @@ void MpdTpcClusterFinderMlem::CorrectRecoMlem(TVector3 &p3loc, TVector3 &p3errCo
 //__________________________________________________________________________
 
 void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, vector<pixel> &bins, 
-					 vector<multimap<Double_t,Int_t> > &pixInMax, const TMatrixD &cij)
+					 vector<multimap<Double_t,Int_t> > &pixInMax, const TMatrixD &cij, Double_t cijMin)
 {
   // Get correct charge of hits after MLEM 
   // (reduce number of pixels not to exceed number of time-pad bins)
@@ -1209,21 +1233,37 @@ void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, ve
       pixs.back().qq = 1;
       pixs.back().ix = ipix; // save pixel index
       pixs.back().iy = i; // save hit index
+      pixs.back().sum = 0.0;
     }
   }
 
+  // Vector of active pairs (bin-pixel)
+  vector<pair<Int_t,Int_t> > pairs;
+  vector<pair<Int_t,Int_t> >::iterator vit;
+  Int_t npix = pixs.size();
+
+  for (Int_t ibin = 0; ibin < nBinsTot; ++ibin) {
+    for (Int_t i = 0; i < npix; ++i) if (cij(pixs[i].ix,ibin) > cijMin) pairs.push_back(pair<Int_t,Int_t>(i,ibin));
+  }
+
   // MLEM procedure
-  Int_t niter = 2, npix = pixs.size();
+  Int_t niter = 2;
+
   for (Int_t iter = 0; iter < niter; ++iter) {
 
     // Calculate expectations for all pads
     for (Int_t ibin = 0; ibin < nBinsTot; ++ibin) {
       bins[ibin].vis = 0.0;
-      for (Int_t i = 0; i < npix; ++i) bins[ibin].vis += (pixs[i].qq * cij(pixs[i].ix,ibin)); // bins[ibin].vis - just storage
+      //for (Int_t i = 0; i < npix; ++i) bins[ibin].vis += (pixs[i].qq * cij(pixs[i].ix,ibin)); // bins[ibin].vis - just storage
       //?? bins[ibin].vis = TMath::Min (bins[ibin].vis, fglOvfw);
+    }
+    for (vit = pairs.begin(); vit != pairs.end(); ++vit) {
+      Int_t i = vit->first, ibin = vit->second;
+      bins[ibin].vis += (pixs[i].qq * cij(pixs[i].ix,ibin)); // bins[ibin].vis - just storage
     }
 
     // Maximization
+    /*
     for (Int_t ipix = 0; ipix < npix; ++ipix) {
       Double_t sum = 0.0;
 
@@ -1234,6 +1274,16 @@ void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, ve
       if (pixs[ipix].vis > 1.e-6) pixs[ipix].qq *= (sum / pixs[ipix].vis);
       //if (pixels[icur][ipix].vis > 1.e-6) pixels[icur][ipix].qq *= (sum / visMax);
     }
+    */
+    for (Int_t ipix = 0; ipix < npix; ++ipix) pixs[ipix].sum = 0.0;
+
+    for (vit = pairs.begin(); vit != pairs.end(); ++vit) {
+      Int_t ipix = vit->first, ibin = vit->second;
+      if (bins[ibin].vis > 1.e-6) pixs[ipix].sum += (bins[ibin].qq / bins[ibin].vis * cij(pixs[ipix].ix,ibin));
+    }
+
+    for (Int_t ipix = 0; ipix < npix; ++ipix) 
+      if (pixs[ipix].vis > 1.e-6) pixs[ipix].qq *= (pixs[ipix].sum / pixs[ipix].vis);
   } // for (Int_t iter = 0; 
 
   // Compute hit charges
