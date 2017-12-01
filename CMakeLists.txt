@@ -107,6 +107,7 @@ find_package(PLUTO)
 find_package(GENERATORS REQUIRED)
 find_package(XML2 REQUIRED)
 find_package(TDAQ)
+find_package(GSL REQUIRED)
 
 #find_package(CUDA)
 #find_package(IWYU)
@@ -116,10 +117,8 @@ find_package(TDAQ)
 
 If(FAIRSOFT_EXTERN)
   set(BOOST_ROOT ${SIMPATH})
-  set(GSL_DIR ${SIMPATH})
 Else(FAIRSOFT_EXTERN)
   set(BOOST_ROOT ${SIMPATH}/basics/boost)
-  set(GSL_DIR ${SIMPATH}/basics/gsl)
 EndIf(FAIRSOFT_EXTERN)
 
 Set(Boost_NO_SYSTEM_PATHS TRUE)

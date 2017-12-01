@@ -68,6 +68,9 @@ if( WIN32 AND NOT CYGWIN AND NOT MSYS )
 else( WIN32 AND NOT CYGWIN AND NOT MSYS )
   if( UNIX OR MSYS )
     find_program( GSL_CONFIG_EXECUTABLE gsl-config
+      $ENV{GSL_ROOT}/bin
+      ${SIMPATH}/bin
+      ${SIMPATH}/basics/gsl/bin
       ${GSL_DIR}/bin
       NO_DEFAULT_PATH
     )
