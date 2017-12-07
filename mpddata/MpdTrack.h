@@ -61,6 +61,7 @@ class MpdTrack : public TObject {
     Float_t   fLastPointY;  //   
     Float_t   fLastPointZ;  //   
     Short_t   fHelixQ;  //   
+    Bool_t    fEdgeCut;  // kTRUE if number of hits closer to boundaries than 1.5 cm divided by nHits is larger than 50% (else: kFALSE)
 
  public:
 
@@ -110,6 +111,7 @@ class MpdTrack : public TObject {
     void SetLastPointY( Float_t n ) {fLastPointY=n;}
     void SetLastPointZ( Float_t n ) {fLastPointZ=n;}
     void SetHelixQ( Short_t n ) {fHelixQ=n;}
+    void SetEdgeCut( Bool_t n ) {fEdgeCut=n;}
 
     Int_t     GetID() {return fID;}
     Int_t     GetNofHits() {return fNofHits;}
@@ -165,7 +167,9 @@ class MpdTrack : public TObject {
     Float_t   GetLastPointZ() {return fLastPointZ;}
     Short_t   GetHelixQ() {return fHelixQ;}
     
-  ClassDef(MpdTrack,2)
+    Bool_t    GetEdgeCut() {return fEdgeCut;}
+    
+  ClassDef(MpdTrack,3)
 };
 
 #endif

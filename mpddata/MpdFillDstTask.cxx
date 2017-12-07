@@ -6,6 +6,7 @@
 
 #include "MpdFillDstTask.h"
 #include "MpdKalmanTrack.h"
+#include "MpdTpcKalmanTrack.h"
 #include "MpdEctKalmanTrack.h"
 #include "MpdTofMatchingData.h"
 #include "MpdVertex.h"
@@ -148,8 +149,10 @@ void MpdFillDstTask::Exec(Option_t * option) {
         }
 
         MpdKalmanTrack *kftrack = (MpdKalmanTrack*) fKFTracks->UncheckedAt(i);
+        MpdTpcKalmanTrack *kfTPCtrack = (MpdTpcKalmanTrack*) fKFTracks->UncheckedAt(i);
 
         MpdTrack *track = fEvent->AddGlobalTrack();
+        if (kfTPCtrack->GetRecoQuality()) track->SetEdgeCut(kTRUE);
         track->SetID(kftrack->GetTrackID());
         track->SetNofHits(kftrack->GetNofHits());
         track->SetdEdXTPC(kftrack->GetPartID());
