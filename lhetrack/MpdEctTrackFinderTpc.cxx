@@ -604,8 +604,10 @@ void MpdEctTrackFinderTpc::GetTrackSeeds(Int_t iPass)
   for (Int_t itr = 0; itr < nTpcTracks; ++itr) {
     MpdTpcKalmanTrack *tpc = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(itr);
     if (tpc == 0x0 || tpc->GetUniqueID() == 1) continue;
-    if (TMath::Abs(tpc->GetParam(3)) < 0.3 ||
-	tpc->Momentum() < 0.07) continue; // !!! track in central region or with low momentum
+    if (TMath::Abs((*tpc->GetParamAtHit())(3,0)) < 0.3) continue; // track in central region
+    MpdKalmanTrack tmp(*tpc);
+    tmp.SetParam(*tpc->GetParamAtHit());
+    if (tmp.Momentum() < 0.07) continue; // !!! track with low momentum
 
     //if (tpc->GetParam(3) < 0) continue; // !!! going in backward hemisphere
 

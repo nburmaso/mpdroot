@@ -1746,8 +1746,10 @@ void MpdEctTrackFinderCpc::MatchTpc()
     if (tr->GetUniqueID() == 1) tpcEctS.insert(i);
 
     //if (tr->GetParam(3) < 0) continue; // !!! going in backward hemisphere
-    if (TMath::Abs(tr->GetParam(3)) < 0.3 ||
-	tr->Momentum() < 0.07) continue; // !!! track in central region or with low momentum
+    if (TMath::Abs((*tr->GetParamAtHit())(3,0)) < 0.3) continue; // track in central region
+    MpdKalmanTrack tmp(*tr);
+    tmp.SetParam(*tr->GetParamAtHit());
+    if (tmp.Momentum() < 0.07) continue; // !!! track with low momentum
 
     MpdEctKalmanTrack tpc = MpdEctKalmanTrack(i, *tr);
     /*2-may-12
