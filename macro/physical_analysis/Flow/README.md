@@ -106,13 +106,13 @@ distance of closest approach (DCA), which based on z-dependent calculations in t
 The values of DCA, obtained by this method, were found not robust enough for selection of primary
 tracks. In order to solve this problem, we rewrite the values of DCA in the reconstructed mpdroot tree after reconstruction
 by new values obtained by 3D helicity fitting method.
-    <center><a href="https://git.jinr.ru/PeterParfenov/MPD" target="_blank">https://git.jinr.ru/PeterParfenov/MPD</a></center>  
+    <center><a href="https://git.jinr.ru/nica/mpdroot" target="_blank">https://git.jinr.ru/nica/mpdroot</a></center>  
 
 It can be installed by
 
-        git clone git@git.jinr.ru:PeterParfenov/MPD.git
+        git clone -b dev --recursive git@git.jinr.ru:nica/mpdroot.git
 
-Use `MPD/Flow/restore_dca`:  
+Use `mpdroot/macro/physical_analysis/restore_dca`:  
 
         root -b rootlogon.C  
         -------------------in root session---------------------  
@@ -144,7 +144,7 @@ For the further analysis one does need the information about dca distributions t
     --Fit dca distributions via gaus function to make primary particles selection in terms of n-sigma;  
     --Fit pt dependence of the dca distributions via polynomial function to reduce pt efficiency loss due to the dca distributions are split into discrete pt bins.  
 
-<u><big>2.1.1</big></u>  To get light calibration file containing only histograms with dca distributions `get_dca.cxx` is used in the MPD/Flow/get_dca/ directory:  
+<u><big>2.1.1</big></u>  To get light calibration file containing only histograms with dca distributions `get_dca.cxx` is used in the mpdroot/macro/physical_analysis/get_dca/ directory:  
 
         root -b rootlogon.C  
         -------------------in root session---------------------  
@@ -188,7 +188,7 @@ The resulting file contains `sigma_pt_fit` - `TF1*` functions that will be using
 <a name="Data_2"></a>
 ### 2.2 Centrality calibration file
 
-The next step is to get centrality classification. Thus, one should use calibration file with multiplicity along with dca fit files in the previous step. To get multiplicity calibration file, use `get_multiplicity.cxx` in MPD/Flow/get_centrality directory:  
+The next step is to get centrality classification. Thus, one should use calibration file with multiplicity along with dca fit files in the previous step. To get multiplicity calibration file, use `get_multiplicity.cxx` in mpdroot/macro/physical_analysis/get_centrality directory:  
 
         root -b rootlogon.C  
         -------------------in root session---------------------  
@@ -209,7 +209,7 @@ The resulting file contains `TH1*` histogram of multiplicity in TPC.
 <a name="Data_3"></a>
 ### 2.3 The source code for the picoDST’s production
 
-To convert mpdroot tree after reconstruction after reconstruction into picoDST files (which are standard TTrees) use `reducedTreeCreator.C` in MPD/Flow/create_reduced_tree directory:  
+To convert mpdroot tree after reconstruction after reconstruction into picoDST files (which are standard TTrees) use `reducedTreeCreator.C` in mpdroot/macro/physical_analysis/create_reduced_tree directory:  
 
         root -b rootlogon.C  
         -------------------in root session---------------------  
@@ -238,7 +238,7 @@ Before measuring direct and elliptic flow (v1 and v2), one should calculate the 
 <a name="Flow_1"></a>
 ### 3.1 Resolution correction factor
 
-To calculate event plane resolution correction factor using 2 sub-event technique, use `MpdCalculator.cxx` in MPD/Flow/real-flow directory:  
+To calculate event plane resolution correction factor using 2 sub-event technique, use `MpdCalculator.cxx` in mpdroot/macro/physical_analysis/real-flow directory:  
 
         root -b  
         -------------------in root session---------------------  
