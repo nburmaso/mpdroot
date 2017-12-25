@@ -65,19 +65,19 @@ Double_t MpdPid::GetDedxWidthValue(Double_t p, Int_t specie)
 	}
 	if (specie == 6)
 	{
-		WidthValue = 0.15;
+		WidthValue = 0.05;
 	}
 	if (specie == 7)
 	{
-		WidthValue = 0.18;
+		WidthValue = 0.05;
 	}
 	if (specie == 8)
 	{
-		WidthValue = 0.18;
+		WidthValue = 0.05;
 	}
 	if (specie == 9)
 	{
-		WidthValue = 0.15;
+		WidthValue = 0.05;
 	}
 	
 	return WidthValue;
@@ -588,43 +588,43 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		
 		else /// Tracking == "CF"
 		{
-			if (fEnergy < 7.0) // not ready
+			if (fEnergy < 7.0)
 			{
-				parElPosMom->SetParameters(17.6,-0.12,0.078,0.167,0.00); // QGSM 5-9 gev
-				parElNegMom->SetParameters(16.3,-0.12,0.078,0.167,0.00);
-				parMuPosMom->SetParameters(20.5,0.064,0.107,0.05,0.105); // QGSM 5-9 gev
-				parMuNegMom->SetParameters(20.5,0.064,0.107,0.05,0.105);
-				parPiPosMom->SetParameters(307.0,0.035,0.175,0.127,0.139); // QGSM 5 gev
-				parPiNegMom->SetParameters(325.6,0.035,0.175,0.127,0.139); // QGSM 5 gev
-				parKaPosMom->SetParameters(15.3,0.236,0.203,0.056,0.494); // QGSM 5 gev
-				parKaNegMom->SetParameters(8.88,0.236,0.203,0.056,0.494); // QGSM 5 gev
-				amplParam = 104.0;
-				parPrPosMom->SetParameters(amplParam,0.213,0.294,0.09,0.938); // QGSM 5 gev
+				parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parPiPosMom->SetParameters(44660.6,1.4425,0.0821871,0.126819,-0.106069); Multiplicities[4] = 13565353;
+				parPiNegMom->SetParameters(1929.85,24.5821,0.111797,0.066913,0.667266); Multiplicities[5] = 17666880;
+				parKaPosMom->SetParameters(3089.81,9.2121,0.136135,0.125175,0.350274); Multiplicities[6] = 621942;
+				parKaNegMom->SetParameters(237.81,-0.746975,0.0771305,0.0365433,2.27772); Multiplicities[7] = 39940;
+				amplParam = 114392.;
+				parPrPosMom->SetParameters(amplParam,6.35265,0.188466,0.166392,0.7605); Multiplicities[8] = 23124724;
 				amplParam /= prrat;
-				parPrNegMom->SetParameters(amplParam,0.213,0.294,0.09,0.938); // QGSM 5 gev
-				parDeMom->SetParameters(5.7,0.338,0.333,0.114,1.878); // QGSM 5 gev
-				parTrMom->SetParameters(0.2,-0.35,0.723,0.2,2.81);
-				parHe3Mom->SetParameters(0.36,-0.784,530.3,0.131,1.983);
-				parHe4Mom->SetParameters(6.6e-03,0.27,0.2,1.42,3.51);
+				parPrNegMom->SetParameters(amplParam,6.35265,0.188466,0.166392,0.7605); Multiplicities[9] = 4;
+				parDeMom->SetParameters(5024.67,0.129733,0.266767,0.00308559,39.0077); Multiplicities[10] = 1011296;
+				parTrMom->SetParameters(938.334,0.368862,0.0161982,0.00680544,109.992); Multiplicities[11] = 34449;
+				parHe3Mom->SetParameters(661.212,8.47325,0.150273,0.135588,1.57518); Multiplicities[12] = 22466;
+				parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
 			}
-			else /// fEnergy > 7.0 not ready
+			else /// fEnergy = 9.0 (mb, Au+Au), 12/12/2017, 57.5K events
 			{
-				parElPosMom->SetParameters(17.6,-0.12,0.078,0.167,0.00); // QGSM 5-9 gev
-				parElNegMom->SetParameters(16.3,-0.12,0.078,0.167,0.00);
-				parMuPosMom->SetParameters(20.5,0.064,0.107,0.05,0.105); // QGSM 5-9 gev
-				parMuNegMom->SetParameters(20.5,0.064,0.107,0.05,0.105);
-				parPiPosMom->SetParameters(473.,0.034,0.187,0.469,0.139); // QGSM 9 gev
-				parPiNegMom->SetParameters(501.6,0.034,0.187,0.469,0.139); // QGSM 9 gev
-				parKaPosMom->SetParameters(21.1,0.157,0.241,0.043,0.494); // QGSM 9 gev
-				parKaNegMom->SetParameters(12.25,0.157,0.241,0.043,0.494); // QGSM 9 gev
-				amplParam = 67.4;
-				parPrPosMom->SetParameters(amplParam,.02,0.365,0.01,0.938); // QGSM 9 gev
+				parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parPiPosMom->SetParameters(13337.1,0.640146,0.151896,0.285896,0.275064); Multiplicities[4] = 5683871;
+				parPiNegMom->SetParameters(13497.1,0.681969,0.152435,0.286408,0.273244); Multiplicities[5] = 5960841;
+				parKaPosMom->SetParameters(2179.53,0.281822,0.263693,0.079826,0.303347); Multiplicities[6] = 438033;
+				parKaNegMom->SetParameters(764.061,0.302593,0.258302,0.0805185,0.330043); Multiplicities[7] = 154061;
+				amplParam = 7249.82;
+				parPrPosMom->SetParameters(amplParam,0.459585,0.443568,0.204566,0.273485); Multiplicities[8] = 1457595;
 				amplParam /= prrat;
-				parPrNegMom->SetParameters(amplParam,.02,0.365,0.01,0.938); // QGSM 9 gev
-				parDeMom->SetParameters(1.8,0.05,0.432,0.163,1.878); // QGSM 9 gev
-				parTrMom->SetParameters(0.2,-0.35,0.723,0.2,2.81);
-				parHe3Mom->SetParameters(0.36,-0.784,530.3,0.131,1.983);
-				parHe4Mom->SetParameters(6.6e-03,0.27,0.2,1.42,3.51);
+				parPrNegMom->SetParameters(amplParam,0.459585,0.443568,0.204566,0.273485); Multiplicities[9] = 2215;
+				parDeMom->SetParameters(145.74,0.212488,0.572752,0.136763,1.14695); Multiplicities[10] = 29863;
+				parTrMom->SetParameters(0.,1.,1.,1.,1.);
+				parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+				parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
 			}
 		}
 	}
