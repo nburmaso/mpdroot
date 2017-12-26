@@ -170,7 +170,10 @@ class FairStack : public FairGenericStack
   void SetMinPoints(Int_t min)                 { fMinPoints        = min;    }
   void SetEnergyCut(Double_t eMin)             { fEnergyCut        = eMin;   }
   void StoreMothers(Bool_t choice = kTRUE)     { fStoreMothers     = choice; }
-
+  void SetRCut(Double_t rMin)                  { fRadiusCut        = rMin;   }
+  void SetZCut(Double_t zMin)                  { fVzCut            = zMin;   }
+  void NoZdcTracks(Bool_t choice = kTRUE)      { fNoZDC            = choice; }
+  void SetMomMassCut(Double_t mMin, Double_t mMax) {fMinMotherMass = mMin; fMaxMotherMass = mMax; }
 
   /** Increment number of points for the current track in a given detector
    *@param iDet  Detector unique identifier
@@ -235,8 +238,11 @@ class FairStack : public FairGenericStack
   Int_t      fMinPoints;
   Double32_t fEnergyCut;
   Bool_t     fStoreMothers;
-
-
+  Double32_t fMinMotherMass;
+  Double32_t fMaxMotherMass;
+  Double32_t fRadiusCut;//NG xy radius of mc track origin
+  Double32_t fVzCut;//NG z of mc track origin
+  Bool_t fNoZDC;//NG
   /** Mark tracks for output using selection criteria  **/
   void SelectTracks();
 
