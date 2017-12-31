@@ -1,0 +1,8 @@
+if("${PROJECT_NAME}" STREQUAL "MPDROOT")
+	set(CMAKE_SOURCE_FAIRMCSTACK "${CMAKE_SOURCE_DIR}/mcstack")
+else()
+	set(CMAKE_SOURCE_FAIRMCSTACK "${CMAKE_SOURCE_DIR}/examples/common/mcstack")
+endif()
+add_subdirectory(cuts)
+add_subdirectory(format)
+add_subdirectory(helpers)
