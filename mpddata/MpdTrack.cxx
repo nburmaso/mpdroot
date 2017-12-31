@@ -6,6 +6,7 @@
 
 #ifndef ROOT_MpdTrack
 #include "MpdTrack.h"
+#include "FairRunAna.h"
 #endif
 
 #include <TMath.h>
@@ -18,23 +19,26 @@ MpdTrack::MpdTrack():
   fTofBeta(0.), fTofMass2(0.), fdEdXTPC(0.), fTofFlag(0)  
 {}
 // -------------------------------------------------------------------
-Float_t MpdTrack::GetPx()
+Float_t MpdTrack::GetPx() const
 {
   return TMath::Abs(fPt)*TMath::Cos(fPhi); 
 }
-Float_t MpdTrack::GetPy()
+Float_t MpdTrack::GetPy() const
 {
   return TMath::Abs(fPt)*TMath::Sin(fPhi);
 }
-Float_t MpdTrack::GetPz()
+Float_t MpdTrack::GetPz() const
 {
   if ( TMath::Sin(fTheta) == 0.) return TMath::Sqrt(-1); // NaN
   return TMath::Abs(fPt)/TMath::Tan(fTheta);
 }
-Float_t MpdTrack::GetEta()
+Float_t MpdTrack::GetEta()const
 {
   return -TMath::Log(TMath::Tan(0.5*fTheta));
 }
 
+
 // -------------------------------------------------------------------
 ClassImp(MpdTrack);
+
+
