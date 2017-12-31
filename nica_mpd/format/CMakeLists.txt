@@ -4,6 +4,9 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 Set(INCLUDE_DIRECTORIES
 ${CMAKE_SOURCE_FAIRMCSTACK}
+${CMAKE_SOURCE_DIR}/mpddata
+${CMAKE_SOURCE_DIR}/kalman
+${CMAKE_SOURCE_DIR}/lhetrack
 ${CMAKE_SOURCE_DIR}/base/event
 ${CMAKE_SOURCE_DIR}/base/field 
 ${CMAKE_SOURCE_DIR}/base/steer
@@ -50,14 +53,6 @@ kalmandst/NicaMpdDstKalmanEvent.cxx
 kalmandst/NicaMpdDstKalmanEventInterface.cxx
 kalmandst/NicaMpdDstKalmanTrack.cxx
 kalmandst/NicaMpdDstKalmanTrackInterface.cxx
-mpd/MpdEvent.cxx
-#MpdParticle.cxx
-mpd/MpdTrack.cxx
-mpd/MpdVertex.cxx
-mpd/MpdKalmanTrack.cxx
-mpd/MpdKalmanHit.cxx
-mpd/MpdTpcHit.cxx
-mpd/MpdTpcKalmanTrack.cxx
 mpdevent/NicaMpdEvent.cxx
 mpdevent/NicaMpdEventInterface.cxx
 mpdevent/NicaMpdTrackInterface.cxx
