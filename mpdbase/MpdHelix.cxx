@@ -18,7 +18,6 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace CLHEP;
-
 #include "MpdHelix.h"
 
 #ifdef __ROOT__
@@ -35,6 +34,14 @@ MpdHelix::MpdHelix(double c, double d, double Phase,
     setParameters(c, d, Phase, o, hh);
 }
 
+MpdHelix::MpdHelix(TVector3 mom, TVector3 o, Double_t charge,
+		Double_t Bz) {
+	Double_t temp_h =  -TMath::Sign(1.,charge*Bz);
+	Double_t dip_angle = TMath::ATan2(mom.Pz(),mom.Pt());
+	Double_t curv = TMath::Abs(charge*Bz*0.299792458/mom.Pt());
+	Double_t Phase =  mom.Phi()-temp_h*TMath::PiOver2();
+	setParameters(curv,dip_angle,Phase,o,temp_h);
+}
 MpdHelix::~MpdHelix() { /* noop */ };
 
 void MpdHelix::setParameters(double c, double dip, double Phase,

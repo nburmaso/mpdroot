@@ -24,6 +24,7 @@ public:
     /// curvature, dip angle, phase, origin, h
     MpdHelix(double c, double dip, double phase,
 	    const TVector3 o, int h=-1);
+    MpdHelix(TVector3 mom, TVector3 o, Double_t charge, Double_t Bz=0.5);
     
     virtual ~MpdHelix();
     // MpdHelix(const MpdHelix&);			// use default
@@ -190,6 +191,7 @@ inline double MpdHelix::pathLength(double xx, double yy) const
 {
     return fudgePathLength(TVector3(xx, yy, 0));
 }
+
 inline int MpdHelix::bad(double WorldSize) const
 {
 

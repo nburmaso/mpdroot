@@ -11,6 +11,7 @@ ${CMAKE_SOURCE_DIR}/base/event
 ${CMAKE_SOURCE_DIR}/base/field
 ${CMAKE_SOURCE_DIR}/mcstack
 ${CMAKE_SOURCE_DIR}/mpddata
+${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/kalman
 ${CMAKE_SOURCE_DIR}/lhetrack
 ${CMAKE_SOURCE_DIR}/tof
@@ -18,6 +19,7 @@ ${CMAKE_SOURCE_DIR}/tpc
 ${CMAKE_SOURCE_DIR}/etof
 ${CMAKE_SOURCE_DIR}/mpdfield
 ${CMAKE_SOURCE_DIR}/fairtools
+${CMAKE_SOURCE_DIR}/mpdbase
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -46,6 +48,6 @@ MpdParticle.cxx
 Set(HEADERS)
 Set(LINKDEF MpdDataLinkDef.h)
 Set(LIBRARY_NAME MpdData)
-Set(DEPENDENCIES Core Base)
+Set(DEPENDENCIES Core Base MpdBase)
 
 GENERATE_LIBRARY()

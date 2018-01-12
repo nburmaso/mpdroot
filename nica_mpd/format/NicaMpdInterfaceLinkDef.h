@@ -13,15 +13,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-
-#pragma link C++ class MpdEvent+;
-//#pragma link C++ class MpdParticle+;
-#pragma link C++ class MpdTrack+;
-#pragma link C++ class MpdVertex+;
-#pragma link C++ class MpdTpcHit+;
-#pragma link C++ class MpdKalmanTrack+;
-#pragma link C++ class MpdTpcKalmanTrack+;
-#pragma link C++ class MpdKalmanHit+;
 #pragma link C++ class NicaMpdEvent+;
 #pragma link C++ class NicaMpdTrack+;
 #pragma link C++ class NicaMpdDstMCEvent+;

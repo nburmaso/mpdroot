@@ -7,9 +7,12 @@
 #ifndef ROOT_MpdTrack
 #include "MpdTrack.h"
 #include "FairRunAna.h"
+#include "TMath.h"
+#include "FairRunAna.h"
+#include "FairField.h"
 #endif
 
-#include <TMath.h>
+
 
 // -----   Default constructor ---------------------------------------
 MpdTrack::MpdTrack():
@@ -37,8 +40,16 @@ Float_t MpdTrack::GetEta()const
   return -TMath::Log(TMath::Tan(0.5*fTheta));
 }
 
-
 // -------------------------------------------------------------------
 ClassImp(MpdTrack);
 
-
+MpdHelix MpdTrack::GetHelix() const {
+	TVector3 mom(GetPx(),GetPy(),GetPz());
+	TVector3 pos(GetFirstPointX(),GetFirstPointY(),GetFirstPointZ());
+	Double_t charge = TMath::Sign(1.0,GetPt());
+	Double_t Bz = 0.5;
+	if(FairRunAna::Instance()){
+		Bz = FairRunAna::Instance()->GetField()->GetBz(0,0,0);
+	}
+	return MpdHelix(mom,pos,charge,Bz);
+}

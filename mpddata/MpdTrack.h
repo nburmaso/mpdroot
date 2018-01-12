@@ -7,6 +7,7 @@
 #ifndef ROOT_TObject
 #include "TObject.h"
 #endif
+#include "MpdHelix.h"
 
 class MpdTrack : public TObject {
 
@@ -167,6 +168,7 @@ class MpdTrack : public TObject {
     Float_t   GetLastPointZ() const{return fLastPointZ;}
     Short_t   GetHelixQ() const{return fHelixQ;}
     Bool_t    GetEdgeCut() {return fEdgeCut;}
+    MpdHelix GetHelix()const;
     
   ClassDef(MpdTrack,3)
 };

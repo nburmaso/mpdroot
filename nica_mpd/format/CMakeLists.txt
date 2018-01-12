@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 Set(INCLUDE_DIRECTORIES
 ${CMAKE_SOURCE_FAIRMCSTACK}
 ${CMAKE_SOURCE_DIR}/mpddata
+${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/kalman
 ${CMAKE_SOURCE_DIR}/lhetrack
 ${CMAKE_SOURCE_DIR}/base/event
@@ -13,6 +14,7 @@ ${CMAKE_SOURCE_DIR}/base/steer
 ${CMAKE_SOURCE_DIR}/base/sim
 ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/fairtools
+${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/nicaroot/features
 ${CMAKE_SOURCE_DIR}/nicaroot/unigen
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat

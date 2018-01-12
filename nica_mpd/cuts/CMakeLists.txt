@@ -34,6 +34,7 @@ ${CMAKE_SOURCE_DIR}/nica_mpd/cuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/trackcuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/helpers
+${CMAKE_SOURCE_DIR}/mpdbase
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
