@@ -33,6 +33,10 @@ using namespace std;
 
 #include "mpdloadlibs.C"
 #include "geometry_stage1.C"
+//#include "geometry_v2.C"
+
+#define HADGEN  // Choose generator: URQMD VHLLE FLUID PART ION BOX HSD LAQGSM HADGEN
+#define GEANT3  // Choose: GEANT3 GEANT4
 
 // inFile - input file with generator data, default: auau.09gev.mbias.98k.ftn14
 // nStartEvent - for compatibility, any number
@@ -40,10 +44,10 @@ using namespace std;
 // outFile - output file with MC data, default: evetest.root
 // flag_store_FairRadLenPoint
 // FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
-void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VMCWORKDIR/macro/mpd/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 10,
-        Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0) {
 
-#define HADGEN
+void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14", TString outFile = "evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 10,
+        Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0)
+{
     TStopwatch timer;
     timer.Start();
     gDebug = 0;
@@ -61,15 +65,17 @@ void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VM
     FairRunSim *fRun = new FairRunSim();
 
     // Choose the Geant Navigation System
+#ifdef GEANT3
     fRun->SetName("TGeant3");
-    // fRun->SetName("TGeant4");
-    // fRun->SetGeoModel("G3Native");
+#else
+    fRun->SetName("TGeant4");
+#endif
 
     geometry_stage1(fRun, kTRUE); // load mpd geometry
+    //geometry_v2(fRun, kTRUE); // load mpd geometry
 
-    // Use the experiment specific MC Event header instead of the default one                                                     
-    // This one stores additional information about the reaction plane                                                           
-    //MpdMCEventHeader* mcHeader = new MpdMCEventHeader();                                                                         
+    // Use extended MC Event header instead of the default one.
+    //MpdMCEventHeader* mcHeader = new MpdMCEventHeader();
     //fRun->SetMCEventHeader(mcHeader);
 
     // Create and Set Event Generator
@@ -79,10 +85,13 @@ void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VM
     fRun->SetGenerator(primGen);
 
     // smearing of beam interaction point
-    //primGen->SetBeam(0.0,0.0,0.1,0.1);
-    //primGen->SetTarget(0.0,24.0);
-    //primGen->SmearGausVertexZ(kTRUE);
-    //primGen->SmearVertexXY(kTRUE);
+    primGen->SetBeam(0.0,0.0,0.1,0.1);
+    primGen->SetTarget(0.0,24.0);
+    primGen->SmearGausVertexZ(kTRUE);
+    primGen->SmearVertexXY(kTRUE);
+
+    // Use user defined decays https://fairroot.gsi.de/?q=node/57
+    fRun->SetUserDecay(kTRUE);
 
 #ifdef URQMD
     // ------- Urqmd  Generator    
@@ -114,13 +123,13 @@ void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VM
         nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
 
 #else
-    
+
 #ifdef VHLLE
-    MpdVHLLEGenerator* vhlleGen = new MpdVHLLEGenerator(inFile, kTRUE); // kTRUE corresponds to hydro + cascade, kFALSE -- hydro only                                                                                    
+    MpdVHLLEGenerator* vhlleGen = new MpdVHLLEGenerator(inFile, kTRUE); // kTRUE corresponds to hydro + cascade, kFALSE -- hydro only
     vhlleGen->SkipEvents(0);
     primGen->AddGenerator(vhlleGen);
 #else 
-    
+
 #ifdef FLUID
 
     Mpd3fdGenerator* fluidGen = new Mpd3fdGenerator(inFile);
@@ -174,7 +183,7 @@ void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VM
     if (!CheckFileExist(dataFile)) return;
 
     MpdPHSDGenerator *hsdGen = new MpdPHSDGenerator(dataFile.Data());
-    //hsdGen->SetPsiRP(0.); // set fixed Reaction Plane angle instead of random
+    //hsdGen->SetPsiRP(0.); // set fixed Reaction Plane angle [rad] instead of random
     primGen->AddGenerator(hsdGen);
     if (nStartEvent > 0) hsdGen->SkipEvents(nStartEvent);
 
@@ -196,7 +205,8 @@ void runMC(TString inFile = "auau.09gev.mbias.98k.ftn14", TString outFile = "$VM
 
     if (!CheckFileExist(dataFile)) return;
 
-    MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(dataFile.Data());
+    MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(dataFile.Data(),kTRUE,0, 1+nStartEvent+nEvents);
+    // kTRUE - for NICA/MPD, 1+nStartEvent+nEvents - search ions in selected part of file.
     primGen->AddGenerator(guGen);
     if (nStartEvent > 0) guGen->SkipEvents(nStartEvent);
 
