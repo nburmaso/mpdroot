@@ -341,6 +341,7 @@ void MpdTpcHitProducer::ExecModular()
     hit->SetEnergyLoss(point->GetEnergyLoss());
     hit->SetStep(point->GetStep());
     hit->SetModular(1); // modular geometry flag
+    hit->SetLength(point->GetLength()); 
     midIndx.insert(pair<Int_t,Int_t>(point->GetTrackID(),nHits-1));
   } // for (Int_t j = 0; j < nPoints;
 
