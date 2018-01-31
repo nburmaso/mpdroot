@@ -1,6 +1,8 @@
+# Create a library called "libHADGEN"
 enable_language (C Fortran)
 
 add_subdirectory (parse)
+
 include_directories(inc ${CMAKE_CURRENT_BINARY_DIR}/parse)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 
@@ -33,3 +35,5 @@ Set(LIBRARY_NAME HADGEN)
 Set(DEPENDENCIES Core Base)
 
 GENERATE_LIBRARY()
+
+add_dependencies(HADGEN parse_run)
