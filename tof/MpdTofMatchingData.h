@@ -15,12 +15,13 @@ class MpdTofHit;
 class MpdTofMatchingData : public TObject 
 {
         Int_t 		fKFTrackIndex;		//  KF Track index( branchname: "TpcKalmanTrack", classname: "MpdTpcKalmanTrack")
-        Int_t 		fTofHitIndex;		//  TofHit index( branchname: "TOFHit", classname: "MpdTofHit")
+        Int_t 		fTofHitIndex;		// if > 0 TofHit index( branchname: "TOFHit", classname: "MpdTofHit"), else srtipUID for matching with blank strip
 
         Double_t 	fLength;		// Track length [cm], 	{KFTrack refit}
         Int_t      	fNmbTrHits;		// number of track hits	{KFTrack refit}          
         Double_t    	fBeta;          	// calc. 
         Double_t 	fMass2;			// calc., [GeV^2]
+        Double_t 	fWeight;		// matching weight [0., 1.]        
         
         // copy data
         Double_t	fMom[3];		// Momentum [GeV/c]	{KFTrack copy}
@@ -39,30 +40,32 @@ class MpdTofMatchingData : public TObject
         	
 public: 
         MpdTofMatchingData();
-        MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId);        
-  	MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, const TVector3& pointP, const TVector3& Momentum, Int_t charge, Double_t delta1, Double_t delta2);	
+        MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Double_t weight = 0.);        
+  	MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, const TVector3& pointP, 
+  				const TVector3& Momentum, Int_t charge, Double_t delta1, Double_t delta2, Double_t weight = 0.);	
   	MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, const TVector3& pointR, const TVector3& pointP, 
-				const TVector3& perp,  const TVector3& Momentum, Int_t charge, Double_t delta1,  Double_t delta2);							
+			const TVector3& perp,  const TVector3& Momentum, Int_t charge, Double_t delta1,  Double_t delta2, Double_t weight = 0.);							
 				
 	bool operator==(const MpdTofMatchingData& rhs){ return ( this->fKFTrackIndex == rhs.fKFTrackIndex &&  this->fTofHitIndex == rhs.fTofHitIndex ); }
 				
 	virtual void 	Print(void)const;
 	
 	Int_t			GetKFTrackIndex(void)const{ return fKFTrackIndex;};	
-	Int_t			GetTofHitIndex(void)const{ return fTofHitIndex;};
+	Int_t			GetTofHitIndex(void)const{ return fTofHitIndex;}; // return tof hit index if return value >= 0, else return stripUID
 
 	Double_t		GetTrackLength(void)const{ return fLength;};	
 	Int_t			GetNmbTrHits(void)const{ return fNmbTrHits;};	
     	Double_t        	GetBeta(void) const { return fBeta;};  
 	Double_t		GetMass2(void)const{ return fMass2;};	
 	TVector3		GetMomentum(void)const {return TVector3(fMom);};
+	Double_t		GetWeight(void)const{ return fWeight;};		
 	
 	// CAUTION: getters for transparent(NOT serialized) data
 	Float_t			GetDelta(void)const{ return sqrt(fDelta1*fDelta1 + fDelta2*fDelta2);};
 	Float_t			GetDelta1(void)const{ return fDelta1;};
 	Float_t			GetDelta2(void)const{ return fDelta2;};	
 
-ClassDef(MpdTofMatchingData, 4)
+ClassDef(MpdTofMatchingData, 5)
 };
 //------------------------------------------------------------------------------------------------------------------------
 

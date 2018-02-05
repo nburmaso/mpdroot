@@ -59,57 +59,38 @@ struct CandHistory
 				MpdTofMatchingData* ptr = vCompetitors[i];
 				std::cout<<"\n\t  competitiors pair<"<<ptr->GetKFTrackIndex()<<", "<<ptr->GetTofHitIndex()<<"> deltaZ="<<ptr->GetDelta1()<<" deltaPhi="<<ptr->GetDelta2();
 			}
-			break;			
-			
-		
-		};
-	
-	}	
-	
+			break;		
+		};	
+	}		
 };
 //----------------------------------------------------------------------------------------------------------------------------------------
 class LMatchingFilter
 {
 public:
-
-// matching candidates 
-//typedef std::__debug::multimap<Int_t, MpdTofMatchingData*>			MMcandType;
-typedef std::multimap<Int_t, MpdTofMatchingData*>	MMcandType;	// pair<KfIndex, MpdTofMatchingData*>
-typedef MMcandType::iterator					candIter;
-typedef MMcandType::const_iterator				candCIter;
-
-// back links to matching candidates 
-typedef std::multimap<Int_t, candIter>			MMbackLinksType; // pair<hitIndex, candIter>
-typedef MMbackLinksType::iterator				linkIter;
-typedef MMbackLinksType::const_iterator				linkCIter;
-
-typedef std::multimap<Int_t, Int_t>			MMCandRankType;	// pair<number of candidate hits for current KFtrack, KfIndex>
-typedef MMCandRankType::iterator 				rankIter;
-typedef MMCandRankType::const_iterator				rankCIter;
-	
-typedef std::multimap<Int_t, MpdTofMatchingData>	MMcandT;  	// pair<kfTrackIndex, MpdTofMatchingData> 
+template<typename T>    using TmmIntT = std::multimap<Int_t, T>;
+	using TmmCand = TmmIntT<MpdTofMatchingData*>;
+	using candIter = TmmCand::iterator;
+	using linkIter = TmmIntT<candIter>::iterator;
 
 private:
-	TClonesArray 		*aMdata;			//  Matching data container;
-	MMcandT 		mcTrueMdata, mcMaybeMdata;	// filled by mcFindTrueMachings method, if used MC run data. 
-	
+	TClonesArray 			*aMdata;			//  Matching data container;
+	TmmIntT<MpdTofMatchingData> 	mcTrueMdata, mcMaybeMdata;	// pair<kfTrackIndex, MpdTofMatchingData>, filled by mcFindTrueMachings method, if used MC run data. 
+	TmmIntT<MpdTofMatchingData*>	mmCandidate, mmCandidateSnapshot, mmAccepted, mmAcceptedSnapshot; // pair<KfIndex, MpdTofMatchingData*>	
+	TmmIntT<candIter>		mmLinks, mmLinksSnapshot;	// pair<hitIndex, candIter>
+	TmmIntT<Int_t> 			mmRanks;			// pair<number of candidate hits for current KFtrack, KfIndex>
+
 	MpdTofMatchingQA 	*pQA;
 	int			fVerbose; 
 	bool			isOwner;
 	bool			isMCdata;		// true, if used MC run data. (TofHits and KalmanTracks have links to MC origins.)
-	double 			fChi2;
-	
-	MMcandType		mmCandidate, mmCandidateSnapshot, mmAccepted, mmAcceptedSnapshot;
-	MMbackLinksType		mmLinks, mmLinksSnapshot;		
-	MMCandRankType 		mmRanks;
-
+	double 			fChi2;	
 	CandHistory		candHist;
 	
 	// for debug
 	void		Commit(void); 
 	void		Status(const char* comment = nullptr, std::ostream& os = std::cout) const; 	
-	void		PrintChanges(const MMbackLinksType& src, const MMbackLinksType& checked, std::ostream& os = std::cout) const;
-	void		PrintChanges(const MMcandType& src, const MMcandType& checked, std::ostream& os = std::cout) const; 		// cycle by src entries, print missed into the checked container entries.
+	void		PrintChanges(const TmmIntT<candIter>& src, const TmmIntT<candIter>& checked, std::ostream& os = std::cout) const;
+	void		PrintChanges(const TmmCand& src, const TmmCand& checked, std::ostream& os = std::cout) const; 		// cycle by src entries, print missed into the checked container entries.
 	bool		CheckAdequacy(const char* comment = nullptr); 									// check mmCandidate & mmLinks entries accordance; return true if pass test	
 			
 	Int_t		ProcessSingleTracks(void);
@@ -117,21 +98,20 @@ private:
 	void		UpdateRanks();
 	void		RemoveLink(Int_t hitIndex, Int_t KfIndex);	 								// remove link to pair<KfIndex, hitIndex>
 	void		RemoveCandidate(Int_t hitIndex, Int_t KfIndex);	
-	candIter	FindCandidate(MMcandType *map, Int_t hitIndex, Int_t KfIndex); 							// find candidate iter to map pair<KfIndex, hitIndex>	
-	void		AcceptCandidate(candIter itCand);										// move candidate to accepted, clean links and candidates for corresponding pair<KfIndex, hitIndex>
+	candIter	FindCandidate(TmmCand *map, Int_t hitIndex, Int_t KfIndex); 							// find candidate iter to map pair<KfIndex, hitIndex>	
+	void		AcceptCandidate(candIter itCand);										// move candidate to accepted, clean links and cross candidates 
 	candIter	FindClosest1hRankCandidate(const std::pair<linkIter, linkIter>& range, Double_t& minDelta);
 	double		FindMinDeltaForTrack(Int_t KfIndex, Int_t disabledHitIndex, candIter& minCand, bool& IsWithoutCompetition);	// Search through all the  KfIndex candidates except disabledHitIndex
 
 	inline bool	IsSameRank(Int_t rank, Int_t KfIndex) 										// return true, if KfIndex cantidate  have the "rank" rank
 	{ 
-		std::pair<rankCIter, rankCIter> range = mmRanks.equal_range(rank); 	
-		for(rankCIter iter = range.first; iter != range.second; ++iter)	
-			if(iter->second == KfIndex) return true;	
+		auto range = mmRanks.equal_range(rank); 	
+		for(auto iter = range.first; iter != range.second; ++iter)	if(iter->second == KfIndex) return true;	
 	return false; 
 	}
 
-	inline Int_t 	GetMinRank()const { rankCIter iter = mmRanks.begin(); assert(iter !=  mmRanks.end()); return iter->first; }
-	inline Int_t 	GetMinRankAfter(Int_t rank)const{ rankCIter iter = mmRanks.upper_bound(rank); if(iter !=  mmRanks.end()) return iter->first; else return -1; }	
+	inline Int_t 	GetMinRank()const { auto iter = mmRanks.begin(); assert(iter !=  mmRanks.end()); return iter->first; }
+	inline Int_t 	GetMinRankAfter(Int_t rank)const{ auto iter = mmRanks.upper_bound(rank); if(iter !=  mmRanks.end()) return iter->first; else return -1; }	
 		
 public:
 	LMatchingFilter(MpdTofMatchingQA*, int verbose = 0);
@@ -181,7 +161,7 @@ Int_t	LMatchingFilter::UpdateContainer()
 {
 	// select accepted candidates
 	std::set<MpdTofMatchingData*> sAccepted;
-	for(candCIter citer = mmAccepted.begin(), citerEnd = mmAccepted.end(); citer != citerEnd; citer++) sAccepted.insert(citer->second);
+	for(const auto& cit : mmAccepted) sAccepted.insert(cit.second);
 		
 	for(int entry = 0, Nentries = aMdata->GetEntriesFast(); entry < Nentries; entry++) // cycle by MpdTofMatchingData at TClonesArray container
 	{
@@ -196,9 +176,9 @@ Int_t	LMatchingFilter::UpdateContainer()
 return 	aMdata->GetEntriesFast();
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-LMatchingFilter::candIter	LMatchingFilter::FindCandidate(MMcandType *map, Int_t hitIndex, Int_t KfIndex)
+LMatchingFilter::candIter	LMatchingFilter::FindCandidate(TmmCand *map, Int_t hitIndex, Int_t KfIndex)
 {
-	std::pair<candIter, candIter> rangeCands = map->equal_range(KfIndex); 	
+	auto rangeCands = map->equal_range(KfIndex); 	
 	for(candIter iter = rangeCands.first; iter != rangeCands.second; ++iter)	// cycle by hits for this KfIndex
 	{
 		if(hitIndex == iter->second->GetTofHitIndex()) return iter;
@@ -215,34 +195,18 @@ void		LMatchingFilter::mcFindTrueMachings(TClonesArray *aPoints,  TClonesArray *
 	// Cleanup or initialize container
 	mcTrueMdata.clear();
 	mcMaybeMdata.clear();
-	
-	typedef std::multimap<int, kfTrackT*> 	mmapTracksT; // pair <mcTrackIndex, Mpd?KalmanTrack*>
-	mmapTracksT				mTracks;	
-	typename mmapTracksT::iterator		itTrack, itTrackEnd;
-	
-	typedef std::multimap<kfTrackT*, int> 	mapTracksInvT; // pair <Mpd?KalmanTrack*, kftrackIndex>
-	mapTracksInvT				mTracksInv;	
-	typename mapTracksInvT::iterator	itTrackInv;
-	
-	typedef std::multimap<int, MpdTofHit*> 	mmapHitsT; // pair <mcTrackIndex, MpdTofHit*>	
-	typedef std::map<MpdTofHit*, int> 	mapHitsInvT; // pair <MpdTofHit*, hitIndex>			
-	mmapHitsT				mHits;	
-	mapHitsInvT				mHitsInv;
-		
-	typename mmapHitsT::iterator		itHit, itHitEnd;	
-	typename mapHitsInvT::iterator		itHitInv;
-	
-	MpdTofPoint	*pPoint;
-	MpdTofHit	*pHit;
-	kfTrackT 	*pKfTrack;
-	Int_t 		tid;
+
+	TmmIntT<kfTrackT*> 		mTracks;
+	TmmIntT<MpdTofHit*> 		mHits;	
+	std::multimap<kfTrackT*, int> 	mTracksInv; // pair <Mpd?KalmanTrack*, kftrackIndex>
+	std::map<MpdTofHit*, int> 	mHitsInv; // pair <MpdTofHit*, hitIndex>	
 	
 	// Sorting MpdTpcKalmanTracks by tid
 	Int_t nKFTracks = aKfTracks->GetEntriesFast();
 	for(size_t KfIndex = 0; KfIndex < nKFTracks; KfIndex++) // cycle by MpdTpcKalmanTrack*
 	{
-		pKfTrack =  (kfTrackT*) aKfTracks->UncheckedAt(KfIndex);
-		tid = pKfTrack->GetTrackID();
+		auto pKfTrack =  (kfTrackT*) aKfTracks->UncheckedAt(KfIndex);
+		Int_t tid = pKfTrack->GetTrackID();
 		
 		mTracks.insert(make_pair(tid, pKfTrack));
 		mTracksInv.insert(make_pair(pKfTrack, KfIndex));
@@ -252,39 +216,38 @@ void		LMatchingFilter::mcFindTrueMachings(TClonesArray *aPoints,  TClonesArray *
 	Int_t nHits = aHits->GetEntriesFast();
 	for(size_t hitIndex = 0; hitIndex < nHits; hitIndex++) // cycle by MpdTofHit*
 	{
-		pHit =  (MpdTofHit*) aHits->UncheckedAt(hitIndex);	
-		pPoint = (MpdTofPoint*) aPoints->UncheckedAt(pHit->GetRefIndex());
-		tid = pPoint->GetTrackID();
+		auto pHit =  (MpdTofHit*) aHits->UncheckedAt(hitIndex);	
+		auto pPoint = (MpdTofPoint*) aPoints->UncheckedAt(pHit->GetRefIndex());
+		Int_t tid = pPoint->GetTrackID();
 		
 		mHits.insert(make_pair(tid, pHit));
 		mHitsInv.insert(make_pair(pHit, hitIndex));
 	}
 
 	// Fill "True" &  "maybe" matching pairs
-	Int_t		counterT, counterH;
-	MMcandT 	*container;
-	for(itTrack = mTracks.begin(), itTrackEnd = mTracks.end(); itTrack != itTrackEnd; itTrack = mTracks.upper_bound(tid)) // cycle by MpdKalmanTrack* with unique tid
+	Int_t tid = 0; // dummy value, init later
+	for(auto itTrack = mTracks.begin(), itTrackEnd = mTracks.end(); itTrack != itTrackEnd; itTrack = mTracks.upper_bound(tid)) // cycle by MpdKalmanTrack* with unique tid
 	{
 	  	tid = itTrack->first;
 	  	  	  
-FairMCTrack *mcTrack = (FairMCTrack*) aMCTracks->UncheckedAt(itTrack->second->GetTrackID());               
-if(!  mcTrack->GetNPoints(kTOF)) continue; // FIXME: mcTofTouch FOR TEST     	  
-	  
+		auto mcTrack = (const FairMCTrack*) aMCTracks->UncheckedAt(itTrack->second->GetTrackID());               
+		if(! mcTrack->GetNPoints(kTOF)) continue; // don't have Tof hit    	  	  
 	  	
-	  	itHit = mHits.find(tid);
+	  	auto itHit = mHits.find(tid);
 	  	if(itHit == mHits.end()) continue;	// don't have hit for same tid;
 	  	
-	  	counterT = mTracks.count(tid);
-	  	counterH = mHits.count(tid);
-	  	
-		container = ( counterT == 1  && counterH == 1 )  ? &mcTrueMdata : &mcMaybeMdata; //  = mcTrueMdata, if relation one to one (both kftracks to mctrack and hits to mctrack)		
+	  	size_t counterT = mTracks.count(tid);
+	  	size_t counterH = mHits.count(tid);
+
+	  	//  container = mcTrueMdata, if relation one to one (both kftracks to mctrack and hits to mctrack)
+		auto container = ( counterT == 1  && counterH == 1 )  ? &mcTrueMdata : &mcMaybeMdata; 		
 		
-		for(int t = 0; t < counterT; t++, itTrack++)
+		for(size_t t = 0; t < counterT; t++, itTrack++)
 		{	
 			kfTrackT *track = itTrack->second;
  			Int_t kfTrackIndex = (mTracksInv.find(track))->second;
  			
-			for(int h = 0; h < counterH; h++, itHit++)
+			for(size_t h = 0; h < counterH; h++, itHit++)
 			{
 				MpdTofHit *hit = itHit->second;		
 				Int_t hitIndex = (mHitsInv.find(hit))->second;
@@ -297,16 +260,16 @@ if(!  mcTrack->GetNPoints(kTOF)) continue; // FIXME: mcTofTouch FOR TEST
 	if(print)
 	{
 		std::cout<<"\n\t True Matching data: ----------------------------------------------------------------------";
-		for(typename MMcandT::const_iterator it = mcTrueMdata.begin(), itEnd = mcTrueMdata.end(); it != itEnd; it++)it->second.Print();
+		for(const auto& it : mcTrueMdata) it.second.Print();
 
 		std::cout<<"\n\t Maybe Matching data: ----------------------------------------------------------------------";
-		for(typename MMcandT::const_iterator it = mcMaybeMdata.begin(), itEnd = mcMaybeMdata.end(); it != itEnd; it++)it->second.Print();	
+		for(const auto& it : mcMaybeMdata) it.second.Print();	
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
 bool	LMatchingFilter::mcIsTrueMatching(const MpdTofMatchingData *pSample)
 {
-	MMcandT::iterator  it = mcTrueMdata.find(pSample->GetKFTrackIndex()); // pair<kfindex, MdataT>
+	auto  it = mcTrueMdata.find(pSample->GetKFTrackIndex()); // pair<kfindex, MdataT>
 	
 	if(it == mcTrueMdata.end()) return false; // no one pair for same kfindex exist;
 	
@@ -317,7 +280,7 @@ return false;
 bool	LMatchingFilter::mcIsMaybeMatching(const MpdTofMatchingData *pSample)
 {
 	Int_t kfindex = pSample->GetKFTrackIndex();
-	MMcandT::iterator  it = mcMaybeMdata.find(kfindex); // pair<kfindex, MdataT>
+	auto  it = mcMaybeMdata.find(kfindex); // pair<kfindex, MdataT>
 	
 	if(it == mcMaybeMdata.end()) return false; // no one pair for same kfindex exist;
 	
@@ -336,7 +299,7 @@ Int_t	LMatchingFilter::Processing(Int_t nKFTracks, double& chi2)
 	Int_t candNmb = mmCandidate.size();
 	
 #ifdef DoTest
-std::cout<<"\n -I- LMatchingFilter::Processing --------------------------------------------------------- mmCandidate.size()="<<mmCandidate.size()<<std::flush; int nn;
+std::cout<<"\n -I- LMatchingFilter::Processing --------------------------------------------------------- mmCandidate.size()="<<mmCandidate.size()<<std::flush; 
 #endif
 	Int_t nAccepted, iterNmb = 0;
 			
@@ -365,7 +328,7 @@ newIteration:
 	
 #ifdef DoTest	
 PrintRanks(" new ITER ");
-nn = GetMinRankAfter(10); if (nn>0) std::cout<<"\n MInRank	= "<<nn<<" count()= "<<mmRanks.count(nn);
+int nn = GetMinRankAfter(10); if (nn>0) std::cout<<"\n MInRank	= "<<nn<<" count()= "<<mmRanks.count(nn);
 if( mmCandidate.size() <=20) Dump();
 #endif
 
@@ -402,17 +365,17 @@ return 	mmAccepted.size();
 //----------------------------------------------------------------------------------------------------------------------------------------
 int	LMatchingFilter::ProcessSingleTracks()  //  only single hit (1th rank) candidate tracks processing
 {
-	std::pair<rankIter, rankIter> range = mmRanks.equal_range(1); 
+	auto range = mmRanks.equal_range(1); 
 	if(std::distance(range.first, range.second) == 0) return 0; // no 1th rank candidates
 	
 #ifdef DoTest	
 std::cout<<"\n LMatchingFilter::ProcessSingleTracks_size="<<std::distance(range.first, range.second);
 #endif
 
-	Int_t KfIndex, hitIndex, counter, MatchingOK = 0;
-	for(rankIter iter = range.first; iter != range.second; ++iter)	// cycle by ONLY 1th rank candidates
+	Int_t MatchingOK = 0;
+	for(auto iter = range.first; iter != range.second; ++iter)	// cycle by ONLY 1th rank candidates
 	{
-		KfIndex = iter->second;	
+		Int_t KfIndex = iter->second;	
 		candIter itCand = mmCandidate.find(KfIndex);	
 #ifdef DoTest			
 std::cout<<"\nProcessSingleTracks_KfIndex="<<KfIndex;
@@ -422,8 +385,8 @@ std::cout<<"\nProcessSingleTracks_KfIndex="<<KfIndex;
 #ifdef DoTest				
 std::cout<<" EXIST";
 #endif
-		hitIndex = itCand->second->GetTofHitIndex();
-		counter  = mmLinks.count(hitIndex);		// number of competitor tracks for this hit
+		Int_t hitIndex = itCand->second->GetTofHitIndex();
+		Int_t counter  = mmLinks.count(hitIndex);		// number of competitor tracks for this hit
 		
 		if(counter == 1)// don't have  competitor tracks
 		{ 
@@ -455,11 +418,11 @@ return 	MatchingOK;
 double			LMatchingFilter::FindMinDeltaForTrack(Int_t KfIndex, Int_t disabledHitIndex, candIter& minCand, bool& IsWithoutCompetition)
 {
 	Double_t  delta, minDelta = 1.e+10; // big value
-	std::pair<candIter, candIter> rangeCands = mmCandidate.equal_range(KfIndex); 	
+	auto rangeCands = mmCandidate.equal_range(KfIndex); 	
 	minCand = mmCandidate.end();
 	IsWithoutCompetition = true;
 	
-assert(	std::distance(rangeCands.first, rangeCands.second) != 0);
+assert(std::distance(rangeCands.first, rangeCands.second) != 0);
 
 	for(candIter iter = rangeCands.first; iter != rangeCands.second; ++iter)	// cycle by candidates for this KfIndex
 	{	
@@ -472,8 +435,7 @@ assert(	std::distance(rangeCands.first, rangeCands.second) != 0);
 
 			if(delta < minDelta) // new local minimum
 			{
-				if(1 == mmLinks.count(hitindex))	IsWithoutCompetition = true;
-				else					IsWithoutCompetition = false;
+				IsWithoutCompetition = (1 == mmLinks.count(hitindex)) ? true : false;
 				
 				minCand = iter;
 			 	minDelta = delta;		 
@@ -487,7 +449,7 @@ return 	minDelta;
 //----------------------------------------------------------------------------------------------------------------------------------------
 void	LMatchingFilter::ProcessNRankTrack(Int_t rank)  // process  Nth rank  ONE track
 {
-	std::pair<rankIter, rankIter> rangeRanks = mmRanks.equal_range(rank); 
+	auto rangeRanks = mmRanks.equal_range(rank); 
 	if(std::distance(rangeRanks.first, rangeRanks.second) == 0) return; // no Nth rank candidates
 
 	// select random(first) KfIndex from Nrank list
@@ -498,9 +460,8 @@ std::cout<<"\n  ---------------ProcessNRankTrack---- rank="<<rank<<"  mmRanks.co
 #endif	
 	bool IsWithoutCompetition = true;
 	candIter cand, bestCand;	
-	double delta,  minDelta;
 	
-	minDelta = FindMinDeltaForTrack(KfIndex, -100, bestCand, IsWithoutCompetition);	
+	Double_t minDelta = FindMinDeltaForTrack(KfIndex, -100, bestCand, IsWithoutCompetition);	
 	int maxKfTrackWeight = bestCand->second->GetNmbTrHits();
 	
 	if(IsWithoutCompetition)
@@ -511,7 +472,8 @@ assert(cand != mmCandidate.end());
 	else
 	{
 		Int_t hitIndex = bestCand->second->GetTofHitIndex();
-		std::pair<linkIter, linkIter> rangeLinks  = mmLinks.equal_range(hitIndex);
+		auto rangeLinks  = mmLinks.equal_range(hitIndex);
+
 		for(linkIter it = rangeLinks.first; it != rangeLinks.second; ++it)	// cycle by tracks for this hitIndex
 		{	
 			if(it->second == bestCand) continue; // skip himself 
@@ -519,7 +481,7 @@ assert(cand != mmCandidate.end());
 			Int_t kfindex = it->second->first;		
 			if(IsSameRank(rank, kfindex)) // check only same rank candidates
 			{			
-				delta = FindMinDeltaForTrack(kfindex, -100, cand, IsWithoutCompetition);
+				Double_t delta = FindMinDeltaForTrack(kfindex, -100, cand, IsWithoutCompetition);
 				int kftrackweight = cand->second->GetNmbTrHits();
 			
 				if(kftrackweight > maxKfTrackWeight) // new track have bigger weight -> set as best candidate
@@ -548,11 +510,11 @@ LMatchingFilter::candIter	LMatchingFilter::FindClosest1hRankCandidate(const std:
 ///////////	candHist.ResetFlag(CandHistory< MdataT>::k1thRank | CandHistory< MdataT>::kHaveCompetitor);		
 	
 	candIter retvalue = mmCandidate.end();
-	Double_t  delta; minDelta = 1.e+10; // big value
+	minDelta = 1.e+10; // big value
 
 	for(linkIter it = range.first; it != range.second; it++) // cycle by competitor candidates
 	{
-		delta =  it->second->second->GetDelta();
+		Double_t delta =  it->second->second->GetDelta();
 		
 /////////////		candHist.vCompetitors.push_back(it->second->second);
 		
@@ -573,7 +535,7 @@ void	LMatchingFilter::AcceptCandidate(candIter itCand)
 	bool isMaybeTrueMatching = mcIsMaybeMatching(itCand->second);	
 	
 #ifdef DoTest
-	if(! (isTrueMatching || isMaybeTrueMatching) ) // mis matching accepted !!!
+	if(! (isTrueMatching || isMaybeTrueMatching) ) // mismatching accepted !!!
 	{
 ///		candHist.Print();
 	//itCand->second->Print();
@@ -588,8 +550,7 @@ Commit();
 	double delta = itCand->second->GetDelta();
 	fChi2 += delta*delta;
 	
-
-	std::pair<candIter, candIter> rangeCand = mmCandidate.equal_range(acceptedKfIndex); 
+	auto rangeCand = mmCandidate.equal_range(acceptedKfIndex); 
 	for(candIter iter = rangeCand.first, iterEnd = rangeCand.second; iter != iterEnd; iter++) // all candidates for acceptedKfIndex
 	{
 		int hitindex = iter->second->GetTofHitIndex();
@@ -598,7 +559,7 @@ Commit();
 		RemoveLink(hitindex, acceptedKfIndex);		
 	}
 	
-	std::pair<linkIter, linkIter> rangeLinks = mmLinks.equal_range(acceptedHitIndex);	
+	auto rangeLinks = mmLinks.equal_range(acceptedHitIndex);	
 	for(linkIter iter = rangeLinks.first, iterEnd = rangeLinks.second; iter != iterEnd; iter++) // all candidates for acceptedHitIndex
 	{
 		int kfindex = iter->second->first;
@@ -629,19 +590,20 @@ assert(pass);
 //----------------------------------------------------------------------------------------------------------------------------------------
 bool	LMatchingFilter::CheckAdequacy(const char* comment)
 {
-	MMbackLinksType		mmLinksTmp;
-	for(candIter iter = mmCandidate.begin(), iterEnd = mmCandidate.end(); iter != iterEnd; iter++)	 mmLinksTmp.insert(make_pair(iter->second->GetTofHitIndex(), iter )); 	 	 
-	
+	TmmIntT<candIter>	mmLinksTmp;
+//	for(const auto& entry : mmCandidate)   mmLinksTmp.insert(make_pair(entry.second->GetTofHitIndex(), mmCandidate.find(entry.first))); 
+	for(candIter it = mmCandidate.begin(), itEnd = mmCandidate.end(); it != itEnd; it++) mmLinksTmp.insert(make_pair(it->second->GetTofHitIndex(), it)); 
+	 	 	
 	bool equalFront = true;// (mmLinksTmp == mmLinks); // iterators point to another mmaps, so operator == return always true
 	if(mmLinksTmp.size() == mmLinks.size())
 	{
-		for(linkCIter iter = mmLinksTmp.begin(), iterEnd = mmLinksTmp.end(); iter != iterEnd; iter++)	
+		for(const auto& iter : mmLinksTmp)	
 		{
 			bool founded = false;
-			std::pair<linkCIter, linkCIter> rangeLinks  = mmLinks.equal_range(iter->first);			
-			for(linkCIter it = rangeLinks.first; it != rangeLinks.second; ++it)	// cycle by tracks for this hitIndex
+			auto rangeLinks  = mmLinks.equal_range(iter.first);			
+			for(auto it = rangeLinks.first; it != rangeLinks.second; ++it)	// cycle by tracks for this hitIndex
 			{
-				if(it->second->second == iter->second->second) // MdataT*(mmLinksTmp) == MdataT* (mmLinks)
+				if(it->second->second == iter.second->second) // MdataT*(mmLinksTmp) == MdataT* (mmLinks)
 				{
 					founded = true; break; 
 				}		
@@ -652,21 +614,21 @@ bool	LMatchingFilter::CheckAdequacy(const char* comment)
 	} 
 	else equalFront = false;
 		
-	MMcandType		mmCandidateTmp; 
-	for(linkIter iter = mmLinks.begin(), iterEnd = mmLinks.end(); iter != iterEnd; iter++)	 mmCandidateTmp.insert(make_pair(iter->second->first, iter->second->second));
+	TmmCand 	mmCandidateTmp;
+	for(const auto& entry : mmLinks) mmCandidateTmp.insert(make_pair(entry.second->first, entry.second->second));
 
 	bool equalBack = true; // (mmCandidateTmp == mmCandidate); // because of a different order filling the entries may be mismatch, so operator == may be return wrong false
 
 	if(mmCandidateTmp.size() == mmCandidate.size())
 	{	
-		for(candIter iter = mmCandidateTmp.begin(), iterEnd = mmCandidateTmp.end(); iter != iterEnd; iter++)	
+		for(const auto& iter : mmCandidateTmp)	
 		{
 			bool founded = false;
-			std::pair<candCIter, candCIter> range  = mmCandidate.equal_range(iter->first);
+			auto range  = mmCandidate.equal_range(iter.first);
 						
-			for(candCIter it = range.first; it != range.second; ++it)	// cycle by candidates for same KfIndex
+			for(auto it = range.first; it != range.second; ++it)	// cycle by candidates for same KfIndex
 			{
-				if(it->second == iter->second) // MdataT*(mmCandidateTmp) == MdataT* (mmCandidate)
+				if(it->second == iter.second) // MdataT*(mmCandidateTmp) == MdataT* (mmCandidate)
 				{
 					founded = true; break; 
 				}		
@@ -689,7 +651,7 @@ return	(equalFront && equalBack);
 //----------------------------------------------------------------------------------------------------------------------------------------
 void	LMatchingFilter::RemoveLink(Int_t hitIndex, Int_t KfIndex)
 {
-	std::pair<linkIter, linkIter> range = mmLinks.equal_range(hitIndex); // links for same  hitIndex 
+	auto range = mmLinks.equal_range(hitIndex); // links for same  hitIndex 
 
 	for(linkIter it = range.first, itEnd = range.second; it != itEnd; )	// iterating multimap && erasing
 	{
@@ -700,7 +662,7 @@ void	LMatchingFilter::RemoveLink(Int_t hitIndex, Int_t KfIndex)
 //----------------------------------------------------------------------------------------------------------------------------------------
 void	LMatchingFilter::RemoveCandidate(Int_t hitIndex, Int_t KfIndex)
 {
-	std::pair<candIter, candIter> range = mmCandidate.equal_range(KfIndex); // 
+	auto range = mmCandidate.equal_range(KfIndex); 
 
 	for(candIter it = range.first, itEnd = range.second; it != itEnd; )	// iterating multimap && erasing
 	{
@@ -713,7 +675,7 @@ void	LMatchingFilter::UpdateRanks()
 {
 	mmRanks.clear();
 
-	for(candCIter it = mmCandidate.begin(), end = mmCandidate.end(); it != end; it = mmCandidate.upper_bound(it->first)) // cycle by unique KfIndex
+	for(auto it = mmCandidate.begin(), end = mmCandidate.end(); it != end; it = mmCandidate.upper_bound(it->first)) // cycle by unique KfIndex
   	{
       		mmRanks.insert(make_pair(mmCandidate.count(it->first ), it->first)); // pair <count(KfIndex), KfIndex>
   	}
@@ -744,10 +706,10 @@ void	LMatchingFilter::Commit()
 	mmLinksSnapshot.clear();
 	candIter iter;
 	
-	for(linkCIter it = mmLinks.begin(); it != mmLinks.end(); ++it)
+	for(const auto& it : mmLinks)
 	{
-		Int_t hitIndex = it->first;
-		iter = FindCandidate(&mmCandidateSnapshot, hitIndex, it->second->second->GetKFTrackIndex()); //  mmLinksSnapshot used iterators to mmCandidateSnapshot NOW
+		Int_t hitIndex = it.first;
+		iter = FindCandidate(&mmCandidateSnapshot, hitIndex, it.second->second->GetKFTrackIndex()); //  mmLinksSnapshot used iterators to mmCandidateSnapshot NOW
 		
 		mmLinksSnapshot.insert(make_pair(hitIndex, iter));
 	}	
@@ -778,7 +740,7 @@ void	LMatchingFilter::Status(const char *comment, std::ostream& os) const
 	os<<"\n ------------------------------------------------------------"<<std::flush;
 }
 //----------------------------------------------------------------------------------------------------------------------------------------
-void	LMatchingFilter::PrintChanges(const MMcandType& src, const MMcandType& checked, std::ostream& os) const
+void	LMatchingFilter::PrintChanges(const TmmCand& src, const TmmCand& checked, std::ostream& os) const
 {
 	if(src == checked)
 	{
@@ -787,15 +749,15 @@ void	LMatchingFilter::PrintChanges(const MMcandType& src, const MMcandType& chec
 	}
 	
 	Int_t KfIndex, hitIndex; bool exist;	
-	for(candCIter it = src.begin(); it != src.end(); ++it)
+	for(const auto& it : src)
 	{
-		KfIndex = it->first;
-		std::pair<candCIter, candCIter> range = checked.equal_range(KfIndex); // cands for same  KfIndex 
+		KfIndex = it.first;
+		auto range = checked.equal_range(KfIndex); // cands for same  KfIndex 
 		
 		exist = false;
-		hitIndex = it->second->GetTofHitIndex();
+		hitIndex = it.second->GetTofHitIndex();
 		
-		for(candCIter iter = range.first; iter != range.second; ++iter) // cycle by same KfIndex entries from checked container
+		for(auto iter = range.first; iter != range.second; ++iter) // cycle by same KfIndex entries from checked container
 		{
 			if(hitIndex == iter->second->GetTofHitIndex()) // same hitIndex found
 			{ 
@@ -808,7 +770,7 @@ void	LMatchingFilter::PrintChanges(const MMcandType& src, const MMcandType& chec
 	}
 }	
 //------------------------------------------------------------------------------------------------------------------------
-void	LMatchingFilter::PrintChanges(const MMbackLinksType& src, const MMbackLinksType& checked, std::ostream& os) const
+void	LMatchingFilter::PrintChanges(const TmmIntT<candIter>& src, const TmmIntT<candIter>& checked, std::ostream& os) const
 {
 	if(src == checked)
 	{
@@ -817,15 +779,15 @@ void	LMatchingFilter::PrintChanges(const MMbackLinksType& src, const MMbackLinks
 	}
 
 	Int_t KfIndex, hitIndex; bool exist;	
-	for(linkCIter it = src.begin(); it != src.end(); it++)
+	for(const auto& it : src)
 	{		
-		hitIndex = it->first;
-		std::pair<linkCIter, linkCIter> range = checked.equal_range(hitIndex); // links for same  hitIndex 
+		hitIndex = it.first;
+		auto range = checked.equal_range(hitIndex); // links for same  hitIndex 
 		
 		exist = false;
-		KfIndex = it->second->second->GetKFTrackIndex();
+		KfIndex = it.second->second->GetKFTrackIndex();
 				
-		for(linkCIter iter = range.first; iter != range.second; ++iter) // cycle by same hitIndex entries from checked container
+		for(auto iter = range.first; iter != range.second; ++iter) // cycle by same hitIndex entries from checked container
 		{
 			if(KfIndex == iter->second->second->GetKFTrackIndex()) // same KfIndex found
 			{ 
@@ -843,7 +805,7 @@ void	LMatchingFilter::Dump(const char* comment, std::ostream& os) const
 	os<<"\n ---------------------- DUMP --------------- "; if(comment) os<<comment; os<<" ------------   entries: "<<mmCandidate.size();	
 
 	Int_t KfIndex, hitIndex; bool exist; int n = 0;
-	for(candCIter it = mmCandidate.begin(); it != mmCandidate.end(); )
+	for(auto it = mmCandidate.begin(); it != mmCandidate.end(); )
 	{
 		KfIndex = it->first;		
 		os<<"\n "<<++n<<") KfIndex="<<KfIndex<<" --- ";
@@ -854,7 +816,7 @@ void	LMatchingFilter::Dump(const char* comment, std::ostream& os) const
 			hitIndex = it->second->GetTofHitIndex();
 			os<<" hitIndex="<< hitIndex;
 			
-			linkCIter iter = mmLinks.find(hitIndex);
+			auto iter = mmLinks.find(hitIndex);
 			if(iter != mmLinks.end())
 			{
 				int counter2 = mmLinks.count(hitIndex);			

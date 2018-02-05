@@ -62,7 +62,6 @@ MpdEtofMatching::~MpdEtofMatching()
     {
         aTofMatchings->Delete();
         delete aTofMatchings;
-        aTofMatchings = nullptr;
     }
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -143,12 +142,7 @@ void 		MpdEtofMatching::Exec(Option_t *option)
         Double_t 	trackLength, thR, thPhi;
    	Int_t  		charge, selectedTracks  = 0;  
    	
- 	// The MC run variables. VALID ONLY if fUseMCData = true	
-        Int_t		mcTrackIndex = -1,  mcPID = -1;        
-        TVector3 	mcPosition;			 
-        Int_t		mcNpoints = -1; 			
-        bool		mcTofTouch, mcIsSameIDs, mcHaveCand = false, mcHaveTrueCand = false;
-        Int_t 		mcPadUID = -1;
+	mcInfo 		MCdata; // The MC run variables. VALID ONLY if fUseMCData = true
    	 	
 //cout<<"\n ------------------------------------------------------------------------------------------------------------->> EVENT";  
 //mDetectorsR->dump("\n\n ----->>>	mDetectorsR INTERVALS");
@@ -160,7 +154,7 @@ void 		MpdEtofMatching::Exec(Option_t *option)
 		const MpdEctKalmanTrack *pKfTrack = (MpdEctKalmanTrack*) it->first;
 		Int_t KfIndex = it->second;
 
-		if(fUseMCData) mcTofTouch = MpdTofMatching::GetMcInfo(mcTrackIndex, mcPadUID, mcPosition, mcPID, mcNpoints, mmMCpoints, pKfTrack, aMcTracks);
+		if(fUseMCData) MpdTofMatching::GetMcInfo(MCdata, mmMCpoints, pKfTrack, aMcTracks);
 				
 		size_t TofSide = (pKfTrack->Momentum3().Pz() > 0.) ? 0 : 1;
 		double TofZpos = (TofSide == 0) ? fTofZpos : -fTofZpos;
@@ -176,10 +170,10 @@ void 		MpdEtofMatching::Exec(Option_t *option)
 	
 		if(fDoMCTest)
 		{
-			if(mcNpoints == 1) // only SINGLE tof point per MCtrack
-				pMatchingQA->FillDevPoint2EstCyl(mcPosition, estPoint, pKfTrack->Momentum());
+			if(MCdata.Npoints == 1) // only SINGLE tof point per MCtrack
+				pMatchingQA->FillDevPoint2EstCyl(MCdata.Position, estPoint, pKfTrack->Momentum());
 				
-		 	if(mcTofTouch) // KF track have TOFpoint 
+		 	if(MCdata.TofTouch) // KF track have TOFpoint 
 			{
 				selectedTracks++; 	
 				pMatchingQA->FillSelectedKfTracks(pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
@@ -216,8 +210,8 @@ void 		MpdEtofMatching::Exec(Option_t *option)
 			{
 				Int_t detUID = (*cit).value->volumeUID;
 
-				if(fDoMCTest && mcNpoints == 1) // only one tof point per MCtrack
-					pMatchingQA->FillDevPoint2EstP(mcPosition, estPoint, pKfTrack->Momentum());
+				if(fDoMCTest && MCdata.Npoints == 1) // only one tof point per MCtrack
+					pMatchingQA->FillDevPoint2EstP(MCdata.Position, estPoint, pKfTrack->Momentum());
 
 				hitCiter = mHits.find(detUID);
 				if(hitCiter != mHits.end()) // the estimated strip have hit
@@ -229,13 +223,13 @@ void 		MpdEtofMatching::Exec(Option_t *option)
 					double devHit, devHitZ, devHitR, devHitPhi;
 					MpdTofMatching::GetDelta(hitPosition, estPoint, devHit, devHitZ, devHitR, devHitPhi); 
 						
-					bool mcIsSameVolumeUID = (TofHit->GetDetectorID() == mcPadUID);	
+					bool mcIsSameVolumeUID = (TofHit->GetDetectorID() == MCdata.stripUID);	
 						
 					if(fDoMCTest) pMatchingQA->FillHitDev2EstP(mcIsSameVolumeUID, devHitR, devHitPhi);
 		
 					if(devHitR < fThreshR && devHitPhi < fThreshTheta) // inside matching window
 					{	
-						pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), TofHit, mcPID, TofHit->GetFlag(), trackLength, estPoint, Momentum, charge, devHitR,  devHitPhi));		
+						pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), TofHit, MCdata.pid, TofHit->GetFlag(), trackLength, estPoint, Momentum, charge, devHitR,  devHitPhi));		
 					  			
 //cout<<"\n AddCandidate	KfIndex="<<KfIndex<<" hitIndex="<<hitIndex<<" delta="<<delta<<" NmbTrHits="<<pKfTrack->GetNofTrHits()<<"  mcHasCand="<<mcHasCand;
 					}
@@ -245,7 +239,7 @@ void 		MpdEtofMatching::Exec(Option_t *option)
 			
 		} // have overlaped segments both R and Phi
 		
-        if(fDoMCTest && mcTofTouch) pMatchingQA->FillCandidates(mcHaveTrueCand, mcHaveCand, pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
+        if(fDoMCTest && MCdata.TofTouch) pMatchingQA->FillCandidates(MCdata.HaveTrueCand, MCdata.HaveCand, pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
 	
 	} // cycle by KF tracks
 

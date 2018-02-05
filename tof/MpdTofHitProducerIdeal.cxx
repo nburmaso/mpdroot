@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <iostream>
 
-#include "TClonesArray.h"
+#include <TClonesArray.h>
 
 #include "FairRootManager.h"
 #include "FairLogger.h"
@@ -17,7 +17,7 @@
 ClassImp(MpdTofHitProducerIdeal)
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducerIdeal::MpdTofHitProducerIdeal(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, Bool_t merge, const char *flnm, bool IsEndcap) 
- : FairTask(name, verbose), fDoTest(test), fDoMergeHits(merge),  fUseMCData(useMCdata),
+ : FairTask(name, verbose), fDoTest(test), fDoMergeHits(merge),  fUseMCData(useMCdata), fOnlyPrimary(false),
    aMcPoints(nullptr), aMcTracks(nullptr), aExpDigits(nullptr), aTofHits(nullptr)
 { 
         pHitProducerQA = fDoTest ? new MpdTofHitProducerQA(flnm, IsEndcap) : nullptr;
@@ -26,18 +26,31 @@ MpdTofHitProducerIdeal::MpdTofHitProducerIdeal(const char *name, Bool_t useMCdat
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducerIdeal::~MpdTofHitProducerIdeal() 
 { 
-    if (pHitProducerQA != nullptr) delete pHitProducerQA;
-    if (aTofHits != nullptr)
-    {
-        aTofHits->Delete();
-        delete aTofHits;
-        aTofHits = nullptr;
-    }
+	delete pHitProducerQA;
 }
 //------------------------------------------------------------------------------------------------------------------------
-InitStatus	MpdTofHitProducerIdeal::Init() 
+void		MpdTofHitProducerIdeal::AddParameters(TString& buf)const
+{ 
+	buf += "\n Run parameters:"; 
+	buf += "  fDoTest="; 		buf += fDoTest; 
+	buf += ", fDoMergeHits="; 	buf += fDoMergeHits;
+	buf += ", fUseMCData="; 	buf += fUseMCData;
+	buf += ", fOnlyPrimary="; 	buf += fOnlyPrimary;
+}
+//------------------------------------------------------------------------------------------------------------------------
+InitStatus	MpdTofHitProducerIdeal::Initialize()
 {
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducerIdeal::Init] Begin initialization.");
+	TString className(ClassName());
+	TString functionName("[");functionName += className; functionName +="::Initialize]";
+
+	TString buf(functionName);  buf += " Begin initialization."; AddParameters(buf);
+	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, buf.Data());
+
+    	if(fOnlyPrimary)
+	{
+		buf = functionName;  buf += " Only primary particles are processed!!!.";
+		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, buf.Data());	
+	}
 
 	if(fUseMCData)
 	{
@@ -56,9 +69,16 @@ assert(aExpDigits);
         aTofHits = new TClonesArray("MpdTofHit");
         FairRootManager::Instance()->Register("TOFHit", "Tof", aTofHits, kTRUE);
 
+return kSUCCESS;
+}
+//------------------------------------------------------------------------------------------------------------------------
+InitStatus	MpdTofHitProducerIdeal::Init() 
+{
+	InitStatus status = Initialize();
+
         FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducerIdeal::Init] Initialization finished succesfully.");
 
-return kSUCCESS;
+return status;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 		MpdTofHitProducerIdeal::Exec(Option_t* opt) 
@@ -154,8 +174,8 @@ assert(nullptr != pHit);
 	
 	if(pHitProducerQA)
 	{ 
-		for(msUIDsType::const_iterator it = UIDs.begin(), itEnd = UIDs.end(); it != itEnd;  it = UIDs.upper_bound(*it))	// cycle by detector UIDs list
-			 pHitProducerQA->GetOccupancyHisto()->Fill(UIDs.count(*it));
+		for(msUIDsType::const_iterator iter = UIDs.begin(), itEnd = UIDs.end(); iter != itEnd;  iter = UIDs.upper_bound(*iter))	// cycle by detector UIDs list
+			 pHitProducerQA->GetOccupancyHisto()->Fill(UIDs.count(*iter));
 	}
 	
 return 	mergedNmb;

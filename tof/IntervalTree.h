@@ -62,6 +62,17 @@ public:
     }
 };
 //------------------------------------------------------------------------------------------------------------------------
+template <class T, typename K = double>
+class IntervalValueSorter 
+{
+public:
+
+    bool operator() (const Interval<T,K>& a, const Interval<T,K>& b) 
+    {
+        return a.value < b.value;
+    }
+};
+//------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
 //		class	IntervalTree
 //------------------------------------------------------------------------------------------------------------------------
@@ -82,13 +93,13 @@ typedef IntervalTree<T,K> intervalTree;
     
 	//------------------------------------------------------------------------------------------------------------------------
     	IntervalTree<T,K>(void)
-         : left(NULL), right(NULL), center(0)
+         : left(nullptr), right(nullptr), center(0.)
     	{ 
     
    	}
 	//------------------------------------------------------------------------------------------------------------------------
     	IntervalTree<T,K>(const intervalTree& other) 
-         : left(NULL), right(NULL)
+         : left(nullptr), right(nullptr)
     	{
         	center = other.center;
         	intervals = other.intervals;
@@ -98,13 +109,11 @@ typedef IntervalTree<T,K> intervalTree;
  	//------------------------------------------------------------------------------------------------------------------------   
        ~IntervalTree(void) 
     	{
-        	// traverse the left and right
-        	// delete them all the way down
-        	if(left)	delete left;
-        	if(right)       delete right;   
+        	delete left;
+        	delete right;   
     	}
 	//------------------------------------------------------------------------------------------------------------------------
-    	IntervalTree<T,K>& operator=(const intervalTree& other) 
+    	IntervalTree<T,K>& operator=(const intervalTree& other)  
     	{
         	center = other.center;
 		intervals = other.intervals;
@@ -113,21 +122,21 @@ typedef IntervalTree<T,K> intervalTree;
 		else 
 		{
             		if(left) delete left;
-            		left = NULL;
+            		left = nullptr;
 		}
 		
 		if(other.right)	right = new intervalTree(*other.right);
 		else 
 		{
             		if(right) delete right;
-            		right = NULL;
+            		right = nullptr;
         	}
         	
         return *this;
     	}
 	//------------------------------------------------------------------------------------------------------------------------
     	IntervalTree<T,K>( intervalVector& ivals, std::size_t depth = 16, std::size_t minbucket = 64, K leftextent = 0, K rightextent = 0, std::size_t maxbucket = 512)
-        : left(NULL), right(NULL)
+        : left(nullptr), right(nullptr)
     	{
         	--depth;
         	IntervalStartSorter<T,K> intervalStartSorter;
@@ -144,9 +153,9 @@ typedef IntervalTree<T,K> intervalTree;
               			std::sort(ivals.begin(), ivals.end(), intervalStartSorter);
             		}
 
-            		K leftp = 0;
-            		K rightp = 0;
-            		K centerp = 0;
+            		K leftp = 0.;
+            		K rightp = 0.;
+            		K centerp = 0.;
             
             		if(leftextent || rightextent) 
             		{
@@ -171,11 +180,11 @@ typedef IntervalTree<T,K> intervalTree;
 
             		for(typename intervalVector::iterator it = ivals.begin(); it != ivals.end(); ++it) 
             		{
-                		interval& interval = *it;
+                		interval& range = *it;
                 		
-                		if(interval.stop < center)		lefts.push_back(interval);
-                		else if(interval.start > center)	rights.push_back(interval);
-                		else					intervals.push_back(interval);            
+                		if(range.stop < center)		lefts.push_back(range);
+                		else if(range.start > center)	rights.push_back(range);
+                		else				intervals.push_back(range);            
             		}
 
             		if(!lefts.empty())	left = new intervalTree(lefts, depth, minbucket, leftp, centerp);          
@@ -189,8 +198,8 @@ typedef IntervalTree<T,K> intervalTree;
         	{
             		for(typename intervalVector::const_iterator it = intervals.begin(); it != intervals.end(); ++it) 
             		{
-                		const interval& interval = *it;
-                		if(interval.stop >= start && interval.start <= stop)	overlapping.push_back(interval);
+                		const interval& range = *it;
+                		if(range.stop >= start && range.start <= stop)	overlapping.push_back(range);
             		}
         	}
 
@@ -204,8 +213,8 @@ typedef IntervalTree<T,K> intervalTree;
 		{
             		for(typename intervalVector::const_iterator it = intervals.begin(); it != intervals.end(); ++it) 
             		{
-                		const interval& interval = *it;
-                		if(interval.start >= start && interval.stop <= stop)	contained.push_back(interval);
+                		const interval& range = *it;
+                		if(range.start >= start && range.stop <= stop)	contained.push_back(range);
                 	}
         	}
 
@@ -240,7 +249,7 @@ typedef IntervalTree<T,K> intervalTree;
 		
 		if(comment) out<<comment;  
 		out<<"  size= "<<pVector->size();
-///		for(typename intervalVector::const_iterator it = pVector->begin(), itEnd = pVector->end(); it != itEnd; it++)	out<<endl<<(*it);
+		for(typename intervalVector::const_iterator it = pVector->begin(), itEnd = pVector->end(); it != itEnd; it++)	out<<endl<<(*it);
 	}
 	//------------------------------------------------------------------------------------------------------------------------
 };

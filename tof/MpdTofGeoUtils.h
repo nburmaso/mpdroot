@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------------------------------------------------
 class LRectangle	// convex quadrangle
 { 
-	bool			IsInvalid;
+	bool		IsInvalid;
 	
 	inline void		getRPhi(const TVector3& point, Double_t& Rmin, Double_t& Rmax, Double_t& Phimin, Double_t& Phimax)
 	{
@@ -24,12 +24,12 @@ public:
 	enum Side_t { kRight=0,  kLeft=1, kInvalid= -1 }; 
 	
 	Int_t 		volumeUID;
-	TVector3 	A, B, C, D, center, perp;  // [cm] 
-	
-	LRectangle() : IsInvalid(true), volumeUID(kInvalid){};
+	TVector3 	A, B, C, D, center, perp;  // [cm]
+
+	LRectangle() : IsInvalid(true), volumeUID(kInvalid) {};
 	LRectangle(Int_t uid, const TVector3& a, const TVector3& b, const TVector3& c, const TVector3& d, bool check = false);
 	
-    void	 	GetInteriorAngle(int vertexIndex) const {;}; // FIXME
+	double	 	GetInteriorAngle(int vertexIndex) const {;}; // FIXME
 	TVector3	GetCenter() const{ return (A+B+C+D) * 0.25;}
 	bool		isInvalid() const{ return IsInvalid;}
 
@@ -66,7 +66,25 @@ public:
 			IsInvalid = true;
 		}	
 	}
+
+	TVector3 ProjectionPointToPlane(const TVector3& point) const
+	{
+		Double_t d = perp * (A - point); // d = DotProduct ( N, A - point )  		    
+	return point + perp*d;
+	}
+
+	bool	IsPointInside(const TVector3& point)const
+	{
+ 		TVector3 v1 = A - B;TVector3 v2 = C - B;TVector3 v3 = point - B;
+ 		double mag = v1.Mag(), proj = v3*v1/mag;
+ 		if(proj < 0. || proj > mag) return false;
+  
+ 		mag = v2.Mag(), proj = v3*v2/mag;
+ 		if(proj < 0. || proj > mag) return false;
+	return true;	
+	}
 };
+class TGeoMatrix;
 //------------------------------------------------------------------------------------------------------------------------
 class LStrip : public LRectangle
 {
@@ -91,7 +109,7 @@ public:
 class TH1D;
 class TH2D;
 
-typedef std::map<Int_t, LStrip> 	MStripType; // pair<detectorUID, Strip parameters>
+typedef std::map<Int_t, LStrip> 	MStripType; // pair<stripUID, Strip parameters>
 typedef MStripType::const_iterator	MStripCIT;
 typedef MStripType::iterator		MStripIT;
 typedef std::pair<MStripIT, bool>	MStripResult;
@@ -101,12 +119,15 @@ typedef IntervalTree<LRectangle*> 	intervalTreeType;
 
 class MpdTofGeoUtils 
 {
-	MStripType			mStrips; 	//! indexing strips by detectorUID			
-	intervalTreeType		mDetectorsZ; 	//! detectors Z[cm] location interval tree
-	intervalTreeType		mDetectorsPhi;	//! detectors Phi[rads] location interval tree	
+	MStripType			mStrips; 	//! indexing strips by UID			
+	intervalTreeType		mDetectorsZ, mStripsZ; 		//! detectors Z[cm] location interval tree
+	intervalTreeType		mDetectorsPhi, mStripsPhi;	//! detectors Phi[rads] location interval tree	
 	
-	MpdTofGeoUtils();
+	MpdTofGeoUtils(); 
 	static	MpdTofGeoUtils *instance;
+
+
+	void 	localToMaster(const TGeoMatrix *matrix, Double_t* local, TVector3& position, std::pair<double, double>& Z, std::pair<double,double>& Phi)const;
 	
 public:
 	static MpdTofGeoUtils*  Instance(){ if(instance == nullptr) instance = new MpdTofGeoUtils; return instance;}
@@ -114,11 +135,15 @@ public:
 	void			FindNeighborStrips(Double_t thresh, TH1D* h1 = nullptr, TH2D* h2 = nullptr, bool forced = false); // thresh, [cm] <--- thresh. distance between neighbor strips, (see h1TestDistance histo)
 	void			ParseTGeoManager(bool useMCinput, TH2D* h1 = nullptr, bool forced = false);
 	const LStrip*		FindStrip(Int_t UID);
-
-	void			CalcMinMax(double A, double B, double& minA, double& maxA, double& minB, double& maxB);
+	
+	bool			GetStripListForDetector(Int_t detUID, MStripCIT& first, MStripCIT& last);	
+	bool			IsPointInsideStrips(const TVector3& position, vector<intervalType>& intersect);
 	
 	const intervalTreeType*	GetDetZ() { return &mDetectorsZ; };
 	const intervalTreeType*	GetDetPhi() { return &mDetectorsPhi; };	
+	
+	const intervalTreeType*	GetStripZ() { return &mStripsZ; };
+	const intervalTreeType*	GetStripPhi() { return &mStripsPhi; };		
 };
 //------------------------------------------------------------------------------------------------------------------------
 #endif

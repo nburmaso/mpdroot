@@ -22,31 +22,25 @@ MpdTofHit::MpdTofHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index, Doub
 	fFlag = flag;
 }
 //------------------------------------------------------------------------------------------------------------------------
-bool			MpdTofHit::CheckVolumeUID(Int_t uid)
-{
- 	Int_t  nLinks = GetNLinks();
-	FairLink link;
-  	
-  	if(nLinks > 0)
-		for(Int_t i = 0; i < nLinks; i++) 							
-		{
-			link = GetLink(i);
-			if(link.GetType() == MpdTofUtils::volumeUID && link.GetIndex() == uid) return true;	
-		}
+bool			MpdTofHit::CheckVolumeUID(Int_t uid) const
+{ 	
+	for(Int_t i = 0, nLinks = GetNLinks(); i < nLinks; i++) 							
+	{
+		auto link = GetLink(i);
+		if(link.GetType() == MpdTofUtils::volumeUID && link.GetIndex() == uid) return true;	
+	}
+
 return false;
 }
 //------------------------------------------------------------------------------------------------------------------------
-bool			MpdTofHit::CheckTrackID(Int_t uid)
-{
- 	Int_t  nLinks = GetNLinks();
-	FairLink link;
-  	
-  	if(nLinks > 0)
-		for(Int_t i = 0; i < nLinks; i++) 							
-		{
-			link = GetLink(i);
-			if(link.GetType() == MpdTofUtils::mcTrackIndex && link.GetIndex() == uid) return true;	
-		}
+bool			MpdTofHit::CheckTrackID(Int_t uid) const
+{  	
+	for(Int_t i = 0, nLinks = GetNLinks(); i < nLinks; i++) 							
+	{
+		auto link = GetLink(i);
+		if(link.GetType() == MpdTofUtils::mcTrackIndex && link.GetIndex() == uid) return true;	
+	}
+
 return false;
 }
 //------------------------------------------------------------------------------------------------------------------------

@@ -133,7 +133,7 @@ void 		MpdEtofHitProducer::Exec(Option_t *option)
 	
 	aTofHits->Clear();
 
-	Int_t 		UID, CrossUID, trackID;	
+	Int_t 		UID, trackID;	
 	TVector3 	pos, XYZ_smeared; 	
     	int		nSingleHits = 0, nDoubleHits = 0;
 	

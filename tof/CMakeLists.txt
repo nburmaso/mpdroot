@@ -42,7 +42,6 @@ MpdTofHit.cxx
 MpdTofHitProducer.cxx 
 MpdTofHitProducerIdeal.cxx 
 MpdTofPoint.cxx
-MpdTofUtils.cxx
 MpdTofGeoUtils.cxx
 MpdTofMatching.cxx
 MpdTofMatchingData.cxx
