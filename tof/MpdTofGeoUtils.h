@@ -29,7 +29,7 @@ public:
 	LRectangle() : IsInvalid(true), volumeUID(kInvalid) {};
 	LRectangle(Int_t uid, const TVector3& a, const TVector3& b, const TVector3& c, const TVector3& d, bool check = false);
 	
-	double	 	GetInteriorAngle(int vertexIndex) const {;}; // FIXME
+    double	 	GetInteriorAngle(int vertexIndex) const { return 0; } // FIXME
 	TVector3	GetCenter() const{ return (A+B+C+D) * 0.25;}
 	bool		isInvalid() const{ return IsInvalid;}
 
