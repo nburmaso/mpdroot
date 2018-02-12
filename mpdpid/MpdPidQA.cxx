@@ -436,10 +436,14 @@ void MpdPidQA::GetDedxQA(TString dir)
 			TF1 *Novosib = new TF1("Novosib", this, &MpdPidQA::Novosibirsk, XFUNCMIN, XFUNCMAX, 4, "MpdPidQA", "Novosibirsk");
 			Novosib->SetParameters(Gaus->GetParameter(0), 0.01, Gaus->GetParameter(2), Gaus->GetParameter(1));
 			it->second.dEdXPart[i]->Fit("Novosib","Q0RW");
+			if (it->first == 2212)
+			{
+				if (Xgraph[i] < 0.225) { for (Int_t k=0; k<parBB->GetNpar(); k++) {parBBMultX->SetParameter(k, parPrBBLowP->GetParameter(k));} parBB = parPrBBLowP; parBB->SetName("parBB"); }
+				else { for (Int_t k=0; k<parBB->GetNpar(); k++) {parBBMultX->SetParameter(k, parBB->GetParameter(k));} parBB = parPrBB; parBB->SetName("parBB"); }
+			}
 			mom = parBBMultX->Integral(Xlow[i+ibegloc],Xhigh[i+ibegloc])/(parBB->Integral(Xlow[i+ibegloc],Xhigh[i+ibegloc]));
-			Ygraph[i] = Novosib->GetParameter(3); Ygraph[i] /= (this->*GetDedxParam)(mom);
-			//sigma1 = AGaus->GetParameter(2); sigma2 = (1. + AGaus->GetParameter(3)) * AGaus->GetParameter(2);
-			//sigma[i] = (sigma1 < sigma2) ? sigma1 : sigma2; sigma[i] /= (this->*GetDedxParam)(mom);
+			Ygraph[i] = Novosib->GetParameter(3); 
+			Ygraph[i] /= (this->*GetDedxParam)(mom);
 			sigma1[i] = AGaus->GetParameter(2); sigma2[i] = (1. + AGaus->GetParameter(3)) * AGaus->GetParameter(2);
 			sigma1[i] /= (this->*GetDedxParam)(mom); sigma2[i] /= (this->*GetDedxParam)(mom);
 			delete Gaus; delete AGaus;
@@ -678,7 +682,7 @@ void MpdPidQA::Savem2Hists(map <Int_t,TH1D*> m2Sigmas, TString dir)
 			case 2212: PARTNAME = "protons"; parPrLowPM2->SetRange(0., 1.4); parPrHighPM2->SetRange(1.4, 3.); m2Funcs.push_back(parPrLowPM2); m2Funcs.push_back(parPrHighPM2); break;
 			case 11: PARTNAME = "electrons"; m2Funcs.push_back(parElM2); break;
 			case 13: PARTNAME = "muons"; m2Funcs.push_back(parMuM2); break;
-			case PDG_DEUTERON: PARTNAME = "deuterons"; parDeLowPM2->SetRange(0., 2.5); parDeHighPM2->SetRange(2.5, 3.); m2Funcs.push_back(parDeLowPM2); m2Funcs.push_back(parDeHighPM2); break;
+			case PDG_DEUTERON: PARTNAME = "deuterons"; m2Funcs.push_back(parDeM2); break;
 			case PDG_TRITON: PARTNAME = "tritons"; m2Funcs.push_back(parTrM2); break;
 			case PDG_HE3: PARTNAME = "he3"; m2Funcs.push_back(parHe3M2); break;
 			case PDG_HE4: PARTNAME = "he4"; m2Funcs.push_back(parHe4M2); break;
@@ -773,11 +777,13 @@ void MpdPidQA::SaveEffContHists(TString dir, TString s1, TString s2, TString s3)
 						if ( ret != effcont.end() )
 						{
 							name += particles[i];
+							ret->second.EffContPart[histNum[k]]->SetMarkerStyle(20);
+							ret->second.EffContPart[histNum[k]]->SetMarkerSize(2);
 							ret->second.EffContPart[histNum[k]]->SetMarkerColor(colors[i]);
 							ret->second.EffContPart[histNum[k]]->SetLineColor(colors[i]);
 							ret->second.EffContPart[histNum[k]]->SetLineWidth(6);
-							if (match) ret->second.EffContPart[histNum[k]]->Draw("same");
-							else { match = kTRUE; ret->second.EffContPart[histNum[k]]->Draw(); }
+							if (match) ret->second.EffContPart[histNum[k]]->Draw("hist p same");
+							else { match = kTRUE; ret->second.EffContPart[histNum[k]]->Draw("hist p"); }
 						}
 					}
 				}
@@ -792,8 +798,8 @@ void MpdPidQA::SaveEffContHists(TString dir, TString s1, TString s2, TString s3)
 							auto ret = k % 2 ? effcont.find(-codes[i]) : effcont.find(codes[i]);
 							if ( ret != effcont.end() )
 							{ 
-								if (i < 5) leg->AddEntry(ret->second.EffContPart[2], partSymbol[i] + sign[0], "l");
-								else leg->AddEntry(ret->second.EffContPart[2], partSymbol[i], "l");
+								if (i < 5) leg->AddEntry(ret->second.EffContPart[2], partSymbol[i] + sign[k%2], "l");
+								else leg->AddEntry(ret->second.EffContPart[2], partSymbol[i], "p");
 							}
 						}
 					}

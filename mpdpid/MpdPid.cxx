@@ -6,6 +6,7 @@ MpdPid::MpdPid() : TObject(){
       parPiBB = 0;
       parKaBB = 0;
       parPrBB = 0;
+      parPrBBLowP = 0;
       parDeBB = 0;
       parTrBB = 0;
       parHe3BB = 0;
@@ -38,7 +39,8 @@ Double_t MpdPid::GetDedxWidthValue(Double_t p, Int_t specie)
 	if (specie == 1)
 	{
 		if (p < piSigmaLowP->GetXmax()) WidthValue = piSigmaLowP->Eval(p);
-		if ((p >= piSigmaMidP->GetXmin()) && (p < piSigmaMidP->GetXmax())) WidthValue = piSigmaMidP->Eval(p);
+		if ((p >= piSigmaMid1P->GetXmin()) && (p < piSigmaMid1P->GetXmax())) WidthValue = piSigmaMid1P->Eval(p);
+		if ((p >= piSigmaMid2P->GetXmin()) && (p < piSigmaMid2P->GetXmax())) WidthValue = piSigmaMid2P->Eval(p);
 		if ((p >= piSigmaHighP->GetXmin()) && (p <= piSigmaHighP->GetXmax())) WidthValue = piSigmaHighP->Eval(p);
 	}
 	if (specie == 2)
@@ -65,7 +67,8 @@ Double_t MpdPid::GetDedxWidthValue(Double_t p, Int_t specie)
 	}
 	if (specie == 6)
 	{
-		WidthValue = 0.05;
+		if ((p >= deSigmaLowP->GetXmin()) && (p <= deSigmaLowP->GetXmax())) WidthValue = deSigmaLowP->Eval(p);
+		if ((p >= deSigmaHighP->GetXmin()) && (p <= deSigmaHighP->GetXmax())) WidthValue = deSigmaHighP->Eval(p);
 	}
 	if (specie == 7)
 	{
@@ -228,7 +231,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	Double_t dedxParam;
 	
 	/// Setting default ratio ('rat' is pos./neg.)
-	prrat=43.43;
+	prrat=102.11;
 	if (fEnergy < 7.0) prrat=1000.;
 	
 	///
@@ -240,6 +243,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	parPiBB = new TF1("parPiBB","[0]/pow(x/sqrt(x*x+0.01949),[3])*([1]-pow(x/sqrt(x*x+0.01949),[3])-log([2]+pow(1./(x/0.1396),[4])) )",PMIN,PMAX);
 	parKaBB = new TF1("parKaBB","[0]/pow(x/sqrt(x*x+0.2437),[3])*([1]-pow(x/sqrt(x*x+0.2437),[3])-log([2]+pow(1./(x/0.4937),[4])) )",PMIN,PMAX);
 	parPrBB = new TF1("parPrBB","[0]/pow(x/sqrt(x*x+0.88),[3])*([1]-pow(x/sqrt(x*x+0.88),[3])-log([2]+pow(1./(x/0.9383),[4])) )",PMIN,PMAX);
+	parPrBBLowP = new TF1("parPrBBLowP","[0]/pow(x/sqrt(x*x+0.88),[3])*([1]-pow(x/sqrt(x*x+0.88),[3])-log([2]+pow(1./(x/0.9383),[4])) )",PMIN,PMAX);
 	parDePol1 = new TF1("parDePol1", "pol1(0)", 0., 0.225); parDePol2 = new TF1("parDePol2", "pol1(0)", 0.225, 0.375);
 	parDeBB = new TF1("parDeBB","[0]/pow(x/sqrt(x*x+3.52),[3])*([1]-pow(x/sqrt(x*x+3.52),[3])-log([2]+pow(1./(x/1.876),[4])) )",PMIN,PMAX);
 	parTrPol1 = new TF1("parTrPol1", "pol1(0)", 0., 0.3); parTrPol2 = new TF1("parTrPol2", "pol1(0)", 0.3, 0.525);
@@ -261,8 +265,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	parKaM2=new TF1("parKaM2","pol2(0)",PMIN,PMAX);
 	parPrLowPM2=new TF1("parPrLowPM2","pol3(0)",PMIN,PMAX);  
 	parPrHighPM2=new TF1("parPrHighPM2","pol2(0)",PMIN,PMAX);  
-	parDeLowPM2=new TF1("parDeLowPM2","pol3(0)",PMIN,PMAX);  
-	parDeHighPM2=new TF1("parDeHighPM2","pol1(0)",PMIN,PMAX);  
+	parDeM2=new TF1("parDeM2","pol3(0)",PMIN,PMAX);    
 	parTrM2=new TF1("parTrM2","pol3(0)",PMIN,PMAX);  
 	parHe3M2=new TF1("parHe3M2","pol3(0)",PMIN,PMAX);  
 	parHe4M2=new TF1("parHe4M2","pol3(0)",PMIN,PMAX);  
@@ -309,8 +312,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		parKaM2->SetParameters(0.00144014, 0.0183536, 0.0161613);
 		parPrLowPM2->SetParameters(0.0777042, -0.123828, 0.139278, -0.0338542);
 		parPrHighPM2->SetParameters(0.0244298, 0.018534, 0.0174998);
-		parDeLowPM2->SetParameters(0.535691,-0.529882,0.293807,-0.0428139);
-		parDeHighPM2->SetParameters(0.535691,-0.529882);
+		parDeM2->SetParameters(0.535691,-0.529882,0.293807,-0.0428139);
 		parTrM2->SetParameters(0.422,0.3,-0.202,0.0524);
 		parHe3M2->SetParameters(0.17,-0.0,0.0,-0.00);
 		parHe4M2->SetParameters(0.3,-0.0,0.0,-0.00);
@@ -323,14 +325,14 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		muSigmaMidP = new TF1("muSigmaMidP", "pol1(0)", 0.3, 1.05); muSigmaMidP->SetParameters(0.0458461, 0.00145295);
 		muSigmaHighP = new TF1("muSigmaHighP", "pol1(0)", 1.05, 3.0); muSigmaHighP->SetParameters(0.0450895, 0.00118004);
 		piSigmaLowP = new TF1("piSigmaLowP", "pol1(0)", 0., 0.35); piSigmaLowP->SetParameters(0.0787807, -0.100463);
-		piSigmaMidP = new TF1("piSigmaMidP", "pol1(0)", 0.35, 1.5); piSigmaMidP->SetParameters(0.0487635, 0.000857375);
+		piSigmaMid1P = new TF1("piSigmaMid1P", "pol1(0)", 0.35, 1.5); piSigmaMid1P->SetParameters(0.0487635, 0.000857375);
+		piSigmaMid2P = new TF1("piSigmaMid2P", "pol1(0)", 0.35, 1.5); piSigmaMid2P->SetParameters(0.0487635, 0.000857375);
 		piSigmaHighP = new TF1("piSigmaHighP", "pol1(0)", 1.5, 3.0); piSigmaHighP->SetParameters(0.0443209, 0.00524245);
 		prSigmaLowP = new TF1("prSigmaLowP", "pol1(0)", 0., 0.2); prSigmaLowP->SetParameters(0.068647, -0.0426204);
 		prSigmaHighP = new TF1("prSigmaHighP", "pol1(0)", 0.2, 3.0); prSigmaHighP->SetParameters(0.0476193, -0.000557916);
 		kaSigmaLowP = new TF1("kaSigmaLowP", "pol1(0)", 0., 0.2); kaSigmaLowP->SetParameters(0.149889, -0.465214);
 		kaSigmaHighP = new TF1("kaSigmaHighP", "pol1(0)", 0.2, 3.0); kaSigmaHighP->SetParameters(0.0486608, -0.000571203);
-		deSigmaLowP = new TF1("deSigmaLowP", "pol1(0)", 0., 0.475); deSigmaLowP->SetParameters(0.05, 0.);
-		deSigmaMidP = new TF1("deSigmaMidP", "pol1(0)", 0.475, 0.8); deSigmaMidP->SetParameters(0.05, 0.);
+		deSigmaLowP = new TF1("deSigmaLowP", "pol1(0)", 0., 0.8); deSigmaLowP->SetParameters(0.05, 0.);
 		deSigmaHighP = new TF1("deSigmaHighP", "pol1(0)", 0.8, 3.0); deSigmaHighP->SetParameters(0.05, 0.);
 		trSigmaLowP = new TF1("trSigmaLowP", "pol1(0)", 0., 0.625); trSigmaLowP->SetParameters(0.05, 0.);
 		trSigmaMidP = new TF1("trSigmaMidP", "pol1(0)", 0.625, 1.5); trSigmaMidP->SetParameters(0.05, 0.);
@@ -385,21 +387,23 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		dedxParam = fKoef*(-54.6053);
 		parMuBB->SetParameters(dedxParam,-41.38,109.594,1.30576,-4.66578);
 		/// pions
-		dedxParam = fKoef*(-333.199);
-		parPiBB->SetParameters(dedxParam,-4.76053,3.73173,1.82109,-1.2414);
+		dedxParam = fKoef*(-371.355);
+		parPiBB->SetParameters(dedxParam,-4.09623,3.29922,1.90921,-1.18982);
 		/// kaons
-		dedxParam = fKoef*(-674.513);
-		parKaBB->SetParameters(dedxParam,-4.02511,0.391596,0.993733,4.13295);
+		dedxParam = fKoef*(-640.087);
+		parKaBB->SetParameters(dedxParam,-4.04746,0.468871,1.1251,3.80837);
 		/// protons
-		dedxParam = fKoef*(-2328.44);
-		parPrBB->SetParameters(dedxParam,-0.054584,1.15196,0.819829,2.74767);
+		dedxParam = fKoef*(-14147.3);
+		parPrBB->SetParameters(dedxParam,3.23534,11.3141,-0.294602,3.27046);
+		dedxParam = fKoef*(-2014.31);
+		parPrBBLowP->SetParameters(dedxParam,-3.1795,-2.18089,1.24223,0.683807);
 		/// deuterons
 		dedxParam = fKoef*(112.e+04); parDePol1->SetParameter(0, dedxParam);
 		dedxParam = fKoef*(-4466.666e+03); parDePol1->SetParameter(1, dedxParam);
 		dedxParam = fKoef*(215507.); parDePol2->SetParameter(0, dedxParam);
 		dedxParam = fKoef*(-474223.); parDePol2->SetParameter(1, dedxParam);
-		dedxParam = fKoef*(-2768.77);
-		parDeBB->SetParameters(dedxParam,0.233707,1.35426,0.543618,3.17898);
+		dedxParam = fKoef*(-3591.57);
+		parDeBB->SetParameters(dedxParam,0.656424,1.61966,0.585121,2.70803);
 		/// tritons
 		dedxParam = fKoef*(1.094542e+06); parTrPol1->SetParameter(0, dedxParam);
 		dedxParam = fKoef*(-1.81963e+06); parTrPol1->SetParameter(1, dedxParam);
@@ -432,8 +436,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		parKaM2->SetParameters(-1.25162e-05, 0.0206642, 0.0187346);
 		parPrLowPM2->SetParameters(0.0752714, -0.115864, 0.139697, -0.033123);
 		parPrHighPM2->SetParameters(0.0130241, 0.0302837, 0.0207017);
-		parDeLowPM2->SetParameters(0.479328,-0.538336,0.314051,-0.0467689);
-		parDeHighPM2->SetParameters(0.180558,0.0772852);
+		parDeM2->SetParameters(0.417362, -0.399356, 0.24154, -0.0339673);
 		parTrM2->SetParameters(1.03599,-0.663541,0.199024,0.);
 		parHe3M2->SetParameters(0.13,-0.0,0.0,-0.00);
 		parHe4M2->SetParameters(0.24,-0.0,0.0,-0.00);
@@ -445,16 +448,16 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		muSigmaLowP = new TF1("muSigmaLowP", "pol1(0)", 0., 0.3); muSigmaLowP->SetParameters(0.115611, -0.179933);
 		muSigmaMidP = new TF1("muSigmaMidP", "pol1(0)", 0.3, 1.05); muSigmaMidP->SetParameters(0.0583018, 0.00140717);
 		muSigmaHighP = new TF1("muSigmaHighP", "pol1(0)", 1.05, 3.0); muSigmaHighP->SetParameters(0.0570477, -8.02801e-05);
-		piSigmaLowP = new TF1("piSigmaLowP", "pol1(0)", 0., 0.25); piSigmaLowP->SetParameters(0.144972, -0.308612);
-		piSigmaMidP = new TF1("piSigmaMidP", "pol1(0)", 0.25, 0.4); piSigmaMidP->SetParameters(0.0805, -0.0553436);
-		piSigmaHighP = new TF1("piSigmaHighP", "pol1(0)", 0.4, 3.0); piSigmaHighP->SetParameters(0.0587877, 0.00143879);
+		piSigmaLowP = new TF1("piSigmaLowP", "pol1(0)", 0., 0.32); piSigmaLowP->SetParameters(0.103709,-0.142807);
+		piSigmaMid1P = new TF1("piSigmaMid1P", "pol1(0)", 0.32, 0.81); piSigmaMid1P->SetParameters(0.0572968,0.00228388);
+		piSigmaMid2P = new TF1("piSigmaMid2P", "pol1(0)", 0.81, 1.46); piSigmaMid2P->SetParameters(0.0614121,-0.00279866);
+		piSigmaHighP = new TF1("piSigmaHighP", "pol1(0)", 1.46, 3.0); piSigmaHighP->SetParameters(0.0541414,0.00216918);
 		prSigmaLowP = new TF1("prSigmaLowP", "pol1(0)", 0., 0.2); prSigmaLowP->SetParameters(0.157451, -0.481992);
 		prSigmaHighP = new TF1("prSigmaHighP", "pol1(0)", 0.2, 3.0); prSigmaHighP->SetParameters(0.0623534, 0.00287991);
 		kaSigmaLowP = new TF1("kaSigmaLowP", "pol1(0)", 0., 0.2); kaSigmaLowP->SetParameters(0.120409, -0.289855);
 		kaSigmaHighP = new TF1("kaSigmaHighP", "pol1(0)", 0.2, 3.0); kaSigmaHighP->SetParameters(0.0630206, -0.00374603);
-		deSigmaLowP = new TF1("deSigmaLowP", "pol1(0)", 0., 0.475); deSigmaLowP->SetParameters(0.450833, -0.833333);
-		deSigmaMidP = new TF1("deSigmaMidP", "pol1(0)", 0.475, 0.8); deSigmaMidP->SetParameters(0.0154167, 0.0833333);
-		deSigmaHighP = new TF1("deSigmaHighP", "pol1(0)", 0.8, 3.0); deSigmaHighP->SetParameters(0.0638808, -0.00180077);
+		deSigmaLowP = new TF1("deSigmaLowP", "pol1(0)", 0.6, 1.025); deSigmaLowP->SetParameters(0.158871, -0.0961071);
+		deSigmaHighP = new TF1("deSigmaHighP", "pol1(0)", 1.025, 3.0); deSigmaHighP->SetParameters(0.054097, 0.00610817);
 		trSigmaLowP = new TF1("trSigmaLowP", "pol1(0)", 0., 0.625); trSigmaLowP->SetParameters(0.50625, -0.65);
 		trSigmaMidP = new TF1("trSigmaMidP", "pol1(0)", 0.625, 1.5); trSigmaMidP->SetParameters(0.137969, -0.05625);
 		trSigmaHighP = new TF1("trSigmaHighP", "pol1(0)", 1.5, 3.0); trSigmaHighP->SetParameters(0.0510345, 0.0039953);
@@ -473,9 +476,9 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		fAsymmetryMuLowP = new TF1("fAsymmetryMuLowP", "pol1(0)", 0., 0.125); fAsymmetryMuLowP->SetParameters(2.5656, -14.391);
 		fAsymmetryMuMidP = new TF1("fAsymmetryMuMidP", "pol1(0)", 0.125, 0.5); fAsymmetryMuMidP->SetParameters(-0.0467746, 0.496758);
 		fAsymmetryMuHighP = new TF1("fAsymmetryMuHighP", "pol1(0)", 0.5, 3.0); fAsymmetryMuHighP->SetParameters(0.196422, 0.0117276);
-		fAsymmetryPiLowP = new TF1("fAsymmetryPiLowP", "pol1(0)", 0., 0.18); fAsymmetryPiLowP->SetParameters(3.50026, -18.1992);
-		fAsymmetryPiMidP = new TF1("fAsymmetryPiMidP", "pol1(0)", 0.18, 0.9); fAsymmetryPiMidP->SetParameters(0.106035, 0.237438);
-		fAsymmetryPiHighP = new TF1("fAsymmetryPiHighP", "pol1(0)", 0.9, 3.); fAsymmetryPiHighP->SetParameters(0.256077, -0.0069969);
+		fAsymmetryPiLowP = new TF1("fAsymmetryPiLowP", "pol1(0)", 0., 0.1841); fAsymmetryPiLowP->SetParameters(4.51001, -23.116);
+		fAsymmetryPiMidP = new TF1("fAsymmetryPiMidP", "pol1(0)", 0.1841, 0.6); fAsymmetryPiMidP->SetParameters(0.206221, 0.103783);
+		fAsymmetryPiHighP = new TF1("fAsymmetryPiHighP", "pol1(0)", 0.6, 3.); fAsymmetryPiHighP->SetParameters(0.204105, 0.0544095);
 		fAsymmetryPrLowP = new TF1("fAsymmetryPrLowP", "pol1(0)", 0., 0.25); fAsymmetryPrLowP->SetParameters(1.68519, -2.75816);
 		fAsymmetryPrMidP = new TF1("fAsymmetryPrMidP", "pol1(0)", 0.25, 0.5); fAsymmetryPrMidP->SetParameters(1.68519, -2.75816);
 		fAsymmetryPrHighP = new TF1("fAsymmetryPrHighP", "pol1(0)", 0.5, 3.); fAsymmetryPrHighP->SetParameters(-0.0761382, 0.186669);
@@ -607,21 +610,21 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 				parHe3Mom->SetParameters(661.212,8.47325,0.150273,0.135588,1.57518); Multiplicities[12] = 22466;
 				parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
 			}
-			else /// fEnergy = 9.0 (mb, Au+Au), 12/12/2017, 57.5K events
+			else /// fEnergy = 11.0 (mb, Au+Au), 12/12/2017, 394.5K events
 			{
 				parElPosMom->SetParameters(0.,1.,1.,1.,1.);
 				parElNegMom->SetParameters(0.,1.,1.,1.,1.);
 				parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
 				parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
-				parPiPosMom->SetParameters(13337.1,0.640146,0.151896,0.285896,0.275064); Multiplicities[4] = 5683871;
-				parPiNegMom->SetParameters(13497.1,0.681969,0.152435,0.286408,0.273244); Multiplicities[5] = 5960841;
-				parKaPosMom->SetParameters(2179.53,0.281822,0.263693,0.079826,0.303347); Multiplicities[6] = 438033;
-				parKaNegMom->SetParameters(764.061,0.302593,0.258302,0.0805185,0.330043); Multiplicities[7] = 154061;
-				amplParam = 7249.82;
-				parPrPosMom->SetParameters(amplParam,0.459585,0.443568,0.204566,0.273485); Multiplicities[8] = 1457595;
+				parPiPosMom->SetParameters(1287.54,48.9678,0.253939,0.121823,0.371256); Multiplicities[4] = 23985146;
+				parPiNegMom->SetParameters(3979.89,3.39065,0.194877,0.392421,-0.186646); Multiplicities[5] = 24982438;
+				parKaPosMom->SetParameters(9300.04,0.252028,0.280878,0.0806716,0.30038); Multiplicities[6] = 1869970;
+				parKaNegMom->SetParameters(4270.24,0.269129,0.276149,0.0813025,0.316033); Multiplicities[7] = 860059;
+				amplParam = 19730.6;
+				parPrPosMom->SetParameters(amplParam,0.327478,0.478771,0.188208,0.263743); Multiplicities[8] = 3982483;
 				amplParam /= prrat;
-				parPrNegMom->SetParameters(amplParam,0.459585,0.443568,0.204566,0.273485); Multiplicities[9] = 2215;
-				parDeMom->SetParameters(145.74,0.212488,0.572752,0.136763,1.14695); Multiplicities[10] = 29863;
+				parPrNegMom->SetParameters(amplParam,0.327478,0.478771,0.188208,0.263743); Multiplicities[9] = 44015;
+				parDeMom->SetParameters(303.123,0.144,0.580517,0.097639,1.31764); Multiplicities[10] = 61753;
 				parTrMom->SetParameters(0.,1.,1.,1.,1.);
 				parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
 				parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
@@ -778,12 +781,13 @@ Double_t MpdPid::GetDedxPiParam(Double_t p)
 	Double_t dedx=parPiBB->Eval(p);
 	if (fTracking)
 	{
-		if (p<0.1) dedx *= 0.85;
-		if (p<0.15) dedx *= 0.96;
-		if (p<0.25) dedx *= 1.015;
 		if (p<0.3) dedx *= 0.99;
+		if (p<0.25) dedx *= 1.01;
+		if (p<0.2) dedx *= 1.01;
+		if (p<0.15) dedx *= 0.965;
+		if (p<0.1) dedx *= 0.845;
 		if (p>2.3) dedx *= 0.99;
-		if (p>2.7) dedx *= 0.98;
+		if (p>2.7) dedx *= 0.975;
 	}
 	else
 	{
@@ -802,12 +806,14 @@ Double_t MpdPid::GetDedxKaParam(Double_t p)
 	Double_t dedx=parKaBB->Eval(p);
 	if (fTracking)
 	{
-		if (p<0.15) dedx *= 0.98; 
-		if (p<0.25) dedx *= 1.045; 
-		if (p<0.3) dedx *= 1.04; 
+		if (p<0.15) dedx *= 0.89; 
+		if (p<0.2) dedx *= 0.965; 
+		if (p<0.25) dedx *= 1.02; 
+		if (p<0.3) dedx *= 1.03; 
 		if (p<0.45) dedx *= 0.99; 
-		if (p>1.05) dedx *= 1.01; 
-		if (p>2.) dedx *= 1.01;
+		if (p>1.1) dedx *= 1.015; 
+		if (p>1.7) dedx *= 1.01;
+		if (p>2.1) dedx *= 1.015;
 	}
 	else
 	{
@@ -834,14 +840,19 @@ Double_t MpdPid::GetDedxPrParam(Double_t p)
 	Double_t dedx=parPrBB->Eval(p);
 	if (fTracking)
 	{
-		if (p<0.1) dedx *= 1.325;
-		if (p<0.15) dedx *= 1.065; 
-		if (p<0.2) dedx *= 1.185; 
-		if (p<0.25) dedx *= 1.07; 
-		if (p<0.3) dedx *= 0.96; 
+		if (p<0.55) dedx *= 0.985;
 		if (p<0.45) dedx *= 1.015;
-		if (p>1.6) dedx *= 0.99; 
-		if (p>2.1) dedx *= 1.02;
+		if (p>1.35) dedx *= 0.99;
+		if (p>2.0) dedx *= 1.02;
+		if (p>2.2) dedx *= 1.01;
+		if (p<0.225) 
+		{
+			dedx=parPrBBLowP->Eval(p);
+			if (p<0.25) dedx *= 0.95;
+			if (p<0.2) dedx *= 1.075;
+			if (p<0.15) dedx *= 0.935;
+			if (p<0.1) dedx *= 0.965;
+		}
 	}
 	else
 	{
@@ -1175,9 +1186,7 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Double_t m2, Int_t charge){
 	Double_t sigmka=parKaM2->Eval(p_calc);
 	Double_t sigmpr;
 	if(p<=1.4) sigmpr=parPrLowPM2->Eval(p_calc); else sigmpr=parPrHighPM2->Eval(p_calc);
-	Double_t sigmde;
-	if (fTracking) sigmde = p_calc < 2.5 ? parDeLowPM2->Eval(p_calc) : parDeHighPM2->Eval(p_calc);
-	else sigmde = parDeLowPM2->Eval(p_calc);
+	Double_t sigmde = parDeM2->Eval(p_calc);
 	Double_t sigmtr=parTrM2->Eval(p_calc);
 	Double_t sigmhe3=parHe3M2->Eval(p_calc), sigmhe4=parHe4M2->Eval(p_calc);
 	
