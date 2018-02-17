@@ -31,13 +31,13 @@ void		MpdEtofGeoUtils::FindNeighborStrips(Double_t thresh, TH1D *h1, TH2D *h2, b
 	size_t NR = 0, NL= 0;
 	const LStrip *strip2; double  distance;
 	
-	for(MStripIT it = mStrips.begin(), itEnd = mStrips.end(); it != itEnd ; it++) // cycle1 by strips
+	for(MStripIT it1 = mStrips.begin(), itEnd1 = mStrips.end(); it1 != itEnd1 ; it1++) // cycle1 by strips
 	{
-		LStrip *strip1 = &(it->second);
+		LStrip *strip1 = &(it1->second);
 		
-		for(MStripCIT it = mStrips.begin(), itEnd = mStrips.end(); it != itEnd ; it++) // cycle2 by strips
+		for(MStripCIT it2 = mStrips.begin(), itEnd2 = mStrips.end(); it2 != itEnd2 ; it2++) // cycle2 by strips
 		{
-			strip2 = &(it->second);
+			strip2 = &(it2->second);
 	
 			// CATION: Ckeck  only left and right sides(one row strips NOW) 
 			distance = strip1->Distance(LStrip::kRight, *strip2); 
@@ -82,9 +82,6 @@ static const double degree180 = 3.14159265359; // 180 degree to rad
 		gGeoManager->cd(pathToTOF[side]);
 	
 		TGeoNode *boxNode, *stripNode, *gasNode;
-		TGeoMatrix *matrix;
-		TGeoBBox *box;
-		LStrip	*pStrip;
 		Int_t volumeUID, boxID, stripID, gasID; // module[1,...,30], pad [1,...,131]
 		vector<intervalType> vDetectorsR, vDetectorsPhi;		
 

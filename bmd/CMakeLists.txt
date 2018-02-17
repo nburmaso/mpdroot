@@ -1,4 +1,4 @@
-# Create a library called "libTof" which includes the source files given in
+# Create a library called "libbmd" which includes the source files given in
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
@@ -10,16 +10,18 @@ ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/base/steer
 ${CMAKE_SOURCE_DIR}/base/event
 ${CMAKE_SOURCE_DIR}/base/field
+${CMAKE_SOURCE_DIR}/mpdfield
 ${CMAKE_SOURCE_DIR}/mcstack
+${CMAKE_SOURCE_DIR}/passive
 ${CMAKE_SOURCE_DIR}/fairtools
-${CMAKE_SOURCE_DIR}/tof
-${CMAKE_SOURCE_DIR}/kalman
+${CMAKE_SOURCE_DIR}/bmd
 ${CMAKE_SOURCE_DIR}/lhetrack
-${CMAKE_SOURCE_DIR}/etof
+${CMAKE_SOURCE_DIR}/kalman
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
- ${ROOT_INCLUDE_DIR}
+ ${ROOT_INCLUDE_DIR} 
+ ${CLHEP_INCLUDE_DIR}
  ${Boost_INCLUDE_DIRS}
 )
 
@@ -34,25 +36,15 @@ link_directories(${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-MpdTofGeo.cxx 
-MpdTofGeoPar.cxx 
-MpdTof.cxx 
-MpdTofContFact.cxx 
-MpdTofHit.cxx 
-MpdTofHitProducer.cxx 
-MpdTofHitProducerIdeal.cxx 
-MpdTofPoint.cxx
-MpdTofGeoUtils.cxx
-MpdTofMatching.cxx
-MpdTofMatchingData.cxx
-MpdTofMatchingQA.cxx
-MpdTofHitProducerQA.cxx
-MpdTOFpid.cxx
+BmdDetector.cxx
+BmdPoint.cxx
+BmdGeo.cxx
+BmdGeoPar.cxx
 )
 
 Set(HEADERS)
-Set(LINKDEF TofLinkDef.h)
-Set(LIBRARY_NAME Tof)
+Set(LINKDEF bmdLinkDef.h)
+Set(LIBRARY_NAME bmd)
 Set(DEPENDENCIES Core Base)
 
 GENERATE_LIBRARY()

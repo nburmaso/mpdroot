@@ -5,7 +5,7 @@
 // -------------------------------------------------------------------------
 
 #ifndef MPDMAGFIELDMAPDATA_H
-#define MPDMAGFIELDMAPDATA
+#define MPDMAGFIELDMAPDATA_H
 
 #include "TNamed.h"
 

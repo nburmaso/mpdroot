@@ -409,7 +409,7 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
   if ( event && (! event->IsSet()) ) {
     event->SetEventID(eventId-1);
     event->SetB(b);
-    //    event->SetPhi(bb.Phi());    // MG
+    event->SetRotZ(bb.Phi());    // MG
     event->MarkSet(kTRUE);
   }
 

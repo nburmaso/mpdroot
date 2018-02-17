@@ -56,12 +56,7 @@ Bool_t MpdPHSDGenerator::ReadEvent(FairPrimaryGenerator *primGen)
   {
     eventHeader->SetB(fb);
     eventHeader->MarkSet(kTRUE);
-    // fill extra
-    MpdMCEventHeader *extraEventHeader = dynamic_cast<MpdMCEventHeader*> (eventHeader);
-    if (extraEventHeader)
-    {
-      extraEventHeader->SetPhi(fPsiRP);
-    }
+    eventHeader->SetRotZ(fPsiRP);
   }
 
   /* read tracks */

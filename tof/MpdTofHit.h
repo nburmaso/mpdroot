@@ -25,8 +25,8 @@ public:
 	void			SetFlag(Int_t flag) { fFlag = flag; };
 	void			AddFlag(Int_t flag) { fFlag =  fFlag | flag; };
 	
-	bool			CheckVolumeUID(Int_t uid);
-	bool			CheckTrackID(Int_t uid);
+	bool			CheckVolumeUID(Int_t uid) const;
+	bool			CheckTrackID(Int_t uid) const;
 
 	inline void 		GetXYZ(Double_t *carray) const { carray[0] = fX; carray[1] = fY; carray[2] = fZ;}
 

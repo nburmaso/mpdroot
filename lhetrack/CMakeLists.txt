@@ -82,6 +82,6 @@ MpdCellTrack.cxx
 Set(HEADERS)
 Set(LINKDEF LHETrackLinkDef.h)
 Set(LIBRARY_NAME LHETrack)
-Set(DEPENDENCIES Core Base)
+Set(DEPENDENCIES Core Base Kalman Tof)
 
 GENERATE_LIBRARY()

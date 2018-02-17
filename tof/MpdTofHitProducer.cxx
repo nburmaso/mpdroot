@@ -39,29 +39,17 @@ MpdTofHitProducer::~MpdTofHitProducer()
 	delete pRandom;
 }
 //------------------------------------------------------------------------------------------------------------------------
-InitStatus MpdTofHitProducer::Init()
+void		MpdTofHitProducer::AddParameters(TString& buf)const
 {
-	TString buf = "[MpdTofHitProducer::Init] Begin initialization."; buf += GetParameters();
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, buf.Data());
-
-    //	if(fOnlyPrimary) cout<<" Only primary particles are processed!!! \n"; // FIXME NOT used now ADDD
-
-	if(fUseMCData)
-	{
-    		aMcPoints = (TClonesArray*) FairRootManager::Instance()->GetObject("TOFPoint");
-    		aMcTracks = (TClonesArray*) FairRootManager::Instance()->GetObject("MCTrack");
-assert(aMcPoints);
-assert(aMcTracks);
-	}
-	else
-	{
-    		aExpDigits = (TClonesArray*) FairRootManager::Instance()->GetObject("??????");// FIXME: NOW unknown name
-assert(aExpDigits);	
-	}
-	
-        // Create and register output array
-        aTofHits = new TClonesArray("MpdTofHit");
-        FairRootManager::Instance()->Register("TOFHit", "Tof", aTofHits, kTRUE);
+	MpdTofHitProducerIdeal::AddParameters(buf);
+	buf += TString::Format(", fTimeSigma=%.5g ns", fTimeSigma);
+	buf += TString::Format(", fErrX=%.4g cm", fErrX);
+	buf += TString::Format(", fErrZ=%.4g cm", fErrZ);	
+}
+//------------------------------------------------------------------------------------------------------------------------
+InitStatus 	MpdTofHitProducer::Init()
+{
+	InitStatus status = Initialize();
 
 	MpdTofGeoUtils::Instance()->ParseTGeoManager(	fUseMCData, 
 							pHitProducerQA ? pHitProducerQA->GetStripLocationHisto() : nullptr, 
@@ -119,12 +107,12 @@ Bool_t 	MpdTofHitProducer::DoubleHitExist(Double_t val) // val - distance to the
 //------------------------------------------------------------------------------------------------------------------------
 void 			MpdTofHitProducer::Exec(Option_t *option)
 {
-	static const TVector3 XYZ_err(fErrX, 0., fErrZ); // FIXME:  MUST BE ROTATED!!!!
+	static const TVector3 XYZ_err(fErrX, 0., fErrZ); // error for perpendicular Y axis strips
 
 	aTofHits->Clear();
 	
-	Int_t 		UID, CrossUID, trackID;	
-	TVector3 	pos, XYZ_smeared; 	
+	Int_t 		UID, trackID;	
+	TVector3 	pos, XYZ_smeared, errRotated; 	
     	int		nSingleHits = 0, nDoubleHits = 0;
 	
 	if(fUseMCData)
@@ -137,25 +125,28 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
   
 			trackID = pPoint->GetTrackID();	
 			UID	= pPoint->GetDetectorID();
-			Double_t time = pRandom->Gaus(pPoint->GetTime(), fTimeSigma); // 100 ps		
+			Double_t time = pRandom->Gaus(pPoint->GetTime(), fTimeSigma); // default 100 ps		
 			pPoint->Position(pos);
 	
 			const LStrip *pStrip = MpdTofGeoUtils::Instance()->FindStrip(UID);
 			double perpPhi = pStrip->perp.Phi(); // [rad]
 		
 			TVector3 posRotated(pos);
-			posRotated.RotateZ(-perpPhi);
+			posRotated.RotateZ(-perpPhi); // rotate to perpendicular Y axis LRS
 		
-			XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
-			XYZ_smeared.RotateZ(perpPhi);
+			XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z()); // smearing along x axis
+			XYZ_smeared.RotateZ(perpPhi); // rotate to real strip orientation
+
+			errRotated = XYZ_err;
+			errRotated.RotateZ(perpPhi); // rotate to real strip orientation
 
 			LStrip::Side_t side;
 			Double_t distance = pStrip->MinDistanceToEdge(&pos, side); // [cm]
 
 			bool passed;
-			if(passed = HitExist(distance)) // check efficiency 
+			if(passed = HitExist(distance)) // simulate hit efficiency 
 			{
-			 	AddHit(UID, XYZ_smeared, XYZ_err, pointIndex, trackID, time, MpdTofUtils::IsSingle); 	
+			 	AddHit(UID, XYZ_smeared, errRotated, pointIndex, trackID, time, MpdTofUtils::IsSingle); 	
 			 	nSingleHits++;
 			 	
 			 	if(pHitProducerQA) pHitProducerQA->FillSingleHitPosition(pos, XYZ_smeared);			 	
@@ -163,7 +154,7 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 		
 			if(pHitProducerQA) pHitProducerQA->GetSingleHitEfficiency()->Fill(passed, distance);
         		
-        		if(passed = DoubleHitExist(distance)) // check cross hit
+        		if(passed = DoubleHitExist(distance)) // simulate cross hit
         		{
         			Int_t CrossUID = (side == LStrip::kRight) ? pStrip->neighboring[LStrip::kRight] : pStrip->neighboring[LStrip::kLeft];
   			
@@ -173,7 +164,7 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
         			XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
         			XYZ_smeared.RotateZ(perpPhi);
         			
-        			AddHit(CrossUID, XYZ_smeared, XYZ_err, pointIndex, trackID, time, MpdTofUtils::IsDouble); 
+        			AddHit(CrossUID, XYZ_smeared, errRotated, pointIndex, trackID, time, MpdTofUtils::IsDouble); 
         			nDoubleHits++;
         			
         			if(pHitProducerQA) pHitProducerQA->FillDoubleHitPosition(pos, XYZ_smeared);        			

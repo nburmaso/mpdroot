@@ -1,10 +1,13 @@
+# Create a library called "libHADGEN"
 enable_language (C Fortran)
 
 add_subdirectory (parse)
+
 include_directories(inc ${CMAKE_CURRENT_BINARY_DIR}/parse)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 
-set(HADGEN_SRCS
+# List of source files
+set(SRCS
     src/hadgen_common_blocks.c
     src/hadgen_options.c
     src/hadgen_prev.c
@@ -28,6 +31,9 @@ set(HADGEN_SRCS
     src/ranlux.f
 )
 
-add_library(HADGEN SHARED ${HADGEN_SRCS})
-add_dependencies(HADGEN parse_run)
+Set(LIBRARY_NAME HADGEN)
+Set(DEPENDENCIES Core Base)
 
+GENERATE_LIBRARY()
+
+add_dependencies(HADGEN parse_run)

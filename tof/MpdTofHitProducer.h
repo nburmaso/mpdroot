@@ -21,8 +21,8 @@ class TH2D;
 //------------------------------------------------------------------------------------------------------------------------
 class MpdTofHitProducer : public MpdTofHitProducerIdeal 
 {
-        Double_t 			fTimeSigma;	// Uncertainties of time, gaus sigma [ns],  default: 100 ps
-   	Double_t			fErrX, fErrZ; 	// Uncertainties of coordinates, gaus sigma [cm], dZ= 10./sqrt(12.) mm, default: dX= 5 mm.        
+        Double_t 			fTimeSigma;	// Uncertainties of time, gaus sigma [ns];  default: 0.100
+   	Double_t			fErrX, fErrZ; 	// Uncertainties of coordinates, gaus sigma [cm]; default: dZ = 1./sqrt(12.), dX = 0.5        
         TRandom2 			*pRandom;            
 						
 	Bool_t 				HitExist(Double_t val); 
@@ -40,15 +40,7 @@ public:
 	void			SetAlongStripzResolution(Double_t Xerr){ fErrX = Xerr;};	
 	void 			SetSeed(UInt_t seed = 0);	
 	
-	TString			GetParameters()
-	{ 
-		char s[32];
-		TString buf = "\n Run parameters: fTimeSigma="; sprintf(s, "%.5g", fTimeSigma); buf+=(s);  
-		buf+=" ns, fErrX="; sprintf(s, "%.4g", fErrX); buf+=(s); 
-		buf+=" cm, fErrZ="; sprintf(s, "%.4g", fErrZ); buf+=(s); 
-		buf+=" cm, fDoTest="; buf+=fDoTest; buf+=", fDoMergeHits="; buf+=fDoMergeHits;
-		return buf;
-	}
+	virtual void		AddParameters(TString& buf)const;
 
 ClassDef(MpdTofHitProducer,3) 
 };

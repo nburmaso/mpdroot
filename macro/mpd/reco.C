@@ -49,6 +49,9 @@ using namespace std;
 
 #include "mpdloadlibs.C"
 #include "geometry_stage1.C"
+//#include "geometry_v2.C"
+
+#define Mlem  // Choose: Mlem HitProducer
 
 // Macro for running reconstruction:
 // inFile - input file with MC data, default: evetest.root
@@ -75,8 +78,10 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
+    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
 #endif
     geometry_stage1(0x0, kFALSE);
+    //geometry_v2(0x0, kFALSE);
     // ------------------------------------------------------------------------
 
     // -----   Timer   --------------------------------------------------------
@@ -127,20 +132,34 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     MpdKalmanFilter *kalman = MpdKalmanFilter::Instance("KF");
     fRun->AddTask(kalman);
 
+#ifdef Mlem
+    MpdTpcDigitizerAZ* tpcDigitizer = new MpdTpcDigitizerAZ();
+    tpcDigitizer->SetPersistence(kFALSE);
+    fRun->AddTask(tpcDigitizer);
+#endif
+
     //  MpdTpcClusterFinderTask *tpcClusterFinder = new MpdTpcClusterFinderTask();
     //  tpcClusterFinder->SetDebug(kFALSE);
     //  tpcClusterFinder->SetMakeQA(kTRUE);
     //  tpcClusterFinder->SetCalcResiduals(kFALSE);
     //  fRun->AddTask(tpcClusterFinder);
 
+#ifdef Mlem
+    MpdTpcClusterFinderMlem *tpcClusAZ = new MpdTpcClusterFinderMlem();
+    fRun->AddTask(tpcClusAZ);
+#else
     MpdTpcHitProducer* hitPr = new MpdTpcHitProducer();
     hitPr->SetModular(0);
     fRun->AddTask(hitPr);
+#endif
 
     FairTask* vertZ = new MpdVertexZfinder();
     fRun->AddTask(vertZ);
 
-    FairTask* recoKF = new MpdTpcKalmanFilter("Kalman filter");
+    MpdTpcKalmanFilter* recoKF = new MpdTpcKalmanFilter("Kalman filter");
+#ifdef Mlem
+    recoKF->UseTpcHit(kFALSE); // do not use hits from the hit producer
+#endif
     fRun->AddTask(recoKF);
 
     FairTask* findVtx = new MpdKfPrimaryVertexFinder("Vertex finder");
@@ -150,15 +169,37 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
     fRun->AddTask(tofHit);
 
+/*
+    MpdEtofHitProducer* etofHitProd = new MpdEtofHitProducer("ETOF HitProducer");
+    fRun->AddTask(etofHitProd);
+    
+    // Endcap tracking
+    FairTask* tpcECT = new MpdEctTrackFinderTpc();
+    tpcECT->SetVerbose(iVerbose);
+    fRun->AddTask(tpcECT);
+    
+    MpdEctTrackFinderCpc* tofECT = new MpdEctTrackFinderCpc();
+    tofECT->SetVerbose(iVerbose);
+    tofECT->SetTpc(kTRUE);
+    fRun->AddTask(tofECT);
+*/
+
     // TOF matching
     MpdTofMatching* tofMatch = new MpdTofMatching("TOF matching");
     fRun->AddTask(tofMatch);
+
+    // ETOF matching
+    //MpdEtofMatching* etofMatch = new MpdEtofMatching("ETOF matching");
+    //fRun->AddTask(etofMatch);
 
     FairTask *emcHP = new MpdEmcHitProducer();
     fRun->AddTask(emcHP);
 
     FairTask *tdigi = new MpdZdcDigiProducer("MpdZdcDigiProducer");
     fRun->AddTask(tdigi);
+
+    //MpdPidRefitTrackTask* trRefit = new MpdPidRefitTrackTask("Track PID and Refit");
+    //fRun->AddTask(trRefit);
 
     MpdFillDstTask* fillDST = new MpdFillDstTask("MpdDst task");
     fRun->AddTask(fillDST);

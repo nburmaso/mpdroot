@@ -18,12 +18,19 @@ MpdTofMatchingQA::MpdTofMatchingQA(const char *flnm, bool isEndcap)
       	
       	fList.SetOwner(); //  all objects will be deleted whenever the collection itself is delete.	
       			
-	Add(pEfficiencyP = new TEfficiency(mangling("EfficiencyP"), ";P, GeV/c;Efficiency", 100, 0., Pmax));
-	Add(pEfficiencyEta = new TEfficiency(mangling("EfficiencyEta"), ";#eta;Efficiency", 100, -EtaMax, EtaMax));    	
-	Add(pEfficiencyEtaP = new TEfficiency(mangling("EfficiencyEtaP"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax));    		    	
-	Add(pContaminationP = new TEfficiency(mangling("ContaminationP"), ";P, GeV/c;Contamination", 100, 0., Pmax));
-	Add(pContaminationEta = new TEfficiency(mangling("ContaminationEta"), ";#eta;Contamination", 100, -EtaMax, EtaMax));   	    	
-	Add(pContaminationEtaP = new TEfficiency(mangling("ContaminationEtaP"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax));  	    	
+	Add(pEff1P = new TEfficiency(mangling("Eff1P"), ";P, GeV/c;Efficiency", 100, 0., Pmax));
+	Add(pEff1Eta = new TEfficiency(mangling("Eff1Eta"), ";#eta;Efficiency", 100, -EtaMax, EtaMax));    	
+	Add(pEff1EtaP = new TEfficiency(mangling("Eff1EtaP"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax));    		    	
+	Add(pCont1P = new TEfficiency(mangling("Cont1P"), ";P, GeV/c;Contamination", 100, 0., Pmax));
+	Add(pCont1Eta = new TEfficiency(mangling("Cont1Eta"), ";#eta;Contamination", 100, -EtaMax, EtaMax));   	    	
+	Add(pCont1EtaP = new TEfficiency(mangling("Cont1EtaP"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax));  	    	
+   
+  	Add(pEff2P = new TEfficiency(mangling("Eff2P"), ";P, GeV/c;Efficiency", 100, 0., Pmax));
+	Add(pEff2Eta = new TEfficiency(mangling("Eff2Eta"), ";#eta;Efficiency", 100, -EtaMax, EtaMax));    	
+	Add(pEff2EtaP = new TEfficiency(mangling("Eff2EtaP"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax));    		    	
+	Add(pCont2P = new TEfficiency(mangling("Cont2P"), ";P, GeV/c;Contamination", 100, 0., Pmax));
+	Add(pCont2Eta = new TEfficiency(mangling("Cont2Eta"), ";#eta;Contamination", 100, -EtaMax, EtaMax));   	    	
+	Add(pCont2EtaP = new TEfficiency(mangling("Cont2EtaP"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax));  
     	
 	Add(hDeltaPoint_Dev = new TH2D(mangling("DeltaPoint_Dev"), "est. point <-> Mc point;#Delta, cm;P, GeV/c", 1000, 0., 10., 1000, 0., Pmax));
 	Add(hDeltaPoint_dR = new TH2D(mangling("DeltaPoint_dR"), "est. point <-> Mc point;#Delta_{R}, cm;P, GeV/c", 1000, -10., 10., 1000, 0., Pmax));	
@@ -42,7 +49,6 @@ MpdTofMatchingQA::MpdTofMatchingQA(const char *flnm, bool isEndcap)
 	Add(htCandNmb = new TH2D(mangling("CandNmb"),  "Number of candidate hits;N candidates;iteration", 1000, -0.5, 1999.5, 1000, -0.5, 999.5));		
 		
 	Add(hDeltaTrueHit = new TH2D(mangling("DeltaTrueHit"),  ";#Delta_{R}, cm;#Delta_{#phi}, cm", 1000, 0., fIsEndcap ? 100. : 20., 1000, 0., fIsEndcap ? 20. : 100.));	
-	
 	Add(hDeltaMisHit = (TH2D*) hDeltaTrueHit->Clone(mangling("DeltaMisHit")));
 	Add(hDeltaPoint = (TH2D*) hDeltaTrueHit->Clone(mangling("DeltaPoint"))); 
 	
@@ -77,7 +83,6 @@ void	MpdTofMatchingQA::FillCandidates(bool mcHaveTrueCand, bool mcHaveCand, Doub
 	if(mcHaveCand)		htKFTrackCand->Fill(eta, Momentum);
 	if(mcHaveTrueCand) 	htKFTrackTrueCand->Fill(eta, Momentum);
 }
-	
 //------------------------------------------------------------------------------------------------------------------------			
 void	MpdTofMatchingQA::Finish()
 {
@@ -91,56 +96,95 @@ void	MpdTofMatchingQA::Finish()
 //------------------------------------------------------------------------------------------------------------------------		
 void	MpdTofMatchingQA::FillMatchingEfficiency(const TClonesArray* aTofMatching, const TClonesArray* aTofHits, const TClonesArray* aKFTracks, const TClonesArray* aMCTracks)
 {
-	// Sorting & mapping matchings by pair  <kfTrackIndex, MpdTofHit*>
-	map<int, MpdTofHit*> mMatchings;
-	map<int, MpdTofHit*>::iterator Iter;
-
-		
-	for(int entry = 0, size = aTofMatching->GetEntriesFast(); entry < size; entry++)  // cycle by the  matching
+	// Sorting & mapping matchings
+	map<int, const MpdTofHit*> mMatchings; // pair  <kfTrackIndex, MpdTofHit*>
+	multimap<const MpdTofHit*, int> mmHitCounter;	// pair< MpdTofHit*, matchingIndex>
+	
+	for(int entry = 0, size = aTofMatching->GetEntriesFast(); entry < size; entry++)  // cycle by the  matching N 
 	{
-		MpdTofMatchingData *pData = (MpdTofMatchingData*) aTofMatching->At(entry);
-		MpdTofHit *hit = (MpdTofHit*) aTofHits->At(pData->GetTofHitIndex());
-		mMatchings.insert(make_pair(pData->GetKFTrackIndex(), hit));	
-	}
+		auto pData = (const MpdTofMatchingData*) aTofMatching->At(entry);
+		Int_t tofHitIndex = pData->GetTofHitIndex();
 		
-	TVector3 momentum;	
-	Int_t mcTrackIndex, nKFTracks	= aKFTracks->GetEntriesFast();
-	for(Int_t KfIndex = 0; KfIndex < nKFTracks; KfIndex++) 	// cycle by TPC KF tracks
+		if(tofHitIndex >= 0) // matching with the fired strip, i.e. with the hit
+		{
+			auto hit = (MpdTofHit*) aTofHits->At(tofHitIndex);
+			mMatchings.insert(make_pair(pData->GetKFTrackIndex(), hit));	
+			mmHitCounter.insert(make_pair(hit, entry));	
+		}	
+	}
+	
+	//--------------------------------------------------------------------------------------------------------------------
+	// algorithm efficiency definition:
+	//
+	// efficiency = N true matchings / N tpc kf tracks having TOF hit 
+	// contamination = N wrong matchings / ( N true matchings + N wrong matchings)
+	//
+	// ALICE TDR TOF 2000 definitions:
+	//
+	// N = N mis + N match
+	// N miss = N0 + N2 ( matched to to blank strip or dead regions + matched to fired strip was more than one track)
+	// N match = N t + N w ( true matching + wrong matching)
+	//
+	// efficiency = N t / N
+	// contamination = N w / N match		
+	//--------------------------------------------------------------------------------------------------------------------	
+	
+	TVector3 momentum;
+	for(Int_t KfIndex = 0, nKFTracks = aKFTracks->GetEntriesFast(); KfIndex < nKFTracks; KfIndex++) // cycle by TPC KF tracks
 	{   	
-		MpdTpcKalmanTrack *pKfTrack = (MpdTpcKalmanTrack*) aKFTracks->UncheckedAt(KfIndex);
-		mcTrackIndex = pKfTrack->GetTrackID();               
-               	FairMCTrack *pMCtrack = (FairMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);
+		auto pKfTrack = (const MpdTpcKalmanTrack*) aKFTracks->UncheckedAt(KfIndex);
+		Int_t mcTrackIndex = pKfTrack->GetTrackID();               
+               	auto pMCtrack = (FairMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);
                                      
                	bool mcTofTouch = pMCtrack->GetNPoints(fIsEndcap ? kETOF : kTOF);
 	
 		pMCtrack->GetMomentum(momentum);
 		double Eta = momentum.Eta(), P = momentum.Mag();
 			
-		Iter = mMatchings.find(KfIndex);
+		auto Iter = mMatchings.find(KfIndex);
 		bool IsMatchingExist = (Iter != mMatchings.end());
 		bool IsTrueMatching = false;
+		bool IsNmatch = false;
+			
+		if(IsMatchingExist)
+		{
+			const MpdTofHit *hit = Iter->second;
+			
+			IsTrueMatching = hit->CheckTrackID(mcTrackIndex);												
+			IsNmatch = (1 == mmHitCounter.count(hit));	// hit linked ONLY ONE matching			
+		
+			if(IsTrueMatching) 	htTrueMatch->Fill(Eta, P);	
+			else			htMisMatch->Fill(Eta, P);				
+		}
 			
 		if(mcTofTouch)
-		{	
-			if(IsMatchingExist)
-			{
-				IsTrueMatching = Iter->second->CheckTrackID(mcTrackIndex);							
-								
-				if(IsTrueMatching) 	htTrueMatch->Fill(Eta, P);	
-				else			htMisMatch->Fill(Eta, P);				
-			}
-				
-			pEfficiencyP->Fill(IsTrueMatching, P);		
-			pEfficiencyEta->Fill(IsTrueMatching, Eta);	
-			pEfficiencyEtaP->Fill(IsTrueMatching, Eta, P);	
+		{		
+			pEff1P->Fill(IsTrueMatching, P);		
+			pEff1Eta->Fill(IsTrueMatching, Eta);	
+			pEff1EtaP->Fill(IsTrueMatching, Eta, P);			
 		}
+		
+		if(-1.35 < Eta && Eta < 1.35)
+		{
+			pEff2P->Fill(IsTrueMatching, P);		
+			pEff2Eta->Fill(IsTrueMatching, Eta);	
+			pEff2EtaP->Fill(IsTrueMatching, Eta, P);
+		}		
 						
 		if(IsMatchingExist)
 		{		
-			pContaminationP->Fill( !IsTrueMatching, P);		
-			pContaminationEta->Fill( !IsTrueMatching, Eta);	
-			pContaminationEtaP->Fill( !IsTrueMatching, Eta, P);				
-		}			
-	}
+			pCont1P->Fill( !IsTrueMatching, P);		
+			pCont1Eta->Fill( !IsTrueMatching, Eta);	
+			pCont1EtaP->Fill( !IsTrueMatching, Eta, P);				
+		}	
+			
+		if(IsNmatch)
+		{
+			pCont2P->Fill( !IsTrueMatching, P);		
+			pCont2Eta->Fill( !IsTrueMatching, Eta);	
+			pCont2EtaP->Fill( !IsTrueMatching, Eta, P);
+		}
+						
+	} // cycle by TPC KF tracks
 }			
 //------------------------------------------------------------------------------------------------------------------------

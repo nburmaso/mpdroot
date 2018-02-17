@@ -52,7 +52,8 @@ FairStack::FairStack(Int_t size) // {
     fIndex(0),
     fStoreSecondaries(kTRUE),
     fMinPoints(1),
-    fEnergyCut(0.),
+    //fEnergyCut(0.),
+    fEnergyCut(-0.001), //AZ
     fStoreMothers(kTRUE),
     fMinMotherMass(0.4),
     fMaxMotherMass(6.1),
@@ -264,7 +265,7 @@ void FairStack::FillTrackArray() {
 	new( (*fTracks)[fNTracks]) FairMCTrack(GetParticle(iPart));
       fIndexMap[iPart] = fNTracks;
       // --> Set the number of points in the detectors for this track
-      for (Int_t iDet=kSTS; iDet<=kFSA; iDet++) {
+      for (Int_t iDet=kSTS; iDet<=kBMD; iDet++) {
 	pair<Int_t, Int_t> a(iPart, iDet);
 	track->SetNPoints(iDet, fPointsMap[a]);
       }
@@ -469,12 +470,14 @@ void FairStack::SelectTracks() {
     Double_t eKin = energy - mass;
 
     // --> Calculate number of points
-    Int_t nPoints = 0, nPointsZDC = 0;
-    for (Int_t iDet=kSTS; iDet<=kFSA; iDet++) {
+    Int_t nPoints = 0, nPointsZDC = 0, nPointsNoZDC = 0;
+    for (Int_t iDet=kSTS; iDet<=kBMD; iDet++) {
       pair<Int_t, Int_t> a(i, iDet);
-      if ( fPointsMap.find(a) != fPointsMap.end() )
-	  nPoints += fPointsMap[a];
-	  if(iDet == 10) nPointsZDC += fPointsMap[a]; //NG save points in ZDC
+      if ( fPointsMap.find(a) != fPointsMap.end() ) {
+	nPoints += fPointsMap[a];
+	if (iDet == kZDC) nPointsZDC += fPointsMap[a]; //NG save points in ZDC
+	else nPointsNoZDC += fPointsMap[a]; // points not in ZDC
+      }
     }
    
     // --> Check for cuts (store primaries in any case)
@@ -483,7 +486,7 @@ void FairStack::SelectTracks() {
       if (!fStoreSecondaries)   store = kFALSE;
       if (nPoints < fMinPoints) store = kFALSE;
       if (eKin < fEnergyCut)    store = kFALSE;
-      if (fNoZDC && nPointsZDC)  store = kFALSE; //NG cut many secondary zdc tracks
+      if (fNoZDC && nPointsZDC && !nPointsNoZDC) store = kFALSE; //NG cut many secondary zdc tracks
       // !!!!!AZ - store products of potentially interesting decays
       if (nPoints == 0) {
 	store = kFALSE;
