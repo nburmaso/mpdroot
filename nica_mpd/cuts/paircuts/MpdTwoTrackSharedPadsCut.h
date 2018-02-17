@@ -10,14 +10,14 @@
 #define INTERFACES_MPDROOT_CUTS_PAIRCUTS_MPDTWOTRACKSHAREDPADSCUT_H_
 
 #include "NicaTwoTrackCut.h"
-#include  "MpdNicaHelix.h"
+#include  "NicaHelix.h"
 #include "MpdTpcSectorGeo.h"
 
 class MpdTwoTrackSharedPadsCut : public NicaTwoTrackCut{
 	MpdTpcSectorGeo *fSec;
-	MpdNicaHelix *fHelix1;
-	MpdNicaHelix *fHelix2;
-	void Overlap(MpdNicaHelix *helix, Double_t R, Double_t &x, Double_t &y);
+	NicaHelix *fHelix1;
+	NicaHelix *fHelix2;
+	void Overlap(NicaHelix *helix, Double_t R, Double_t &x, Double_t &y);
 public:
 	MpdTwoTrackSharedPadsCut();
 	virtual Bool_t Pass(NicaTwoTrack *pair);

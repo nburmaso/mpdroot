@@ -23,6 +23,7 @@ endforeach()
 # Set name of our project to "MPDROOT". Has to be done
 # after check of cmake version                        
 project(MPDROOT)
+enable_language(Fortran)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
 # is checked
@@ -213,6 +214,10 @@ add_subdirectory (physics/femto)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/macro/mpd_scheduler/CMakeLists.txt")
  add_subdirectory (macro/mpd_scheduler)
+endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/nicaroot/CMakeLists.txt")
+ add_subdirectory (nicaroot)
+ add_subdirectory (nica_mpd)
 endif()
 
 Option(BUILD_DOXYGEN "Build Doxygen" OFF)

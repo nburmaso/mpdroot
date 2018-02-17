@@ -64,7 +64,7 @@ paircuts/MpdTwoTrackSharedPadsCut.cxx
 Set(HEADERS )
 Set(LINKDEF MpdNicaCutsLinkDef.h)
 Set(LIBRARY_NAME NicaMpdCuts)
-Set(DEPENDENCIES  NicaCut NicaMpdFormat NicaMpdHelpers)
+Set(DEPENDENCIES  NicaCut NicaMpdFormat)
 
 GENERATE_LIBRARY()
 

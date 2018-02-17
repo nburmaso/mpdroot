@@ -12,9 +12,9 @@
 
 MpdTwoTrackSharedPadsCut::MpdTwoTrackSharedPadsCut() {
 	fSec = MpdTpcSectorGeo::Instance();
-	fHelix1 = new MpdNicaHelix();
+	fHelix1 = new NicaHelix();
 	fHelix1->SetMagFiled(0.5);
-	fHelix2 = new MpdNicaHelix();
+	fHelix2 = new NicaHelix();
 	fHelix2->SetMagFiled(0.5);
 }
 
@@ -54,14 +54,14 @@ Bool_t MpdTwoTrackSharedPadsCut::Pass(NicaTwoTrack* pair) {
 		Int_t pad1 = fSec->Sector(Sec1);
 		Int_t row2 = fSec->PadRow(Sec2);
 		Int_t pad2 = fSec->Sector(Sec2);
+		/*
 		if(Sec1!=-1){
 			std::cout<<"TR1\t"<<row1<<"\t"<<pad1<<"\t\t"<<Sec1<<std::endl;
 		}
 		if(Sec2!=-1){
 			std::cout<<"TR2\t"<<row2<<"\t"<<pad2<<"\t\t"<<Sec2<<std::endl;
-			std::cout<<Form("%4.1f \t%4.1f",x,y)<<std::endl;
-		//	std::cout<<"R\t"<<R_min<<" "<<R<<"\t"<<TMath::Sqrt(x*x+y*y)<<std::endl;
-		}
+			std::cout<<Form("%4.1f \t%4.1f",x,y)<<std::endl;\
+		}*/
 		total++;
 	}
 	R_min = fSec->GetRocY(1);
@@ -83,55 +83,14 @@ Bool_t MpdTwoTrackSharedPadsCut::Pass(NicaTwoTrack* pair) {
 
 }
 
-void MpdTwoTrackSharedPadsCut::Overlap(MpdNicaHelix* helix, Double_t R,
+void MpdTwoTrackSharedPadsCut::Overlap(NicaHelix* helix, Double_t R,
 		Double_t& x, Double_t& y) {
-	Double_t R2 = TMath::Abs(100.0/helix->GetHelix(4)); //go to cm
-	Double_t xc = helix->GetHelix(6)*100;
-	Double_t yc = helix->GetHelix(7)*100;
-	Double_t r = TMath::Sqrt(xc*xc+yc*yc);
-// R1 = R    rc = r  R2 = r
-	Double_t cosA = (R*R+r*r-R2*R2)/(2.0*R*r);
-	Double_t A = TMath::ACos(cosA);
-	Double_t x1,x2,y1,y2;
-	Double_t cosa = TMath::Cos(A);
-	Double_t sina = TMath::Sin(A);
-	if(cosA==1){//one solution
-		x = R*(xc*cosa-yc*sina)/r;
-		y = R*(xc*sina+yc*cosa)/r;
-	}else if(cosA<1){//two solutions
-		x1 = R*(xc*cosa-yc*sina)/r;
-		y1 = R*(xc*sina+yc*cosa)/r;
-		x2 = R*(xc*cosa+yc*sina)/r;
-		y2 = R*(yc*cosa-xc*sina)/r;
-		Double_t ph1 = helix->GetPhase(x1*0.01,y1*0.01);
-		Double_t ph2 = helix->GetPhase(x2*0.01,y2*0.01);
-		std::cout<<"p1\t"<<x1<<" "<<y1<<" "<<ph1<<std::endl;
-		std::cout<<"p2\t"<<x2<<" "<<y2<<" "<<ph2<<std::endl;
-		if(ph1>ph2){
-			x = x1;
-			y = y1;
-		}else{
-			x = x2;
-			y = y2;
-		}
-	}else{// no intersection
-		x = y = 0;
-	}
-	/*
-	Double_t xc2 = xc*xc;
-	Double_t yc2 = yc*yc;
-	Double_t rc = TMath::Sqrt(xc2+yc2);
-	Double_t a = (r*r-R*R-rc)/(-2.0);
-	Double_t delta = TMath::Sqrt(R*R*yc2*yc2-a*a*yc2+R*R*xc2*yc2);
-	Double_t x1 = (a*xc +delta)/(rc*rc);
-	Double_t x2 = (a*xc-delta)/(rc*rc);
-	Double_t y1, y2;
-	y1 = TMath::Sqrt(R*R-x1*x1);
-	y2 = TMath::Sqrt(R*R-x2*x2);
-
-
-
-	y = TMath::Sqrt(R*R-x*x);*/
+	Double_t s1,s2;
+	helix->PathLength(R*0.01, s1, s2); //to m
+	Double_t s = TMath::Min(s1,s2);
+	TVector3 pos = helix->Evaluate(s);
+	x = pos.X()*100;
+	y = pos.Y()*100;
 }
 
 MpdTwoTrackSharedPadsCut::~MpdTwoTrackSharedPadsCut() {
