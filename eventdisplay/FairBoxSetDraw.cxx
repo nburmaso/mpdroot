@@ -8,7 +8,7 @@
 #include "FairBoxSet.h"
 #include "FairLogger.h"
 
-#include "Riosfwd.h"
+#include <iosfwd>
 #include "TEveBoxSet.h"
 #include "TEveManager.h"
 

@@ -9,7 +9,7 @@
 #include "FairEventManager.h"
 #include "FairRootManager.h"
 
-#include "Riosfwd.h"
+#include <iosfwd>
 #include "TGLabel.h"
 #include "TGLayout.h"   // for TGLayoutHints
 #include "TGNumberEntry.h"

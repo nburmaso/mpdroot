@@ -17,7 +17,7 @@
 
 #include "TObject.h"                    // for TObject
 
-#include "Riosfwd.h"                    // for ostream
+#include <iosfwd>                    // for ostream
 #include "Rtypes.h"                     // for Int_t, Float_t, etc
 #include "TString.h"                    // for TString
 
