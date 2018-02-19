@@ -12,7 +12,7 @@ MpdGeneralGenerator::MpdGeneralGenerator(TGenerator *gen):
 MpdGeneralGenerator::MpdGeneralGenerator(TGenerator &gen):
     FairGenerator(), fGenerator(&gen), fDebug(kFALSE) {
     };
-MpdGeneralGenerator::MpdGeneralGenerator(): FairGenerator(), fDebug(kFALSE){}
+MpdGeneralGenerator::MpdGeneralGenerator(): FairGenerator(), fGenerator(NULL),fDebug(kFALSE){}
 //     template <class T> MpdGeneralGenerator::MpdGeneralGenerator():
 //     FairGenerator(), fDebug(kFALSE){
 //         fGenerator = new T();

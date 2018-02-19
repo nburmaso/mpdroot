@@ -19,6 +19,7 @@
 
 using namespace CLHEP;
 #include "MpdHelix.h"
+#include <TMath.h>
 
 #ifdef __ROOT__
 ClassImpT(MpdHelix,double);
@@ -26,7 +27,18 @@ ClassImpT(MpdHelix,double);
 
 const double MpdHelix::NoSolution = 3.e+33;
 
-MpdHelix::MpdHelix(){ /*noop*/ }
+MpdHelix::MpdHelix():
+		mSingularity(false),
+		mOrigin(),
+		mDipAngle(0),
+		mCurvature(0),
+		mPhase(0),
+		mH(0),
+		mCosDipAngle(0),
+		mSinDipAngle(0),
+		mCosPhase(0),
+		mSinPhase(0)
+	{ /*noop*/ }
 
 MpdHelix::MpdHelix(double c, double d, double Phase,
 		 const TVector3 o, int hh)
