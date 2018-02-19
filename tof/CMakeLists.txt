@@ -50,7 +50,25 @@ MpdTofHitProducerQA.cxx
 MpdTOFpid.cxx
 )
 
-Set(HEADERS)
+# List of header files
+set(HEADERS
+MpdTofGeo.cxx
+MpdTofGeoPar.cxx
+MpdTof.cxx
+MpdTofContFact.cxx
+MpdTofHit.cxx
+MpdTofHitProducer.cxx
+MpdTofHitProducerIdeal.cxx
+MpdTofPoint.cxx
+MpdTofGeoUtils.cxx
+MpdTofMatching.cxx
+MpdTofMatchingData.cxx
+MpdTofMatchingQA.cxx
+MpdTofHitProducerQA.cxx
+MpdTOFpid.cxx
+MpdTofUtils.h
+)
+
 Set(LINKDEF TofLinkDef.h)
 Set(LIBRARY_NAME Tof)
 Set(DEPENDENCIES Core Base)
