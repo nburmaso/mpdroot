@@ -21,7 +21,7 @@ void NicaMpdKalmanEvent::Update() {
 	fTracks->ExpandCreateFast(fTotalTracksNo);
 	for(int i=0;i<fTotalTracksNo;i++){
 		NicaTrack *tr = GetTrack(i);
-		tr->SetTrackPointer(fTracks->UncheckedAt(i));
+		tr->GetLink()->SetLinkFrom(i);
 		MpdKalmanTrack *kalman = (MpdKalmanTrack*)kalmans->UncheckedAt(i);
 		TLorentzVector *mom = tr->GetMomentum();
 		Double_t pt = kalman->Pt();

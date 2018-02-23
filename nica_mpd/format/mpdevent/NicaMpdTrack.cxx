@@ -7,12 +7,14 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "NicaMpdTrack.h"
-
+#include <iostream>
+#include <Rtypes.h>
 NicaMpdTrack::NicaMpdTrack() :NicaExpTrack(){
 	fFirstPoint = new TVector3();
 	fLastPoint = new TVector3();
 	fTpcTrack = new NicaTpcTrack();
 	fToFTrack = new NicaToFTrack();
+	fHitsMap = 0;
 }
 
 NicaMpdTrack::~NicaMpdTrack() {
@@ -40,7 +42,6 @@ void NicaMpdTrack::Update(MpdTrack* track) {
 	fTpcTrack->SetSigma(track->GetNSigmaPion(),track->GetNSigmaKaon(),track->GetNSigmaProton(),track->GetNSigmaProton());
 	SetChi2(track->GetChi2());
 	GetDCA()->SetXYZ(track->GetDCAGlobalX(), track->GetDCAGlobalY(),track->GetDCAGlobalZ());
-	SetTrackPointer(track);
 	fFirstPoint->SetXYZ(track->GetFirstPointX(),track->GetFirstPointY(), track->GetFirstPointZ());
 	fLastPoint->SetXYZ(track->GetLastPointX(),track->GetLastPointY(),track->GetLastPointZ());
 }
@@ -59,6 +60,7 @@ NicaMpdTrack::NicaMpdTrack(const NicaMpdTrack& other) :NicaExpTrack(other){
 	fLastPoint  = new TVector3(*other.fLastPoint);
 	fTpcTrack = new NicaTpcTrack(*other.fTpcTrack);
 	fToFTrack = new NicaToFTrack(*other.fToFTrack);
+	fHitsMap = other.fHitsMap;
 }
 
 NicaMpdTrack& NicaMpdTrack::operator =(const NicaMpdTrack& other) {
@@ -69,4 +71,16 @@ NicaMpdTrack& NicaMpdTrack::operator =(const NicaMpdTrack& other) {
 	*fTpcTrack = *other.fTpcTrack;
 	*fToFTrack = *other.fToFTrack;
 	return *this;
+}
+
+void NicaMpdTrack::PrintHitMaps() const {
+	for(int i=0;i<52;i++){
+		Bool_t bit = TESTBIT(fHitsMap,i);
+		if(bit){
+			std::cout<<'1';
+		}else{
+			std::cout<<'0';
+		}
+	}
+	std::cout<<std::endl;
 }
