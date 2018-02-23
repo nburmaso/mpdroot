@@ -43,6 +43,7 @@ MpdTrack.cxx
 MpdVertex.cxx 
 MpdRoInvMassTask.cxx
 MpdParticle.cxx
+MpdDstCompressTask.cxx
 )
 
 Set(HEADERS)

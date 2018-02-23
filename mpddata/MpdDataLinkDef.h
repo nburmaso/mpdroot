@@ -8,11 +8,13 @@
 
 #pragma link C++ class MpdFillDstTask+;
 #pragma link C++ class MpdEvent+;
-#pragma link C++ class MpdTrack+; 
+#pragma link C++ class MpdTrack+;
 #pragma link C++ class MpdVertex+;
 
 #pragma link C++ class MpdRoInvMassTask+;
 #pragma link C++ class MpdParticle+;
+#pragma link C++ class MpdDstCompressTask+;
 
 #endif
+
 
