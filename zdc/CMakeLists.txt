@@ -31,19 +31,33 @@ link_directories(${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-MpdZdcGeo.cxx 
-MpdZdcGeoPar.cxx 
-MpdZdc.cxx 
-MpdZdcContFact.cxx 
-MpdZdcDigi.cxx 
-MpdZdcDigiProducer.cxx 
+MpdZdcGeo.cxx
+MpdZdcGeoPar.cxx
+MpdZdc.cxx
+MpdZdcContFact.cxx
+MpdZdcDigi.cxx
+MpdZdcDigiProducer.cxx
 MpdZdcPoint.cxx
 MpdZdcTstSim.cxx
 MpdZdcDigiPar.cxx
 MpdZdcDigiScheme.cxx
 )
 
-Set(HEADERS)
+# List of header files
+Set(HEADERS
+MpdZdcGeo.h
+MpdZdcGeoPar.h
+MpdZdc.h
+MpdZdcContFact.h
+MpdZdcDigi.h
+MpdZdcDigiProducer.h
+MpdZdcPoint.h
+MpdZdcTstSim.h
+MpdZdcDigiPar.h
+MpdZdcDigiScheme.h
+MpdZdcPsdGeoPar.h
+)
+
 Set(LINKDEF MpdZdcLinkDef.h)
 Set(LIBRARY_NAME Zdc)
 Set(DEPENDENCIES Core Base)
