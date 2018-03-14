@@ -11,7 +11,6 @@ Set(INCLUDE_DIRECTORIES
   ${CMAKE_SOURCE_DIR}/geobase
   ${CMAKE_SOURCE_DIR}/parbase
   ${CMAKE_SOURCE_DIR}/eventdisplay
-  ${CMAKE_SOURCE_DIR}/mpdbase
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -27,20 +26,20 @@ set(LINK_DIRECTORIES
 )
 
 set(SRCS
-FairEventManager.cxx  
-FairMCTracks.cxx
-FairMCStack.cxx
-FairEventManagerEditor.cxx
-FairMCTracksEditor.cxx
-FairBoxSet.cxx
-FairBoxSetDraw.cxx
-FairBoxSetEditor.cxx
-FairPointSetDraw.cxx
-FairMCPointDraw.cxx
-FairHitDraw.cxx
-FairHitPointSetDraw.cxx
-FairTimeStampPointDraw.cxx
-FairWebScreenshots.cxx
+MpdEventManager.cxx  
+MpdMCTracks.cxx
+MpdMCStack.cxx
+MpdEventManagerEditor.cxx
+MpdMCTracksEditor.cxx
+MpdBoxSet.cxx
+MpdBoxSetDraw.cxx
+MpdBoxSetEditor.cxx
+MpdPointSetDraw.cxx
+MpdMCPointDraw.cxx
+MpdHitDraw.cxx
+MpdHitPointSetDraw.cxx
+FairXMLNode.cxx
+MpdWebScreenshots.cxx
 )
 
 if (BMNROOT)
@@ -66,6 +65,7 @@ if (MPDROOT)
   Set(INCLUDE_DIRECTORIES
     ${INCLUDE_DIRECTORIES}
     ${CMAKE_SOURCE_DIR}/mcstack
+    ${CMAKE_SOURCE_DIR}/mpdbase
     ${CMAKE_SOURCE_DIR}/mpddata
     ${CMAKE_SOURCE_DIR}/kalman
     ${CMAKE_SOURCE_DIR}/tpc
@@ -127,13 +127,17 @@ if (MPDROOT)
 endif (MPDROOT)
 
 if (TDAQ_FOUND)
-  Set(DEPENDENCIES Emc Base Eve Geom EG Physics Ged Gui Graf3d Tree Core xml2 emon emon-dal cmdline ipc owl omniORB4 omnithread ers)
+  Set(DEPENDENCIES Base Eve Geom EG Physics Ged Gui Graf3d Tree Core xml2 emon emon-dal cmdline ipc owl omniORB4 omnithread ers)
 else (TDAQ_FOUND)
-  Set(DEPENDENCIES Emc Base Eve Geom EG Physics Ged Gui Graf3d Tree Core xml2)
+  Set(DEPENDENCIES Base Eve Geom EG Physics Ged Gui Graf3d Tree Core xml2)
 endif (TDAQ_FOUND)
 if (BMNROOT)
- Set(DEPENDENCIES BmnData ${DEPENDENCIES})
+ Set(DEPENDENCIES BmnData Geane ${DEPENDENCIES})
 endif (BMNROOT)
+if (MPDROOT)
+ Set(DEPENDENCIES Emc Geane ${DEPENDENCIES})
+endif (MPDROOT)
 
 Set(LIBRARY_NAME EventDisplay)
+
 GENERATE_LIBRARY()

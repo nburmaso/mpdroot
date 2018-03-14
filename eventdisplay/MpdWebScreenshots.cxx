@@ -1,7 +1,7 @@
 // -------------------------------------------------------------------------
-// -----                    FairWebScreenshots source file             -----
+// -----                    MpdWebScreenshots source file             -----
 // -------------------------------------------------------------------------
-#include "FairWebScreenshots.h"
+#include "MpdWebScreenshots.h"
 
 #include "TEveManager.h"
 #include "TGLViewer.h"
@@ -13,28 +13,28 @@
 #include <netinet/in.h>
 
 #include <iostream>
-
 using namespace std;
 
 // -----   Default constructor (private)  ----------------------------------
-FairWebScreenshots::FairWebScreenshots()
-    : FairTask("FairWebScreenshots", 0)
+MpdWebScreenshots::MpdWebScreenshots()
+  : FairTask("MpdWebScreenshots", 0)
 {}
 
 // -----   Destructor   ----------------------------------------------------
-FairWebScreenshots::~FairWebScreenshots()
+MpdWebScreenshots::~MpdWebScreenshots()
 {}
 
 // -----   Standard constructor   ------------------------------------------
-FairWebScreenshots::FairWebScreenshots(const char* name, char* output_dir, bool isWebServer, Int_t iVerbose)
-    : FairTask(name, iVerbose)
+MpdWebScreenshots::MpdWebScreenshots(const char* name, char* output_dir, bool isWebServer, Int_t iVerbose)
+  : FairTask(name, iVerbose)
 {
     outputDir = output_dir;
     outputDir += "/";
 
     isWebStarted = false;
     isWeb = isWebServer;
-    if (isWebServer) return;
+    if (isWebServer)
+        return;
 
     if (strlen(outputDir) > 0)
     {
@@ -45,32 +45,15 @@ FairWebScreenshots::FairWebScreenshots(const char* name, char* output_dir, bool 
     }
 }
 
-//--------------------------------------------------------------------------
-void FairWebScreenshots::SetFormatFiles(int i_format_files)
-{
-    iFormatFiles = i_format_files;
-}
-//--------------------------------------------------------------------------
-void FairWebScreenshots::SetPort(int NumberPort)
-{
-    web_port = NumberPort;
-}
-//--------------------------------------------------------------------------
-void FairWebScreenshots::SetMultiFiles(bool is_multi_files)
-{
-    isMultiFiles = is_multi_files;
-}
-
 // -------------------------------------------------------------------------
-InitStatus FairWebScreenshots::Init()
+InitStatus MpdWebScreenshots::Init()
 {
-    if (fVerbose > 1)
-        cout<<"FairWebScreenshots::Init()"<<endl;
+    if (fVerbose > 1) cout<<"MpdWebScreenshots::Init()"<<endl;
 
     if (!IsActive())
         return kERROR;
 
-    fMan = FairEventManager::Instance();
+    fMan = MpdEventManager::Instance();
 
     // start web server if required
     if (isWeb && (!isWebStarted))
@@ -92,7 +75,7 @@ InitStatus FairWebScreenshots::Init()
 }
 
 // -------------------------------------------------------------------------
-void FairWebScreenshots::Exec(Option_t* option)
+void MpdWebScreenshots::Exec(Option_t* option)
 {
     // redraw event display to capture current event
     gEve->Redraw3D();
@@ -120,15 +103,15 @@ void FairWebScreenshots::Exec(Option_t* option)
 }
 
 // -------------------------------------------------------------------------
-void FairWebScreenshots::SetParContainers()
+void MpdWebScreenshots::SetParContainers()
 {}
 
 // -------------------------------------------------------------------------
-void FairWebScreenshots::Finish()
+void MpdWebScreenshots::Finish()
 {}
 
 // -------------------------------------------------------------------------
-int FairWebScreenshots::daemonize()
+int MpdWebScreenshots::daemonize()
 {
 	pid_t pid;
 	// already a daemon
@@ -160,19 +143,19 @@ int FairWebScreenshots::daemonize()
 	return 0;
 }
 
-int FairWebScreenshots::sendString(const char *message, int socket)
+int MpdWebScreenshots::sendString(const char *message, int socket)
 {
 	return send(socket, message, strlen(message), 0);
 }
 
-void FairWebScreenshots::sendHeader(const char* Status_code, char* Content_Type, int TotalSize, int socket)
+void MpdWebScreenshots::sendHeader(const char* Status_code, char* Content_Type, int TotalSize, int socket)
 {
-	char *head = (char*)"\r\nHTTP/1.1 ";
-	char *content_head = (char*)"\r\nContent-Type: ";
-	char *server_head = (char*)"\r\nServer: PT06";
-	char *length_head = (char*)"\r\nContent-Length: ";
-	char *date_head = (char*)"\r\nDate: ";
-	char *newline = (char*)"\r\n";
+    char* head = (char*)"\r\nHTTP/1.1 ";
+    char* content_head = (char*)"\r\nContent-Type: ";
+    char* server_head = (char*)"\r\nServer: PT06";
+    char* length_head = (char*)"\r\nContent-Length: ";
+    char* date_head = (char*)"\r\nDate: ";
+    char* newline = (char*)"\r\n";
 
 	time_t rawtime;
 	time(&rawtime);
@@ -216,7 +199,7 @@ void FairWebScreenshots::sendHeader(const char* Status_code, char* Content_Type,
 }
 
 // send file
-void FairWebScreenshots::sendFile(FILE* fp, int connecting_socket)
+void MpdWebScreenshots::sendFile(FILE* fp, int connecting_socket)
 {
 	int current_char = 0;
 	do
@@ -228,7 +211,7 @@ void FairWebScreenshots::sendFile(FILE* fp, int connecting_socket)
 	while (current_char != EOF);
 }
 
-int FairWebScreenshots::scan(char *input, char *output, int start, int max)
+int MpdWebScreenshots::scan(char* input, char* output, int start, int max)
 {
 	if (start >= strlen(input))
 		return -1;
@@ -239,7 +222,7 @@ int FairWebScreenshots::scan(char *input, char *output, int start, int max)
 	int i = start;
 	for (; i < strlen(input); i++)
 	{
-		if ( *(input + i) != '\t' && *(input + i) != ' ' && *(input + i) != '\n' && *(input + i) != '\r')
+        if (*(input + i) != '\t' && *(input + i) != ' ' && *(input + i) != '\n' && *(input + i) != '\r')
 		{
 			if(count < (max-1))
 			{
@@ -258,18 +241,18 @@ int FairWebScreenshots::scan(char *input, char *output, int start, int max)
 
 	for (; i < strlen(input); i++)
 	{
-		if ( *(input + i ) != '\t' && *(input + i) != ' ' && *(input + i) != '\n' && *(input + i) != '\r')
+        if (*(input + i ) != '\t' && *(input + i) != ' ' && *(input + i) != '\n' && *(input + i) != '\r')
 			break;
 	}
 
 	return i;
 }
 
-int FairWebScreenshots::checkMime(char *extension, char *mime_type)
+int MpdWebScreenshots::checkMime(char* extension, char* mime_type)
 {
-	char *current_word = (char*)malloc(600);
-	char *word_holder = (char*)malloc(600);
-	char *line = (char*)malloc(200);
+    char* current_word = (char*) malloc(600);
+    char* word_holder = (char*) malloc(600);
+    char* line = (char*) malloc(200);
 	int startline = 0;
 
 	TString mime_file = "mime.types";
@@ -290,7 +273,7 @@ int FairWebScreenshots::checkMime(char *extension, char *mime_type)
 				startline = scan(line, word_holder, startline, 600);
 				if (startline != -1)
 				{
-					if (strcmp ( word_holder, extension ) == 0)
+                    if (strcmp(word_holder, extension) == 0)
 					{
 						memcpy(mime_type, current_word, strlen(current_word));
 						free(current_word);
@@ -304,7 +287,7 @@ int FairWebScreenshots::checkMime(char *extension, char *mime_type)
 			}
 		}
 
-		memset (line, '\0', 200);
+        memset(line, '\0', 200);
 	}
 
 	free(current_word);
@@ -314,15 +297,15 @@ int FairWebScreenshots::checkMime(char *extension, char *mime_type)
 	return 0;
 }
 
-int FairWebScreenshots::getHttpVersion(char *input, char *output)
+int MpdWebScreenshots::getHttpVersion(char* input, char* output)
 {
-	char *filename = (char*)malloc(100);
+    char* filename = (char*) malloc(100);
 	int start = scan(input, filename, 4, 100);
 	if (start > 0)
 	{
 		if (scan(input, output, start, 20))
 		{
-			output[strlen(output)+1] = '\0';
+            output[strlen(output)+1] = '\0';
 
 			if (strcmp("HTTP/1.1" , output) == 0)
 				return 1;
@@ -341,7 +324,7 @@ int FairWebScreenshots::getHttpVersion(char *input, char *output)
 	return -1;
 }
 
-int FairWebScreenshots::GetExtension(char *input, char *output, int max)
+int MpdWebScreenshots::GetExtension(char* input, char* output, int max)
 {
 	int in_position = 0;
 	int appended_position = 0;
@@ -354,13 +337,13 @@ int FairWebScreenshots::GetExtension(char *input, char *output, int max)
 			if (count < max)
 			{
 				output[appended_position] = input[i];
-				appended_position +=1;
+                appended_position += 1;
 				count++;
 			}
 		}
 
-		if ( input[i] == '.' )
-			in_position = 1;
+        if (input[i] == '.')
+            in_position = 1;
 	}
 	output[appended_position+1] = '\0';
 
@@ -370,26 +353,16 @@ int FairWebScreenshots::GetExtension(char *input, char *output, int max)
 	return -1;
 }
 
-int FairWebScreenshots::Content_Lenght(FILE *fp)
-{
-	fseek(fp, 0, SEEK_END);
-	int filesize = ftell(fp);
-	rewind(fp);
-
-	return filesize;
-}
-
 // IF NOT EXISTS - RETURN -1. IF EXISTS - RETURN 1
-int FairWebScreenshots::handleHttpGET(char *input, TString output_dir, int connecting_socket)
+int MpdWebScreenshots::handleHttpGET(char* input, TString output_dir, int connecting_socket)
 {
-	char *filename = (char*)malloc(200 * sizeof(char));
-	char *path = (char*)malloc(1000 * sizeof(char));
-	char *extension = (char*)malloc(10 * sizeof(char));
-	char *mime = (char*)malloc(200 * sizeof(char));
-	char *httpVersion = (char*)malloc(20 * sizeof(char));
+    char* filename = (char*) malloc(200 * sizeof(char));
+    char* path = (char*) malloc(1000 * sizeof(char));
+    char* extension = (char*) malloc(10 * sizeof(char));
+    char* mime = (char*) malloc(200 * sizeof(char));
+    char* httpVersion = (char*) malloc(20 * sizeof(char));
 
-	int contentLength = 0;
-	int mimeSupported = 0;
+    int contentLength = 0, mimeSupported = 0;
 
 	memset(path, '\0', 1000);
 	memset(filename, '\0', 200);
@@ -399,7 +372,7 @@ int FairWebScreenshots::handleHttpGET(char *input, TString output_dir, int conne
 
 	int fileNameLength = scan(input, filename, 5, 200);
 
-	int i=0;
+    int i = 0;
 	while (filename[i]!='\0' && filename[i]!='?')
 		i++;
 
@@ -419,11 +392,11 @@ int FairWebScreenshots::handleHttpGET(char *input, TString output_dir, int conne
 	{
 		printf("File extension not existing");
 		sendString("400 Bad Request\n", connecting_socket);
+
 		free(filename);
 		free(mime);
 		free(path);
 		free(extension);
-
 		return -1;
 	}
 
@@ -432,11 +405,11 @@ int FairWebScreenshots::handleHttpGET(char *input, TString output_dir, int conne
 	{
 		printf("Mime not supported");
 		sendString("400 Bad Request\n", connecting_socket);
+
 		free(filename);
 		free(mime);
 		free(path);
 		free(extension);
-
 		return -1;
 	}
 
@@ -455,12 +428,13 @@ int FairWebScreenshots::handleHttpGET(char *input, TString output_dir, int conne
 		free(mime);
 		free(extension);
 		free(path);
-
 		return -1;
 	}
 
 	// Calculate Content Length
-	contentLength = Content_Lenght(fp);
+    fseek(fp, 0, SEEK_END);
+    contentLength = ftell(fp);
+    rewind(fp);
 	if (contentLength < 0)
 	{
 		printf("File size is zero");
@@ -469,9 +443,7 @@ int FairWebScreenshots::handleHttpGET(char *input, TString output_dir, int conne
 		free(mime);
 		free(extension);
 		free(path);
-
 		fclose(fp);
-
 		return -1;
 	}
 
@@ -484,40 +456,33 @@ int FairWebScreenshots::handleHttpGET(char *input, TString output_dir, int conne
 	free(mime);
 	free(extension);
 	free(path);
-
 	fclose(fp);
 
 	return 1;
 }
 
 // IF NOT VALID REQUEST - RETURN -1. IF VALID REQUEST - RETURN 1. IF GET - RETURN 2. IF HEAD - RETURN 0.
-int FairWebScreenshots::getRequestType(char *input)
+int MpdWebScreenshots::getRequestType(char* input)
 {
 	int type = -1;
 	if (strlen(input) > 0)
 		type = 1;
 
-	char *requestType = (char *)malloc(5);
+    char* requestType = (char*) malloc(5);
 	scan(input, requestType, 0, 5);
 
-	if (type == 1 && strcmp("GET", requestType) == 0)
-		type = 1;
-	else
-		if (type == 1 && strcmp("HEAD", requestType) == 0)
-			type = 2;
-		else
-			if (strlen(input) > 4 && strcmp("POST", requestType) == 0)
-				type = 0;
-			else
-				type = -1;
+    if (type == 1 && strcmp("GET", requestType) == 0)               type = 1;
+    else if (type == 1 && strcmp("HEAD", requestType) == 0)         type = 2;
+    else if (strlen(input) > 4 && strcmp("POST", requestType) == 0) type = 0;
+    else type = -1;
 
 	return type;
 }
 
-int FairWebScreenshots::receive(int connecting_socket, TString output_dir)
+int MpdWebScreenshots::receive(int connecting_socket, TString output_dir)
 {
 	char buffer[BUFFER_SIZE];
-	memset(buffer,'\0', BUFFER_SIZE);
+    memset(buffer, '\0', BUFFER_SIZE);
 
 	if ((recv(connecting_socket, buffer, BUFFER_SIZE, 0)) == -1)
 	{
@@ -540,7 +505,7 @@ int FairWebScreenshots::receive(int connecting_socket, TString output_dir)
 	return 1;
 }
 
-int FairWebScreenshots::acceptConnection(int currentSocket, TString output_dir)
+int MpdWebScreenshots::acceptConnection(int currentSocket, TString output_dir)
 {
 	sockaddr_storage connectorSocket;
 	socklen_t addressSize = sizeof(connectorSocket);
@@ -568,7 +533,7 @@ int FairWebScreenshots::acceptConnection(int currentSocket, TString output_dir)
 	while (-1 != waitpid(-1, NULL, WNOHANG));
 }
 
-int FairWebScreenshots::start(int webPort, TString output_dir)
+int MpdWebScreenshots::start(int webPort, TString output_dir)
 {
 	// Create a socket and assign currentSocket to the descriptor
 	int currentSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -601,7 +566,7 @@ int FairWebScreenshots::start(int webPort, TString output_dir)
 		acceptConnection(currentSocket, output_dir);
 }
 
-int FairWebScreenshots::start_server(void* ptr)
+int MpdWebScreenshots::start_server(void* ptr)
 {
 	www_thread_par* pPar = (www_thread_par*)ptr;
 	int webPort = pPar->web_port;
@@ -665,4 +630,4 @@ int FairWebScreenshots::start_server(void* ptr)
 	return 0;
 }
 
-ClassImp(FairWebScreenshots)
+ClassImp(MpdWebScreenshots)

@@ -5,37 +5,30 @@
  *      Author: stockman
  */
 
-#include "FairMCPointDraw.h"
+#include "MpdMCPointDraw.h"
+#include "MpdEventManager.h"
+
 #include "FairMCPoint.h"
-#include "FairEventManager.h"
-#include "FairEventManagerEditor.h"
 
 #include "TEveManager.h"
 
-FairMCPointDraw::FairMCPointDraw()
-{
-}
 
-FairMCPointDraw::~FairMCPointDraw()
-{
-}
-
-TVector3 FairMCPointDraw::GetVector(TObject* obj)
+TVector3 MpdMCPointDraw::GetVector(TObject* obj)
 {
     FairMCPoint* p = (FairMCPoint*) obj;
     return TVector3(p->GetX(), p->GetY(), p->GetZ());
 }
 
-void FairMCPointDraw::AddEveElementList()
+void MpdMCPointDraw::AddEveElementList()
 {
     fEventManager->AddEventElement(fq, MCPointList);
     return;
 }
 
-void FairMCPointDraw::RemoveEveElementList()
+void MpdMCPointDraw::RemoveEveElementList()
 {
     gEve->RemoveElement(fq, fEventManager->EveMCPoints);
     return;
 }
 
-ClassImp(FairMCPointDraw)
+ClassImp(MpdMCPointDraw)

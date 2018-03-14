@@ -2,11 +2,11 @@
 // -----                      ZdcTowerDraw header file                 -----
 // -------------------------------------------------------------------------
 
-#ifndef ZDCTOWERDRAW_H
-#define ZDCTOWERDRAW_H
+#ifndef MPDZDCTOWERDRAW_H
+#define MPDZDCTOWERDRAW_H
 
 #include "FairTask.h"
-#include "FairEventManager.h"
+#include "MpdEventManager.h"
 #include "TEvePointSet.h"
 #include <TClonesArray.h>
 
@@ -34,7 +34,7 @@ class MpdZdcTowerDraw : public FairTask
 
   protected:    
     TClonesArray* fDigitList; //!
-    FairEventManager* fEventManager; //! 
+    MpdEventManager* fEventManager; //! 
     TEvePointSet* fq;    //!
     
     virtual InitStatus Init();
@@ -64,25 +64,17 @@ class MpdZdcTowerDraw : public FairTask
     void SetModuleZLen(Double_t moduleZLen) { fModuleZLen = moduleZLen; }
     
   private:
-    // Verbosity level
-    Int_t fVerbose;
-    // kTRUE to display transparent contur of zdc
-    Bool_t fShadow;
-    // flag true is box sizes are adjusted
-    Bool_t fResetRequiredFlag;
+    Int_t fVerbose; // Verbosity level
+    Bool_t fShadow; // kTRUE to display transparent contur of zdc
+    Bool_t fResetRequiredFlag; // flag true is box sizes are adjusted
     
-    // array of energies in each box of ZDC, GeV
-    Double_t* fEneArr;  //!
-    // energy loss at the bin with maximum energy loss, GeV
-    Double_t fMaxE;
+    Double_t* fEneArr; //! array of energies in each box of ZDC, GeV
+    Double_t fMaxE; // energy loss at the bin with maximum energy loss, GeV
     
-    // number of modules in one ZDC detector
-    UInt_t fNumModules;
-    // z lenght of ZDC module, cm
-    Double_t fModuleZLen;
+    UInt_t fNumModules; // number of modules in one ZDC detector
+    Double_t fModuleZLen; // z lenght of ZDC module, cm
     
-    // min energy threshold
-    Double_t fZdcMinEnergyThreshold;
+    Double_t fZdcMinEnergyThreshold;// min energy threshold
     
     MpdZdcTowerDraw(const MpdZdcTowerDraw&);
     MpdZdcTowerDraw& operator=(const MpdZdcTowerDraw&);

@@ -1,15 +1,14 @@
 // -------------------------------------------------------------------------
-// -----                        FairBoxSet source file                  -----
+// -----                        MpdBoxSet source file                  -----
 // -----                  Created 03/01/08  by M. Al-Turany            -----
 // -------------------------------------------------------------------------
 
-#include "FairBoxSet.h"
-
+#include "MpdBoxSet.h"
 
 // -----   Standard constructor   ------------------------------------------
-FairBoxSet::FairBoxSet(FairBoxSetDraw* drawer, const char* name, const char* t)
+MpdBoxSet::MpdBoxSet(MpdBoxSetDraw* drawer, const char* name, const char* t)
   : TEveBoxSet(name, t), fDraw(drawer)
 {
 }
 
-ClassImp(FairBoxSet)
+ClassImp(MpdBoxSet)

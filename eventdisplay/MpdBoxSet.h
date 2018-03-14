@@ -1,9 +1,9 @@
 // -------------------------------------------------------------------------
-// -----              FairBoxSet header file                           -----
+// -----              MpdBoxSet header file                       -----
 // -----          Created 26/03/09  by T. Stockmanns                   -----
 // -------------------------------------------------------------------------
 
-/** FairBoxSet
+/** MpdBoxSet
  * @author T. Stockmanns
  * @since 26.3.2009
  *   Base class to display 3D Points in Eve as a BoxSet
@@ -11,37 +11,37 @@
  *   to place the points.
  *   If one wants to change the color of the points one has to overwrite the method GetValue. This method takes a TObject and
  *   an integer and translates this into an integer as input for the EveBoxSet method DigitValue
+ **
  **/
 
-#ifndef FAIRBOXSET_H
-#define FAIRBOXSET_H
+#ifndef MPDBOXSET_H
+#define MPDBOXSET_H
 
+#include "MpdBoxSetDraw.h"
 #include "TEveBoxSet.h"
-#include "FairBoxSetDraw.h"
 
 
-class FairBoxSet : public TEveBoxSet
+class MpdBoxSet : public TEveBoxSet
 {
   public:
     /** Standard constructor **/
-    FairBoxSet(FairBoxSetDraw* drawer, const char* name = "FairBoxSet", const char* t = "");
-
-    void SetTimeWindowPlus(Double_t time) {fDraw->SetTimeWindowPlus(time);}
-    void SetTimeWindowMinus(Double_t time) {fDraw->SetTimeWindowMinus(time);}
-
-    Double_t GetTimeWindowPlus() {return fDraw->GetTimeWindowPlus();}
-    Double_t GetTimeWindowMinus() {return fDraw->GetTimeWindowMinus();}
-
+    MpdBoxSet(MpdBoxSetDraw* drawer, const char* name = "MpdBoxSet", const char* t = "");
     /** Destructor **/
-    virtual ~FairBoxSet() {}
+    virtual ~MpdBoxSet() {}
+
+    void SetTimeWindowPlus(Double_t time) { fDraw->SetTimeWindowPlus(time); }
+    void SetTimeWindowMinus(Double_t time) { fDraw->SetTimeWindowMinus(time); }
+
+    Double_t GetTimeWindowPlus() { return fDraw->GetTimeWindowPlus(); }
+    Double_t GetTimeWindowMinus() { return fDraw->GetTimeWindowMinus(); }
 
   private:
-    FairBoxSetDraw* fDraw;
+    MpdBoxSetDraw* fDraw;
 
-    FairBoxSet(const FairBoxSet&);
-    FairBoxSet operator=(const FairBoxSet&);
+    MpdBoxSet(const MpdBoxSet&);
+    MpdBoxSet operator=(const MpdBoxSet&);
 
-    ClassDef(FairBoxSet,1);
+    ClassDef(MpdBoxSet,1);
 };
 
 #endif
