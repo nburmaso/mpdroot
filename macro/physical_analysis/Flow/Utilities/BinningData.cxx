@@ -18,7 +18,7 @@ bool BinningData::SetPtId(int id)
 {
     if ((id < 0) || (id > _MAX_PT_BINS))
     {
-        std::cout << "Error! BinningData::SetPtId - Wrong bin number" << endl;
+        std::cout << "Error! BinningData::SetPtId - Wrong bin number" << std::endl;;
         return false;
     }
     
@@ -30,7 +30,7 @@ bool BinningData::SetEtaId(int id)
 {
     if ((id < 0) || (id > _MAX_ETA_BINS))
     {
-        std::cout << "Error! BinningData::SetEtaId - Wrong bin number" << endl;
+        std::cout << "Error! BinningData::SetEtaId - Wrong bin number" << std::endl;;
         return false;
     }
     
@@ -42,7 +42,7 @@ bool BinningData::SetRapidityId(int id)
 {
     if ((id < 0) || (id > _MAX_RAPIDITY_BINS))
     {
-        std::cout << "Error! BinningData::SetRapidityId - Wrong bin number" << endl;
+        std::cout << "Error! BinningData::SetRapidityId - Wrong bin number" << std::endl;;
         return false;
     }
     
@@ -189,7 +189,7 @@ bool BinningData::checkBinsArray(Float_t *fValue, int dim)
     {
         if (fValue[i] >= fValue[i + 1])
         {
-            std::cout << "Error! BinningData::checkBinsArray - wrong borders of " << i << "'s bin!" << endl;
+            std::cout << "Error! BinningData::checkBinsArray - wrong borders of " << i << "'s bin!" << std::endl;;
             return false;
         }
         
@@ -204,7 +204,7 @@ bool BinningData::checkBinsArray(const Float_t *fValue, const int dim)
     {
         if (fValue[i] >= fValue[i + 1])
         {
-            std::cout << "Error! BinningData::checkBinsArray - wrong borders of " << i << "'s bin!" << endl;
+            std::cout << "Error! BinningData::checkBinsArray - wrong borders of " << i << "'s bin!" << std::endl;;
             return false;
         }
         
