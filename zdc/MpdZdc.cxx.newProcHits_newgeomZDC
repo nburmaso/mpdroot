@@ -195,13 +195,6 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
       TParticle* part;
       Double_t charge;
 
-
-  Double_t  QCF=1; //quenching for Birk
-  Double_t  BirkConst = 12.6; //0.126 mm/MeV for polystyrene 
-  //0.126 *(0.1/0.001) = 12.6 cm/GeV
-  //(0.126 mm/MeV - from Wikipedia, 0.07943mm/MeV  in Geant4)
-
-
  //#define EDEBUG
 #ifdef EDEBUG
   static Int_t lEDEBUGcounter=0;
@@ -272,12 +265,7 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
       gMC->TrackPosition(tPos);
       gMC->TrackMomentum(tMom);
       length += gMC->TrackStep();    
-
-      //fELoss +=gMC->Edep();
-//Birk corrections
-      QCF = 1.+(BirkConst/gMC->TrackStep())*gMC->Edep();
-      fELoss +=(gMC->Edep())/QCF;
-
+      fELoss +=gMC->Edep();
       time   += gMC->TrackTime() * 1.0e09;
 
 
@@ -378,12 +366,7 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
       fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
       time    += gMC->TrackTime() * 1.0e09;
       length  += gMC->TrackLength();
-
-      //fELoss +=gMC->Edep();
-//Birk corrections
-      QCF = 1.+(BirkConst/gMC->TrackStep())*gMC->Edep();
-      fELoss +=(gMC->Edep())/QCF;
-
+      fELoss +=gMC->Edep();
       gMC->TrackPosition(tPos);
       gMC->TrackMomentum(tMom);
       //gMC->CurrentVolOffID(2, module);

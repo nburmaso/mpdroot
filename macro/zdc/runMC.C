@@ -1,187 +1,407 @@
-
 // Macro for running Fair  with Geant3  or Geant4 (M. Al-Turany , D. Bertini)
 // Modified 22/06/2005 D.Bertini
-// Modified  ...           roleg      (adopted for mpdroot)
-// Modified 27-Mar-2008    litvin     (field definition fixed to try to store the field parameters)
-// Modified 26-Dec-2008    litvin     (adopted to current mpdroot changes)
-// Modified 30-Jan-2009    litvin     (new hostname mpd.jinr.ru)
-// Modified 17-Nov-2011    litvin     (use macro find_path_to_URQMD_files)
 
-runMC (const char *datadir="")
-{
+// Last modified 18/07/2013 P.Batyuk (MPD)
 
-  Int_t nEvents = 1;
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TString.h"
+#include "TStopwatch.h"
+#include "TROOT.h"
+#include "TSystem.h"
 
-  TString the_datadir=datadir;
+#include "FairRunSim.h"
+#include "FairRuntimeDb.h"
+#include "FairParRootFileIo.h"
+#include "FairTrajFilter.h"
+#include "FairUrqmdGenerator.h"
+#include "FairPrimaryGenerator.h"
+#include "FairCave.h"
+#include "FairPipe.h"
+#include "FairMagnet.h"
 
-  if (the_datadir=="")
-    the_datadir=".";
+#include "MpdSts.h"
+#include "TpcDetector.h"
+#include "MpdEtof.h"
+#include "MpdFsa.h"
+#include "MpdBbc.h"
+#include "MpdCpc.h"
+#include "MpdTof.h"
+#include "MpdStrawendcap.h"
+#include "MpdZdc.h"
+#include "MpdFfd.h"
+#include "MpdGetNumEvents.h"
 
-  TString outFile = the_datadir+ "/zdctest.root";             
-  TString parFile = outFile ; 
+#include <iostream>
+using namespace std;
+#endif
 
-  TStopwatch timer;
-  timer.Start();
-  gDebug=0;
+// inFile - input file with generator data, default: auau.09gev.mbias.98k.ftn14
+// nStartEvent - for compatibility, any number
+// nEvents - number of events to transport, default: 1
+// outFile - output file with MC data, default: evetest.root
+// flag_store_FairRadLenPoint
+// FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
 
-#define URQMD
+void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14", TString outFile = "$VMCWORKDIR/macro/mpd/test/evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 1, Int_t nSkip = 0,Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0) {
 
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-  mpdloadlibs(1,1);                 // load all libraries
+#define LAQGSM
+//#define SHIELD
+//#define URQMD
+//#define HADGEN
+    TStopwatch timer;
+    timer.Start();
+    gDebug = 0;
 
-  //  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v1_option.C");
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
+    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+    mpdloadlibs(1, 1); // load main libraries
 
-  FairRunSim *fRun = new FairRunSim();
-  
-  // set the MC version used
-  // ------------------------
+    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
+    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
+    gROOT->LoadMacro("/lustre/nyx/cbm/users/marina/laqgsm/AuAuss11mb/geometry_stage1.C");
 
-  //  fRun->SetName("TGeant4");
-  fRun->SetName("TGeant3");
+    FairRunSim *fRun = new FairRunSim();
 
-  fRun->SetOutputFile(outFile.Data());
+    // Choose the Geant Navigation System
+    //fRun->SetName("TGeant3");
+     fRun->SetName("TGeant4");
+    // fRun->SetGeoModel("G3Native");
 
-  
-  // Load mpd detectors libraries with changed ZDC geometry file:
-  // ------------------------
+    geometry_stage1(fRun, kTRUE); // load mpd geometry
 
-  //  geometry_v1_option (fRun, kTRUE, "ZDC","zdc_modules84_layers60_16_4.geo");  
-    geometry_v2(fRun, kTRUE);    // load mpd standard geometries
+    // Use the experiment specific MC Event header instead of the default one                                                     
+    // This one stores additional information about the reaction plane                                                           
+    //MpdMCEventHeader* mcHeader = new MpdMCEventHeader();
+    FairMCEventHeader* mcHeader = new FairMCEventHeader();
+                                                                         
+    fRun->SetMCEventHeader(mcHeader);
 
+    // Create and Set Event Generator
+    //-------------------------------
 
-  // Create and Set Event Generator
-  //-------------------------------
+    FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+    fRun->SetGenerator(primGen);
 
-  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-  fRun->SetGenerator(primGen);
+    // smearing of beam interaction point
+    //primGen->SetBeam(0.0,0.0,0.1,0.1);
+
+    primGen->SetTarget(0.0,24.0);
+    primGen->SmearGausVertexZ(kTRUE);
+
+    //primGen->SmearVertexXY(kTRUE);
 
 #ifdef URQMD
-  // Urqmd  Generator
+    // ------- Urqmd  Generator
+    TString hostname = gSystem->HostName(), dataFile;
 
-  TString hostname = gSystem->HostName();
-  TString dataFile;
+    if (inFile.Contains("/"))
+        dataFile = inFile;
+    else {
+        dataFile = find_path_to_URQMD_files();
+        if ((hostname == "lxmpd-ui.jinr.ru") || (hostname == "lxmpd-ui"))
+            dataFile += "auau.09gev.mbias.10k.f14";
+        else
+            dataFile += inFile;
+    }
 
-  dataFile=find_path_to_URQMD_files();
-    if ((hostname=="lxmpd-ui.jinr.ru")||(hostname=="lxmpd-ui"))  
-    dataFile += "auau.09gev.mbias.10k.f14";
-  else
-    dataFile += "auau.09gev.mbias.98k.ftn14";
+    if (!CheckFileExist(dataFile)) return;
 
-  FairUrqmdGenerator* urqmdGen = new FairUrqmdGenerator(dataFile);
-  primGen->AddGenerator(urqmdGen);
+    MpdUrqmdGenerator* urqmdGen = new MpdUrqmdGenerator(dataFile);
+    primGen->AddGenerator(urqmdGen);
+    if (nStartEvent > 0) urqmdGen->SkipEvents(nStartEvent);
+
+    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
+    if (nEvents == 0)
+        nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
 
 #else
+#ifdef FLUID
+
+    Mpd3fdGenerator* fluidGen = new Mpd3fdGenerator(inFile);
+    fluidGen->SkipEvents(0);
+    primGen->AddGenerator(fluidGen);
+    //if (nStartEvent > 0) urqmdGen->SkipEvents(nStartEvent);
+
+    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
+    //    if (nEvents == 0)
+    //        nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
+
+#else
+
 #ifdef PART
-  // ------- Particle Generator
-  FairParticleGenerator* partGen =
-    new FairParticleGenerator(211, 10, 1, 0, 3, kTRUE);
-  primGen->AddGenerator(partGen);
+    // ------- Particle Generator
+    FairParticleGenerator* partGen =
+            new FairParticleGenerator(211, 10, 1, 0, 3, 1, 0, 0);
+    primGen->AddGenerator(partGen);
 
 #else
 #ifdef ION
-  // -------  Ion Generator
-  FairIonGenerator *fIongen= new FairIonGenerator(79, 197,79,1, 0.,0., 25, 0.,0.,-1.);
-  primGen->AddGenerator(fIongen);
+    // ------- Ion Generator
+    FairIonGenerator *fIongen =
+            new FairIonGenerator(79, 197, 79, 1, 0., 0., 25, 0., 0., -1.);
+    primGen->AddGenerator(fIongen);
 
 #else
 #ifdef BOX
-  
-  // Box Generator
-  FairBoxGenerator* boxGen = new
-    FairBoxGenerator(2212, 10); // 2212 =proton ; 10 = multipl.
-  
-  //    FairBoxGenerator* boxGen = new
-  //      FairBoxGenerator(13, 100); // 13 = muon; 1 = multipl.
-  boxGen->SetPRange(0.25,2.5); // GeV/c //setPRange vs setPtRange
-  boxGen->SetPhiRange(0, 360); // Azimuth angle range [degree]
-  boxGen->SetThetaRange(0, 180); // Polar angle in lab system range [degree]
-  boxGen->SetXYZ(0., 0., 0.); // mm o cm ??
-  primGen->AddGenerator(boxGen);
-#endif
-#endif
-#endif
-#endif
+    gRandom->SetSeed(0);
+    // ------- Box Generator
+    FairBoxGenerator* boxGen = new
+            FairBoxGenerator(13, 1); // 13 = muon; 1 = multipl.
+    boxGen->SetPRange(0.25, 2.5); // GeV/c //setPRange vs setPtRange
+    boxGen->SetPhiRange(0, 360); // Azimuth angle range [degree]
+    boxGen->SetThetaRange(0, 180); // Polar angle in lab system range [degree]
+    boxGen->SetXYZ(0., 0., 0.); // mm o cm ??
+    primGen->AddGenerator(boxGen);
 
-  // Field Map Definition
-  // --------------------
-  //   // 1- Reading the new field map in the old format
-
-  //   // Constant Field
-  //   PndConstField *fMagField=new PndConstField();
-  //   fMagField->SetField(0, 0 , 5. ); // values are in kG:  1T = 10kG
-  //   // MinX=-75, MinY=-40,MinZ=-12 ,MaxX=75, MaxY=40 ,MaxZ=124 );  // values are in cm
-  //   fMagField->SetFieldRegion(-205, 205, -205, 205, -261, 261); //cm
-  
-  //   // 2- Reading the new field map in the new format
-
-  //   //  FairField *fMagField= new FairFieldMapSym3("FieldActive");
-  //   // Active Shielding
-  
-  //   fRun->SetField(fMagField);
-
-  PndMultiField *fField= new PndMultiField();
-  PndConstField *fMagField=new PndConstField();
-  fMagField->SetField(0, 0 , 5. ); // values are in kG:  1T = 10kG
-  //  fMagField->SetFieldRegion(-205, 205, -205, 205, -270, 270); //cm
-#define magnet_v4
-#ifdef  magnet_v4
-  fMagField->SetFieldRegion(-230, 230, -230, 230, -375, 375); //cm   // magnet_v4 or later
 #else
-  fMagField->SetFieldRegion(-205, 205, -205, 205, -261, 261); //cm   // old magnet
+#ifdef HSD
+    // ------- HSD/PHSD Generator
+    TString dataFile;
+~    if (inFile.Contains("/"))
+        dataFile = inFile;
+    else {
+        dataFile = find_path_to_URQMD_files();
+        dataFile += "/../../HSD/"; //  nc-farm
+        dataFile += inFile;
+    }
+
+    if (!CheckFileExist(dataFile)) return;
+
+    MpdPHSDGenerator *hsdGen = new MpdPHSDGenerator(dataFile.Data());
+    //hsdGen->SetPsiRP(0.); // set fixed Reaction Plane angle instead of random
+    primGen->AddGenerator(hsdGen);
+    if (nStartEvent > 0) hsdGen->SkipEvents(nStartEvent);
+
+    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
+    if (nEvents == 0)
+        nEvents = MpdGetNumEvents::GetNumPHSDEvents(dataFile.Data()) - nStartEvent;
+
+#else
+#ifdef SHIELD
+    // ------- SHIELD Generator
+    /*
+    TString dataFile;
+    if (inFile.Contains("/"))
+        dataFile = inFile;
+    else {
+        dataFile = find_path_to_URQMD_files();
+        dataFile += "/../../QGSM/"; //  nc-farm
+        dataFile += inFile;
+    }
+    if (!CheckFileExist(dataFile)) return;
+    */
+
+    TString dataFile;
+    dataFile = inFile;
+    if (!CheckFileExist(dataFile)) return;
+
+    Bool_t use_collider_system = kTRUE;
+
+    //Double_t collider_energy = 6.631;
+    Double_t collider_energy = 62.482;
+    //=6.631 sqrt(s)=(2+2) (GeV)
+    //=11.418 sqrt(s)=(2.5+2.5)
+    //=24.184 sqrt(s)=(3.5+3.5)
+    //=41.205 sqrt(s)=(4.5+4.5)
+    //=62.482 sqrt(s)=(5.5+5.5)
+
+    FairShieldGenerator* shieldGen = new FairShieldGenerator(inFile,use_collider_system,collider_energy);
+    primGen->AddGenerator(shieldGen);
+
+/*
+    //TString inFile = inDir + "FOR038_au" + sEn + "au_100ev_" + sfileNum +  ".dat";  
+    nEvents = 40;
+    //inFile = "FOR038_au6.631au_test.dat";  
+    //inFile = "FOR038_au6.631au_test_3.dat";  
+    //inFile = "FOR038_au6.631au_10000_notfull.dat";	
+    //inFile = "FOR038_au6.631au_10ev.dat";  
+    //inFile = "/hera/cbm/users/marina/shield/shield_code/au62.482au/test.dat";  
+    inFile = "/hera/cbm/users/marina/shield/shield_code/au62.482au/test_40ev.dat";  
+
+    Bool_t use_collider_system = kTRUE;
+
+    //Double_t collider_energy = 6.631;
+    Double_t collider_energy = 62.482;
+    //=6.631 sqrt(s)=(2+2) (GeV)
+    //=11.418 sqrt(s)=(2.5+2.5) 
+    //=24.184 sqrt(s)=(3.5+3.5) 
+    //=41.205 sqrt(s)=(4.5+4.5) 
+    //=62.482 sqrt(s)=(5.5+5.5)
+	cout <<"marina 1" <<endl; 
+    FairShieldGenerator* shieldGen = new FairShieldGenerator(inFile,use_collider_system,collider_energy);
+        cout <<"marina 2" <<endl;
+    primGen->AddGenerator(shieldGen);
+        cout <<"marina 3" <<endl;
+    //if (nStartEvent > 0) guGen->SkipEvents(nStartEvent);
+*/
+    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
+    /*
+    if (nEvents == 0)
+        nEvents = MpdGetNumEvents::GetNumQGSMEvents(dataFile.Data()) - nStartEvent;
+    */
+#else
+#ifdef LAQGSM
+    // ------- LAQGSM Generator
+/*
+    TString dataFile;
+    if (inFile.Contains("/"))
+        dataFile = inFile;
+    else {
+        dataFile = find_path_to_URQMD_files();
+        dataFile += "/../../QGSM/"; //  nc-farm
+        dataFile += inFile;
+    }
+*/
+
+    TString dataFile;
+    dataFile = inFile;
+    if (!CheckFileExist(dataFile)) return;
+
+    //nEvents = 2;
+    //Int_t nSkip=0;
+    Bool_t use_collider_system = kTRUE;
+    Int_t QGSM_format_ID;
+
+    //inFile = "/hera/cbm/users/marina/laqgsm/AuAuss11mb/AuAuss11mb_1.r12";
+    //inFile = "AuAuss11mb_1.r12";
+    dataFile = inFile;
+
+    //MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(inFile);
+    MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(dataFile.Data(),use_collider_system,QGSM_format_ID);
+    primGen->AddGenerator(guGen);
+    //if (nStartEvent > 0) guGen->SkipEvents(nStartEvent);
+	cout <<"runMC " <<nSkip <<endl;
+    guGen->SkipEvents(nSkip);
+    //primGen->SetTarget(50.0,24.0);
+
+    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
+    //if (nEvents == 0)
+    //nEvents = MpdGetNumEvents::GetNumQGSMEvents(dataFile.Data()) - nStartEvent;
+
+
+/*
+    TString dataFile;
+    dataFile = inFile;
+    if (!CheckFileExist(dataFile)) return;
+
+    MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(dataFile.Data());
+    primGen->AddGenerator(guGen);
+    if (nStartEvent > 0) guGen->SkipEvents(nStartEvent);
+
+    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
+    if (nEvents == 0)
+        nEvents = MpdGetNumEvents::GetNumQGSMEvents(dataFile.Data()) - nStartEvent;
+*/
+
+#else
+#ifdef HADGEN
+    THadgen* hadGen = new THadgen();
+    //hadGen->SetRandomSeed(clock() + time(0));
+    hadGen->SetNuclid(79);
+    hadGen->SetParticleFromPdgCode(0, 196.9665, 79);
+    //hadGen->SetEnergy(6.5E3);
+    hadGen->SetEnergy(6.5);
+    MpdGeneralGenerator* generalHad = new MpdGeneralGenerator(hadGen);
+    hadGen->FileOut("shield_out.txt");
+    primGen->AddGenerator(generalHad);
+
 #endif
-  fField->AddField(fMagField);
-  
-  fRun->SetField(fField);
-  fRun->SetStoreTraj(kTRUE);
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
 
-  fRun->Init();
+    fRun->SetOutputFile(outFile.Data());
 
+    // Magnetic Field Map - for proper use in the analysis MultiField is necessary here
+    // --------------------
+    MpdMultiField *fField = new MpdMultiField();
 
-  // -Trajectories Visualization (TGeoManager Only )
-  // -----------------------------------------------
+    if (FieldSwitcher == 0) {
+        MpdConstField *fMagField = new MpdConstField();
+        fMagField->SetField(0., 0., 5.); // values are in kG:  1T = 10kG
+        fMagField->SetFieldRegion(-230, 230, -230, 230, -375, 375);
+        fField->AddField(fMagField);
+        fRun->SetField(fField);
+        cout << "FIELD at (0., 0., 0.) = (" <<
+                fMagField->GetBx(0., 0., 0.) << "; " << fMagField->GetBy(0., 0., 0.) << "; " << fMagField->GetBz(0., 0., 0.) << ")" << endl;
+    } else if (FieldSwitcher == 1) {
+        MpdFieldMap* fMagField = new MpdFieldMap("B-field_v2", "A");
+        fMagField->Init();
+        fField->AddField(fMagField);
+        fRun->SetField(fField);
+        cout << "FIELD at (0., 0., 0.) = (" <<
+                fMagField->GetBx(0., 0., 0.) << "; " << fMagField->GetBy(0., 0., 0.) << "; " << fMagField->GetBz(0., 0., 0.) << ")" << endl;
+    }
 
-  //fRun->SetStoreTraj(kFALSE);
+    fRun->SetStoreTraj(kTRUE);
+    fRun->SetRadLenRegister(flag_store_FairRadLenPoint); // radiation length manager
 
-  ;
-  // Set cuts for storing the trajectpries
-  FairTrajFilter* trajFilter = FairTrajFilter::Instance();
-  trajFilter->SetStepSizeCut(0.01); // 1 cm
-  //   trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
-  trajFilter->SetMomentumCutP(.50); // p_lab > 500 MeV
-  //  trajFilter->SetEnergyCut(.2, 3.02); // 0 < Etot < 1.04 GeV
+    //  MpdTpcDigitizerTask* tpcDigitizer = new MpdTpcDigitizerTask();
+    //  tpcDigitizer->SetOnlyPrimary(kTRUE); /// Digitize only primary track
+    //  tpcDigitizer->SetMakeQA(kTRUE);  /// SetMakeQA(kTRUE) prepares Quality Assurance Histograms  
+    //  tpcDigitizer->SetDiffuse(kFALSE);
+    //  tpcDigitizer->SetDebug(kFALSE);
+    //  tpcDigitizer->SetDistort(kFALSE);
+    //  tpcDigitizer->SetResponse(kFALSE);
+    //  tpcDigitizer->SetDistribute(kFALSE);
+    //fRun->AddTask(tpcDigitizer);
 
-  trajFilter->SetStorePrimaries(kTRUE);
-  trajFilter->SetStoreSecondaries(kFALSE);
+    fRun->Init();
 
-  //   trajFilter->SetStoreSecondaries(kTRUE);
+    // -Trajectories Visualization (TGeoManager Only )
+    // -----------------------------------------------
 
+    // Set cuts for storing the trajectories
+    FairTrajFilter* trajFilter = FairTrajFilter::Instance();
+    trajFilter->SetStepSizeCut(0.01); // 1 cm
+    //  trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
+    trajFilter->SetMomentumCutP(.50); // p_lab > 500 MeV
+    //  trajFilter->SetEnergyCut(.2, 3.02); // 0 < Etot < 1.04 GeV
 
-  // Fill the Parameter containers for this run
-  //-------------------------------------------
+    //trajFilter->SetStorePrimaries(kTRUE);
+    trajFilter->SetStorePrimaries(kFALSE);
+    trajFilter->SetStoreSecondaries(kFALSE);
 
-  FairRuntimeDb *rtdb=fRun->GetRuntimeDb();
-  Bool_t kParameterMerged=kTRUE;
-  FairParRootFileIo* output=new FairParRootFileIo(kParameterMerged);
-  //  output->open(parFile.Data());
-  output->open(gFile);
-  rtdb->setOutput(output);
-  rtdb->saveOutput();
-  rtdb->print();
+    // Fill the Parameter containers for this run
+    //-------------------------------------------
 
-  // Transport nEvents
-  // -----------------
+    FairRuntimeDb *rtdb = fRun->GetRuntimeDb();
 
-  fRun->Run(nEvents);
+    Bool_t kParameterMerged = kTRUE;
+    FairParRootFileIo* output = new FairParRootFileIo(kParameterMerged);
+    //AZ output->open(parFile.Data());
+    output->open(gFile);
+    rtdb->setOutput(output);
 
-  timer.Stop();
-  Double_t rtime = timer.RealTime();
-  Double_t ctime = timer.CpuTime();
-  printf("RealTime=%f seconds, CpuTime=%f seconds\n",rtime,ctime);
+    MpdMultiFieldPar* Par = (MpdMultiFieldPar*) rtdb->getContainer("MpdMultiFieldPar");
+    if (fField)
+        Par->SetParameters(fField);
+    Par->setInputVersion(fRun->GetRunId(), 1);
+    Par->setChanged();
+    // Par->printParams();
 
-  cout << " Test passed" << endl;
-  cout << " All ok " << endl;
-  exit(0);
+    rtdb->saveOutput();
+    rtdb->print();
 
-}  
-  
+    // Transport nEvents
+    // -----------------
+    fRun->Run(nEvents);
+
+#ifdef LAQGSM
+    TString Pdg_table_name = TString::Format("%s%s%c%s", gSystem->BaseName(dataFile.Data()), ".g", (fRun->GetName())[6], ".pdg_table.dat");
+    (TDatabasePDG::Instance())->WritePDGTable(Pdg_table_name.Data());
+#endif
+
+    Bool_t file = fRun->GetWriteRunInfoFile();
+    timer.Stop();
+    Double_t rtime = timer.RealTime(), ctime = timer.CpuTime();
+    printf("RealTime=%f seconds, CpuTime=%f seconds\n", rtime, ctime);
+
+    cout << "Macro finished succesfully." << endl;
+
+    gApplication->Terminate();
+}

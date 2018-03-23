@@ -27,6 +27,7 @@
 
 
 // -----   Default constructor   -------------------------------------------
+//MpdZdcDigiProducer::MpdZdcDigiProducer(const char* name,Int_t nbCells,Int_t sizeCell) :
 MpdZdcDigiProducer::MpdZdcDigiProducer(const char* name) :
   FairTask(name) {
   fPointArray=0;
@@ -165,12 +166,16 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
   MpdZdcDigiId_t digiID;
 
   //marina
-  Double_t dEdepSectEv[90][10];  
+  const Int_t nbWALLmods = 1568; //NICA 784+784 mods (VETO1 - 1-784, VETO 2 - 785-1568)
+  //Int_t nbWALLmods = 1568; //NICA 784+784 mods (VETO1 - 1-784, VETO 2 - 785-1568)
+  Double_t dEdepSectEv[nbWALLmods];  
+  TVector3 position,momentum;
+  Double_t posX=0, posY=0, posZ=0, dEdep=-1;
+  Double_t posXNew=0, posYNew=0, posZNew=0;
+  Int_t iX,iY,iMod;
 
-    for(Int_t i=0; i<90; i++) {// mod    
-      for(Int_t ii=0;ii<10;ii++) { // section 
-	dEdepSectEv[i][ii] = 0.;
-      }
+    for(Int_t i=0; i<nbWALLmods; i++) {// mod    
+      dEdepSectEv[i] = 0.;
     }
     //end marina
   
@@ -191,21 +196,33 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
   TH2F* hist2=fHistZdc2En;
 
   Bool_t flag_of_not_created=1;
+
   //cout <<"marina " <<nPoints <<endl;
   for (Int_t iPoint=0; iPoint<nPoints; iPoint++) {
     //marina
     point  = (MpdZdcPoint*) fPointArray->At(iPoint);
-    //cout <<"marina 1 " <<point->GetCopyZdc() <<" " <<point->GetCopyMother() <<" " <<point->GetCopy() <<endl;
+    cout <<"marina 1 " <<point->GetCopyMother() <<" " <<point->GetCopy() <<endl;
 
-    detID = point->GetCopyZdc();//==1 (z>0), ==2 (z<0)
-    //modID  = point->GetCopyMother(); // modules 1-45
-    if(detID==1) modID  = point->GetCopyMother(); // modules 1-45
-    else modID = point->GetCopyMother() + 45;//modules 46-90
-    chanID = (Int_t)((point->GetCopy()-1)/6); //sections 0-9
+    //detID = point->GetCopyMother();//==1 (z>0), ==2 (z<0)
 
-    cout <<"marina 1 " <<detID <<" " <<modID <<" " <<point->GetCopy() <<' ' <<chanID <<endl;
+	   point->Position(position);	  
+	   posZ = position.Z();
+	   posX = position.X();
+	   posY = position.Y();
 
-    dEdepSectEv[modID-1][chanID]+=point->GetEnergyLoss();
+	   dEdep=point->GetEnergyLoss();
+
+	   if(posZ>0) posXNew = posX - 70.;
+	   if(posZ<=0) posXNew = -posX - 70.;
+	   posYNew = posY - 70;
+	   iX=TMath::Abs(posXNew/5.); iY=TMath::Abs(posYNew/5.);
+	   if(iX>=28) iX=27; 
+	   if(iY>=28) iY=27; 
+	   if(posZ>0) iMod=iY*28 + iX; //iMod=0-783 
+	   if(posZ<=0) iMod=iY*28 + iX + nbWALLmods/2; //iMod=784-1567 
+	   cout <<"x,y,iX,iY " <<posZ <<" " <<posX <<" " <<posY <<" " <<iX <<" " <<iY <<" " <<iMod+1 <<endl;	    
+
+	   dEdepSectEv[iMod]+=point->GetEnergyLoss();
     //end marina
 
     Int_t pMMcopy=1*(point->GetZ()>0)+2*(point->GetZ()<0);
@@ -264,26 +281,26 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
     TClonesArray& clref2e = *fELossZdc2Histo;
     new(clref2e[0]) TVectorT<float>(fHistZdc2En->GetSize(),fHistZdc2En->GetArray());
   }
-  
+    
   //cout <<"marina 3 " <<endl;
-    for(Int_t i=0; i<90; i++) {// mod    
-      for(Int_t ii=0;ii<10;ii++) { // section 
+  modID=1;
+    for(Int_t i=0; i<nbWALLmods; i++) {// mod    
 	//cout <<"dEdepSectEv " <<i <<" " <<ii <<" " <<dEdepSectEv[i][ii] <<endl;
-	if(dEdepSectEv[i][ii]>0) {
-	  if(i<=44) detID = 1;
+	if(dEdepSectEv[i]>0) {
+	  //if(i<=783) detID = 1;
+	  if(i<nbWALLmods/2) detID = 1;
 	  else detID = 2;
 	  if(detID==1) {
-	    MpdZdcDigi* digi = AddHit(detID, i+1, ii+1, dEdepSectEv[i][ii]); 
+	    MpdZdcDigi* digi = AddHit(detID, modID, i+1, dEdepSectEv[i]); 
 	    digi->ConvertSim();
 	  }
 	  else {
-	    MpdZdcDigi* digi = AddHit(detID, i-45+1, ii+1, dEdepSectEv[i][ii]);
+	    MpdZdcDigi* digi = AddHit(detID, modID, i-(nbWALLmods/2)+1, dEdepSectEv[i]);
 	    digi->ConvertSim();
 	  }
 	}
-      }
-    }//for(Int_t i=0; i<90; i++)
-
+    }//for(Int_t i=0; i<1568; i++)
+  
     /*
   for(p=fDigiIdEnergy.begin(); p!=fDigiIdEnergy.end(); ++p) {
 
