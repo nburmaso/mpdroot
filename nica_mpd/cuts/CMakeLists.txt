@@ -23,6 +23,7 @@ ${CMAKE_SOURCE_DIR}/nicaroot/dataformat/compound
 ${CMAKE_SOURCE_DIR}/nicaroot/cuts
 ${CMAKE_SOURCE_DIR}/nicaroot/cuts/eventcuts
 ${CMAKE_SOURCE_DIR}/nicaroot/cuts/trackcuts
+${CMAKE_SOURCE_DIR}/nicaroot/cuts/trackcuts/detector
 ${CMAKE_SOURCE_DIR}/nicaroot/cuts/twotrackcuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/format
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
@@ -33,7 +34,6 @@ ${CMAKE_SOURCE_DIR}/nica_mpd/format/kalmandst
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/trackcuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts
-${CMAKE_SOURCE_DIR}/nica_mpd/helpers
 ${CMAKE_SOURCE_DIR}/mpdbase
 )
 

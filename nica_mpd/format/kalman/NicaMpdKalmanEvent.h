@@ -18,8 +18,6 @@ public:
 	NicaMpdKalmanEvent(const NicaMpdKalmanEvent &other);
 	virtual void Update();
 	virtual void Clear(Option_t *opt=" ");
-	virtual NicaTrack *GetNewTrack() const;
-	virtual NicaEvent *GetNewEvent() const;
 	virtual TString GetFormatName()const {return "MpdKalman";};
 	virtual ~NicaMpdKalmanEvent();
 	ClassDef(NicaMpdKalmanEvent,1)

@@ -26,8 +26,6 @@ public:
 	void OnlyPrimary();
 	void OnlyGlobal();
 	virtual void Update();
-	virtual NicaTrack *GetNewTrack() const;
-	virtual NicaEvent *GetNewEvent() const{return new NicaMpdDstKalmanEvent(*this);};
 	virtual TString GetFormatName()const{return "MpdDstKalman";};
 	virtual ~NicaMpdDstKalmanEvent();
 	ClassDef(NicaMpdDstKalmanEvent,1)

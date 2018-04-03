@@ -20,8 +20,6 @@ public:
 	void OnlyPrimary();
 	void OnlyGlobal();
 	void Update();
-	virtual NicaTrack *GetNewTrack() const{return new NicaComplexTrack();};
-	virtual NicaEvent *GetNewEvent() const{return new NicaMpdDstMCEvent(*this);};
 	virtual TString GetFormatName()const{return "NicaMpdDstMCEvent";};
 	virtual ~NicaMpdDstMCEvent();
 	ClassDef(NicaMpdDstMCEvent,1)

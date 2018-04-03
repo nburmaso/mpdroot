@@ -16,8 +16,6 @@ public:
 	NicaMpdFullEvent();
 	void OnlyPrimary();
 	void OnlyGlobal();
-	virtual NicaTrack *GetNewTrack() const{return new NicaComplexTrack();};
-	virtual NicaEvent *GetNewEvent() const{return new NicaMpdFullEvent(*this);};
 	virtual TString GetFormatName()const{return "MpdFullEvent";};
 	virtual ~NicaMpdFullEvent();
 	ClassDef(NicaMpdFullEvent,1)

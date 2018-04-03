@@ -75,17 +75,13 @@ void NicaMpdDstKalmanEvent::OnlyGlobal() {
 	fMode = kGlobalTracks;
 }
 
-NicaTrack* NicaMpdDstKalmanEvent::GetNewTrack() const {
-	return new NicaMpdDstKalmanTrack();
-}
-
 NicaMpdDstKalmanEvent::~NicaMpdDstKalmanEvent() {
 	// TODO Auto-generated destructor stub
 }
 
 NicaMpdDstKalmanEvent::NicaMpdDstKalmanEvent(
 		const NicaMpdDstKalmanEvent& other) :NicaExpEvent(other){
-	if(Source()) CreateSource();
+	if(other.fSource) CreateSource();
 	fMode = other.fMode;
 }
 

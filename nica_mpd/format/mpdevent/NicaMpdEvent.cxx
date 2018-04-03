@@ -12,7 +12,7 @@
 #include "NicaMpdEventInterface.h"
 
 NicaMpdEvent::NicaMpdEvent(const NicaMpdEvent& other) :NicaExpEvent(other){
-	if(Source()) CreateSource();
+	if(other.fSource) CreateSource();
 	fMode = other.fMode;
 }
 

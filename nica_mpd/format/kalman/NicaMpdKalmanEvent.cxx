@@ -21,7 +21,7 @@ void NicaMpdKalmanEvent::Update() {
 	fTracks->ExpandCreateFast(fTotalTracksNo);
 	for(int i=0;i<fTotalTracksNo;i++){
 		NicaTrack *tr = GetTrack(i);
-		tr->GetLink()->SetLinkFrom(i);
+		tr->GetLink()->SetLink(0, i);
 		MpdKalmanTrack *kalman = (MpdKalmanTrack*)kalmans->UncheckedAt(i);
 		TLorentzVector *mom = tr->GetMomentum();
 		Double_t pt = kalman->Pt();
@@ -34,20 +34,11 @@ void NicaMpdKalmanEvent::Update() {
 
 void NicaMpdKalmanEvent::Clear(Option_t* opt) {
 	NicaEvent::Clear(opt);
-	if(Source())
+	if(fSource)
 		fSource->Clear(opt);
 }
-
-NicaTrack* NicaMpdKalmanEvent::GetNewTrack() const {
-	return new NicaMpdKalmanTrack();
-}
-
-NicaEvent* NicaMpdKalmanEvent::GetNewEvent() const {
-	return new NicaMpdKalmanEvent();
-}
-
 NicaMpdKalmanEvent::NicaMpdKalmanEvent(const NicaMpdKalmanEvent& other) {
-	if(Source()) CreateSource();
+	if(other.fSource) CreateSource();
 }
 
 void NicaMpdKalmanEvent::CreateSource() {

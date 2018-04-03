@@ -31,8 +31,6 @@ public:
 	void OnlyPrimary();
 	void OnlyGlobal();
 	virtual TString GetFormatName()const;
-	virtual NicaTrack *GetNewTrack() const{return new NicaMpdTrack();};
-	virtual NicaEvent *GetNewEvent() const{return new NicaMpdEvent(*this);};
 	virtual ~NicaMpdEvent();
 	ClassDef(NicaMpdEvent,1)
 };
