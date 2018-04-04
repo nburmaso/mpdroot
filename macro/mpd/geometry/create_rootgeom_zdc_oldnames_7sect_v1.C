@@ -300,9 +300,9 @@ void create_rootgeom_zdc_oldnames_7sect_v1() {
     //TString gdmlname = gPath + "/geometry/tpc_v7.gdml";
     //gGeoManager->Export(gdmlname);
 
-    top->Draw("ogl");
-    TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
-    v->SetStyle(TGLRnrCtx::kOutline);
+    //top->Draw("ogl");
+    //TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
+    //v->SetStyle(TGLRnrCtx::kOutline);
     //top->Draw("");
 
 }//create_rootgeom_zdc_v1
