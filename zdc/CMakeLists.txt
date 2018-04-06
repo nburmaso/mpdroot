@@ -56,6 +56,7 @@ MpdZdcTstSim.h
 MpdZdcDigiPar.h
 MpdZdcDigiScheme.h
 MpdZdcPsdGeoPar.h
+MpdZdcPsdDigiPar.h
 )
 
 Set(LINKDEF MpdZdcLinkDef.h)

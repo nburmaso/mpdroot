@@ -31,6 +31,12 @@ set(SRCS
     src/ranlux.f
 )
 
+# List of header files
+set(HEADERS
+    inc/hadgen.h
+    inc/hadgen_common_blocks.h
+)
+
 Set(LIBRARY_NAME HADGEN)
 Set(DEPENDENCIES Core Base)
 

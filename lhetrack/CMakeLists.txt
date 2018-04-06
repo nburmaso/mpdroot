@@ -79,7 +79,45 @@ MpdCellAutomat.cxx
 MpdCellTrack.cxx
 )
 
-Set(HEADERS)
+# List of header files
+set(HEADERS
+TpcLheTrackFinder.h
+TpcLheSegments.h
+TpcLheHit.h
+TpcLheTrackCuts.h      
+TpcLheCMPoint.h
+TpcLheTrack.h          
+TpcLheCMTrack.h        
+TpcLheTrackFitter.h
+TpcLheHitsMaker.h      
+TpcLhePoint.h 
+#TpcLheKalmanFilter.h
+#TpcLheKalmanTrack.h
+MpdTpcKalmanFilter.h
+MpdTpcKalmanTrack.h
+MpdItsKalmanTrack.h
+
+MpdEctKalmanTrack.h
+#MpdEctTrackFinderTof.h
+#MpdEctTrackFinderTofTpc.h
+MpdEctTrackFinderTpc.h
+#MpdEctTrackFollow2Tpc.h
+MpdSftTrackFinderTpc.h
+#MpdTpcTrackFollow2Sft.h
+MpdKfPrimaryVertexFinder.h
+MpdTrackFinderIts.h
+MpdVertexZfinder.h
+MpdTpcDedxTask.h
+MpdKfV0Fitter.h
+MpdEctTrackFinderCpc.h
+MpdEctTrackFinderTof.h
+MpdMotherFitterPart.h
+#MpdMotherFitterTrac.h
+MpdCellAutomat.h
+MpdCellTrack.h
+lhe.h
+)
+
 Set(LINKDEF LHETrackLinkDef.h)
 Set(LIBRARY_NAME LHETrack)
 Set(DEPENDENCIES Core Base Kalman Tof)
