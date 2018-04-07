@@ -66,17 +66,70 @@ InitStatus MpdDstCompressTask::Init() {
 		LOG(FATAL)<<"End of macro MPDEvent not found"<<FairLogger::endl;
 		return kFATAL;
 	}
+	fMCMapSize = 1000;
+	fMCIndexMap = new Int_t[fMCMapSize];
 	return kSUCCESS;
 }
 
 MpdDstCompressTask::MpdDstCompressTask(const char* name, Int_t Verbose):FairTask(name,Verbose) ,
 				fUseMC(kFALSE),fUseFreezouts(kFALSE),
 				fUseTpcKalmans(kFALSE),fUseTpcHits(kFALSE),fUseHeader(kFALSE),
+				fMCCompression(kFALSE),
 				fMpdEvent(NULL),fFreezouts(NULL),fMCTracks(NULL),
-				fTpcKalmans(NULL),fTpcHits(NULL),fEventHeader(NULL){
+				fTpcKalmans(NULL),fTpcHits(NULL),fEventHeader(NULL),
+				fMCMapSize(0),fMCIndexMap(NULL){
+
 }
 
 MpdDstCompressTask::~MpdDstCompressTask() {
-	// TODO Auto-generated destructor stub
+	if(fMCIndexMap) delete []fMCIndexMap;
 }
 
+void MpdDstCompressTask::Exec(Option_t* optio) {
+	if(fMCCompression){
+		TClonesArray *glob_tracks = fMpdEvent->GetGlobalTracks();
+		TClonesArray *prim_tracks = fMpdEvent->GetPrimaryTracks();
+		if(fMCTracks->GetEntriesFast()>fMCMapSize){
+			delete []fMCIndexMap;
+			fMCMapSize = fMCTracks->GetSize()*2;
+			fMCIndexMap = new Int_t[fMCMapSize];
+		}
+		for(int iMCTrack=0;iMCTrack<fMCTracks->GetEntriesFast();iMCTrack++){
+			fMCIndexMap[iMCTrack] = -1;
+		}
+		for(int iTrack=0;iTrack<glob_tracks->GetEntriesFast();iTrack++){
+			MpdTrack *track = (MpdTrack*)glob_tracks->UncheckedAt(iTrack);
+			Int_t matched = track->GetID();
+			if(matched>=0)
+				fMCIndexMap[matched]=0;
+		}
+		for(int iTrack=0;iTrack<prim_tracks->GetEntriesFast();iTrack++){
+			MpdTrack *track = (MpdTrack*)prim_tracks->UncheckedAt(iTrack);
+			Int_t matched = track->GetID();
+			if(matched>=0)
+				fMCIndexMap[matched]=0;
+		}
+		Int_t index = 0;
+		for(int iMCTrack=0;iMCTrack<fMCTracks->GetEntriesFast();iMCTrack++){
+			if(fMCIndexMap[iMCTrack]>-1){//this track is matched
+				fMCIndexMap[iMCTrack] = index++;
+			}else{
+				fMCTracks->RemoveAt(iMCTrack);
+			}
+		}
+		fMCTracks->Compress();
+		//set new matching ID's
+		for(int iTrack=0;iTrack<glob_tracks->GetEntriesFast();iTrack++){
+			MpdTrack *track = (MpdTrack*)glob_tracks->UncheckedAt(iTrack);
+			Int_t matched = track->GetID();
+			if(matched>-1)
+				track->SetID(fMCIndexMap[matched]);
+		}
+		for(int iTrack=0;iTrack<prim_tracks->GetEntriesFast();iTrack++){
+			MpdTrack *track = (MpdTrack*)prim_tracks->UncheckedAt(iTrack);
+			Int_t matched = track->GetID();
+			if(matched>-1)
+				track->SetID(fMCIndexMap[matched]);
+		}
+	}
+}

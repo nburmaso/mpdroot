@@ -26,22 +26,26 @@ protected:
 	Bool_t fUseTpcKalmans;
 	Bool_t fUseTpcHits;
 	Bool_t fUseHeader;
+	Bool_t fMCCompression;
 	MpdEvent *fMpdEvent;
 	TClonesArray *fFreezouts;
 	TClonesArray *fMCTracks;
 	TClonesArray *fTpcKalmans;
 	TClonesArray *fTpcHits;
 	FairEventHeader *fEventHeader;
+	Int_t fMCMapSize;
+	Int_t *fMCIndexMap; //[fMCMapSize]
 	virtual InitStatus CheckBranches();
 public:
 	MpdDstCompressTask();
 	MpdDstCompressTask(const char *name , Int_t Verbose=1);
-	void RegisterMC(){fUseMC=kTRUE;};
+	void RegisterMC(Bool_t compress=kFALSE){fUseMC=kTRUE;fMCCompression=compress;};
 	void RegisterMCFreezouts(){fUseFreezouts = kTRUE;};
 	void RegisterTpcKalmans(){fUseTpcKalmans = kTRUE;};
 	void RegisterTpcHits(){fUseTpcHits = kTRUE;};
 	void RegisterEventHeader(){fUseHeader = kTRUE;};
 	virtual InitStatus Init();
+	virtual void  Exec(Option_t *option);
 	virtual ~MpdDstCompressTask();
 	ClassDef(MpdDstCompressTask,1)
 };
