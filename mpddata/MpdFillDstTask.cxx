@@ -140,12 +140,11 @@ void MpdFillDstTask::Exec(Option_t * option) {
         fEvent->SetPrimaryVerticesZ(0.);
     }
     // helix works with meters, primary vertices are in cm
-    TVector3 recoVertex(fEvent->GetPrimaryVerticesX()*0.01,
-    		fEvent->GetPrimaryVerticesY()*0.01,
-			fEvent->GetPrimaryVerticesZ()*0.01);
+    TVector3 recoVertex(fEvent->GetPrimaryVerticesX(),
+    		fEvent->GetPrimaryVerticesY(),
+			fEvent->GetPrimaryVerticesZ());
     TVector3 mcVertex;
     fMCEventHeader->GetVertex(mcVertex);
-    mcVertex = mcVertex*0.01;
     // check clone track into ECT
     typedef std::set<Int_t> trackSet;
     trackSet EctTrackSet;
