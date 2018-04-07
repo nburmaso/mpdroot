@@ -6,6 +6,7 @@
 #define ROOT_MpdFillDstTask
 
 #include "MpdEvent.h"
+#include "MpdPid.h"
 
 #include "FairMCEventHeader.h"
 #include "FairTask.h"
@@ -37,12 +38,14 @@ private:
     TH1F *fhTrackPrimaryPDG;
     TH2F *fhTrackVertex;
     TH2F *fhTruthVertex;
-
+    MpdPid *fPID;
+    void FillTrackDCA(MpdTrack *track, TVector3 *recoVertex, TVector3 *mcVertex);
+    void FillTrackPID(MpdTrack *track);
 public:
 
   MpdFillDstTask(const char *name="MpdFillDstTask", const char *title="MPD Task");
   virtual ~MpdFillDstTask();	// Destructor
-
+  virtual void SetPIDAlgorithm(MpdPid *pid){fPID = pid;};
     virtual void Exec(Option_t * option);
     virtual InitStatus Init();	//
     virtual void Finish();	//

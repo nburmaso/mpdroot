@@ -11,6 +11,7 @@
 #include "MpdTofMatchingData.h"
 #include "MpdVertex.h"
 #include "MpdParticleIdentification.h"
+#include "MpdHelix.h"
 
 #include "MpdFieldCreator.h"
 #include "MpdMapPar.h"
@@ -41,9 +42,17 @@ using namespace std;
 // -----   constructor with names ------------------------------------
 
 MpdFillDstTask::MpdFillDstTask(const char *name, const char *title)
-: FairTask(name) {
-    fEvent = NULL;
-    fZdcSkeletonesSaved = 0;
+: FairTask(name),fEvent(NULL),
+  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL),
+  fMCEventHeader(NULL),fTofMatching(NULL),fEtofMatching(NULL),
+  fVertex(NULL),fZdcSkeletonesSaved(kFALSE),
+  fHistZdc1En(NULL),fHistZdc2En(NULL),
+  fELossZdc1Histo(NULL),fELossZdc2Histo(NULL),
+  fELossZdc1Value(NULL),fELossZdc2Value(NULL),
+  fhTrackMotherId(NULL),fhTrackPrimaryPDG(NULL),
+  fhTrackVertex(NULL),fhTruthVertex(NULL),
+  fPID(NULL)
+  {
 }
 // -----   Destructor -----------------------------------------------
 
@@ -72,6 +81,12 @@ InitStatus MpdFillDstTask::Init() {
     fHistZdc1En = (TH2F *) manager->GetObject("HistZdc1En"); //EL
     fHistZdc2En = (TH2F *) manager->GetObject("HistZdc2En"); //EL
     fZdcSkeletonesSaved = 0;
+    if(fPID==NULL){
+    	fPID = new MpdPid(0, 0, 0, 0, "DEFAULT", "CF", "");
+    	//PID with cluster finder
+   // 	fPID->Init("DEFAULT","CF","");
+    }
+
 
     FairRootManager::Instance()->Register("MCEventHeader.", "MC", fMCEventHeader, kTRUE);
     FairRootManager::Instance()->Register("MCTrack", "MC", fMCTracks, kTRUE);
@@ -124,7 +139,13 @@ void MpdFillDstTask::Exec(Option_t * option) {
         fEvent->SetPrimaryVerticesY(0.);
         fEvent->SetPrimaryVerticesZ(0.);
     }
-
+    // helix works with meters, primary vertices are in cm
+    TVector3 recoVertex(fEvent->GetPrimaryVerticesX()*0.01,
+    		fEvent->GetPrimaryVerticesY()*0.01,
+			fEvent->GetPrimaryVerticesZ()*0.01);
+    TVector3 mcVertex;
+    fMCEventHeader->GetVertex(mcVertex);
+    mcVertex = mcVertex*0.01;
     // check clone track into ECT
     typedef std::set<Int_t> trackSet;
     trackSet EctTrackSet;
@@ -210,6 +231,8 @@ void MpdFillDstTask::Exec(Option_t * option) {
         track->SetLastPointX(0.); // AZ - currently not available
         track->SetLastPointY(0.); // AZ - currently not available
         track->SetLastPointZ(0.); // AZ - currently not available 
+        FillTrackDCA(track, &recoVertex, &mcVertex);
+        FillTrackPID(track);
     }
 
 
@@ -257,6 +280,8 @@ void MpdFillDstTask::Exec(Option_t * option) {
         track->SetLastPointX(0.); // AZ - currently not available
         track->SetLastPointY(0.); // AZ - currently not available
         track->SetLastPointZ(0.); // AZ - currently not available 
+        FillTrackDCA(track, &recoVertex, &mcVertex);
+        FillTrackPID(track);
     }
 }
 
@@ -377,3 +402,51 @@ MpdTrack *MpdFillDstTask::AddPrimaryTrack() {
 }
 // -------------------------------------------------------------------
 ClassImp(MpdFillDstTask);
+
+void MpdFillDstTask::FillTrackDCA(MpdTrack* track, TVector3 *recoVertex, TVector3 *mcVertex) {
+    MpdHelix helix = track->GetHelix();
+    Double_t path_at_mcVertex;
+    Double_t path_at_recoVertex;
+    path_at_mcVertex = helix.pathLength(*mcVertex);
+    path_at_recoVertex = helix.pathLength(*recoVertex);
+    TVector3 DCA_MC = helix.at(path_at_mcVertex);
+    TVector3 DCA_RECO = helix.at(path_at_recoVertex);
+    // set dca global as dca to MC vertex DW
+    track->SetDCAGlobalX(DCA_MC.X());
+    track->SetDCAGlobalY(DCA_MC.Y());
+    track->SetDCAGlobalZ(DCA_MC.Z());
+    // set dca as dca to reconstructed vertex DW
+    track->SetDCAX(DCA_RECO.X());
+    track->SetDCAY(DCA_RECO.Y());
+    track->SetDCAZ(DCA_RECO.Z());
+}
+
+void MpdFillDstTask::FillTrackPID(MpdTrack* track) {
+	TVector3 mom(track->GetPx(),track->GetPy(),track->GetPz());
+	Double_t p = mom.Mag();
+	Double_t dedx = track->GetdEdXTPC();
+	Double_t dedx_el = fPID->GetDedxElParam(p);
+	Double_t dedx_pi = fPID->GetDedxPiParam(p);
+	Double_t dedx_ka = fPID->GetDedxKaParam(p);
+	Double_t dedx_pr = fPID->GetDedxPrParam(p);
+	Double_t sigma_el = fPID->GetDedxWidthValue(p, 4)*dedx_el;
+	Double_t sigma_pi = fPID->GetDedxWidthValue(p, 1)*dedx_pi;
+	Double_t sigma_ka = fPID->GetDedxWidthValue(p, 2)*dedx_ka;
+	Double_t sigma_pr = fPID->GetDedxWidthValue(p, 3)*dedx_pr;
+	sigma_el = (dedx-dedx_el)/(sigma_el);
+	sigma_pi = (dedx-dedx_pi)/(sigma_pi);
+	sigma_ka = (dedx-dedx_ka)/(sigma_ka);
+	sigma_pr = (dedx-dedx_pr)/(sigma_pr);
+	if(TMath::IsNaN(sigma_el))
+		sigma_el = -1E+2;
+	if(TMath::IsNaN(sigma_pi))
+		sigma_pi = -1E+2;
+	if(TMath::IsNaN(sigma_ka))
+		sigma_ka = -1E+2;
+	if(TMath::IsNaN(sigma_pr))
+		sigma_pr = -1E+2;
+	track->SetNSigmaElectron(sigma_el);
+	track->SetNSigmaKaon(sigma_ka);
+	track->SetNSigmaPion(sigma_pi);
+	track->SetNSigmaProton(sigma_pr);
+}

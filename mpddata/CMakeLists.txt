@@ -19,6 +19,7 @@ ${CMAKE_SOURCE_DIR}/tpc
 ${CMAKE_SOURCE_DIR}/etof
 ${CMAKE_SOURCE_DIR}/mpdfield
 ${CMAKE_SOURCE_DIR}/fairtools
+${CMAKE_SOURCE_DIR}/mpdpid
 ${CMAKE_SOURCE_DIR}/mpdbase
 )
 
@@ -49,6 +50,6 @@ MpdDstCompressTask.cxx
 Set(HEADERS)
 Set(LINKDEF MpdDataLinkDef.h)
 Set(LIBRARY_NAME MpdData)
-Set(DEPENDENCIES Core Base MpdBase)
+Set(DEPENDENCIES Core Base MpdBase MpdPid)
 
 GENERATE_LIBRARY()
