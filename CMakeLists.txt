@@ -210,7 +210,7 @@ add_subdirectory (bmd)
 add_subdirectory (shield_pack)
 add_subdirectory (strawECT)
 add_subdirectory (physics/femto)
-#add_subdirectory (mpdpid)
+add_subdirectory (mpdpid)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/macro/mpd_scheduler/CMakeLists.txt")
  add_subdirectory (macro/mpd_scheduler)
