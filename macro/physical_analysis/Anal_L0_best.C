@@ -54,8 +54,6 @@
 
 #endif
 
-#include "/home/zinchenk/mpd/Chain.C"
-
 // PDG codes of particles 
 Int_t pdgCodePr= 2212;      // Proton
 Int_t pdgCodeAPr= -2212;    // antiProton
@@ -100,6 +98,7 @@ Double_t DistHelLin(MpdKalmanTrack *helix, MpdParticle *neu);
 void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void ApplyPid(MpdPid *pid, vector<Int_t> &vecP, vector<Int_t> &vecPi);
 void RecoEff(vector<Int_t> &vecP, vector<Int_t> &vecPi); 
+TChain *Chain(Int_t nFiles, TString firstFile);
 
 Float_t massh, pth, ph, etah, yh, chi2h, disth, path;     // hyperon parameters
 Float_t etas[2], ps[2], pts[2], chi2s[2], dcas[2], angle; // daughters parameters: [0]-pi, [1]-p;
@@ -116,7 +115,8 @@ vector<pair<Double_t,Double_t> > vecL1, vecL2;
 
 void AnalL0(Int_t n1 = 0, Int_t n2 = 0, Int_t firstFile = 1)
 {   
-  gROOT->ProcessLine(".x ~/mpd/Chain.C(1,\"./mc_1.root\")");
+  //gROOT->ProcessLine(".x ~/mpd/Chain.C(1,\"./mc_1.root\")");
+  Chain(1,"./mc_1.root");
   TChain *simMC = (TChain*) gROOT->FindObject("cbmsim");
   simMC->SetName("cbmsim1");
   TString fileName = "./MPD-DST/dst-2018-01-18-a4bd06e-LAQGSM-1G3Mlem/AuAuss11_5mb5_mer.r12.mpddst-";
@@ -989,6 +989,51 @@ void RecoEff(vector<Int_t> &vecP, vector<Int_t> &vecPi)
       if (chi2 < gC2pi) vecPi.erase(vecPi.begin()+jpi);
     }
   }
+}
+
+//____________________________________________________________________________
+//
+// Adds to chain files with names like "file_1.root" - ... - "file_10.root"
+// or "file-1.root" - ... - "file-10.root"
+//
+TChain* Chain(Int_t nFiles, TString firstFile)
+{
+    // Get first file number
+  Int_t leng = firstFile.Length(), i1 = 0, i2 = 0;
+  //cout << leng << endl;
+  TString numb, prefix, suffix, symb, symb0;
+  //cout << numb.Length() << endl;
+  for (Int_t i = leng-1; i > -1; --i) {
+    symb = TString(firstFile(i,1));
+    if (symb == "_" || symb == "-") {
+      prefix = firstFile(0,i+1);
+      i1 = i + 1;
+      break;
+    } else if (symb == ".") {
+      suffix = firstFile(i,leng-i);
+      i2 = i - 1;
+    }
+  }
+  numb = TString(firstFile(i1,i2-i1+1));
+
+  Int_t numb0 = numb.Atoi();
+  cout << numb << endl;
+  cout << numb0 << endl;
+  cout << prefix << endl;
+  cout << suffix << endl;
+
+  TChain *chain = new TChain("cbmsim");
+  TString fileName;
+  nFiles += numb0;
+  for (Int_t i = numb0; i < nFiles; ++i) {
+    fileName = prefix;
+    fileName += i;
+    fileName += suffix;
+    if (!gSystem->FindFile("./",fileName)) break;
+    chain->AddFile(fileName);
+  }
+  chain->ls();
+  return chain;
 }
 
 //__________________________________________________________________________

@@ -48,7 +48,7 @@ void geometry_stage1(FairRunSim *fRun, Bool_t build)
     fRun->AddModule(EmcEmpty);
 	
     FairDetector *Zdc = new MpdZdc("ZDC",kTRUE );
-    Zdc->SetGeometryFileName("zdc_10x10_modules96_layers40_16_4.geo");
+    Zdc->SetGeometryFileName("zdc_oldnames_7sect_v1.root");
     fRun->AddModule(Zdc);
   }//else
 }
