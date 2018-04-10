@@ -7,7 +7,7 @@
 class MpdLibZ
 {
   public:
-    MpdLibZ (char* filename);
+    MpdLibZ (const char* filename);
     ~MpdLibZ();
    
     int open(const char* mode);
@@ -25,7 +25,7 @@ class MpdLibZ
     #endif
 
   private:
-    char* fileName;
+    const char* fileName;
     #ifndef __CINT__
     gzFile file;
     #endif
@@ -42,10 +42,10 @@ class MpdGetNumEvents
     static bool GetQGSMEventHeader(char* ss, MpdLibZ* libz, Int_t& fQGSM_format_ID);
 
   public:
-    static Int_t GetNumROOTEvents(char* filename);
-    static Int_t GetNumPHSDEvents(char* filename);
-    static Int_t GetNumQGSMEvents(char* fileName);
-    static Int_t GetNumURQMDEvents(char* fileName);
+    static Int_t GetNumROOTEvents(const char* filename);
+    static Int_t GetNumPHSDEvents(const char* filename);
+    static Int_t GetNumQGSMEvents(const char* fileName);
+    static Int_t GetNumURQMDEvents(const char* fileName);
 
     ClassDef(MpdGetNumEvents, 1);
 };

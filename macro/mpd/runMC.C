@@ -44,26 +44,16 @@ using namespace std;
 // outFile - output file with MC data, default: evetest.root
 // flag_store_FairRadLenPoint
 // FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
-
-void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14", TString outFile = "evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 10,
+void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 10,
         Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0)
 {
     TStopwatch timer;
     timer.Start();
     gDebug = 0;
 
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-#endif
     mpdloadlibs(1, 1); // load main libraries
 
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
-    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
-#endif
-
     FairRunSim *fRun = new FairRunSim();
-
     // Choose the Geant Navigation System
 #ifdef GEANT3
     fRun->SetName("TGeant3");
