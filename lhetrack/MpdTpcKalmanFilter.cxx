@@ -54,7 +54,7 @@ FILE *lunTpc = 0x0; //fopen("dl.dat","w");
 
 //__________________________________________________________________________
 MpdTpcKalmanFilter::MpdTpcKalmanFilter() 
-  : FairTask(),
+  : FairTask("TPC Kalman filter"),
     fNofEvents(0),
     fNTracks(0),
     fNPass(1),
@@ -80,7 +80,8 @@ MpdTpcKalmanFilter::MpdTpcKalmanFilter()
 //__________________________________________________________________________
 MpdTpcKalmanFilter::MpdTpcKalmanFilter(const char *name,
                                        const char *title)
-  : FairTask(name),
+  //: FairTask(name),
+  : FairTask("TPC Kalman filter"),
     fNofEvents(0),
     fNTracks(0),
     fNPass(1),
@@ -123,6 +124,7 @@ InitStatus MpdTpcKalmanFilter::Init() {
 
   cout << "InitStatus MpdTpcKalmanFilter::Init\n\n";
 
+  //fVerbose = 10;
   FairRootManager *manager = FairRootManager::Instance();
   fSecGeo = MpdTpcSectorGeo::Instance();
 
@@ -1683,7 +1685,7 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
     Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(track,hit,pointWeight,param);
     if (ifirst && dChi2 > 1000) {
       ifirst = 0;
-      cout << " !!! Back: " << dChi2 << " " << nHits << " " <<  hit->GetLayer() << " " << ok << " " << step << " " << track->GetNode() << " " << track->GetNodeNew() << endl;
+      //cout << " !!! Back: " << dChi2 << " " << nHits << " " <<  hit->GetLayer() << " " << ok << " " << step << " " << track->GetNode() << " " << track->GetNodeNew() << endl;
     }
     track->SetChi2(track->GetChi2()+dChi2);
     weight = *track->GetWeight();
@@ -2155,9 +2157,10 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
 
   for (Int_t i = ibeg; i != iend; i+=iDir) {
     hit = (MpdKalmanHit*) track->GetHits()->UncheckedAt(i); 
+    if (hit->GetUniqueID()) continue; // 5-jan-2018 - skip ITS hits
     //if (!MpdKalmanFilter::Instance()->PropagateToHit(track, hit, kTRUE, kTRUE)) return kFALSE;
     if (!MpdKalmanFilter::Instance()->PropagateToHit(track, hit, kTRUE, kTRUE)) {
-      cout << " III " << i << " " << hit->GetDist() << endl;
+      if (fVerbose > 1) cout << " III " << i << " " << hit->GetDist() << " " << track->Pt() << " " << track->GetDirection() << endl;
       return kFALSE;
     }
     Double_t step = track->GetLength() - leng;
@@ -2514,16 +2517,26 @@ void MpdTpcKalmanFilter::MergeTracks(Int_t ipass)
 	MpdKalmanHit hitTmp;
 	hitTmp.SetType(MpdKalmanHit::kFixedR);
 
+	//if (track.GetDirection() == MpdKalmanTrack::kInward) MpdKalmanFilter::Instance()->Refit(&track, 1);
 	if (track.GetDirection() == MpdKalmanTrack::kInward) {
+	  track.SetDirection(MpdKalmanTrack::kOutward);
+	  MpdKalmanFilter::Instance()->Refit(&track, -1);
+	}
+	//else if (track.GetDirection() == MpdKalmanTrack::kOutward) MpdKalmanFilter::Instance()->Refit(&track, -1);
+	//cout << " Refit chi2: " << track.GetChi2() << " " << track.GetNofHits() << " " << trL->GetDirection() << endl;
+	if (track.GetChi2() > 1000) continue; // do not merge tracks
+
+	Int_t ok = 0;
+	if (trL->GetDirection() == MpdKalmanTrack::kInward) {
 	  //hitTmp.SetDist(fSecGeo->GetMaxY()/TMath::Cos(fSecGeo->Dphi()/2));
 	  Double_t radMax = TMath::Max (((MpdKalmanHit*)trL->GetHits()->First())->GetDist(), 
 					((MpdKalmanHit*)trS->GetHits()->First())->GetDist());
 	  radMax += fSecGeo->GetMinY() + 5.0;
 	  hitTmp.SetDist(radMax);
-	  MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
+	  ok = MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
 	} else {
 	  hitTmp.SetDist(fSecGeo->GetMinY());
-	  MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
+	  ok = MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
 	}
 	// Save info for further use
 	track.SetWeightAtHit(*track.GetWeight());
@@ -2534,25 +2547,21 @@ void MpdTpcKalmanFilter::MergeTracks(Int_t ipass)
 	hitss->Clear();
 	for (Int_t ih = 0; ih < 70; ++ih) {
 	  if (hits2[ih]) hitss->Add(hits2[ih]);
+	  //if (hits2[ih]) { hitss->Add(hits2[ih]); cout << " dist: " << hits2[ih]->GetLayer() << " " << hits2[ih]->GetDist() << " " 
+	  //				       << hits2[ih]->GetMeas(0) << " " << hits2[ih]->GetMeas(1) << endl; }
 	}
-   
-	//cout << " Orig chi2: " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
-	if (track.GetDirection() == MpdKalmanTrack::kInward) MpdKalmanFilter::Instance()->Refit(&track, 1);
-	else if (track.GetDirection() == MpdKalmanTrack::kOutward) MpdKalmanFilter::Instance()->Refit(&track, -1);
-	//cout << " Refit chi2: " << track.GetChi2() << " " << track.GetNofHits() << " " << trL->GetDirection() << endl;
-	if (track.GetChi2() > 1000) continue; // do not merge tracks
 
 	// Refit with multiple scattering
-	if (track.GetDirection() == MpdKalmanTrack::kInward) {
+	if (trL->GetDirection() == MpdKalmanTrack::kInward) {
 	  if (!Refit(&track, 0.13957, 1, kTRUE, 1, kTRUE)) continue; // do not merge tracks
 	  //cout << " *** RefitIn ***: " << trL->GetNofTrHits() << " " << track.GetNofHits() << " " << trL->GetChi2()
 	  //   << " " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
 	  if (1.0*(track.GetNofHits() - trL->GetNofTrHits()) / trS->GetNofTrHits() < 0.3) continue; // do not merge tracks
-	} else if (track.GetDirection() == MpdKalmanTrack::kOutward) {
+	} else if (trL->GetDirection() == MpdKalmanTrack::kOutward) {
 	  // Refit outward
-	  if (!Refit(&track, 0.13957, 1, kTRUE, -1, kTRUE)) continue; // do not merge tracks
+	  if (!Refit(&track, 0.13957, 1, kTRUE, -1, kTRUE) || track.GetNofHits() == 0) continue; // do not merge tracks
 	  //cout << " *** RefitOut ***: " << trL->GetNofTrHits() << " " << track.GetNofHits() << " " << trL->GetChi2()
-	  //   << " " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
+	  //<< " " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
 	  
 	  //hitTmp.SetDist(fSecGeo->GetMaxY()/TMath::Cos(fSecGeo->Dphi()/2));
 	  hitTmp.SetDist(((MpdKalmanHit*)track.GetHits()->First())->GetDist() + fSecGeo->GetMinY() + 5.0);
