@@ -34,6 +34,7 @@ class MpdKalmanFilter : public FairTask
 
   MpdKalmanGeoScheme* GetGeo() { return fGeoScheme; } ///< pointer to geo manager
   Bool_t PropagateToHit(MpdKalmanTrack *track, const MpdKalmanHit *hit, Bool_t calcLeng = kTRUE, Bool_t local = kFALSE, Double_t stepBack = -1.0); ///< propagate track
+  Bool_t PropagateParamToHit(MpdKalmanTrack *track, const MpdKalmanHit *hit, Bool_t calcLeng = kTRUE, Bool_t local = kFALSE, Double_t stepBack = -1.0); ///< propagate track parameters
   Double_t FilterHit(MpdKalmanTrack *track, const MpdKalmanHit *hit,
 		     TMatrixDSym &pointWeight, TMatrixD &paramTmp); ///< compute Chi2 from hit addition (filter hit)
   Double_t FilterHitR(MpdKalmanTrack *track, const MpdKalmanHit *hit,
