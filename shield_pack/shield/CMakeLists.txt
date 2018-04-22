@@ -3,6 +3,13 @@ enable_language (C Fortran)
 include_directories(inc ${TSHIELD_ROOT_PATH}/hadgen/inc)
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w")
 
+Set(LINK_DIRECTORIES
+ ${ROOT_LIBRARY_DIR}
+ ${FAIRROOT_LIBRARY_DIR}
+)
+ 
+Link_Directories(${LINK_DIRECTORIES})
+
 set(SHIELD_SRCS
     src/shield_decode_tree.c 
     src/shield_geo.c 

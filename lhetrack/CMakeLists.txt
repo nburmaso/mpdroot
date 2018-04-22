@@ -1,30 +1,22 @@
 # Create a library called "libLHETrack" 
 
 set(INCLUDE_DIRECTORIES
-${CMAKE_SOURCE_DIR}/geobase 
-${CMAKE_SOURCE_DIR}/parbase
-${CMAKE_SOURCE_DIR}/base/sim
-${CMAKE_SOURCE_DIR}/base/source
-${CMAKE_SOURCE_DIR}/base/steer
-${CMAKE_SOURCE_DIR}/base/event
-${CMAKE_SOURCE_DIR}/base/field 
-${CMAKE_SOURCE_DIR}/mpdfield 
-${CMAKE_SOURCE_DIR}/trackbase 
-${CMAKE_SOURCE_DIR}/mcstack
-${CMAKE_SOURCE_DIR}/passive
-${CMAKE_SOURCE_DIR}/tpc
-${CMAKE_SOURCE_DIR}/lhetrack
-${CMAKE_SOURCE_DIR}/kalman
-${CMAKE_SOURCE_DIR}/etof
-${CMAKE_SOURCE_DIR}/tof
-${CMAKE_SOURCE_DIR}/strawendcap
-${CMAKE_SOURCE_DIR}/mpddata
-${CMAKE_SOURCE_DIR}/sts
-${CMAKE_SOURCE_DIR}/mpdbase
-${CMAKE_SOURCE_DIR}/tgem
-${CMAKE_SOURCE_DIR}/cpc
-${CMAKE_SOURCE_DIR}/dch
-${CMAKE_SOURCE_DIR}/fairtools
+ ${BASE_INCLUDE_DIRECTORIES}
+ ${CMAKE_SOURCE_DIR}/mcstack
+ ${CMAKE_SOURCE_DIR}/passive
+ ${CMAKE_SOURCE_DIR}/mpdbase
+ ${CMAKE_SOURCE_DIR}/mpddata
+ ${CMAKE_SOURCE_DIR}/mpdfield 
+ ${CMAKE_SOURCE_DIR}/tpc
+ ${CMAKE_SOURCE_DIR}/kalman
+ ${CMAKE_SOURCE_DIR}/tof
+ ${CMAKE_SOURCE_DIR}/etof
+ ${CMAKE_SOURCE_DIR}/strawendcap
+ ${CMAKE_SOURCE_DIR}/sts
+ ${CMAKE_SOURCE_DIR}/tgem
+ ${CMAKE_SOURCE_DIR}/cpc
+ ${CMAKE_SOURCE_DIR}/dch
+ ${CMAKE_SOURCE_DIR}/lhetrack
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -37,6 +29,7 @@ Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
  ${ROOT_LIBRARY_DIR}
+ ${FAIRROOT_LIBRARY_DIR}
 )
 
 link_directories( ${LINK_DIRECTORIES})

@@ -21,6 +21,7 @@ void mpdloadlibs(Bool_t reco = kFALSE, Bool_t detectors = kFALSE)
   gSystem->Load("libTrkBase");
   gSystem->Load("libMpdBase");
   gSystem->Load("libMpdData");
+  gSystem->Load("libMpdGen");
 
   // HADGEN
   gSystem->Load("libHADGEN.so");
