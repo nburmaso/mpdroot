@@ -18,7 +18,10 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 include_directories(${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
-link_directories(${ROOT_LIBRARY_DIR})
+link_directories(
+ ${ROOT_LIBRARY_DIR}
+ ${FAIRROOT_LIBRARY_DIR}
+)
 
 configure_file(inc/TShieldGenerator.h inc/TShieldGenerator.h COPYONLY)
 configure_file(inc/LinkDef.h inc/LinkDef.h COPYONLY)

@@ -11,7 +11,6 @@
 #include "TVirtualMC.h"
 #include "FairMCTrack.h"
 
-//#include "FairDetectorList.h"
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"

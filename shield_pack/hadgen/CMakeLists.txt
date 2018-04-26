@@ -6,6 +6,13 @@ add_subdirectory (parse)
 include_directories(inc ${CMAKE_CURRENT_BINARY_DIR}/parse)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 
+Set(LINK_DIRECTORIES
+ ${ROOT_LIBRARY_DIR}
+ ${FAIRROOT_LIBRARY_DIR}
+)
+ 
+Link_Directories(${LINK_DIRECTORIES})
+
 # List of source files
 set(SRCS
     src/hadgen_common_blocks.c

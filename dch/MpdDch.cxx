@@ -12,7 +12,6 @@
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
 
-//#include "FairDetectorList.h"
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
