@@ -32,9 +32,13 @@ MpdEmcContFact.cxx
 MpdEmc.cxx
 MpdEmcGeo.cxx
 MpdEmcGeoPar.cxx
+MpdEmcGeoParams.cxx
 MpdEmcPoint.cxx
 MpdEmcHit.cxx
+MpdEmcCluster.cxx
 MpdEmcHitProducer.cxx
+MpdEmcHitCreation.cxx
+MpdEmcClusterCreation.cxx
 
 hitmaker/MpdEmcHitA.cxx
 hitmaker/MpdEmcHitProducerA.cxx

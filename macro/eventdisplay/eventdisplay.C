@@ -94,6 +94,9 @@ void SetTasks(MpdEventManager* fMan)
     MpdHitPointSetDraw* MpdTpcHit = new MpdHitPointSetDraw("MpdTpcHit", mcPointColor, kDot);
     fMan->AddTask(MpdTpcHit);
 
+    MpdHitPointSetDraw* MpdTofHit = new MpdHitPointSetDraw("TOFHit", mcPointColor, kDot);
+    fMan->AddTask(MpdTofHit);
+
     // DST hits (box view)
     //MpdHitDraw* MpdTpcHit = new MpdHitDraw("MpdTpcHit", 1);
     //fMan->AddTask(MpdTpcHit);

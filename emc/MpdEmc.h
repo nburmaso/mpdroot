@@ -27,7 +27,7 @@ class MpdEmc: public FairDetector {
     virtual ~MpdEmc();
 
     /**      Initialization of the detector is done here    */
-    virtual void   Initialize();
+//    virtual void   Initialize();
 
     /**       this method is called for each step during simulation 
      *       (see FairMCApplication::Stepping())    
@@ -49,7 +49,12 @@ class MpdEmc: public FairDetector {
     /**      Create the detector geometry        */
     void ConstructGeometry();
 
- 
+    /**      Create the detector geometry        */
+    void ConstructAsciiGeometry();
+
+    /**      Check sensitivity        */
+    virtual Bool_t CheckIfSensitive(std::string name);
+
 
     /**      This method is an example of how to add your own point 
      *       of type MpdEmcPoint to the clones array       

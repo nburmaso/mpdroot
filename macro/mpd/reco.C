@@ -42,6 +42,7 @@
 #include "MpdEtofMatching.h"
 #include "MpdFillDstTask.h"
 #include "MpdGetNumEvents.h"
+#include "MpdEmcHitCreation.h"
 
 #include <iostream>
 using namespace std;
@@ -70,16 +71,9 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     Int_t iVerbose = 0;
 
     // ----  Load libraries   -------------------------------------------------
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-#endif
     mpdloadlibs(kTRUE); // load full set of main libraries
     gSystem->Load("libXMLIO");
 
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
-    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
-#endif
     geometry_stage1(0x0, kFALSE);
     //geometry_v2(0x0, kFALSE);
     // ------------------------------------------------------------------------
@@ -192,7 +186,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     //MpdEtofMatching* etofMatch = new MpdEtofMatching("ETOF matching");
     //fRun->AddTask(etofMatch);
 
-    FairTask *emcHP = new MpdEmcHitProducer();
+    FairTask *emcHP = new MpdEmcHitCreation();
     fRun->AddTask(emcHP);
 
     FairTask *tdigi = new MpdZdcDigiProducer("MpdZdcDigiProducer");

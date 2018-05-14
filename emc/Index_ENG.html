@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style>
+ ol li {margin-bottom: 10px;}
+ .boldClass {color: blue; font-weight: bold;}
+ .middleClass{text-align: center; font-weight: bold; margin: 5px 0px 5px 0px;}
+ .middleClass span{font-weight: normal;}
+ .handwritten{font-family: 'Brush Script MT', cursive; font-size: 16px; color: #6D8DB5; font-style: normal; font-variant: normal;font-weight: 200;}
+</style>
+<title>INSTALL_ENG</title>
+</head>
+
+<body style='background: white url(atom-simpleOpacity.png) 0% 0px repeat-y;'>
+<div style='color:#1f1c1b; margin: 0px 20px 0px 110px;'>
+
+<div style='font: 28px Veranda; margin-top: 20px;'>Project: <span style="color: #6D8DB5">EMC geometry and cluster production for MPD detector</span></div>
+<hr style="color: #6D8DB5; size: 2px; margin: 20px 20px 20px 0px;">
+<div><b>Authors:</b> <span style="font-style: italic;"><span style="text-decoration: underline;">M.A. Martemianov</span>, V.V. Kulikov, M.A. Matsyuk</span></div>
+<div><b>Home institute:</b> <span style="font-style: italic;">NRC «Kurchatov Institute» &ndash; ITEP</span></div>
+<div><b>Address:</b> <span style="font-style: italic;">Russia, 117219, Moscow, B. Cheremyshkinskaya st. 25</span></div>
+<div><b>e-mail:</b> mmartemi@gmail.com</span></div>
+<hr style='color: #6D8DB5; size: 2px; margin: 20px 20px 20px 0px;'>
+
+<div style='text-align: justify; margin: 0px 20px 0px 20px;'>
+The EMC-MPD calorimeter is a multi-layer scintillator assembly of the "shashlik" type designed to detect 
+photons and charged particles and measure energy. The presented software is aimed to translate the EMC 
+geometry defined by the LHEP design department into the program code to perform the transportation of particles 
+through MPD detector. Also, software allows processing the complete structure of the calorimeter, which has 
+a high degree of segmentation and consists of 43,000 modules, each module has 221 layers. Our programming 
+code includes the hit and cluster production in full compliance with mpdroot prescriptions both in ROOT5 
+and ROOT6 environment. Some features of the software are given below.  
+
+<ol style="margin-left: -15px">
+<li>Script to create specific EMC geometry: mpdroot/macro/mpd/create_rootgeom_emc_v2.C. 
+It produces ROOT-file (emc_v2.root) based on a specific geometry of the EMC module
+defined in <font class="boldClass">MpdECALData.xml</font> file. </li> 
+<li>Start Monte Carlo production for EMC-MPD: <b>root -b runMC.C</b>. Output result is stored in 
+the evetest.root file, where EMC data is located in EmcPoint - branch.</li>
+<li>Class structure of the EMC hit production: <font class="boldClass">MpdEmcGeoParams</font>, 
+<font class="boldClass">MpdEmcHit</font>, <font class="boldClass">MpdEmcHitCreation</font>.
+Class <font class="boldClass">MpdEmcGeoParams</font> defines parameters of the center of each 
+EMC module (fRhoCenter, fZCenter, fPhiCenter, fThetaCenter) directly from ROOT - file.  The special
+function which relates point to the corresponding module by minimal angle (in $phi; and $theta;) between 
+module axis and direction to the point and merges all points in active element to hit.  
+Each hit is described by the geometrical parameters 
+(module center) and special numbers defined EMC geometry: <b>fSecId</b> – sector number,  
+<b>fRowId</b> –  number in XY plane, <b>fModId</b> –  number along 0Z plane. To start this procedure you
+need to: <b>root -b mpdroot/macro/mpd/reco.C</b>.</li>
+<li>Class structure of the EMC cluster production: <font class="boldClass">MpdEmcCluster</font>,  
+<font class="boldClass">MpdEmcClusterCreation</font>. The procedure to construct cluster from hits 
+is based on two simple algorithms. Both of them are merging hits into cluster around hit with maximal energy: 
+first algorithm sums hits inside 3D-radius; second one based on a module frame. To start the procedure 
+of clustering, it's important to specify the algorithm number: 
+	<div class="middleClass">EmcCluster-&gt;SetAlgorithmNumber(2)<span>,</span></div> 
+add the energy threshold for each hit in MeV:
+ 	<div class="middleClass">EmcCluster-&gt;SetEnergyThreshold(1.5)</div>
+and define the special parameters of selected algorithm:  
+	<div class="middleClass">EmcCluster-&gt;SetClusterFrame(4, 3)<span>,</span></div> 
+that means a module frame of size 4x3. To launch the reconstruction session in batch mode, use the 
+following syntax: <b>root -b emc_cl.C</b></li>
+</ol>
+Other additional information can be found in <a style="color: blue" href="EMC-Geometry.pdf">our report</a> 
+from the first Collaboration meeting of the MPD and BM@N experiments at the NICA Facility.
+</div>
+<hr style="color: #6D8DB5; size: 2px; margin: 20px 20px 20px 0px;">
+<div style="text-align: right; font-size: 14px; margin-right: 30px;">
+Created by <span class="handwritten">M.Martemyanov</span> on 26.04.2018</div>
+</div>
+</body>
+</html>
