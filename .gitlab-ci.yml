@@ -79,6 +79,7 @@ run_reco:centos:
     - test
     - centos
   dependencies:
+    - build:centos
     - runMC:centos
   <<: *run_reco
   
@@ -87,5 +88,6 @@ run_reco:ubuntu:
     - test
     - ubuntu
   dependencies:
+    - build:ubuntu
     - runMC:ubuntu
   <<: *run_reco
