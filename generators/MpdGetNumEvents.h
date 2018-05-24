@@ -1,6 +1,6 @@
 #include "TROOT.h"
 
-#ifndef __CINT__
+#ifndef __CLING__
 #include <zlib.h>
 #endif
 
@@ -13,20 +13,20 @@ class MpdLibZ
     int open(const char* mode);
     int eof();
     int close();
-    #ifndef __CINT__
+    #ifndef __CLING__
     int write(voidpc buf, unsigned len);
     int read(voidp buf, unsigned len);
     #endif
     char* gets(char* buf, int len);
     int puts(char* s);
-    #ifndef __CINT__
+    #ifndef __CLING__
     off_t tell ();
     off_t seek (off_t pos, int whence);
     #endif
 
   private:
     const char* fileName;
-    #ifndef __CINT__
+    #ifndef __CLING__
     gzFile file;
     #endif
 

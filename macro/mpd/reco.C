@@ -48,9 +48,10 @@
 using namespace std;
 #endif
 
-#include "mpdloadlibs.C"
-#include "geometry_stage1.C"
-//#include "geometry_v2.C"
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "macro/mpd/mpdloadlibs.C"
+#include "macro/mpd/geometry_stage1.C"
+//#include "macro/mpd/geometry_v2.C"
 
 #define Mlem  // Choose: Mlem HitProducer
 

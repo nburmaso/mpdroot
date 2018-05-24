@@ -1,11 +1,9 @@
-#include "../../gconfig/basiclibs.C"
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "gconfig/basiclibs.C"
 
 void mpdloadlibs(Bool_t reco = kFALSE, Bool_t detectors = kFALSE)
 {
   // Load basic libraries
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,99)
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-#endif
   basiclibs();
 
   // Load other libraries
