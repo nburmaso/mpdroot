@@ -1,6 +1,6 @@
 //Geometry parameters for TPC detector
 #ifndef TPC_GEOM_PAR_H
-#define	TPC_GEOM_PAr_H
+#define	TPC_GEOM_PAR_H
 
 namespace TPC {
     //Global dimensions for TPC in cm
