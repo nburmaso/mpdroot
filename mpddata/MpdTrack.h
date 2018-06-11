@@ -166,6 +166,7 @@ class MpdTrack : public TObject {
     Float_t   GetLastPointX() const {return fLastPointX;}
     Float_t   GetLastPointY() const{return fLastPointY;}
     Float_t   GetLastPointZ() const{return fLastPointZ;}
+    Float_t   GetCharge() const{return -TMath::Sign(1.0,GetPt());}
     Short_t   GetHelixQ() const{return fHelixQ;}
     Bool_t    GetEdgeCut() {return fEdgeCut;}
     MpdHelix GetHelix()const;
