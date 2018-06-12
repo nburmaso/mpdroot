@@ -46,10 +46,10 @@ ClassImp(MpdTrack);
 MpdHelix MpdTrack::GetHelix() const {
 	TVector3 mom(GetPx(),GetPy(),GetPz());
 	TVector3 pos(GetFirstPointX(),GetFirstPointY(),GetFirstPointZ());
-	Double_t charge = TMath::Sign(1.0,GetPt());
+	Double_t charge = GetCharge();
 	Double_t Bz = 0.5;
 	if(FairRunAna::Instance()){
-		Bz = FairRunAna::Instance()->GetField()->GetBz(0,0,0);
+		Bz = FairRunAna::Instance()->GetField()->GetBz(0,0,0)*0.1;
 	}
 	return MpdHelix(mom,pos,charge,Bz);
 }
