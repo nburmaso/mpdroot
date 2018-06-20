@@ -19,8 +19,6 @@ variables:
     - cd build
     - cmake "$CI_PROJECT_DIR"
     - make
-  only:
-    - dev
   allow_failure: false
   
 build:centos:
@@ -44,8 +42,6 @@ build:ubuntu:
     - source build/config.sh
     - root -b -q -l '$CI_PROJECT_DIR/macro/mpd/runMC.C("auau.09gev.mbias.98k.ftn14","$VMCWORKDIR/macro/mpd/evetest.root",0,2)' | tee output.txt
     - (if grep -q "Macro finished successfully." output.txt; then $(exit 0); else $(exit -1); fi);
-  only:
-    - dev
   allow_failure: false
   
 runMC:centos:
@@ -70,8 +66,6 @@ runMC:ubuntu:
     - source build/config.sh
     - root -b -q -l "$CI_PROJECT_DIR/macro/mpd/reco.C" | tee output.txt
     - (if grep -q "Macro finished successfully." output.txt; then $(exit 0); else $(exit -1); fi);
-  only:
-    - dev
   allow_failure: false
   
 run_reco:centos:
