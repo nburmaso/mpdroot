@@ -1,7 +1,7 @@
-{
 #include "../mpd/geometry/mpdshape.class.C"
 
-
+void geometry_cpc2()
+{
   const char* filename = "cpc.geo";
   Double_t initDist = 1735.0; // Distance from interacting point, mm
 
@@ -59,15 +59,15 @@
   position << 0.0 << " " << 0.0 << " " << -10.0; 
 
   ////////////     panel definition     ////////////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01sl", "cpc01l", "TUBE", "air",				   points.str(),position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  Mpdshape* stofbox1 = new Mpdshape(f, "cpc01sl", "cpc01l", "TUBE", "air",				   points.str(),position.str());                       
+  stofbox1->SetSegment(1);
+  stofbox1->SetMotherSegment(1);
+  stofbox1->DumpWithIncrement();
 
   for (Int_t i = 1; i < 2; i++)
     {
-      stofbox->SetPosition(0.0,0.0,-10.0+20.0*i);
-      stofbox->DumpWithIncrement();
+      stofbox1->SetPosition(0.0,0.0,-10.0+20.0*i);
+      stofbox1->DumpWithIncrement();
     }
     
     
@@ -81,15 +81,15 @@
 //  position << 0.0 << " " << 0.0 << " " << -20.0;
   
   ///////////     arco centr-volum definition     ///////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01al", "cpc01l", "TUBE", "arco28020", 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
+  Mpdshape* stofbox2 = new Mpdshape(f, "cpc01al", "cpc01l", "TUBE", "arco28020", 				   points.str());                       
+  stofbox2->SetSegment(1);
+  stofbox2->SetMotherSegment(1);
 //  stofbox->DumpWithIncrement();
   
     for (Int_t i = -1; i < 2; i++)
     {
-      stofbox->SetPosition(0.0, 0.0, 20.0*i);
-      stofbox->DumpWithIncrement();
+      stofbox2->SetPosition(0.0, 0.0, 20.0*i);
+      stofbox2->DumpWithIncrement();
     }
     
     
@@ -102,11 +102,11 @@
   points << 0.0 << " " << 0.0 << " " << 9.19/2.0;
 
   ///////////    bace definition     ////////////////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01osn", "cpc01sl", "TUBE", "G10",                                                                        
+  Mpdshape* stofbox3 = new Mpdshape(f, "cpc01osn", "cpc01sl", "TUBE", "G10",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox3->SetSegment(1);
+  stofbox3->SetMotherSegment(1);
+  stofbox3->DumpWithIncrement();
   
   
   
@@ -118,11 +118,11 @@
   points << 0.0 << " " << 0.0 << " " << -9.99/2.0;
 
   ///////////    layer from rohacell right definition     //////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01osnrh1", "cpc01sl", "TUBE", "rohacellhf71",                                                                        
+  Mpdshape* stofbox4 = new Mpdshape(f, "cpc01osnrh1", "cpc01sl", "TUBE", "rohacellhf71",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox4->SetSegment(1);
+  stofbox4->SetMotherSegment(1);
+  stofbox4->DumpWithIncrement();
   
   
   
@@ -134,11 +134,11 @@
   points << 0.0 << " " << 0.0 << " " << 9.99/2.0;
 
   ///////////    layer from rohacell left definition     ///////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01osnrh2", "cpc01sl", "TUBE", "rohacellhf71",                                                                        
+  Mpdshape* stofbox5 = new Mpdshape(f, "cpc01osnrh2", "cpc01sl", "TUBE", "rohacellhf71",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox5->SetSegment(1);
+  stofbox5->SetMotherSegment(1);
+  stofbox5->DumpWithIncrement();
   
   
   
@@ -150,11 +150,11 @@
   points << 0. << " " << 0. << " " << -10.0/2.0;
   
   //////////     volum for R pads definition      //////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01vrl", "cpc01sl", "TUBE", "air",																	    
+  Mpdshape* stofbox6 = new Mpdshape(f, "cpc01vrl", "cpc01sl", "TUBE", "air",																	    
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox6->SetSegment(1);
+  stofbox6->SetMotherSegment(1);
+  stofbox6->DumpWithIncrement();
   
   
   
@@ -167,11 +167,11 @@
 
 
   ///////////    volum for Fi pads definition     /////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01vfl", "cpc01sl", "TUBE", "air",																	    
+  Mpdshape* stofbox7 = new Mpdshape(f, "cpc01vfl", "cpc01sl", "TUBE", "air",																	    
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox7->SetSegment(1);
+  stofbox7->SetMotherSegment(1);
+  stofbox7->DumpWithIncrement();
 
     
     
@@ -185,18 +185,18 @@
   points << 9.99/2.0 << " " << innerRadius << " " << outerRadius;
 
   ///////////    sector in Fi definition     //////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01sectu", "cpc01vfl", "PGON", "air",                                                                        
+  Mpdshape* stofbox8 = new Mpdshape(f, "cpc01sectu", "cpc01vfl", "PGON", "air",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox8->SetSegment(1);
+  stofbox8->SetMotherSegment(1);
+  stofbox8->DumpWithIncrement();
 
   Double_t angle = 0.0;
   for(Int_t i = 1; i < 320; i++)
     {
       angle += 1.125;
-      stofbox->SetRotation(0.0,0.0,angle);
-      stofbox->DumpWithIncrement();
+      stofbox8->SetRotation(0.0,0.0,angle);
+      stofbox8->DumpWithIncrement();
     }
 
 
@@ -213,11 +213,11 @@
   position << padMovX << " " << 0.0 << " " << 0.0;
 
   ///////////      padFi1 definition     ////////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01padR1", "cpc01sectu", "PGON", "copper",                                                                        
+  Mpdshape* stofbox9 = new Mpdshape(f, "cpc01padR1", "cpc01sectu", "PGON", "copper",                                                                        
 				   points.str(), position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox9->SetSegment(1);
+  stofbox9->SetMotherSegment(1);
+  stofbox9->DumpWithIncrement();
   
   
   
@@ -231,11 +231,11 @@
   position << padMovX << " " << 0.0 << " " << 0.0;
 
   ///////////      padFi2 definition     ///////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01padR2", "cpc01sectu", "PGON", "copper",                                                                        
+  Mpdshape* stofbox10 = new Mpdshape(f, "cpc01padR2", "cpc01sectu", "PGON", "copper",                                                                        
 				   points.str(),position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox10->SetSegment(1);
+  stofbox10->SetMotherSegment(1);
+  stofbox10->DumpWithIncrement();
   
 
 
@@ -249,11 +249,11 @@
   position << padMovX << " " << 0.0 << " " << 0.0;
 
   ///////////      padFi3 definition     ///////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01padR3", "cpc01sectu", "PGON", "copper",                                                                        
+  Mpdshape* stofbox11 = new Mpdshape(f, "cpc01padR3", "cpc01sectu", "PGON", "copper",                                                                        
 				   points.str(), position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox11->SetSegment(1);
+  stofbox11->SetMotherSegment(1);
+  stofbox11->DumpWithIncrement();
   
   
   
@@ -266,18 +266,18 @@
   points << -9.99/2.0 << " " << innerRadius << " " << outerRadius;
 
   ///////////     sector in R definition     //////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01sectd", "cpc01vrl", "PGON", "air",                                                                        
+  Mpdshape* stofbox12 = new Mpdshape(f, "cpc01sectd", "cpc01vrl", "PGON", "air",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox12->SetSegment(1);
+  stofbox12->SetMotherSegment(1);
+  stofbox12->DumpWithIncrement();
 
-  Double_t angle = 0.0;
+  Double_t angle1 = 0.0;
   for(Int_t i = 1; i < 36; i++)
     {
-      angle += 10.0;
-      stofbox->SetRotation(0.0,0.0,angle);
-      stofbox->DumpWithIncrement();
+      angle1 += 10.0;
+      stofbox12->SetRotation(0.0,0.0,angle1);
+      stofbox12->DumpWithIncrement();
     }
 
   std::string name;
@@ -298,11 +298,11 @@
       position << phiMovX << " " << 0.0 << " " << 0.0;
 
       // padPhi layer definition
-      Mpdshape* stofbox = new Mpdshape(f, name, "cpc01sectd", "PGON", "copper",                                                                        
+      Mpdshape* stofbox13 = new Mpdshape(f, name, "cpc01sectd", "PGON", "copper",                                                                        
 			points.str(),position.str());                       
-      stofbox->SetSegment(1);
-      stofbox->SetMotherSegment(1);
-      stofbox->DumpWithIncrement();	
+      stofbox13->SetSegment(1);
+      stofbox13->SetMotherSegment(1);
+      stofbox13->DumpWithIncrement();	
     }
     
     
@@ -317,11 +317,11 @@
   position << 0.0 << " " << 0.0 << " " << -30.0; 
 
   ///////////     panel definition     ////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01sl2", "cpc01l", "TUBE", "air",                                                                        
+  Mpdshape* stofbox14 = new Mpdshape(f, "cpc01sl2", "cpc01l", "TUBE", "air",                                                                        
 				   points.str(),position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox14->SetSegment(1);
+  stofbox14->SetMotherSegment(1);
+  stofbox14->DumpWithIncrement();
   
   
   
@@ -333,11 +333,11 @@
   points << 0.0 << " " << 0.0 << " " << 9.19/2.0;
 
   ///////////     base definition     ////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01osn2", "cpc01sl2", "TUBE", "G10",                                                                        
+  Mpdshape* stofbox15 = new Mpdshape(f, "cpc01osn2", "cpc01sl2", "TUBE", "G10",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox15->SetSegment(1);
+  stofbox15->SetMotherSegment(1);
+  stofbox15->DumpWithIncrement();
   
   
   
@@ -349,11 +349,11 @@
   points << 0.0 << " " << 0.0 << " " << 9.99/2.0;
 
   ///////////     layer from rohacell left definition     ////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01osnrh4", "cpc01sl2", "TUBE", "rohacellhf71",                                                                        
+  Mpdshape* stofbox16 = new Mpdshape(f, "cpc01osnrh4", "cpc01sl2", "TUBE", "rohacellhf71",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox16->SetSegment(1);
+  stofbox16->SetMotherSegment(1);
+  stofbox16->DumpWithIncrement();
   
   
   
@@ -366,11 +366,11 @@
   position << 0.0 << " " << 0.0 << " " << -10.0; 
 
   ///////////    volum for Fi pads definition     /////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01vfll", "cpc01sl2", "TUBE", "air",																	    
+  Mpdshape* stofbox17 = new Mpdshape(f, "cpc01vfll", "cpc01sl2", "TUBE", "air",																	    
 				   points.str(),position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox17->SetSegment(1);
+  stofbox17->SetMotherSegment(1);
+  stofbox17->DumpWithIncrement();
   
   
   
@@ -383,41 +383,41 @@
   points << 9.99/2.0 << " " << innerRadius << " " << outerRadius;
 
   ///////////     sector definition     //////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01sect2u", "cpc01vfll", "PGON", "air",                                                                        
+  Mpdshape* stofbox18 = new Mpdshape(f, "cpc01sect2u", "cpc01vfll", "PGON", "air",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox18->SetSegment(1);
+  stofbox18->SetMotherSegment(1);
+  stofbox18->DumpWithIncrement();
 
-  Double_t angle = 0.0;
+  Double_t angle2 = 0.0;
   for(Int_t i = 1; i < 320; i++)
     {
-      angle += 1.125;
-      stofbox->SetRotation(0.0,0.0,angle);
-      stofbox->DumpWithIncrement();
+      angle2 += 1.125;
+      stofbox18->SetRotation(0.0,0.0,angle2);
+      stofbox18->DumpWithIncrement();
     }
   
   
   
   
   ///////////     padFi1 helpers     /////////////////////////////////////////////////
-  Double_t padMovX = 0.2/TMath::Sin(1.125*TMath::DegToRad());
-  Double_t innerRadiusPad = innerRadius - padMovX;
-  Double_t outerRadiusPad = outerRadius - padMovX;
+  Double_t padMovX1 = 0.2/TMath::Sin(1.125*TMath::DegToRad());
+  Double_t innerRadiusPad1 = innerRadius - padMovX1;
+  Double_t outerRadiusPad1 = outerRadius - padMovX1;
 
   points.str(""); position.str("");
   points << "2" << endl;
   points << 0.0 << " " << 1.125 << " " << 1 << endl;
-  points << 10.0/2.0 << " " << innerRadiusPad << " " << 200.0 - padMovX << endl;
-  points << 9.99/2.0 << " " << innerRadiusPad << " " << 200.0 - padMovX;
-  position << padMovX << " " << 0.0 << " " << 0.0;
+  points << 10.0/2.0 << " " << innerRadiusPad1 << " " << 200.0 - padMovX1 << endl;
+  points << 9.99/2.0 << " " << innerRadiusPad1 << " " << 200.0 - padMovX1;
+  position << padMovX1 << " " << 0.0 << " " << 0.0;
 
   ///////////     padFi1 definition      /////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01pad2R1", "cpc01sect2u", "PGON", "copper",                                                                        
+  Mpdshape* stofbox19 = new Mpdshape(f, "cpc01pad2R1", "cpc01sect2u", "PGON", "copper",                                                                        
 				   points.str(), position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox19->SetSegment(1);
+  stofbox19->SetMotherSegment(1);
+  stofbox19->DumpWithIncrement();
   
   
   
@@ -426,16 +426,16 @@
   points.str(""); position.str("");
   points << "2" << endl;
   points << 0.0 << " " << 1.125 << " " << 1 << endl;
-  points << 10.0/2.0 << " " << 205.0 - padMovX << " " << 300.0 - padMovX << endl;
-  points << 9.99/2.0 << " " << 205.0 - padMovX << " " << 300.0 - padMovX;
-  position << padMovX << " " << 0.0 << " " << 0.0;
+  points << 10.0/2.0 << " " << 205.0 - padMovX1 << " " << 300.0 - padMovX1 << endl;
+  points << 9.99/2.0 << " " << 205.0 - padMovX1 << " " << 300.0 - padMovX1;
+  position << padMovX1 << " " << 0.0 << " " << 0.0;
 
   ///////////     padFi2 definition     /////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01pad2R2", "cpc01sect2u", "PGON", "copper",                                                                        
+  Mpdshape* stofbox20 = new Mpdshape(f, "cpc01pad2R2", "cpc01sect2u", "PGON", "copper",                                                                        
 				   points.str(),position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox20->SetSegment(1);
+  stofbox20->SetMotherSegment(1);
+  stofbox20->DumpWithIncrement();
   
   
   
@@ -444,16 +444,16 @@
   points.str("");position.str("");
   points << "2" <<endl;
   points << 0.0 << " " << 1.125 << " " << 1 << endl;
-  points << 10.0/2.0 << " " << 305.0 - padMovX << " " << outerRadiusPad << endl;
-  points << 9.99/2.0 << " " << 305.0 - padMovX << " " << outerRadiusPad;
-  position << padMovX << " " << 0.0 << " " << 0.0;
+  points << 10.0/2.0 << " " << 305.0 - padMovX1 << " " << outerRadiusPad1 << endl;
+  points << 9.99/2.0 << " " << 305.0 - padMovX1 << " " << outerRadiusPad1;
+  position << padMovX1 << " " << 0.0 << " " << 0.0;
 
   ///////////     padFi3 definition      ///////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01pad2R3", "cpc01sect2u", "PGON", "copper",                                                                        
+  Mpdshape* stofbox21 = new Mpdshape(f, "cpc01pad2R3", "cpc01sect2u", "PGON", "copper",                                                                        
 				   points.str(), position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox21->SetSegment(1);
+  stofbox21->SetMotherSegment(1);
+  stofbox21->DumpWithIncrement();
   
   
    
@@ -468,11 +468,11 @@
   position << 0.0 << " " << 0.0 << " " << 30.0; 
   
   ////////////    panel definition    ////////////////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01sl3", "cpc01l", "TUBE", "air",                                                                        
+  Mpdshape* stofbox22 = new Mpdshape(f, "cpc01sl3", "cpc01l", "TUBE", "air",                                                                        
 				   points.str(),position.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox22->SetSegment(1);
+  stofbox22->SetMotherSegment(1);
+  stofbox22->DumpWithIncrement();
   
   
   
@@ -484,11 +484,11 @@
   points << 0.0 << " " << 0.0 << " " << 10.0/2.0;
 
   ////////////    base definition    /////////////////////////////////////////////////////////////    
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01osn3", "cpc01sl3", "TUBE", "G10",                                                                        
+  Mpdshape* stofbox23 = new Mpdshape(f, "cpc01osn3", "cpc01sl3", "TUBE", "G10",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox23->SetSegment(1);
+  stofbox23->SetMotherSegment(1);
+  stofbox23->DumpWithIncrement();
   
   
   
@@ -500,11 +500,11 @@
   points << 0.0 << " " << 0.0 << " " << -9.99/2.0;
 
   ////////////    layer from rohacell right definition     ///////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01osnrh5", "cpc01sl3", "TUBE", "rohacellhf71",                                                                        
+  Mpdshape* stofbox24 = new Mpdshape(f, "cpc01osnrh5", "cpc01sl3", "TUBE", "rohacellhf71",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox24->SetSegment(1);
+  stofbox24->SetMotherSegment(1);
+  stofbox24->DumpWithIncrement();
   
   
   
@@ -516,11 +516,11 @@
   points << 0. << " " << 0. << " " << -10.0/2.0;
   
   //////////     volum for R pads definition      //////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01vrll", "cpc01sl3", "TUBE", "air",																	    
+  Mpdshape* stofbox25 = new Mpdshape(f, "cpc01vrll", "cpc01sl3", "TUBE", "air",																	    
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox25->SetSegment(1);
+  stofbox25->SetMotherSegment(1);
+  stofbox25->DumpWithIncrement();
   
   
   
@@ -533,46 +533,46 @@
   points << -9.99/2.0 << " " << innerRadius << " " << outerRadius;
 
   ////////////    sector in R definition     /////////////////////////////////////////////////////
-  Mpdshape* stofbox = new Mpdshape(f, "cpc01sect3d", "cpc01vrll", "PGON", "air",                                                                        
+  Mpdshape* stofbox26 = new Mpdshape(f, "cpc01sect3d", "cpc01vrll", "PGON", "air",                                                                        
 				   points.str());                       
-  stofbox->SetSegment(1);
-  stofbox->SetMotherSegment(1);
-  stofbox->DumpWithIncrement();
+  stofbox26->SetSegment(1);
+  stofbox26->SetMotherSegment(1);
+  stofbox26->DumpWithIncrement();
 
-  Double_t angle = 0.0;
+  Double_t angle3 = 0.0;
   for(Int_t i = 1; i < 36; i++)
     {
-      angle += 10.0;
-      stofbox->SetRotation(0.0,0.0,angle);
-      stofbox->DumpWithIncrement();
+      angle3 += 10.0;
+      stofbox26->SetRotation(0.0,0.0,angle3);
+      stofbox26->DumpWithIncrement();
     }
 
 
   
   ///////////     R pads     /////////////////////////////////////////////////////////////////////
-  std::string name;
-  Double_t phiMovX = 0.2/TMath::Sin(10.0*TMath::DegToRad());
-  Double_t innerRadiusPhi = innerRadius - phiMovX;
-  Double_t outerRadiusPhi = outerRadius - phiMovX;
-  Double_t step = (outerRadiusPhi - innerRadiusPhi)/31.0;
+  std::string name1;
+  Double_t phiMovX1 = 0.2/TMath::Sin(10.0*TMath::DegToRad());
+  Double_t innerRadiusPhi1 = innerRadius - phiMovX1;
+  Double_t outerRadiusPhi1 = outerRadius - phiMovX1;
+  Double_t step1 = (outerRadiusPhi1 - innerRadiusPhi1)/31.0;
 
   for (Int_t i=0; i<31; i++)
     {
-      name = "cpc01pad3Phi";
-      name += itoa(i);
+      name1 = "cpc01pad3Phi";
+      name1 += itoa(i);
       points.str(""); position.str("");
       points << "2" << endl;
       points << 0.0 << " " << 10.0 << " " << 4 << endl;
-      points << -10.0/2.0 << " " << innerRadiusPhi + step * i + 0.2 << " " << innerRadiusPhi + step * (i+1) << endl;
-      points << -9.99/2.0 << " " << innerRadiusPhi + step * i + 0.2 << " " << innerRadiusPhi + step * (i+1);
-      position << phiMovX << " " << 0.0 << " " << 0.0;
+      points << -10.0/2.0 << " " << innerRadiusPhi1 + step1 * i + 0.2 << " " << innerRadiusPhi1 + step1 * (i+1) << endl;
+      points << -9.99/2.0 << " " << innerRadiusPhi1 + step1 * i + 0.2 << " " << innerRadiusPhi1 + step1 * (i+1);
+      position << phiMovX1 << " " << 0.0 << " " << 0.0;
 
       // straw layer definition
-      Mpdshape* stofbox = new Mpdshape(f, name, "cpc01sect3d", "PGON", "copper",                                                                        
+      Mpdshape* stofbox27 = new Mpdshape(f, name1, "cpc01sect3d", "PGON", "copper",                                                                        
 				       points.str(),position.str());                       
-      stofbox->SetSegment(1);
-      stofbox->SetMotherSegment(1);
-      stofbox->DumpWithIncrement();	
+      stofbox27->SetSegment(1);
+      stofbox27->SetMotherSegment(1);
+      stofbox27->DumpWithIncrement();	
     }
   //**************************************************************************************
                         

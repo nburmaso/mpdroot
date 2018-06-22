@@ -1,7 +1,7 @@
 // Macro for running Fair  with Geant3  or Geant4 (M. Al-Turany , D. Bertini)
 // Modified 22/06/2005 D.Bertini
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined(__CINT__) && !defined(__CLING__)
 #include "TString.h"
 #include "TStopwatch.h"
 #include "TROOT.h"
@@ -11,7 +11,7 @@
 #include "FairRuntimeDb.h"
 #include "FairParRootFileIo.h"
 #include "FairTrajFilter.h"
-#include "PndConstField.h"
+#include "MpdConstField.h"
 #include "FairUrqmdGenerator.h"
 #include "FairPrimaryGenerator.h"
 #include "FairCave.h"
@@ -33,7 +33,12 @@
 using namespace std;
 #endif
 
-runMC (const char *datadir="")
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "macro/mpd/mpdloadlibs.C"
+#include "macro/mpd/geometry_v2.C"
+//#include "macro/mpd/geometry_v2_option.C"
+
+void runMC (TString datadir = "")
 {
 
   TString the_datadir=datadir;
@@ -50,15 +55,15 @@ runMC (const char *datadir="")
   timer.Start();
   gDebug=0;
 
-#define URQMD
+#define ION //URQMD
 
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+  //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
   mpdloadlibs(1,1);                 // load main libraries
 
-//   gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
-//   geometry_v2(0x0, kFALSE);     // load mpd detectors libraries
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2_option.C");
-  geometry_v2_option(0x0, kFALSE);     // load mpd detectors libraries
+  //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
+  geometry_v2(0x0, kFALSE);     // load mpd detectors libraries
+  //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2_option.C");
+  //geometry_v2_option(0x0, kFALSE);     // load mpd detectors libraries
 
   FairRunSim *fRun = new FairRunSim();
   
@@ -110,6 +115,7 @@ runMC (const char *datadir="")
       else{
 	TString sHome(gSystem->Getenv("HOME"));
 	dataFile = sHome + "/data/";
+  //dataFile = find_path_to_URQMD_files();
       }
 
       //dataFile += "urqmd.auau.ecm9gev.mbias-10k.0001.ftn14";
@@ -139,13 +145,22 @@ runMC (const char *datadir="")
 #ifdef BOX
   
   // Box Generator
-  FairBoxGenerator* boxGen = new
-    FairBoxGenerator(13, 1); // 13 = muon; 1 = multipl.
-    boxGen->SetPRange(0.25,2.5); // GeV/c //setPRange vs setPtRange
-    boxGen->SetPhiRange(0, 360); // Azimuth angle range [degree]
-    boxGen->SetThetaRange(0, 180); // Polar angle in lab system range [degree]
-    boxGen->SetXYZ(0., 0., 0.); // mm o cm ??
-    primGen->AddGenerator(boxGen);
+  FairBoxGenerator* boxGen = new FairBoxGenerator(13, 1); // 13 = muon; 1 = multipl.
+  boxGen->SetPRange(0.25,2.5); // GeV/c //setPRange vs setPtRange
+  boxGen->SetPhiRange(0, 360); // Azimuth angle range [degree]
+  boxGen->SetThetaRange(0, 180); // Polar angle in lab system range [degree]
+  boxGen->SetXYZ(0., 0., 0.); // mm o cm ??
+  primGen->AddGenerator(boxGen);
+  
+#ifdef HADGEN
+  THadgen* hadGen = new THadgen();
+  hadGen->SetRandomSeed(clock() + time(0));
+  hadGen->SetParticleFromPdgCode(0, 196.9665, 79);
+  hadGen->SetEnergy(6.5E3);
+  MpdGeneralGenerator* generalHad = new MpdGeneralGenerator(hadGen);
+  primGen->AddGenerator(generalHad);
+
+#endif
 #endif
 #endif
 #endif
@@ -153,10 +168,10 @@ runMC (const char *datadir="")
 
   // Magnetic Field Map - for proper use in the analysis MultiField is necessary here
   // --------------------
-    PndMultiField *fField= new PndMultiField();
+  MpdMultiField *fField= new MpdMultiField();
 
   // Constant Field
-  PndConstField *fMagField = new PndConstField();
+  MpdConstField *fMagField = new MpdConstField();
   fMagField->SetField(0, 0 , 5. ); // values are in kG:  1T = 10kG
   // MinX=-75, MinY=-40,MinZ=-12 ,MaxX=75, MaxY=40 ,MaxZ=124 );  // values are in cm
   fMagField->SetFieldRegion(-205, 205, -205, 205, -261, 261); //cm
@@ -199,7 +214,7 @@ runMC (const char *datadir="")
   output->open(gFile);
   rtdb->setOutput(output);
 
-  PndMultiFieldPar* Par = (PndMultiFieldPar*) rtdb->getContainer("PndMultiFieldPar");
+  MpdMultiFieldPar* Par = (MpdMultiFieldPar*) rtdb->getContainer("MpdMultiFieldPar");
   if (fField)
     Par->SetParameters(fField); 
   Par->setInputVersion(fRun->GetRunId(),1);

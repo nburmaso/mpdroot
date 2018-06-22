@@ -77,13 +77,14 @@ Bool_t  MpdCpc::ProcessHits(FairVolume* vol)
 	if ((gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()) && fELoss > 0) 
 	{
 		fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
-		Volname = vol->getRealName();         // EL
-		region = Volname[5] - '0';   //?????????????????????????
-		gMC->CurrentVolID(gap);
-		gMC->CurrentVolOffID(1, cell);
-		gMC->CurrentVolOffID(2, module);
+		//Volname = vol->getRealName();         // EL
+		//region = Volname[5] - '0';   //?????????????????????????
+		//gMC->CurrentVolID(gap);
+		//gMC->CurrentVolOffID(1, cell);
+		//gMC->CurrentVolOffID(2, module);
     
-		fVolumeID = ((region-1)<<24);////////////// + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
+		//fVolumeID = ((region-1)<<24);////////////// + ((module-1)<<14) + ((cell-1)<<4) + (gap-1);
+		fVolumeID = vol->getMCid();
 
 		AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
 	   		TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, fELoss);
@@ -145,6 +146,37 @@ void MpdCpc::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset)
 //------------------------------------------------------------------------------------------------------------------------
 void MpdCpc::ConstructGeometry() 
 {
+	TString fileName = GetGeometryFileName();
+
+	if ( fileName.EndsWith(".root") ) {
+		gLogger->Info(MESSAGE_ORIGIN,
+			"Constructing CPC geometry from ROOT file %s",
+			fileName.Data());
+		ConstructRootGeometry();
+	}
+	else if ( fileName.EndsWith(".geo") ) {
+		gLogger->Info(MESSAGE_ORIGIN,
+			"Constructing CPC geometry from ASCII file %s",
+			fileName.Data());
+		ConstructAsciiGeometry();
+	}
+	/*else if ( fileName.EndsWith(".gdml") )
+	{
+		gLogger->Info(MESSAGE_ORIGIN,
+			"Constructing CPC geometry from GDML file %s",
+			fileName.Data());
+		ConstructGDMLGeometry();
+	}*/
+	else
+	{
+		gLogger->Fatal(MESSAGE_ORIGIN,
+			"Geometry format of CPC file %s not supported.",
+		fileName.Data());
+	}
+}
+//------------------------------------------------------------------------------------------------------------------------
+void MpdCpc::ConstructAsciiGeometry()
+{
   
 	int count=0;
 	int count_tot=0;
@@ -194,6 +226,15 @@ MpdCpcPoint* MpdCpc::AddHit(Int_t trackID, Int_t detID, TVector3 pos,
 	Int_t size = clref.GetEntriesFast();
 	
 return new(clref[size]) MpdCpcPoint(trackID, detID, pos, mom, time, length, eLoss);
+}
+//------------------------------------------------------------------------------------------------------------------------
+//Check if Sensitive-----------------------------------------------------------
+Bool_t MpdCpc::CheckIfSensitive(std::string name) {
+	TString tsname = name;
+	if (tsname.Contains("Active") || tsname.Contains("cpc01al")) {
+		return kTRUE;
+	}
+	return kFALSE;
 }
 //------------------------------------------------------------------------------------------------------------------------
 

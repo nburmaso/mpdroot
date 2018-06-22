@@ -1,5 +1,6 @@
-{
 #include "../mpd/geometry/mpdshape.class.C"
+
+void geometry_cpc_new05cm(){
 
 
   //const char* filename = "cpc.geo";
@@ -420,11 +421,11 @@ Mpdshape* cpcbox4fi3u2_2 = new Mpdshape(f, "cpc01padR3_2", "cpc01padR32", "TUBS"
   cpcbox3ru->SetMotherSegment(1);
   cpcbox3ru->DumpWithIncrement();
 
-  Double_t angle = 0.0;
+  Double_t angle2 = 0.0;
   for(Int_t ii = 1; ii < phipadsnumber2; ii++)
     {
-      angle += delfi2;
-      cpcbox3ru->SetRotation(0.0,0.0,angle);
+      angle2 += delfi2;
+      cpcbox3ru->SetRotation(0.0,0.0,angle2);
       cpcbox3ru->DumpWithIncrement();
     }
 

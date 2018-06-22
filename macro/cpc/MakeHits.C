@@ -1,3 +1,9 @@
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "cpc/MpdCpcHitProducer.h"
+#include "macro/mpd/mpdloadlibs.C"
+#include "macro/mpd/geometry_v2.C"
+
+
 void MakeHits(TString inFile = "evetest.root")
 {
 
@@ -12,10 +18,10 @@ void MakeHits(TString inFile = "evetest.root")
   //TString outFile = "test.raw.1251-1500.root";
   TString outFile = "cpc.hist.root";
 
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+  //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
   mpdloadlibs(kTRUE);                 // load full set of main libraries
 
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
+  //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
   geometry_v2(0x0, kFALSE);
   // ------------------------------------------------------------------------
 
