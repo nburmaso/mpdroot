@@ -203,7 +203,7 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
     else modID = point->GetCopyMother() + 45;//modules 46-90
     chanID = (Int_t)((point->GetCopy()-1)/6); //sections 0-9
 
-    cout <<"marina 1 " <<detID <<" " <<modID <<" " <<point->GetCopy() <<' ' <<chanID <<endl;
+//    cout <<"marina 1 " <<detID <<" " <<modID <<" " <<point->GetCopy() <<' ' <<chanID <<endl;
 
     dEdepSectEv[modID-1][chanID]+=point->GetEnergyLoss();
     //end marina
