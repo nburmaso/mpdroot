@@ -129,6 +129,8 @@ Bool_t Mpd3fdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     cout << "-I Mpd3fdGenerator: Event " << fEventNumber << ",  b = " << b
             << " fm,  multiplicity " << fNpart << ", Elab: " << energ << endl;
 
+    if (fNpart>kBatyukConst) {cout <<"-E- 3fdGenerator SELFCHECK ERROR"<< endl; exit(1);}
+
     // Set event id and impact parameter in MCEvent if not yet done
     FairMCEventHeader* event = primGen->GetEvent();
     if (event && (!event->IsSet())) {
