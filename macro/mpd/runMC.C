@@ -95,7 +95,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
     if (nEvents == 0)
-        nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
+        nEvents = MpdGetNumEvents::GetNumURQMDEvents(inFile.Data()) - nStartEvent;
 
 #else
 #ifdef VHLLE
@@ -112,7 +112,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
     // if (nEvents == 0)
-    //      nEvents = MpdGetNumEvents::GetNumURQMDEvents(dataFile.Data()) - nStartEvent;
+    //      nEvents = MpdGetNumEvents::GetNumURQMDEvents(inFile.Data()) - nStartEvent;
 
 #else
 #ifdef PART
@@ -151,7 +151,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
     if (nEvents == 0)
-        nEvents = MpdGetNumEvents::GetNumPHSDEvents(dataFile.Data()) - nStartEvent;
+        nEvents = MpdGetNumEvents::GetNumPHSDEvents(inFile.Data()) - nStartEvent;
 
 #else
 #ifdef LAQGSM
@@ -165,7 +165,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
     if (nEvents == 0)
-        nEvents = MpdGetNumEvents::GetNumQGSMEvents(dataFile.Data()) - nStartEvent;
+        nEvents = MpdGetNumEvents::GetNumQGSMEvents(inFile.Data()) - nStartEvent;
 
 #else
 #ifdef HADGEN
@@ -258,7 +258,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     fRun->Run(nEvents);
 
 #ifdef LAQGSM
-    TString Pdg_table_name = TString::Format("%s%s%c%s", gSystem->BaseName(dataFile.Data()), ".g", (fRun->GetName())[6], ".pdg_table.dat");
+    TString Pdg_table_name = TString::Format("%s%s%c%s", gSystem->BaseName(inFile.Data()), ".g", (fRun->GetName())[6], ".pdg_table.dat");
     (TDatabasePDG::Instance())->WritePDGTable(Pdg_table_name.Data());
 #endif
 
