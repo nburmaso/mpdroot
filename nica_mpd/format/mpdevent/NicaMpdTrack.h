@@ -29,7 +29,7 @@ public:
 	inline NicaTpcTrack *GetTpcTrack()const{return fTpcTrack;};
 	inline NicaToFTrack *GetToFTrack()const{return fToFTrack;};
 	inline Bool_t HaveHit(Int_t layer)const{return TESTBIT(fHitsMap,layer);};
-	void Update(MpdTrack* track);
+	virtual void Update(MpdTrack* track);
 	void PrintHitMaps()const;
 	virtual void CopyData(NicaTrack *other);
 	virtual ~NicaMpdTrack();

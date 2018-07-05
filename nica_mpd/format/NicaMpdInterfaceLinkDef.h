@@ -14,8 +14,11 @@
 #pragma link off all functions;
 
 #pragma link C++ class NicaMpdEvent+;
+#pragma link C++ class NicaMpdEventTpcPads+;
 #pragma link C++ class NicaMpdTrack+;
+#pragma link C++ class NicaMpdTrackTpcPads+;
 #pragma link C++ class NicaMpdDstMCEvent+;
+#pragma link C++ class NicaMpdDstMCEventTpcPads+;
 #pragma link C++ class NicaMpdFullEvent+;
 #pragma link C++ class NicaMpdKalmanTrackInterface+;
 #pragma link C++ class NicaMpdKalmanEvent+;
@@ -27,5 +30,6 @@
 #pragma link C++ class NicaMpdDstKalmanTrackInterface+;
 #pragma link C++ class NicaMpdTrackInterface+;
 #pragma link C++ class NicaMpdEventInterface+;
+#pragma link C++ class NicaTpcSectorGeo+;
 
 #endif /* INTERFACES_MPDROOT_NICAMPDINTERFACELINKDEF_H_ */

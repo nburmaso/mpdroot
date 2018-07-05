@@ -127,3 +127,7 @@ NicaMpdEvent::NicaMpdEvent() :NicaExpEvent("NicaMpdTrack"){
 	fMode = kAllTracks;
 }
 
+NicaMpdEvent::NicaMpdEvent(TString trackname) :NicaExpEvent(trackname){
+	fSource = new NicaMpdEventInterface();
+	fMode = kAllTracks;
+}

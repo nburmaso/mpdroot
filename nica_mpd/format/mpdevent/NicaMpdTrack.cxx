@@ -44,6 +44,9 @@ void NicaMpdTrack::Update(MpdTrack* track) {
 	GetDCA()->SetXYZ(track->GetDCAGlobalX(), track->GetDCAGlobalY(),track->GetDCAGlobalZ());
 	fFirstPoint->SetXYZ(track->GetFirstPointX(),track->GetFirstPointY(), track->GetFirstPointZ());
 	fLastPoint->SetXYZ(track->GetLastPointX(),track->GetLastPointY(),track->GetLastPointZ());
+	NicaHelix *helix = GetHelix();
+	TVector3 mom = GetMomentum()->Vect();
+	helix->SetParams(*fFirstPoint,mom, fCharge);
 }
 
 void NicaMpdTrack::CopyData(NicaTrack* other) {

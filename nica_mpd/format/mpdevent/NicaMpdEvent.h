@@ -24,6 +24,7 @@ protected:
 	virtual void ShallowCopyTracks(NicaEvent *event);
 	virtual void ShallowCopyEvent(NicaEvent *event);
 	void CreateSource();
+	NicaMpdEvent(TString trackname);
 public:
 	NicaMpdEvent();
 	NicaMpdEvent(const 	NicaMpdEvent &other);
