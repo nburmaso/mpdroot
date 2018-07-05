@@ -22,7 +22,6 @@ public:
 	MpdTwoTrackSharedPadsCut();
 	virtual Bool_t Pass(NicaTwoTrack *pair);
 	virtual ~MpdTwoTrackSharedPadsCut();
-	CutDef(MpdTwoTrackSharedPadsCut);
 	ClassDef(MpdTwoTrackSharedPadsCut,1)
 };
 

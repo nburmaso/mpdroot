@@ -22,6 +22,8 @@
 #pragma link C++ class MpdTwoTrackSharedQualityCut+;
 #pragma link C++ class MpdNSigmaCut+;
 #pragma link C++ class MpdTwoTrackSharedPadsCut+;
+#pragma link C++ class MpdPairPadsCuts+;
+#pragma link C++ class MpdDeltaEtaDeltaPhiStarCut+;
 #endif
 
 #endif /* INTERFACES_MPDROOT_CUTS_MPDNICACUTSLINKDEF_H_ */

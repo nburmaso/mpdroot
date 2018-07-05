@@ -86,11 +86,11 @@ Bool_t MpdTwoTrackSharedPadsCut::Pass(NicaTwoTrack* pair) {
 void MpdTwoTrackSharedPadsCut::Overlap(NicaHelix* helix, Double_t R,
 		Double_t& x, Double_t& y) {
 	Double_t s1,s2;
-	helix->PathLength(R*0.01, s1, s2); //to m
+	helix->PathLength(R, s1, s2); //to m
 	Double_t s = TMath::Min(s1,s2);
 	TVector3 pos = helix->Evaluate(s);
-	x = pos.X()*100;
-	y = pos.Y()*100;
+	x = pos.X();
+	y = pos.Y();
 }
 
 MpdTwoTrackSharedPadsCut::~MpdTwoTrackSharedPadsCut() {
