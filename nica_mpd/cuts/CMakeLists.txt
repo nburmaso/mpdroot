@@ -38,11 +38,13 @@ ${CMAKE_SOURCE_DIR}/mpdbase
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
- ${ROOT_INCLUDE_DIR} 
+ ${ROOT_INCLUDE_DIR}
+ ${BASE_INCLUDE_DIRECTORIES} 
 )
 
 Set(LINK_DIRECTORIES
-  ${NICA_LINK_DIRECTORIES}
+  ${ROOT_LIBRARY_DIR} 
+  ${FAIRROOT_LIBRARY_DIR}
 )
 
 Include_Directories(${INCLUDE_DIRECTORIES})
@@ -59,6 +61,8 @@ trackcuts/MpdTrackFirstPointCut.cxx
 trackcuts/MpdNSigmaCut.cxx
 paircuts/MpdTwoTrackSharedQualityCut.cxx
 paircuts/MpdTwoTrackSharedPadsCut.cxx
+paircuts/MpdPairPadsCuts.cxx
+paircuts/MpdDeltaEtaDeltaPhiStarCut.cxx
 )
 
 Set(HEADERS )

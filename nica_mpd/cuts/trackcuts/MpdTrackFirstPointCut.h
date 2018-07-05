@@ -16,7 +16,6 @@ public:
 	MpdTrackFirstPointCut();
 	Bool_t Pass(NicaTrack *track);
 	virtual ~MpdTrackFirstPointCut();
-	CutDef(MpdTrackFirstPointCut)
 	ClassDef(MpdTrackFirstPointCut,1)
 };
 

@@ -21,7 +21,6 @@ public:
 	static Int_t Quality(){return 1;};
 	static Int_t Shared(){return 0;};
 	virtual ~MpdTwoTrackSharedQualityCut();
-	CutDef(MpdTwoTrackSharedQualityCut)
 	ClassDef(MpdTwoTrackSharedQualityCut,1)
 
 };
