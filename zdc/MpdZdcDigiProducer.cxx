@@ -163,6 +163,16 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
 
   Int_t detID, modID, chanID;
   MpdZdcDigiId_t digiID;
+
+  //marina
+  Double_t dEdepSectEv[90][10];  
+
+    for(Int_t i=0; i<90; i++) {// mod    
+      for(Int_t ii=0;ii<10;ii++) { // section 
+	dEdepSectEv[i][ii] = 0.;
+      }
+    }
+    //end marina
   
   MpdZdcPoint* point  = NULL;
 
@@ -181,10 +191,22 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
   TH2F* hist2=fHistZdc2En;
 
   Bool_t flag_of_not_created=1;
-
+  //cout <<"marina " <<nPoints <<endl;
   for (Int_t iPoint=0; iPoint<nPoints; iPoint++) {
-
+    //marina
     point  = (MpdZdcPoint*) fPointArray->At(iPoint);
+    //cout <<"marina 1 " <<point->GetCopyZdc() <<" " <<point->GetCopyMother() <<" " <<point->GetCopy() <<endl;
+
+    detID = point->GetCopyZdc();//==1 (z>0), ==2 (z<0)
+    //modID  = point->GetCopyMother(); // modules 1-45
+    if(detID==1) modID  = point->GetCopyMother(); // modules 1-45
+    else modID = point->GetCopyMother() + 45;//modules 46-90
+    chanID = (Int_t)((point->GetCopy()-1)/6); //sections 0-9
+
+//    cout <<"marina 1 " <<detID <<" " <<modID <<" " <<point->GetCopy() <<' ' <<chanID <<endl;
+
+    dEdepSectEv[modID-1][chanID]+=point->GetEnergyLoss();
+    //end marina
 
     Int_t pMMcopy=1*(point->GetZ()>0)+2*(point->GetZ()<0);
     digiID = pDigiScheme->GetDigiIdFromVolumeData  (point->GetDetectorID(), point->GetCopy(), point->GetCopyMother(),pMMcopy);
@@ -214,7 +236,8 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
         hist2->Fill(point->GetX(),point->GetY(),point->GetEnergyLoss());
       }
 
-    }
+    }//if ((digiID[0]!=-1)&&(digiID[1]!=-1))
+
 #ifdef EDEBUG
     else {
       if (lEDEBUGcounter<100) {
@@ -223,8 +246,10 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
       }
     }
 #endif
-  }
 
+  }//for (Int_t iPoint=0; iPoint<nPoints; iPoint++)
+
+  //cout <<"marina 2 " <<endl;
   TClonesArray& clref1 = *fELossZdc1Value;
   new(clref1[0]) TParameter<double>("ELossZdc1",e1);
   TClonesArray& clref2 = *fELossZdc2Value;
@@ -240,6 +265,26 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
     new(clref2e[0]) TVectorT<float>(fHistZdc2En->GetSize(),fHistZdc2En->GetArray());
   }
   
+  //cout <<"marina 3 " <<endl;
+    for(Int_t i=0; i<90; i++) {// mod    
+      for(Int_t ii=0;ii<10;ii++) { // section 
+	//cout <<"dEdepSectEv " <<i <<" " <<ii <<" " <<dEdepSectEv[i][ii] <<endl;
+	if(dEdepSectEv[i][ii]>0) {
+	  if(i<=44) detID = 1;
+	  else detID = 2;
+	  if(detID==1) {
+	    MpdZdcDigi* digi = AddHit(detID, i+1, ii+1, dEdepSectEv[i][ii]); 
+	    digi->ConvertSim();
+	  }
+	  else {
+	    MpdZdcDigi* digi = AddHit(detID, i-45+1, ii+1, dEdepSectEv[i][ii]);
+	    digi->ConvertSim();
+	  }
+	}
+      }
+    }//for(Int_t i=0; i<90; i++)
+
+    /*
   for(p=fDigiIdEnergy.begin(); p!=fDigiIdEnergy.end(); ++p) {
 
     pDigiScheme->SplitDigiID((*p).first, detID, modID, chanID);
@@ -258,6 +303,7 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
     }
 
   }
+    */
  
 #undef EDEBUG
 }
@@ -270,7 +316,9 @@ MpdZdcDigi* MpdZdcDigiProducer::AddHit(Int_t detID, Int_t modID, Int_t chanID,Fl
 {
   TClonesArray& clref = *fDigiArray;
   Int_t size = clref.GetEntriesFast();
+  //cout <<"size " <<size <<endl;
   MpdZdcDigi* result = new(clref[size]) MpdZdcDigi(detID,modID,chanID,energy);
+  //cout <<"result " <<result <<endl;
   return result;
 }
 // ----

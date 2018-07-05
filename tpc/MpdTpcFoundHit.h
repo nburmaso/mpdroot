@@ -14,6 +14,8 @@
 #include "TRef.h"
 #include "MpdTpc2dCluster.h"
 
+using namespace std;
+
 class MpdTpcFoundHit : public TObject
 {
 public:

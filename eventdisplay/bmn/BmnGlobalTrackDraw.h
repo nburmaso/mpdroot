@@ -9,7 +9,7 @@
 #define BmnGlobalTrackDraw_H
 
 #include "FairTask.h"
-#include "FairEventManager.h"
+#include "MpdEventManager.h"
 
 #include "TEveTrackPropagator.h"
 #include "TEveTrack.h"
@@ -26,7 +26,7 @@ class BmnGlobalTrackDraw : public FairTask
     BmnGlobalTrackDraw();
 
     // constructor: @name - name of task, @iVerbose- verbosity level
-    BmnGlobalTrackDraw(const char* name, Int_t iVerbose = 1);
+    BmnGlobalTrackDraw(const char* name, Int_t iVerbose = 0);
 
     // destructor
     virtual ~BmnGlobalTrackDraw();
@@ -57,19 +57,15 @@ class BmnGlobalTrackDraw : public FairTask
     TClonesArray*  fTof1HitList;     //!
     // TOF2 hits collection
     TClonesArray*  fTof2HitList;     //!
-    // DCH1 hits collection
-    TClonesArray*  fDch1HitList;     //!
-    // DCH2 hits collection
-    TClonesArray*  fDch2HitList;     //!
+    // DCH hits collection
+    TClonesArray*  fDchHitList;     //!
     // EVE track propagator
     TEveTrackPropagator* fTrPr;
-    FairEventManager* fEventManager;    //!
+    MpdEventManager* fEventManager;    //!
     TObjArray* fEveTrList;
-    TString fEvent;                     //!
     TEveTrackList* fTrList;             //!
 
-    Double_t MinEnergyLimit;
-    Double_t MaxEnergyLimit;
+    Double_t MinEnergyLimit, MaxEnergyLimit;
     Double_t PEnergy;
 
   private:

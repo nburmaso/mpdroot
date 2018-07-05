@@ -17,8 +17,12 @@ class MpdTofMatchingQA
         TH1D			*heRest;
         TH2D           		*htCandNmb,*htTrackPerEvent, *htKfMcCyl, *htKFTrack, *htKFTrackCand, *htKFTrackTrueCand, *htTrueMatch, *htMisMatch; 
         TH2D           		*hDeltaTrueHit, *hDeltaMisHit, *hDeltaPoint, *hDeltaPoint_Dev, *hDeltaPoint_dR, *hDeltaPoint_dZ, *hDeltaPoint_dPhi;
-	TEfficiency		*pEfficiencyP, *pEfficiencyEta, *pEfficiencyEtaP;		// Efficiency = N true matchings / N tpc kf tracks having TOF hit;
-	TEfficiency		*pContaminationP, *pContaminationEta, *pContaminationEtaP; 	// Contamination = N wrong matchings / ( N true matchings + n wrong matchings)
+        
+	TEfficiency		*pEff1P, *pEff1Eta, *pEff1EtaP;		// Efficiency = N true matchings / N tpc kf tracks having TOF hit (algorithm efficiency)
+	TEfficiency		*pCont1P, *pCont1Eta, *pCont1EtaP; 	// Contamination = N wrong matchings / ( N true matchings + n wrong matchings)(algorithm contamination)
+	TEfficiency		*pEff2P, *pEff2Eta, *pEff2EtaP;		// Efficiency = N true / N tpc kf tracks (ALICE TDR TOF 2000)
+	TEfficiency		*pCont2P, *pCont2Eta, *pCont2EtaP; 	// Contamination = N wrong / N single matching to fired strip (ALICE TDR TOF 2000)
+	
         TString			fFlnm;
         bool			fIsEndcap;        
   

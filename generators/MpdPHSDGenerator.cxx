@@ -56,12 +56,7 @@ Bool_t MpdPHSDGenerator::ReadEvent(FairPrimaryGenerator *primGen)
   {
     eventHeader->SetB(fb);
     eventHeader->MarkSet(kTRUE);
-    // fill extra
-    MpdMCEventHeader *extraEventHeader = dynamic_cast<MpdMCEventHeader*> (eventHeader);
-    if (extraEventHeader)
-    {
-      extraEventHeader->SetPhi(fPsiRP);
-    }
+    eventHeader->SetRotZ(fPsiRP);
   }
 
   /* read tracks */
@@ -69,8 +64,7 @@ Bool_t MpdPHSDGenerator::ReadEvent(FairPrimaryGenerator *primGen)
   {
     Int_t ipdg; Float_t px,py,pz;
     /* read track */
-    gzgets(fgzFile,fbuffer,256); 
-    if (gzeof(fgzFile)) {printf("-E- MpdPHSDGenerator: unexpected end of file\n"); exit(1);}
+    if(gzgets(fgzFile,fbuffer,256)==Z_NULL) {printf("-E- MpdPHSDGenerator: unexpected end of file %d/%d\n",i,fntr); exit(1);}
     /* scan values */
     int res=sscanf(fbuffer,"%d %*d %e %e %e",&ipdg,&px,&py,&pz);
     if (res!=4)  {printf("-E- MpdPHSDGenerator: selftest error in track, scan %d of 4\n",res); exit(1);}

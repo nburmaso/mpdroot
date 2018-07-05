@@ -1,44 +1,41 @@
 # Create a library called "libLHETrack" 
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR}
-${Boost_INCLUDE_DIRS}
-${CMAKE_SOURCE_DIR}/geobase 
-${CMAKE_SOURCE_DIR}/parbase
-${CMAKE_SOURCE_DIR}/base/sim
-${CMAKE_SOURCE_DIR}/base/source
-${CMAKE_SOURCE_DIR}/base/steer
-${CMAKE_SOURCE_DIR}/base/event
-${CMAKE_SOURCE_DIR}/base/field 
-${CMAKE_SOURCE_DIR}/mpdfield 
-${CMAKE_SOURCE_DIR}/trackbase 
-${CMAKE_SOURCE_DIR}/mcstack
-${CMAKE_SOURCE_DIR}/passive
-${CMAKE_SOURCE_DIR}/tpc
-${CMAKE_SOURCE_DIR}/lhetrack
-${CMAKE_SOURCE_DIR}/kalman
-${CMAKE_SOURCE_DIR}/etof
-${CMAKE_SOURCE_DIR}/tof
-${CMAKE_SOURCE_DIR}/strawendcap
-${CMAKE_SOURCE_DIR}/mpddata
-${CMAKE_SOURCE_DIR}/sts
-${CMAKE_SOURCE_DIR}/mpdbase
-${CMAKE_SOURCE_DIR}/tgem
-${CMAKE_SOURCE_DIR}/cpc
-${CMAKE_SOURCE_DIR}/dch
-${CMAKE_SOURCE_DIR}/fairtools
-
+ ${BASE_INCLUDE_DIRECTORIES}
+ ${CMAKE_SOURCE_DIR}/mcstack
+ ${CMAKE_SOURCE_DIR}/passive
+ ${CMAKE_SOURCE_DIR}/mpdbase
+ ${CMAKE_SOURCE_DIR}/mpddata
+ ${CMAKE_SOURCE_DIR}/mpdfield 
+ ${CMAKE_SOURCE_DIR}/tpc
+ ${CMAKE_SOURCE_DIR}/kalman
+ ${CMAKE_SOURCE_DIR}/tof
+ ${CMAKE_SOURCE_DIR}/etof
+ ${CMAKE_SOURCE_DIR}/strawendcap
+ ${CMAKE_SOURCE_DIR}/sts
+ ${CMAKE_SOURCE_DIR}/tgem
+ ${CMAKE_SOURCE_DIR}/cpc
+ ${CMAKE_SOURCE_DIR}/dch
+ ${CMAKE_SOURCE_DIR}/lhetrack
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Set(SYSTEM_INCLUDE_DIRECTORIES
+ ${ROOT_INCLUDE_DIR}
+ ${Boost_INCLUDE_DIRS}
+)
+
+include_directories(${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
+ ${ROOT_LIBRARY_DIR}
+ ${FAIRROOT_LIBRARY_DIR}
 )
- 
+
 link_directories( ${LINK_DIRECTORIES})
 
-set(LHETrack_SRCS
+# List of source files
+set(SRCS
 TpcLheTrackFinder.cxx
 TpcLheSegments.cxx
 TpcLheHit.cxx
@@ -73,25 +70,49 @@ MpdMotherFitterPart.cxx
 #MpdMotherFitterTrac.cxx
 MpdCellAutomat.cxx
 MpdCellTrack.cxx
-
 )
 
-# fill list of header files from list of source files
-# by exchanging the file extension
-CHANGE_FILE_EXTENSION(*.cxx *.h LHETrack_HEADERS "${LHETrack_SRCS}")
+# List of header files
+set(HEADERS
+TpcLheTrackFinder.h
+TpcLheSegments.h
+TpcLheHit.h
+TpcLheTrackCuts.h      
+TpcLheCMPoint.h
+TpcLheTrack.h          
+TpcLheCMTrack.h        
+TpcLheTrackFitter.h
+TpcLheHitsMaker.h      
+TpcLhePoint.h 
+#TpcLheKalmanFilter.h
+#TpcLheKalmanTrack.h
+MpdTpcKalmanFilter.h
+MpdTpcKalmanTrack.h
+MpdItsKalmanTrack.h
 
+MpdEctKalmanTrack.h
+#MpdEctTrackFinderTof.h
+#MpdEctTrackFinderTofTpc.h
+MpdEctTrackFinderTpc.h
+#MpdEctTrackFollow2Tpc.h
+MpdSftTrackFinderTpc.h
+#MpdTpcTrackFollow2Sft.h
+MpdKfPrimaryVertexFinder.h
+MpdTrackFinderIts.h
+MpdVertexZfinder.h
+MpdTpcDedxTask.h
+MpdKfV0Fitter.h
+MpdEctTrackFinderCpc.h
+MpdEctTrackFinderTof.h
+MpdMotherFitterPart.h
+#MpdMotherFitterTrac.h
+MpdCellAutomat.h
+MpdCellTrack.h
+lhe.h
+)
 
-set(LHETrack_LINKDEF LHETrackLinkDef.h)
-set(LHETrack_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/LHETrackDict.cxx) 
+Set(LINKDEF LHETrackLinkDef.h)
+Set(LIBRARY_NAME LHETrack)
+Set(DEPENDENCIES Core Base Kalman Tof)
 
-ROOT_GENERATE_DICTIONARY("${LHETrack_HEADERS}" "${LHETrack_LINKDEF}" "${LHETrack_DICTIONARY}" "${INCLUDE_DIRECTORIES}")
-
-
-set(LHETrack_SRCS ${LHETrack_SRCS} ${LHETrack_DICTIONARY})
-
-add_library(LHETrack SHARED ${LHETrack_SRCS})
-target_link_libraries(LHETrack ${ROOT_LIBRARIES})
-set_target_properties(LHETrack PROPERTIES VERSION 0.0.1 SOVERSION 0 )
-
-################ install ###################
-install(TARGETS LHETrack DESTINATION ${CMAKE_BINARY_DIR}/lib)
+GENERATE_LIBRARY()

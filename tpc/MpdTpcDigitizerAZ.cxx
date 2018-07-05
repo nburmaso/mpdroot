@@ -59,25 +59,28 @@ static clock_t tAll = 0;
 FILE *lunAZ = NULL; //fopen("gasGain.dat","w");
 //---------------------------------------------------------------------------
 
-MpdTpcDigitizerAZ::MpdTpcDigitizerAZ() :
-fOnlyPrimary(kFALSE),
-fPersistence(kTRUE),
-fResponse(kTRUE),
-fDistribute(kTRUE),
-fAttach(kFALSE),
-fDiffuse(kTRUE),
-fDistort(kFALSE),
-fPrintDebugInfo(kFALSE),
-fIsHistogramsInitialized(kFALSE),
-fMakeQA(kFALSE),
-fHisto(NULL),
-fPRF(NULL),
-fNumOfPadsInRow(NULL),
-fMCPointArray(NULL),
-fMCTracksArray(NULL),
-fDigits(NULL),
-fSector(NULL),
-fDigits4dArray(NULL) {
+MpdTpcDigitizerAZ::MpdTpcDigitizerAZ()
+  : FairTask("TPC digitizerAZ"),
+  fOnlyPrimary(kFALSE),
+  fPersistence(kTRUE),
+  fResponse(kTRUE),
+  fDistribute(kTRUE),
+  fAttach(kFALSE),
+  fDiffuse(kTRUE),
+  fDistort(kFALSE),
+  fPrintDebugInfo(kFALSE),
+  fIsHistogramsInitialized(kFALSE),
+  fMakeQA(kFALSE),
+  fHisto(NULL),
+  fPRF(NULL),
+  fNumOfPadsInRow(NULL),
+  fMCPointArray(NULL),
+  fMCTracksArray(NULL),
+  fDigits(NULL),
+  fSector(NULL),
+  fDigits4dArray(NULL) 
+  
+{
   fInputBranchName = "TpcPoint";
   fOutputBranchName = "MpdTpcDigit";
   
@@ -486,7 +489,7 @@ void MpdTpcDigitizerAZ::SignalShaping()
   Double_t *reTot = new Double_t [nbins];
   Double_t *imTot = new Double_t [nbins];
 
-  Int_t nRows = MpdTpcSectorGeo::Instance()->NofRows();
+  //AZ Int_t nRows = MpdTpcSectorGeo::Instance()->NofRows();
   for (UInt_t iRow = 0; iRow < nRows; ++iRow) {
     for (UInt_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
       Int_t fired = 0;

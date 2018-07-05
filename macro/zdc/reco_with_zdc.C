@@ -28,7 +28,15 @@
 using namespace std;
 #endif
 
-void reco_with_zdc (TString inFile = "zdctest.root", Int_t number_of_events=0)
+//void reco_with_zdc (TString inFile = "zdctest.root", Int_t number_of_events=0)
+//void reco_with_zdc (TString inFile = "/hera/cbm/users/marina/laqgsm/AuAuss11mb/output_1/job_0000/evetest.root", Int_t number_of_events=0)
+//void reco_with_zdc (TString inFile = "evetest_mup_158GeV_mod13_1000ev_oldgeom84mods_oldProcHits.root", Int_t number_of_events=0)
+//void reco_with_zdc (TString inFile = "evetest_mup_158GeV_mod24_1000ev_newgeom_oldProcHits.root", Int_t number_of_events=0)
+//void reco_with_zdc (TString inFile = "evetest_p_40GeV_mod25_1000ev_newProcHits_FscScint.root", Int_t number_of_events=0)
+//void reco_with_zdc (TString inFile = "evetest_2ev_onlyPSD.root", Int_t number_of_events=0)
+void reco_with_zdc (TString inFile = "evetest_10ev_new.root", Int_t number_of_events=0)
+
+//void reco_with_zdc (TString inFile = "evetest_40ev_node207.root", Int_t number_of_events=0)
 {
 
   // ========================================================================
@@ -43,10 +51,13 @@ void reco_with_zdc (TString inFile = "zdctest.root", Int_t number_of_events=0)
   TString parFile = inFile;
 
   // Output file
+  /*
   if (number_of_events)
     TString outFile = Form("mpddst_%devents_%s",number_of_events,inFile.Data());
   else
     TString outFile = Form("mpddst_%s",inFile.Data());
+  */
+    TString outFile = Form("mpddst.root");
 
 //   // ----  Load libraries   -------------------------------------------------
   gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
@@ -102,29 +113,29 @@ void reco_with_zdc (TString inFile = "zdctest.root", Int_t number_of_events=0)
 //   fRun->AddTask(tphHitFinderTask);
 
   MpdKalmanFilter *kalman = MpdKalmanFilter::Instance("KF");
-  fRun->AddTask(kalman);
+  //fRun->AddTask(kalman);
 
   MpdTpcHitProducer* hitPr = new MpdTpcHitProducer();
-  hitPr->SetModular(0);
-  fRun->AddTask(hitPr);
+  //hitPr->SetModular(0);
+  //fRun->AddTask(hitPr);
 
   // FairTask* trackMS = new TpcLheHitsMaker("Hit producer");
   // fRun->AddTask(trackMS);
 
   FairTask* vertZ = new MpdVertexZfinder();
-  fRun->AddTask(vertZ);
+  //fRun->AddTask(vertZ);
 
   FairTask* recoKF = new MpdTpcKalmanFilter("Kalman filter");
-  fRun->AddTask(recoKF);
+  //fRun->AddTask(recoKF);
 
   FairTask* findVtx = new MpdKfPrimaryVertexFinder("Vertex finder");
-  fRun->AddTask(findVtx);
+  //fRun->AddTask(findVtx);
 
   MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
-  fRun->AddTask(tofHit);
+  //fRun->AddTask(tofHit);
 
   MpdTofMatching* tofMatch = new MpdTofMatching("TOF matching");
-  fRun->AddTask(tofMatch);
+  //fRun->AddTask(tofMatch);
 
   FairTask *tdigi= new MpdZdcDigiProducer("MpdZdcDigiProducer");
   fRun->AddTask(tdigi);

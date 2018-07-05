@@ -28,6 +28,7 @@ public:
 
   void SetModular(Int_t modular) { fModular = modular; } ///< use simple or modular r/out chamber geometry 
   void SetReal(Int_t real) { fReal = real; } ///< if !=0 apply realistic effects 
+  void SetPersistance(Bool_t choice = kTRUE) { fPersistance = choice; } ///< set persistance flag
 
 private:
   virtual void SetParContainers();
@@ -48,6 +49,7 @@ private:
   Int_t fModular;               // not equal 0 if modular structure of r/out chambers
   Int_t fReal;                  // not equal 0 if realistic effects (resolution and 2-hit resolution)
   Double_t fZtpc;               // TPC half-length
+  Bool_t fPersistance;          // to store or not hits
 
 ClassDef(MpdTpcHitProducer,1);
 };

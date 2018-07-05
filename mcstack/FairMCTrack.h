@@ -131,7 +131,7 @@ private:
   Int_t fNPoints;
 
 
-  ClassDef(FairMCTrack,2);
+  ClassDef(FairMCTrack,3);
 
 };
 

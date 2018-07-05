@@ -1,6 +1,4 @@
-// Macro for running reconstruction
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined(__CINT__) && !defined(__CLING__)
 // ROOT includes
 #include "TString.h"
 #include "TStopwatch.h"
@@ -44,11 +42,20 @@
 #include "MpdEtofMatching.h"
 #include "MpdFillDstTask.h"
 #include "MpdGetNumEvents.h"
+#include "MpdEmcHitCreation.h"
 
 #include <iostream>
 using namespace std;
 #endif
 
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "macro/mpd/mpdloadlibs.C"
+#include "macro/mpd/geometry_stage1.C"
+//#include "macro/mpd/geometry_v2.C"
+
+#define Mlem  // Choose: Mlem HitProducer
+
+// Macro for running reconstruction:
 // inFile - input file with MC data, default: evetest.root
 // nStartEvent - number (start with zero) of first event to process, default: 0
 // nEvents - number of events to process, 0 - all events of given file will be proccessed, default: 1
@@ -59,20 +66,17 @@ using namespace std;
 //      "proof:user@proof.server:21001" - to run on the PROOF cluster created with PoD (under user 'MPD', default port - 21001)
 //      "proof:user@proof.server:21001:workers=10" - to run on the PROOF cluster created with PoD with 10 workers (under USER, default port - 21001)
 //	nc-farm : proof:mpd@nc10.jinr.ru:21001
-
 void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile = "mpddst.root", Int_t nStartEvent = 0, Int_t nEvents = 10, TString run_type = "local") {
     // ========================================================================
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
     Int_t iVerbose = 0;
 
     // ----  Load libraries   -------------------------------------------------
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
     mpdloadlibs(kTRUE); // load full set of main libraries
-
     gSystem->Load("libXMLIO");
 
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_stage1.C");
     geometry_stage1(0x0, kFALSE);
+    //geometry_v2(0x0, kFALSE);
     // ------------------------------------------------------------------------
 
     // -----   Timer   --------------------------------------------------------
@@ -93,7 +97,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     if (run_type == "proof")
     {
         fRun = new FairRunAnaProof(proof_name);
-        fRun->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
+        ((FairRunAnaProof*)fRun)->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
     }
     else
     {
@@ -123,20 +127,34 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     MpdKalmanFilter *kalman = MpdKalmanFilter::Instance("KF");
     fRun->AddTask(kalman);
 
+#ifdef Mlem
+    MpdTpcDigitizerAZ* tpcDigitizer = new MpdTpcDigitizerAZ();
+    tpcDigitizer->SetPersistence(kFALSE);
+    fRun->AddTask(tpcDigitizer);
+#endif
+
     //  MpdTpcClusterFinderTask *tpcClusterFinder = new MpdTpcClusterFinderTask();
     //  tpcClusterFinder->SetDebug(kFALSE);
     //  tpcClusterFinder->SetMakeQA(kTRUE);
     //  tpcClusterFinder->SetCalcResiduals(kFALSE);
     //  fRun->AddTask(tpcClusterFinder);
 
+#ifdef Mlem
+    MpdTpcClusterFinderMlem *tpcClusAZ = new MpdTpcClusterFinderMlem();
+    fRun->AddTask(tpcClusAZ);
+#else
     MpdTpcHitProducer* hitPr = new MpdTpcHitProducer();
     hitPr->SetModular(0);
     fRun->AddTask(hitPr);
+#endif
 
     FairTask* vertZ = new MpdVertexZfinder();
     fRun->AddTask(vertZ);
 
-    FairTask* recoKF = new MpdTpcKalmanFilter("Kalman filter");
+    MpdTpcKalmanFilter* recoKF = new MpdTpcKalmanFilter("Kalman filter");
+#ifdef Mlem
+    recoKF->UseTpcHit(kFALSE); // do not use hits from the hit producer
+#endif
     fRun->AddTask(recoKF);
 
     FairTask* findVtx = new MpdKfPrimaryVertexFinder("Vertex finder");
@@ -146,15 +164,37 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
     fRun->AddTask(tofHit);
 
+/*
+    MpdEtofHitProducer* etofHitProd = new MpdEtofHitProducer("ETOF HitProducer");
+    fRun->AddTask(etofHitProd);
+    
+    // Endcap tracking
+    FairTask* tpcECT = new MpdEctTrackFinderTpc();
+    tpcECT->SetVerbose(iVerbose);
+    fRun->AddTask(tpcECT);
+    
+    MpdEctTrackFinderCpc* tofECT = new MpdEctTrackFinderCpc();
+    tofECT->SetVerbose(iVerbose);
+    tofECT->SetTpc(kTRUE);
+    fRun->AddTask(tofECT);
+*/
+
     // TOF matching
     MpdTofMatching* tofMatch = new MpdTofMatching("TOF matching");
     fRun->AddTask(tofMatch);
 
-    FairTask *emcHP = new MpdEmcHitProducer();
+    // ETOF matching
+    //MpdEtofMatching* etofMatch = new MpdEtofMatching("ETOF matching");
+    //fRun->AddTask(etofMatch);
+
+    FairTask *emcHP = new MpdEmcHitCreation();
     fRun->AddTask(emcHP);
 
     FairTask *tdigi = new MpdZdcDigiProducer("MpdZdcDigiProducer");
     fRun->AddTask(tdigi);
+
+    //MpdPidRefitTrackTask* trRefit = new MpdPidRefitTrackTask("Track PID and Refit");
+    //fRun->AddTask(trRefit);
 
     MpdFillDstTask* fillDST = new MpdFillDstTask("MpdDst task");
     fRun->AddTask(fillDST);
@@ -163,7 +203,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     fRun->Init();
     if (run_type != "proof") cout<<"Field: "<<fRun->GetField()->GetBz(0., 0., 0.)<<endl;
     else {
-        TProof* pProof = fRun->GetProof();
+        TProof* pProof = ((FairRunAnaProof*)fRun)->GetProof();
         pProof->SetParameter("PROOF_PacketizerStrategy", (Int_t) 0);
         ind = proof_name.Index(":workers=");
         if (ind >= 0) {
@@ -175,7 +215,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     // if nEvents is equal 0 then all events of the given file starting with "nStartEvent" should be processed
     if (nEvents == 0)
-        nEvents = MpdGetNumEvents::GetNumROOTEvents(inFile.Data()) - nStartEvent;
+        nEvents = MpdGetNumEvents::GetNumROOTEvents((char*)inFile.Data()) - nStartEvent;
 
     // -----   Run   ______________--------------------------------------------
     fRun->Run(nStartEvent, nStartEvent + nEvents);

@@ -7,6 +7,7 @@
 #ifndef ROOT_TObject
 #include "TObject.h"
 #endif
+#include "MpdHelix.h"
 
 class MpdTrack : public TObject {
 
@@ -61,6 +62,7 @@ class MpdTrack : public TObject {
     Float_t   fLastPointY;  //   
     Float_t   fLastPointZ;  //   
     Short_t   fHelixQ;  //   
+    Bool_t    fEdgeCut;  // kTRUE if number of hits closer to boundaries than 1.5 cm divided by nHits is larger than 50% (else: kFALSE)
 
  public:
 
@@ -110,62 +112,66 @@ class MpdTrack : public TObject {
     void SetLastPointY( Float_t n ) {fLastPointY=n;}
     void SetLastPointZ( Float_t n ) {fLastPointZ=n;}
     void SetHelixQ( Short_t n ) {fHelixQ=n;}
+    void SetEdgeCut( Bool_t n ) {fEdgeCut=n;}
 
-    Int_t     GetID() {return fID;}
-    Int_t     GetNofHits() {return fNofHits;}
-    Int_t     GetNofHitsPossTpc() {return fNofHitsPossTpc;}
-    Int_t     GetNofHitsFitTpc() {return fNofHitsFitTpc;}
+    Int_t     GetID()const {return fID;}
+    Int_t     GetNofHits()const {return fNofHits;}
+    Int_t     GetNofHitsPossTpc()const {return fNofHitsPossTpc;}
+    Int_t     GetNofHitsFitTpc()const {return fNofHitsFitTpc;}
     
-    Float_t   GetTPCPidProbElectron() {return fPidTPCProbElectron;} 
-    Float_t   GetTPCPidProbPion() {return fPidTPCProbPion;} 
-    Float_t   GetTPCPidProbKaon() {return fPidTPCProbKaon;} 
-    Float_t   GetTPCPidProbProton() {return fPidTPCProbProton;} 
+    Float_t   GetTPCPidProbElectron()const {return fPidTPCProbElectron;}
+    Float_t   GetTPCPidProbPion()const {return fPidTPCProbPion;}
+    Float_t   GetTPCPidProbKaon()const {return fPidTPCProbKaon;}
+    Float_t   GetTPCPidProbProton()const {return fPidTPCProbProton;}
     
-    Float_t   GetTOFPidProbElectron() {return fPidTOFProbElectron;} 
-    Float_t   GetTOFPidProbPion() {return fPidTOFProbPion;} 
-    Float_t   GetTOFPidProbKaon() {return fPidTOFProbKaon;} 
-    Float_t   GetTOFPidProbProton() {return fPidTOFProbProton;} 
+    Float_t   GetTOFPidProbElectron()const {return fPidTOFProbElectron;}
+    Float_t   GetTOFPidProbPion()const {return fPidTOFProbPion;}
+    Float_t   GetTOFPidProbKaon()const {return fPidTOFProbKaon;}
+    Float_t   GetTOFPidProbProton()const {return fPidTOFProbProton;}
     
-    Float_t   GetPidProbElectron() {return fPidProbElectron;} 
-    Float_t   GetPidProbPion() {return fPidProbPion;} 
-    Float_t   GetPidProbKaon() {return fPidProbKaon;} 
-    Float_t   GetPidProbProton() {return fPidProbProton;} 
+    Float_t   GetPidProbElectron()const {return fPidProbElectron;}
+    Float_t   GetPidProbPion()const {return fPidProbPion;}
+    Float_t   GetPidProbKaon()const {return fPidProbKaon;}
+    Float_t   GetPidProbProton()const {return fPidProbProton;}
       
-    Float_t   GetTofBeta() {return fTofBeta;}  
-    Float_t   GetTofMass2() {return fTofMass2;}  
-    Float_t   GetdEdXTPC() {return fdEdXTPC;}  
-    Int_t     GetTofHitIndex() {return fTofHitIndex;};  
-    Int_t     GetTofFlag() {return fTofFlag;} 
-    Int_t     GetNSigmaElectron() {return fNSigmaElectron;}
-    Int_t     GetNSigmaPion() {return fNSigmaPion;}
-    Int_t     GetNSigmaKaon() {return fNSigmaKaon;}
-    Int_t     GetNSigmaProton() {return fNSigmaProton;}
+    Float_t   GetTofBeta() const{return fTofBeta;}
+    Float_t   GetTofMass2() const{return fTofMass2;}
+    Float_t   GetdEdXTPC() const{return fdEdXTPC;}
+    Int_t     GetTofHitIndex() const{return fTofHitIndex;};
+    Int_t     GetTofFlag() const{return fTofFlag;}
+    Int_t     GetNSigmaElectron() const{return fNSigmaElectron;}
+    Int_t     GetNSigmaPion() const{return fNSigmaPion;}
+    Int_t     GetNSigmaKaon() const{return fNSigmaKaon;}
+    Int_t     GetNSigmaProton() const{return fNSigmaProton;}
     Float_t   GetChi2() {return fChi2;}
-    Float_t   GetPt() {return fPt;}
-    Float_t   GetTheta() {return fTheta;}
-    Float_t   GetPhi() {return fPhi;}
-    Float_t   GetPtError() {return fPtError;}
-    Float_t   GetThetaError() {return fThetaError;}
-    Float_t   GetPhiError() {return fPhiError;}
-    Float_t   GetPx();
-    Float_t   GetPy();
-    Float_t   GetPz();
-    Float_t   GetEta();
-    Float_t   GetDCAX() {return fDCAX;}
-    Float_t   GetDCAY() {return fDCAY;}
-    Float_t   GetDCAZ() {return fDCAZ;}
-    Float_t   GetDCAGlobalX() {return fDCAGlobalX;}
-    Float_t   GetDCAGlobalY() {return fDCAGlobalY;}
-    Float_t   GetDCAGlobalZ() {return fDCAGlobalZ;}
-    Float_t   GetFirstPointX() {return fFirstPointX;}
-    Float_t   GetFirstPointY() {return fFirstPointY;}
-    Float_t   GetFirstPointZ() {return fFirstPointZ;}
-    Float_t   GetLastPointX() {return fLastPointX;}
-    Float_t   GetLastPointY() {return fLastPointY;}
-    Float_t   GetLastPointZ() {return fLastPointZ;}
-    Short_t   GetHelixQ() {return fHelixQ;}
+    Float_t   GetPt() const{return fPt;}
+    Float_t   GetTheta() const{return fTheta;}
+    Float_t   GetPhi() const{return fPhi;}
+    Float_t   GetPtError() const {return fPtError;}
+    Float_t   GetThetaError()const {return fThetaError;}
+    Float_t   GetPhiError() const{return fPhiError;}
+    Float_t   GetPx() const;
+    Float_t   GetPy() const;
+    Float_t   GetPz() const;
+    Float_t   GetEta() const;
+    Float_t   GetDCAX() const{return fDCAX;}
+    Float_t   GetDCAY() const {return fDCAY;}
+    Float_t   GetDCAZ() const {return fDCAZ;}
+    Float_t   GetDCAGlobalX() const{return fDCAGlobalX;}
+    Float_t   GetDCAGlobalY() const {return fDCAGlobalY;}
+    Float_t   GetDCAGlobalZ() const{return fDCAGlobalZ;}
+    Float_t   GetFirstPointX() const {return fFirstPointX;}
+    Float_t   GetFirstPointY() const {return fFirstPointY;}
+    Float_t   GetFirstPointZ() const {return fFirstPointZ;}
+    Float_t   GetLastPointX() const {return fLastPointX;}
+    Float_t   GetLastPointY() const{return fLastPointY;}
+    Float_t   GetLastPointZ() const{return fLastPointZ;}
+    Float_t   GetCharge() const{return -TMath::Sign(1.0,GetPt());}
+    Short_t   GetHelixQ() const{return fHelixQ;}
+    Bool_t    GetEdgeCut() {return fEdgeCut;}
+    MpdHelix GetHelix()const;
     
-  ClassDef(MpdTrack,2)
+  ClassDef(MpdTrack,3)
 };
 
 #endif

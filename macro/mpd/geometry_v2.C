@@ -1,6 +1,6 @@
-geometry_v2 (FairRunSim *fRun, Bool_t build){
+void geometry_v2(FairRunSim *fRun, Bool_t build)
+{
   // load libs and build detector geometry
-
   if (!build) {
     gSystem->Load("libtpc");
     gSystem->Load("libTof");
@@ -8,12 +8,12 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
     gSystem->Load("libEmc");
     gSystem->Load("libZdc");
     gSystem->Load("libStrawendcap");
-    gSystem->Load("libStt");
+    //gSystem->Load("libStt");
     gSystem->Load("libSts");
 
-    gSystem->Load("libBbc");
+    //gSystem->Load("libBbc");
     gSystem->Load("libCpc");
-    gSystem->Load("libFsa");
+    //gSystem->Load("libFsa");
     gSystem->Load("libFfd");
   }
   else {
@@ -45,7 +45,7 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
      fRun->AddModule(Ffd);
 
     FairDetector *Tpc = new TpcDetector("TPC", kTRUE);
-   Tpc->SetGeometryFileName("tpc_v6.geo");
+   Tpc->SetGeometryFileName("tpc_v7.root");
     fRun->AddModule(Tpc);
   
     FairDetector *Tof= new MpdTof("TOF", kTRUE );
@@ -69,8 +69,8 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
 //     fRun->AddModule(Bbc);
 
     FairDetector *Cpc = new MpdCpc("CPC",kTRUE );
- //   Cpc->SetGeometryFileName("cpc.geo");
-    Cpc->SetGeometryFileName("cpc_simple.geo");    
+    Cpc->SetGeometryFileName("cpc.root");
+    //Cpc->SetGeometryFileName("cpc_simple.geo");    
     fRun->AddModule(Cpc);
 	
     FairDetector *Zdc = new MpdZdc("ZDC",kTRUE );
@@ -80,7 +80,5 @@ geometry_v2 (FairRunSim *fRun, Bool_t build){
     //FairDetector *Fsa = new MpdFsa("FSA",kTRUE );
     //Fsa->SetGeometryFileName("fsa.geo");
     //fRun->AddModule(Fsa);
-
   }
-
 }

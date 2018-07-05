@@ -61,6 +61,7 @@ public:
     Int_t ix;
     Int_t iy;
     Double_t vis;
+    Double_t sum;
   };
 
 private:
@@ -101,7 +102,7 @@ private:
   void CorrectReco(TVector3 &p3loc, TVector3 &p3err, Int_t nPads, Double_t adc); // correct reco coordinates and errors
   void CorrectRecoMlem(TVector3 &p3loc, TVector3 &p3errCor, MpdTpc2dCluster *clus, Double_t adc); // after MLEM
   void ChargeMlem(Int_t nHits0, std::vector<pixel> &pixels, std::vector<pixel> &bins, 
-		  std::vector<std::multimap<Double_t,Int_t> > &pixInMax, const TMatrixD &cij); // correct hit charges after MLEM
+		  std::vector<std::multimap<Double_t,Int_t> > &pixInMax, const TMatrixD &cij, Double_t cijMin); // correct hit charges after MLEM
 
   ClassDef(MpdTpcClusterFinderMlem,0)
 

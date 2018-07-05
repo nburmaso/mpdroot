@@ -24,6 +24,8 @@
 #include <TMath.h>
 #include <Riostream.h>
 
+using namespace std;
+
 //__________________________________________________________________________
 MpdEctKalmanTrack::MpdEctKalmanTrack() 
   : MpdKalmanTrack(),

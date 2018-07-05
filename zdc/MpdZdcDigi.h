@@ -29,8 +29,9 @@ class MpdZdcDigi: public TObject
   virtual void Print(const Option_t* opt ="");
 
 
+  inline Int_t  GetModuleID() { return fModuleID; } 
+
   inline Int_t  GetDetectorID() { return fDetectorID; } 
-  inline Int_t  GetModuleID()  { return fModuleID; } 
   inline Int_t  GetChannelID()  { return fChannelID; } 
   inline Int_t  GetADCBits()    { return fADCBits; } 
   inline UInt_t GetELossDigi()  { return fELossDigi; } 
@@ -40,6 +41,8 @@ class MpdZdcDigi: public TObject
 
   inline char      GetWasInitialized()      { return fWasInitialized; } 
   inline Bool_t    GetIsPsd()               { return fIsPsd; } 
+
+  inline Int_t    SetModuleID(UInt_t pfModuleID)         { fModuleID=pfModuleID;       return fModuleID; } 
 
   inline Int_t    SetDetectorID(UInt_t pfDetectorID)         { fDetectorID=pfDetectorID;       return fDetectorID; } 
   inline Int_t    SetChannelID(UInt_t pfChannelID)           { fChannelID=pfChannelID;         return fChannelID; } 

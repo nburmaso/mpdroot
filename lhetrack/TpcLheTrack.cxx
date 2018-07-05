@@ -5,6 +5,8 @@
 #include "Riostream.h"
 #include <iomanip>
 
+using namespace std;
+
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
 // TpcLheTrack  class - track representation for the LHE              //

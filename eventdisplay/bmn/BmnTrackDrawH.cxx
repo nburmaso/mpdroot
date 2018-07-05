@@ -7,6 +7,8 @@
 #include "BmnTrackDrawH.h"
 #include "BmnTrack.h"
 #include "FairHit.h"
+#include "MpdEventManagerEditor.h"
+#include "FairLogger.h"
 
 #include "TEveManager.h"
 #include "TEvePathMark.h"
@@ -51,34 +53,29 @@ BmnTrackDrawH::BmnTrackDrawH(const char* name, TString hitsBranchName, Int_t iVe
 // initialization of the track drawing task
 InitStatus BmnTrackDrawH::Init()
 {
-    if (fVerbose > 1)
-        cout<<"BmnTrackDrawH::Init()"<<endl;
+    if (fVerbose > 0) cout<<"BmnTrackDrawH::Init()"<<endl;
 
-    fEventManager = FairEventManager::Instance();
-    if (fVerbose > 2)
-        cout<<"BmnTrackDrawH::Init() get instance of EventManager: "<<fEventManager<<endl;
+    fEventManager = MpdEventManager::Instance();
+    if (fVerbose > 1) cout<<"BmnTrackDrawH::Init() get instance of EventManager: "<<fEventManager<<endl;
 
     FairRootManager* fManager = FairRootManager::Instance();
-    if (fVerbose > 2)
-        cout<<"BmnTrackDrawH::Init() get instance of FairRootManager: "<<fManager<<endl;
+    if (fVerbose > 1) cout<<"BmnTrackDrawH::Init() get instance of FairRootManager: "<<fManager<<endl;
 
-    fTrackList = (TClonesArray*)fManager->GetObject(GetName());
+    fTrackList = (TClonesArray*) fManager->GetObject(GetName());
     if(fTrackList == 0)
     {
-      cout<<"BmnTrackDrawH::Init()  branch "<<GetName()<<" Not found! Task will be deactivated "<<endl;
-      SetActive(kFALSE);
+        LOG(ERROR)<<"BmnTrackDrawH::Init() branch "<<GetName()<<" not found! Task will be deactivated"<<FairLogger::endl;
+        SetActive(kFALSE);
     }
-    if (fVerbose > 2)
-        cout<<"BmnTrackDrawH::Init() get track list " <<fTrackList<<" from branch '"<<GetName()<<"'"<<endl;
+    if (fVerbose > 1) cout<<"BmnTrackDrawH::Init() get track list "<<fTrackList<<" from branch '"<<GetName()<<"'"<<endl;
 
-    fHitList = (TClonesArray*)fManager->GetObject(fHitsBranchName);
+    fHitList = (TClonesArray*) fManager->GetObject(fHitsBranchName);
     if(fHitList == 0)
     {
-      cout<<"BmnTrackDrawH::Init()  branch "<<fHitsBranchName<<" Not found! Task will be deactivated "<<endl;
-      SetActive(kFALSE);
+        LOG(ERROR)<<"BmnTrackDrawH::Init()  branch "<<fHitsBranchName<<" not found! Task will be deactivated"<<FairLogger::endl;
+        SetActive(kFALSE);
     }
-    if (fVerbose > 2)
-        cout<<"BmnTrackDrawH::Init() get list of hits "<<fHitList<<" from branch '"<<fHitsBranchName<<"'"<<endl;
+    if (fVerbose > 1) cout<<"BmnTrackDrawH::Init() get list of hits "<<fHitList<<" from branch '"<<fHitsBranchName<<"'"<<endl;
 
     MinEnergyLimit = fEventManager->GetEvtMinEnergy();
     MaxEnergyLimit = fEventManager->GetEvtMaxEnergy();
@@ -90,19 +87,19 @@ InitStatus BmnTrackDrawH::Init()
 // -------------------------------------------------------------------------
 void BmnTrackDrawH::Exec(Option_t* option)
 {
-    if (!IsActive()) return;
-    if (fVerbose > 1)
-        cout<<" BmnTrackDrawH::Exec "<<endl;
+    if (fVerbose > 0) cout<<"BmnTrackDrawH::Exec() "<<endl;
+
+    if (!IsActive())
+        return;
 
     Reset();
 
+    if (fVerbose > 0) cout<<"BmnTrackDrawH::Exec(): the number of tracks is "<<fTrackList->GetEntriesFast()<<endl;
+
     BmnTrack* current_track;
-    if (fVerbose > 1)
-        cout<<" BmnTrackDrawH::Exec: the number of tracks is "<<fTrackList->GetEntriesFast()<<endl;
     for (Int_t i = 0; i < fTrackList->GetEntriesFast(); i++)
     {
-        if (fVerbose > 2)
-            cout<<"BmnTrackDrawH::Exec "<<i<<endl;
+        if (fVerbose > 2) cout<<"BmnTrackDrawH::Exec() "<<i<<endl;
 
         current_track = (BmnTrack*) fTrackList->At(i);
         const FairTrackParam* pParamFirst = current_track->GetParamFirst();
@@ -132,11 +129,12 @@ void BmnTrackDrawH::Exec(Option_t* option)
         TEveTrack* track = new TEveTrack(P, particlePDG, fTrPr);
         // set line color corresponding PDG particle code
         track->SetLineColor(fEventManager->Color(particlePDG));
+        track->SetLineWidth(2);
 
         Int_t Np = current_track->GetNHits();
 
         // cycle: add hits (points) to EVE path for this track
-        //cout<<"Points: "<<Np<<endl;
+        if (fVerbose > 2) cout<<"BmnTrackDrawH::Exec(): number of track hits = "<<Np<<endl;
         for (Int_t n = 0; n < Np; n++)
         {
             FairHit* pHit = NULL;
@@ -146,7 +144,7 @@ void BmnTrackDrawH::Exec(Option_t* option)
 
             TEvePathMark* path = new TEvePathMark();
             TEveVector pos = TEveVector(pHit->GetX(), pHit->GetY(), pHit->GetZ());
-            //cout<<"Point: X="<<pHit->GetX()<<" Y="<<pHit->GetY()<<" Z="<<pHit->GetZ()<<endl;
+            if (fVerbose > 3) cout<<"BmnTrackDrawH::Exec(): point "<<n<<": X="<<pHit->GetX()<<" Y="<<pHit->GetY()<<" Z="<<pHit->GetZ()<<endl;
             path->fV = pos;
             path->fTime = pHit->GetTimeStamp();
             if (n == 0)
@@ -158,19 +156,17 @@ void BmnTrackDrawH::Exec(Option_t* option)
             // add path marker for current EVE track
             track->AddPathMark(*path);
 
-            if (fVerbose > 3)
-                cout<<"Path marker added "<<path<<endl;
+            if (fVerbose > 3) cout<<"BmnTrackDrawH::Exec: path marker added "<<path<<endl;
         }
 
         // add track to EVE track list
         fTrList->AddElement(track);
 
-        if (fVerbose > 3)
-            cout<<"track added "<<track->GetName()<<endl;
+        if (fVerbose > 2) cout<<"BmnTrackDrawH::Exec: track was added "<<track->GetName()<<endl;
     }
 
     // redraw EVE scenes
-    gEve->Redraw3D(kFALSE);
+    //gEve->Redraw3D(kFALSE);
 }
 
 // destructor
@@ -194,7 +190,6 @@ void BmnTrackDrawH::Reset()
         TEveTrackList*  ele = (TEveTrackList*) fEveTrList->At(i);
         gEve->RemoveElement(ele, fEventManager->EveRecoTracks);
     }
-
     fEveTrList->Clear();
 }
 
@@ -203,7 +198,7 @@ TEveTrackList* BmnTrackDrawH::GetTrGroup(TParticle* P)
 {
     fTrList = 0;
 
-    // serch if there us existing track list for this particle (with given name)
+    // search if there us existing track list for this particle (with given name)
     for (Int_t i = 0; i < fEveTrList->GetEntriesFast(); i++)
     {
         TEveTrackList* TrListIn = (TEveTrackList*) fEveTrList->At(i);
@@ -219,18 +214,12 @@ TEveTrackList* BmnTrackDrawH::GetTrGroup(TParticle* P)
     {
         fTrPr = new TEveTrackPropagator();
         fTrList = new  TEveTrackList(P->GetName(), fTrPr);
+        // set track color by particle PDG from MpdEventManager
         fTrList->SetMainColor(fEventManager->Color(P->GetPdgCode()));
         fEveTrList->Add(fTrList);
-
-        if (fEventManager->EveRecoTracks == NULL)
-        {
-            fEventManager->EveRecoTracks = new TEveElementList("Reco tracks");
-            gEve->AddElement(fEventManager->EveRecoTracks, fEventManager);
-            fEventManager->EveRecoTracks->SetRnrState(kFALSE);
-        }
-
-        gEve->AddElement(fTrList, fEventManager->EveRecoTracks);
         fTrList->SetRnrLine(kTRUE);
+
+        fEventManager->AddEventElement(fTrList, RecoTrackList);
     }
 
     return fTrList;

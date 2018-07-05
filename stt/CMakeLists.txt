@@ -3,7 +3,6 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
-${ROOT_INCLUDE_DIR} 
 ${CMAKE_SOURCE_DIR}/geobase 
 ${CMAKE_SOURCE_DIR}/parbase 
 ${CMAKE_SOURCE_DIR}/base 
@@ -12,15 +11,21 @@ ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/stt
 )
 
+Set(SYSTEM_INCLUDE_DIRECTORIES
+ ${ROOT_INCLUDE_DIR}
+)
+
 include_directories(${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
+ ${ROOT_LIBRARY_DIR}
 )
  
 link_directories(${LINK_DIRECTORIES})
 
-set(STT_SRCS
+# List of source files
+set(SRCS
 CbmSttMatchTracks.cxx
 CbmGeoStt.cxx
 CbmSttPoint.cxx
@@ -45,20 +50,9 @@ CbmSttHitProducerReal.cxx
 CbmSttHelixTrackFitter.cxx            
 )
 
-# fill list of header files from list of source files
-# by exchanging the file extension
-CHANGE_FILE_EXTENSION(*.cxx *.h STT_HEADERS "${STT_SRCS}")
+Set(HEADERS)
+Set(LINKDEF SttLinkDef.h)
+Set(LIBRARY_NAME Stt)
+Set(DEPENDENCIES Core Base)
 
-set(STT_LINKDEF  SttLinkDef.h)
-set(STT_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/MySttDict.cxx) 
-
-ROOT_GENERATE_DICTIONARY("${STT_HEADERS}" "${STT_LINKDEF}" "${STT_DICTIONARY}" "${INCLUDE_DIRECTORIES}")
-
-SET(STT_SRCS ${STT_SRCS} ${STT_DICTIONARY})
-
-add_library(Stt SHARED ${STT_SRCS})
-target_link_libraries(Stt ${ROOT_LIBRARIES})
-set_target_properties(Stt PROPERTIES VERSION 0.0.1 SOVERSION 0 )
-
-################ install ###################
-install(TARGETS Stt DESTINATION ${CMAKE_BINARY_DIR}/lib)
+GENERATE_LIBRARY()

@@ -9,7 +9,7 @@
 #define MPDGLOBALTRACKDRAW_H
 
 #include "FairTask.h"
-#include "FairEventManager.h"
+#include "MpdEventManager.h"
 
 #include "TEveTrackPropagator.h"
 #include "TEveTrack.h"
@@ -26,7 +26,7 @@ class MpdGlobalTrackDraw : public FairTask
     MpdGlobalTrackDraw();
 
     // constructor: @name - name of task, @iVerbose- verbosity level
-    MpdGlobalTrackDraw(const char* name, Int_t iVerbose = 1);
+    MpdGlobalTrackDraw(const char* name, Int_t iVerbose = 0);
 
     // destructor
     virtual ~MpdGlobalTrackDraw();
@@ -55,9 +55,8 @@ class MpdGlobalTrackDraw : public FairTask
     TClonesArray*  fTpcHitList;         //!
     // EVE track propagator
     TEveTrackPropagator* fTrPr;
-    FairEventManager* fEventManager;    //!
+    MpdEventManager* fEventManager;    //!
     TObjArray* fEveTrList;
-    TString fEvent;                     //!
     TEveTrackList* fTrList;             //!
 
     Double_t MinEnergyLimit;

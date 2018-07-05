@@ -37,7 +37,7 @@ MpdKalmanFilter* MpdKalmanFilter::fgKF = 0x0;
 //__________________________________________________________________________
 MpdKalmanFilter::MpdKalmanFilter(const char *name,
 				 const char *title)
-  : FairTask(name),
+  : FairTask("Kalman Filter engine"),
     fGeoScheme(new MpdKalmanGeoScheme), fNumer(1)
 {
   /// Constructor
@@ -235,7 +235,7 @@ Bool_t MpdKalmanFilter::PropagateToHit(MpdKalmanTrack *track, const MpdKalmanHit
       sign = TMath::Sign (1.,-dphi);
     }
   }
-  
+
   //cout << " PropagateParam ok " << track->GetPos() << " " << track->GetPosNew() << endl;
   //if (!PropagateWeight(track, hit, sign, stepBack)) return kFALSE;
   if (!PropagateWeight(track, hit, sign, stepBack)) {
@@ -252,6 +252,80 @@ Bool_t MpdKalmanFilter::PropagateToHit(MpdKalmanTrack *track, const MpdKalmanHit
   else if (track->GetType() == MpdKalmanTrack::kEndcap && hit->GetType() != MpdKalmanHit::kFixedZ)
     track->SetType(MpdKalmanTrack::kBarrel); // change of track type
 
+  // Stop timing
+  if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
+  return kTRUE;
+}
+
+//__________________________________________________________________________
+Bool_t MpdKalmanFilter::PropagateParamToHit(MpdKalmanTrack *track, const MpdKalmanHit *hit, 
+					    Bool_t calcLeng, Bool_t local, Double_t stepBack)
+{
+  /// Propagate track parameters to given hit
+
+  // Start timing
+  //if (FairRun::Instance()->GetTask("Code timer")) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
+  if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
+
+  track->SetParam(*track->GetParamNew());
+  track->SetPos(track->GetPosNew());
+  track->SetNode(track->GetNodeNew());
+  //TVector3 pos = fGeoScheme->GlobalPos(hit);
+  Double_t sign = 1.;
+
+  if (hit->GetType() == MpdKalmanHit::kFixedR) {
+    //if (TMath::Abs(pos.Pt() - track->GetPos()) < fgkEpsilon) return kTRUE; // the "same" pos
+    if (TMath::Abs(hit->GetPos() - track->GetPos()) < fgkEpsilon) { 
+      if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
+      return kTRUE; // the "same" pos
+    }
+    if (!PropagateParamR(track, hit, calcLeng)) {
+      if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
+      return kFALSE;
+    }
+    Double_t phi0 = track->GetParamNew(0) / track->GetPosNew();
+    Double_t dphi = Proxim(phi0, track->GetParamNew(2)) - phi0;
+    sign = TMath::Sign (1.,-dphi);
+  } else if (hit->GetType() == MpdKalmanHit::kFixedZ) {
+    //if (TMath::Abs(pos.Z() - track->GetPos()) < fgkEpsilon) return kTRUE; // the same pos
+    if (TMath::Abs(hit->GetPos() - track->GetPos()) < fgkEpsilon) {
+      if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
+      return kTRUE; // the same pos
+    }
+    if (!PropagateParamZ(track, hit, calcLeng)) {
+      if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
+      return kFALSE;
+    }
+  } else {
+    if (!PropagateParamP(track, hit, calcLeng, local, stepBack)) {
+      if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
+      return kFALSE;
+    }
+    if (track->GetNodeNew() != "") {
+      Double_t v3[7];
+      SetGeantParamB(track,v3,1);
+      Double_t phi0 = TMath::ATan2 (v3[1], v3[0]);
+      Double_t dphi = Proxim(phi0, track->GetParamNew(2)) - phi0;
+      sign = TMath::Sign (1.,-dphi);
+    }
+  }
+  /*
+  //cout << " PropagateParam ok " << track->GetPos() << " " << track->GetPosNew() << endl;
+  //if (!PropagateWeight(track, hit, sign, stepBack)) return kFALSE;
+  if (!PropagateWeight(track, hit, sign, stepBack)) {
+    // 15-may-12
+    track->SetParamNew(*track->GetParam());
+    track->SetPosNew(track->GetPos());
+    track->SetNodeNew(track->GetNode());
+    if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
+    return kFALSE;
+  }
+  //cout << " PropagateWeight ok " << track->GetPos() << " " << track->GetPosNew() << endl;
+  if (track->GetType() != MpdKalmanTrack::kEndcap && hit->GetType() == MpdKalmanHit::kFixedZ)
+    track->SetType(MpdKalmanTrack::kEndcap);
+  else if (track->GetType() == MpdKalmanTrack::kEndcap && hit->GetType() != MpdKalmanHit::kFixedZ)
+    track->SetType(MpdKalmanTrack::kBarrel); // change of track type
+  */
   // Stop timing
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
   return kTRUE;
@@ -1170,7 +1244,7 @@ Bool_t MpdKalmanFilter::PropagateWeight(MpdKalmanTrack *track, const MpdKalmanHi
 	Double_t phi = Proxim(phi0, track->GetParamNew(j)/track->GetPosNew());
 	jacob(j,i) = (phi * track->GetPosNew() - phi0 * rNew) / dPar;*/
       } else jacob(j,i) = (tr.GetParamNew(j)-paramNew0(j,0)) / dPar;
-      //cout << i << " " << j << " " << dPar << " " << track->GetParamNew(j) << " " << paramNew0(j,0) 
+      //if (hitTmp.GetDetectorID()) cout << i << " " << j << " " << dPar << " " << tr.GetParamNew(j) << " " << paramNew0(j,0) << endl;
       //   << " " << track->GetPos() << " " << track->GetPosNew() << " " << jacob(j,i) << endl;
     }
   }
@@ -1872,7 +1946,7 @@ Bool_t MpdKalmanFilter::Refit(MpdKalmanTrack *track, Int_t iDir, Bool_t updLeng)
     weight += pointWeight;
     track->SetWeight(weight);
     track->SetParamNew(param);
-    //cout << i << " " << dChi2 << " " << 1./track->GetParamNew(4) << endl;
+    //cout << i << " " << dChi2 << " " << 1./track->GetParamNew(4) << " " << hit->GetLayer() << " " << hit->GetDist() << endl;
   }
   //if (hit) {
   if (0) {
@@ -2558,5 +2632,26 @@ L100:
     delete [] localVERTpp;
     ifail = 1;
 } /* mnvertLocal */
+//__________________________________________________________________________
+
+Double_t* MpdKalmanFilter::ExtrapOneStep(MpdKalmanTrack *track, Double_t step, Int_t flag)
+{
+  // Extrapolate one step: if flag!=0 then use the cached parameters
+
+  Double_t vect[7], charge;
+
+  if (flag == 0) {
+    if (track->GetType() == MpdKalmanTrack::kBarrel) SetGeantParamB(track, vect, 1);
+    else SetGeantParamE(track, vect, 1);
+    charge = fVectorG[7] = -TMath::Sign(1.0,track->GetParam(4));
+  } else {
+    for (Int_t j = 0; j < 7; ++j) vect[j] = fVectorG[j];
+    charge = fVectorG[7];
+  }
+
+  ExtrapOneStepRungekutta(charge, step, vect, fVectorG);
+  return fVectorG;
+}
+//__________________________________________________________________________
 
 ClassImp(MpdKalmanFilter)

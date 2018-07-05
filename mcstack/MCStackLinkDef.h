@@ -9,6 +9,7 @@
 
 #pragma link C++ class FairStack+;
 #pragma link C++ class FairMCTrack+;
+#pragma link C++ enum DetectorId;
  
 #endif
 

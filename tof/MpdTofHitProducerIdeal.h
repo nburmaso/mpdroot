@@ -26,6 +26,7 @@ protected:
 
        	MpdTofHitProducerQA		*pHitProducerQA; 	//!      
   
+	InitStatus			Initialize();
   	void 				AddHit(Int_t detUID, const TVector3& posHit, const TVector3& posHitErr, Int_t mcPointIndex, Int_t mcTrackIndex, Double_t time, Int_t flag);
    	void 				AddHit(Int_t detUID, const TVector3& posHit, const TVector3& posHitErr, Int_t expDigitIndex, Double_t time, Int_t flag); 		
  	Int_t 				CompressHits();
@@ -39,9 +40,10 @@ public:
 	virtual void		Exec(Option_t * option);
 	virtual void		Finish();	
 
-	void 			SetOnlyPrimary(Bool_t opt) { fOnlyPrimary = opt; }	
+	void 			SetOnlyPrimary(Bool_t opt = true) { fOnlyPrimary = opt; }	
 	void			Dump(const char* comment = nullptr, ostream& out = std::cout) const;
 
+	virtual void		AddParameters(TString& buf)const;
 
 ClassDef(MpdTofHitProducerIdeal,3);
 };

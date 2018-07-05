@@ -1,5 +1,8 @@
-geometry_v2_option (FairRunSim *fRun, Bool_t build,
-		    char *option_changed_one="",char *option_geometry_file="",
+//#include "TString.h"
+#include "geometry_v2.C"
+
+void geometry_v2_option (FairRunSim *fRun, Bool_t build,
+		    TString option_changed_one="",TString option_geometry_file="",
 		    Bool_t use_other_detectors=kTRUE)
 {
   //
@@ -17,25 +20,25 @@ geometry_v2_option (FairRunSim *fRun, Bool_t build,
 
   if (!build) {   // do the same as geometry_v2.C lo load the libraries
 
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
+    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
     geometry_v2(0x0, kFALSE);
 
   }
   else {
 
-Bool_t
-  use_TPC = kTRUE,
-  use_TOF = kTRUE,
-  use_ETOF = kTRUE,
-  use_EMC = kTRUE,
-  use_ESTT = kTRUE,
-  use_STS = kTRUE,
-  use_ZDC = kTRUE,
-  use_BBC = kFALSE , // kTRUE,
-  use_FSA = kTRUE,
-  use_CPC = kTRUE,
-  use_FFD = kTRUE,
-;
+Bool_t use_TPC, use_TOF, use_ETOF, use_EMC, use_ESTT, use_STS, use_ZDC, use_BBC, use_FSA, use_CPC, use_FFD;
+  use_TPC = kTRUE;
+  use_TOF = kTRUE;
+  use_ETOF = kTRUE;
+  use_EMC = kTRUE;
+  use_ESTT = kTRUE;
+  use_STS = kTRUE;
+  use_ZDC = kTRUE;
+  //use_BBC = kFALSE; // kTRUE,
+  //use_FSA = kTRUE;
+  use_CPC = kTRUE;
+  use_FFD = kTRUE;
+
 
 
  TString toption_changed_one = option_changed_one;
@@ -48,15 +51,15 @@ Bool_t
    use_ESTT =(toption_changed_one=="ESTT");
    use_ZDC = (toption_changed_one=="ZDC");
    use_STS = (toption_changed_one=="STS");
-   use_BBC = (toption_changed_one=="BBC");
-   use_FSA = (toption_changed_one=="FSA");
+   //use_BBC = (toption_changed_one=="BBC");
+   //use_FSA = (toption_changed_one=="FSA");
    use_CPC = (toption_changed_one=="CPC");
    use_FFD = (toption_changed_one=="FFD");
  }
 
  TString sts_geometry = "its_cables.geo";
  TString tpc_geometry = "tpc_v6.geo";
- TString tof_geometry = "tof_v3.geo";
+ TString tof_geometry = "tof_v7.geo";
  TString etof_geometry = "etof_v43.geo";
  TString emc_geometry = "emc_tr.geo";
  TString estt_geometry = "ect_v2.geo";    // "straw_60_layers.geo";
@@ -81,10 +84,10 @@ Bool_t
 	     else
 	       if (toption_changed_one=="ZDC") zdc_geometry = option_geometry_file;
 	       else
-		 if (toption_changed_one=="BBC") bbc_geometry = option_geometry_file;
-		 else
-		   if (toption_changed_one=="FSA") fsa_geometry = option_geometry_file;
-		   else
+		 //if (toption_changed_one=="BBC") bbc_geometry = option_geometry_file;
+		 //else
+		   //if (toption_changed_one=="FSA") fsa_geometry = option_geometry_file;
+		   //else
 		     if (toption_changed_one=="CPC") cpc_geometry = option_geometry_file;
 		     else
 		       if (toption_changed_one=="FFD") ffd_geometry = option_geometry_file;
@@ -152,11 +155,11 @@ Bool_t
     }
 	
     	
-    if (use_BBC) {
+    /*if (use_BBC) {
       FairDetector *Bbc = new MpdBbc("BBC",kTRUE );
       Bbc->SetGeometryFileName(bbc_geometry);
       fRun->AddModule(Bbc);
-    }
+    }*/
 	
     if (use_CPC) {
       FairDetector *Cpc = new MpdCpc("CPC",kTRUE );
@@ -170,10 +173,10 @@ Bool_t
       fRun->AddModule(Zdc);
     }
 
-    if (use_FSA) {
+    /*if (use_FSA) {
       FairDetector *Fsa = new MpdFsa("FSA",kTRUE );
       Fsa->SetGeometryFileName(fsa_geometry);
       fRun->AddModule(Fsa);
-    }
+    }*/
   }
 }

@@ -6,6 +6,8 @@
 
 #include "TPC_geom_par.h"
 
+#include "../mpdloadlibs.C"
+
 //Detector's position
 const Double_t TPC_Xpos = 0.0;
 const Double_t TPC_Ypos = 0.0;
@@ -117,6 +119,27 @@ TGeoMedium *pMedGold = 0;
 class FairGeoMedia;
 class FairGeoBuilder;
 
+void CreateOuterWall(TGeoVolume* mother_volume);
+void CreateInnerWall(TGeoVolume* mother_volume);
+void CreateMembrane(TGeoVolume* mother_volume);
+void CreateTPCModule(TGeoVolume* mother_volume);
+void CreateEndCaps(TGeoVolume* mother_volume);
+void CreateOuterTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmax);
+void CreateInnerTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmin);
+void FillTubeWithLayers(TGeoVolume *mother_volume, Double_t tube_length, Double_t tube_rmin, Double_t tube_rmax, Int_t section);
+void CreateMembrane(TGeoVolume *mother_volume);
+void CreateFieldCage(TGeoVolume *mother_volume, Double_t half_module_width);
+void CreateSensitiveVolume(TGeoVolume *mother_volume, Double_t half_module_width);
+void CreatePadPlanes(TGeoVolume *mother_volume, Double_t half_module_width);
+void CreateFrames(TGeoVolume *mother_volume, Double_t half_width_module);
+void CreatePCB(TGeoVolume *mother_volume, Double_t half_module_width);
+void CreatePadLayersInPlane(TGeoVolume *mother_volume, Double_t plane_thickness);
+void FillFrames(TGeoVolume *mother_volume);
+void FillPCBWithLayers(TGeoVolume *mother_volume);
+void CreateFlanches(TGeoVolume *mother_volume, Double_t endcap_zwidth);
+void CreateRibs(TGeoVolume *mother_volume, Double_t endcap_zwidth);
+
+
 void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild) {
     //air medium
     FairGeoMedium* mAir = geoMedia->getMedium("air");
@@ -210,10 +233,10 @@ void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild) {
     if ( ! pMedGold ) Fatal("Main", "Medium gold not found");
 }
 
-void create_rootgeom_TPC_v7() {
+void create_rootgeom_TPC_v7(Bool_t wrGeoWithMaterials = false) {
 
     // Load necessary libraries
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
+    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
     mpdloadlibs(); // load libraries
 
     // ----  set working directory  --------------------------------------------
@@ -286,8 +309,11 @@ void create_rootgeom_TPC_v7() {
     top->Write();
     geoFile->Close();
 
-    //TString gdmlname = gPath + "/geometry/tpc_v7.gdml";
-    //gGeoManager->Export(gdmlname);
+	if (wrGeoWithMaterials)
+	{
+		TString geoFile_wMat = gPath + "/geometry/" + geoDetectorName + "_"+ geoDetectorVersion + "_with_materials.root";
+		gGeoManager->Export(geoFile_wMat);
+	}
 
     top->Draw("ogl");
     TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
@@ -497,7 +523,7 @@ void CreateInnerWall(TGeoVolume* mother_volume) {
 //------------------------------------------------------------------------------
 }
 
-CreateOuterTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmax) {
+void CreateOuterTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmax) {
     Double_t outer_layers_thickness = 0.0;
 
     const Int_t NLayers = 5;
@@ -550,7 +576,7 @@ CreateOuterTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmax) {
     FillTubeWithLayers(tubeV, tube_length, tube_rmin, tube_rmax, 2);
 }
 
-CreateInnerTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmin) {
+void CreateInnerTubeInInnerWall(TGeoVolume *mother_volume, Double_t wall_rmin) {
 
     Double_t inner_layers_thickness = 0.0;
 
@@ -1050,15 +1076,15 @@ void FillFrames(TGeoVolume *mother_volume) {
     TString frame_border_name = "tpcFrameBorder";
     const Int_t npoints_border = 4;
     TGeoXtru *tpcFrameBorderS = new TGeoXtru(2);
-    Double_t x[npoints_border];
-    Double_t y[npoints_border];
+    Double_t xbor[npoints_border];
+    Double_t ybor[npoints_border];
 
-    x[0] = Sens_vol_X - xy_frame_out_width; y[0] = Sens_vol_Y;
-    x[1] = Sens_vol_X; y[1] = y[0];
-    x[2] = Sens_vol_x; y[2] = -Sens_vol_Y;
-    x[3] = Sens_vol_x - xy_frame_out_width; y[3] = y[2];
+    xbor[0] = Sens_vol_X - xy_frame_out_width; ybor[0] = Sens_vol_Y;
+    xbor[1] = Sens_vol_X; ybor[1] = ybor[0];
+    xbor[2] = Sens_vol_x; ybor[2] = -Sens_vol_Y;
+    xbor[3] = Sens_vol_x - xy_frame_out_width; ybor[3] = ybor[2];
 
-    tpcFrameBorderS->DefinePolygon(npoints_border, x, y);
+    tpcFrameBorderS->DefinePolygon(npoints_border, xbor, ybor);
 
     tpcFrameBorderS->DefineSection(0, -z_frame_common_width/2);
     tpcFrameBorderS->DefineSection(1, -z_frame_common_width/2 + z_frame_in_width);

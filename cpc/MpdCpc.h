@@ -64,6 +64,17 @@ public:
 
 	// Constructs the CPC geometry
  	virtual void ConstructGeometry();
+	
+	// Construct the geometry from an ASCII geometry file
+	virtual void ConstructAsciiGeometry();
+	
+	// Check whether a volume is sensitive.
+	// The decision is based on the volume name. Only used in case
+	// of GDML and ROOT geometry.
+	// @param name    Volume name
+	// @value         kTRUE if volume is sensitive, else kFALSE
+	virtual Bool_t CheckIfSensitive(std::string name);
+
   
 private:
 

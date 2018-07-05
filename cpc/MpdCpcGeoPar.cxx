@@ -15,11 +15,14 @@ MpdCpcGeoPar::MpdCpcGeoPar(const char* name,const char* title,const char* contex
 }
 
 MpdCpcGeoPar::~MpdCpcGeoPar(void) {
+    if(fGeoSensNodes) delete fGeoSensNodes;
+    if(fGeoPassNodes) delete fGeoPassNodes;
 }
 
 void MpdCpcGeoPar::clear(void) {
     if(fGeoSensNodes) delete fGeoSensNodes;
     if(fGeoPassNodes) delete fGeoPassNodes;
+    fGeoSensNodes = fGeoPassNodes = 0x0;
 }
 
 void MpdCpcGeoPar::putParams(FairParamList* l) {

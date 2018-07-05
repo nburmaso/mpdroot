@@ -26,6 +26,7 @@
 #pragma link C++ class MpdTpcHitProducer+;
 #pragma link C++ class MpdTpcSectorGeo+;
 #pragma link C++ class MpdTpcDigitizerAZ+;
+#pragma link C++ class MpdTpcDigitizerAZlt+;
 #pragma link C++ class MpdTpcClusterFinderAZ+;
 #pragma link C++ class MpdTPCpid+;
 #pragma link C++ class MpdTpcClusterFinderMlem+;

@@ -22,8 +22,7 @@
 #include <TMatrixDSym.h>
 #include "TClonesArray.h"
 
-#include <map>
-#include <set>
+#include <vector>
 
 class MpdTpcKalmanFilter : public FairTask
 {
@@ -49,7 +48,7 @@ class MpdTpcKalmanFilter : public FairTask
   TClonesArray* GetTracks() { return fTracks; } ///< get array of tracks
   Int_t RunKalmanFilter(MpdTpcKalmanTrack *track); ///< run Kalman filter
   Int_t GetParticleId(Int_t id); ///< particle ID for track id
-  Int_t SetModular(Int_t modular) { fModular = modular; } ///< set != 0 if modular geom. of r/out chambers
+  void SetModular(Int_t modular) { fModular = modular; } ///< set != 0 if modular geom. of r/out chambers
   void SetSectorGeo(MpdTpcSectorGeo *secGeo) { fSecGeo = secGeo; } ///< set sector geometry
   Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE); ///< refit track using its points for given particle mass and charge
   Int_t GetHitID(MpdKalmanHit *hit); // get hit ID from MC point ID
@@ -92,7 +91,10 @@ class MpdTpcKalmanFilter : public FairTask
   MpdTpcHit* GetTpcHit(MpdKalmanHit *hit); // get TpcHit pointer for the Kalman hit
   Int_t SectorNo(const char* cpath); // extract sector number from TGeo path
   Double_t CorrectForLoss(Double_t pt, Double_t the, Double_t mass, Int_t charge = 1); ///< energy loss correction
+  Double_t CorrectForLossFluct(Double_t pt, Double_t the, Double_t mass, Int_t charge = 1); ///< energy loss fluct. correction
   void MergeTracks(Int_t ipass); // merge tracks
+  Double_t Interp2d(const Double_t *moms, const Double_t *thes, std::vector<std::vector<Double_t> > &sigmas, 
+		    Double_t p, Double_t dip); // 2-d linear interpolation
 
   Int_t fNofEvents;                    // number of events processed
   Int_t fNTracks;                      // number of found tracks

@@ -15,7 +15,7 @@
 //__________________________________________________________________________
 MpdParticle::MpdParticle() 
   : TObject(), fIndx(-1), fCharge(0), 
-    fMass(TDatabasePDG::Instance()->GetParticle("pi0")->Mass()), fChi2(0.0), fChi2ver(-1.0), fFlag(0)
+    fMass(TDatabasePDG::Instance()->GetParticle("pi+")->Mass()), fChi2(0.0), fChi2ver(-1.0), fFlag(0)
 {
   /// Default constructor
 
@@ -41,9 +41,9 @@ MpdParticle::MpdParticle()
 }
 
 //__________________________________________________________________________
-MpdParticle::MpdParticle(const MpdKalmanTrack& track, Int_t indx)
+MpdParticle::MpdParticle(const MpdKalmanTrack& track, Int_t indx, Double_t mass)
   : TObject(track), fIndx(indx), fCharge(track.Charge()), 
-    fMass(TDatabasePDG::Instance()->GetParticle("pi+")->Mass()), fChi2(0.0), fChi2ver(-1.0), fFlag(0)
+    fMass(mass), fChi2(0.0), fChi2ver(-1.0), fFlag(0)
 {
   /// Constructor from Kalman track
 

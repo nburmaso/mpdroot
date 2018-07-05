@@ -112,7 +112,8 @@ void FairMCTrack::Print(Int_t trackId) const {
        << ", FFD " << GetNPoints(kFFD)  << ", ECT " << GetNPoints(kECT) 
        << ", ECAL " << GetNPoints(kECAL)   << ", NDET " << GetNPoints(kNDET) 
        << ", CPC " << GetNPoints(kCPC) << ", BBC " << GetNPoints(kBBC) 
-       << ", ZDC " << GetNPoints(kZDC) << ", FSA " << GetNPoints(kFSA) << endl;
+       << ", ZDC " << GetNPoints(kZDC) << ", FSA " << GetNPoints(kFSA)
+       << ", BMD " << GetNPoints(kBMD) << endl;
 }
 // -------------------------------------------------------------------------
 
@@ -146,9 +147,9 @@ Double_t FairMCTrack::GetRapidity() const {
 // -----   Public method GetNPoints   --------------------------------------
 Int_t FairMCTrack::GetNPoints(DetectorId detId) const {
 
-  //kSTS, kTPC, kTOF, kETOF, kFD, kECT, kECAL, kNDET, kCPC, kBBC, kZDC, kFSA
+  //kSTS, kTPC, kTOF, kETOF, kFD, kECT, kECAL, kNDET, kCPC, kBBC, kZDC, kFSA, kBMD
 
-  if      (( detId <= kFSA  ) && ( detId >= kSTS  ))
+  if      (( detId <= kBMD  ) && ( detId >= kSTS  ))
     return (  fNPoints &   (1 << detId));
   else {
     cout << "-E- FairMCTrack::GetNPoints: Unknown detector ID "
@@ -163,11 +164,11 @@ Int_t FairMCTrack::GetNPoints(DetectorId detId) const {
 // -----   Public method SetNPoints   --------------------------------------
 void FairMCTrack::SetNPoints(Int_t iDet, Int_t nPoints) {
 
-  //kSTS, kTPC, kTOF, kETOF, kFD, kECT, kECAL, kNDET, kCPC, kBBC, kZDC, kFSA
+  //kSTS, kTPC, kTOF, kETOF, kFD, kECT, kECAL, kNDET, kCPC, kBBC, kZDC, kFSA, kBMD
 
   Int_t mpd_nPoints = (nPoints>0)*(1 << iDet);
 
-  if (( iDet <= kFSA  ) && ( iDet >= kSTS  )) {
+  if (( iDet <= kBMD  ) && ( iDet >= kSTS  )) {
     fNPoints = ( fNPoints & ( ~ (1 << iDet) ) )  |  mpd_nPoints;
   }
   else cout << "-E- FairMCTrack::SetNPoints: Unknown detector ID "

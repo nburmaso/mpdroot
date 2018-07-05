@@ -50,9 +50,9 @@ public:
   double VDrift() const {return _VDrift;} 
   double Dl() const {return _Dl;}      
   double Dt() const {return _Dt;}  
-  double VDrift(double const E, double const B) const {return _VDrift;} 
-  double Dl(double const E, double const B) const {return _Dl;}      
-  double Dt(double const E, double const B) const {return _Dt;}      
+  double VDrift(double const Ee, double const Bb) const {return _VDrift;} 
+  double Dl(double const Ee, double const Bb) const {return _Dl;}      
+  double Dt(double const Ee, double const Bb) const {return _Dt;}      
   double k() const {return _k;}       
   double W() const {return _W;}       
   double CSD(int i) const {return _CSD.at(i);}
@@ -75,13 +75,13 @@ public:
   friend std::ostream& operator<< (std::ostream&, const TpcGas&);
 
   // modifiers
-  void SetE(double const E){_E=E;}  // later this method should also retrieve
+  void SetE(double const Ee){_E=Ee;}  // later this method should also retrieve
                                     // updated gas values for the new field!
-  void SetB(double const B){_B=B;}
-  void SetT(double const T){_T=T;}
-  void Setp(double const p){_p=p;}
+  void SetB(double const Bb){_B=Bb;}
+  void SetT(double const Tt){_T=Tt;}
+  void Setp(double const pp){_p=pp;}
   void SetCSD(const std::vector<double>& CSD);
-  void SetCSDEpol(double const CSDEpol){_CSDEpol=CSDEpol;}
+  void SetCSDEpol(double const CSDEpoll){_CSDEpol=CSDEpoll;}
 
 private:
   double _E;        // electric field [V/cm](some gas parameters depend on it)

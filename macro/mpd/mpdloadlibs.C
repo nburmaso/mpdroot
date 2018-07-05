@@ -1,15 +1,17 @@
-void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "gconfig/basiclibs.C"
+
+void mpdloadlibs(Bool_t reco = kFALSE, Bool_t detectors = kFALSE)
 {
   // Load basic libraries
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
   basiclibs();
 
   // Load other libraries
+  gSystem->Load("libBase");
   gSystem->Load("libCluster.so");
   gSystem->Load("libFairTools");
   gSystem->Load("libGeoBase");
   gSystem->Load("libParBase");
-  gSystem->Load("libBase");
   gSystem->Load("libMCStack");
   gSystem->Load("libMpdField");
   gSystem->Load("libPassive");
@@ -17,6 +19,7 @@ void mpdloadlibs (Bool_t reco=kFALSE, Bool_t detectors=kFALSE)
   gSystem->Load("libTrkBase");
   gSystem->Load("libMpdBase");
   gSystem->Load("libMpdData");
+  gSystem->Load("libMpdGen");
 
   // HADGEN
   gSystem->Load("libHADGEN.so");

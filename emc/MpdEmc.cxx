@@ -43,15 +43,20 @@ MpdEmc::~MpdEmc() {
    }
 }
 
+/*
 void MpdEmc::Initialize()
 {
   FairDetector::Initialize();
   FairRuntimeDb *rtdb= FairRun::Instance()->GetRuntimeDb();
   //MpdEmcGeoPar* par=(MpdEmcGeoPar*)(rtdb->getContainer("MpdEmcGeoPar"));
 }
+*/
+
  
 Bool_t  MpdEmc::ProcessHits(FairVolume* vol)
 { 
+
+
   /** This method is called from the MC stepping */
 
   //#define EDEBUG
@@ -76,20 +81,23 @@ Bool_t  MpdEmc::ProcessHits(FairVolume* vol)
   // Sum energy loss for all steps in the active volume
   
   fELoss += gMC->Edep();
-  
-  
+    
   // Create MpdEmcPoint at exit of active volume
   if (gMC->IsTrackExiting() || gMC->IsTrackStop()  ||     gMC->IsTrackDisappeared()  )
   {
     fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
     fVolumeID = vol->getMCid();
+   
+
     if (fELoss == 0. ) return kFALSE;
-    
+
     AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
 	   TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
 	   fELoss);
     
-    // Increment number of tutorial det points in TParticle
+// Increment number of tutorial det points in TParticle
+//    printf("Name x, y, z %s %f %f %f \n", vol->GetName(), fPos.X(), fPos.Y(), fPos.Z());     
+
     FairStack* stack = (FairStack*) gMC->GetStack();
     stack->AddPoint(kECAL);
   }
@@ -139,11 +147,34 @@ void MpdEmc::Print() const {
       for (Int_t i=0; i<nHits; i++) (*fMpdEmcPointCollection)[i]->Print();
 }
 
+
 void MpdEmc::ConstructGeometry() {
-  /** If you are using the standard ASCII input for the geometry 
-      just copy this and use it for your detector, otherwise you can
-      implement here you own way of constructing the geometry. */
-  
+
+    TString fileName = GetGeometryFileName();
+
+    if ( fileName.EndsWith(".root") ) {
+        gLogger->Info(MESSAGE_ORIGIN,
+            "Constructing EMC geometry from ROOT file %s",
+            fileName.Data());
+        ConstructRootGeometry();
+    }
+    else if ( fileName.EndsWith(".geo") ) {
+        gLogger->Info(MESSAGE_ORIGIN,
+            "Constructing EMC geometry from ASCII file %s",
+            fileName.Data());
+        ConstructAsciiGeometry();
+    }
+    else {
+        gLogger->Fatal(MESSAGE_ORIGIN,
+            "Geometry format of EMC file %s not supported.",
+            fileName.Data());
+    }
+} 
+
+
+
+void MpdEmc::ConstructAsciiGeometry() {
+
   FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   MpdEmcGeo*  Geo  = new MpdEmcGeo();
@@ -153,14 +184,14 @@ void MpdEmc::ConstructGeometry() {
   Bool_t rc = geoFace->readSet(Geo);
   if (rc) Geo->create(geoLoad->getGeoBuilder());
   TList* volList = Geo->getListOfVolumes();
-  
+
   // store geo parameter
   FairRun *fRun = FairRun::Instance();
   FairRuntimeDb *rtdb= FairRun::Instance()->GetRuntimeDb();
   MpdEmcGeoPar* par=(MpdEmcGeoPar*)(rtdb->getContainer("MpdEmcGeoPar"));
   TObjArray *fSensNodes = par->GetGeoSensitiveNodes();
   TObjArray *fPassNodes = par->GetGeoPassiveNodes();
-  
+
   TListIter iter(volList);
   FairGeoNode* node   = NULL;
   FairGeoVolume *aVol=NULL;
@@ -178,6 +209,17 @@ void MpdEmc::ConstructGeometry() {
   
   ProcessNodes ( volList );
 }
+
+// Check sensitivity
+
+Bool_t MpdEmc::CheckIfSensitive(std::string name) {
+    TString tsname = name;
+    if (tsname.Contains("cl_sc")) {
+        return kTRUE;
+    }
+    return kFALSE;
+} 
+
 
 MpdEmcPoint* MpdEmc::AddHit(Int_t trackID, Int_t detID, 
 					    TVector3 pos, TVector3 mom, 

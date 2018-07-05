@@ -27,7 +27,8 @@ using namespace std;
 //---------------------------------------------------------------------------
 MpdTpcHitProducer::MpdTpcHitProducer() 
   : FairTask("TPC Hit Producer"),
-    fModular(0)
+    fModular(0),
+    fPersistance(kFALSE)
 {
     fPointArray = NULL, fHitArray = NULL;
 }
@@ -52,8 +53,8 @@ InitStatus MpdTpcHitProducer::Init()
 
   // Create and register output array
   fHitArray = new TClonesArray("MpdTpcHit");
-  //ioman->Register("TpcHit", "TPC", fHitArray, kTRUE);
-  ioman->Register("TpcHit", "TPC", fHitArray, kFALSE);
+  if (fPersistance) ioman->Register("TpcHit", "TPC", fHitArray, kTRUE);
+  else ioman->Register("TpcHit", "TPC", fHitArray, kFALSE);
 
   cout << "-I- MpdTpcHitProducer: Intialisation successfull." << endl;
   return kSUCCESS;
@@ -340,6 +341,7 @@ void MpdTpcHitProducer::ExecModular()
     hit->SetEnergyLoss(point->GetEnergyLoss());
     hit->SetStep(point->GetStep());
     hit->SetModular(1); // modular geometry flag
+    hit->SetLength(point->GetLength()); 
     midIndx.insert(pair<Int_t,Int_t>(point->GetTrackID(),nHits-1));
   } // for (Int_t j = 0; j < nPoints;
 

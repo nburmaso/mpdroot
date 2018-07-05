@@ -14,7 +14,7 @@
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TRefArray.h"
-#include "TParticlePDG.h" //AZ
+#include "TParticlePDG.h"
 
 #include <list>
 #include <iostream>
@@ -52,8 +52,14 @@ FairStack::FairStack(Int_t size) // {
     fIndex(0),
     fStoreSecondaries(kTRUE),
     fMinPoints(1),
-    fEnergyCut(0.),
-    fStoreMothers(kTRUE)
+    //fEnergyCut(0.),
+    fEnergyCut(-0.001), //AZ
+    fStoreMothers(kTRUE),
+    fMinMotherMass(0.4),
+    fMaxMotherMass(6.1),
+    fRadiusCut(175), //NG ecal outer XYradius, some mm smaller
+    fVzCut(296), //296 NG barrel half length, TODO does not include EndCaps
+    fNoZDC(kTRUE) //NG
 {
 }
 // -------------------------------------------------------------------------
@@ -259,7 +265,7 @@ void FairStack::FillTrackArray() {
 	new( (*fTracks)[fNTracks]) FairMCTrack(GetParticle(iPart));
       fIndexMap[iPart] = fNTracks;
       // --> Set the number of points in the detectors for this track
-      for (Int_t iDet=kSTS; iDet<=kFSA; iDet++) {
+      for (Int_t iDet=kSTS; iDet<=kBMD; iDet++) {
 	pair<Int_t, Int_t> a(iPart, iDet);
 	track->SetNPoints(iDet, fPointsMap[a]);
       }
@@ -447,7 +453,6 @@ void FairStack::SelectTracks() {
 
     TParticle* thisPart = GetParticle(i);
     Bool_t store = kTRUE;
-
  
 #ifdef EDEBUG
     if (lEDEBUGcounter<=20)
@@ -465,48 +470,38 @@ void FairStack::SelectTracks() {
     Double_t eKin = energy - mass;
 
     // --> Calculate number of points
-    Int_t nPoints = 0;
-    for (Int_t iDet=kSTS; iDet<=kFSA; iDet++) {
+    Int_t nPoints = 0, nPointsZDC = 0, nPointsNoZDC = 0;
+    for (Int_t iDet=kSTS; iDet<=kBMD; iDet++) {
       pair<Int_t, Int_t> a(i, iDet);
-      if ( fPointsMap.find(a) != fPointsMap.end() )
+      if ( fPointsMap.find(a) != fPointsMap.end() ) {
 	nPoints += fPointsMap[a];
+	if (iDet == kZDC) nPointsZDC += fPointsMap[a]; //NG save points in ZDC
+	else nPointsNoZDC += fPointsMap[a]; // points not in ZDC
+      }
     }
-
+   
     // --> Check for cuts (store primaries in any case)
     if (iMother < 0)            store = kTRUE;
     else {
       if (!fStoreSecondaries)   store = kFALSE;
       if (nPoints < fMinPoints) store = kFALSE;
       if (eKin < fEnergyCut)    store = kFALSE;
-      // !!!!!AZ - store hyperons and their daughters
+      if (fNoZDC && nPointsZDC && !nPointsNoZDC) store = kFALSE; //NG cut many secondary zdc tracks
+      // !!!!!AZ - store products of potentially interesting decays
       if (nPoints == 0) {
-        //if (TMath::Abs(thisPart->GetPDG()->Charge()) > 0.1) store = kTRUE;
-        TParticle* mother = GetParticle(iMother);
-        if (thisPart->GetPDG()->Mass() > 1. || mother->GetPDG()->Mass() > 1.) store = kTRUE; // hyperon
-      }
-      //AZ
+	store = kFALSE;
+        if (fStoreMothers) {
+          TParticle* mother = GetParticle(iMother);
+	  if (mass < 0.1 && thisPart->P() < 0.01) store = kFALSE; // P < cut on e+- and gamma
+	  else if (mother->GetPDG()->Mass() > fMinMotherMass && mother->GetPDG()->Mass() < fMaxMotherMass && //0.4 and 6.1
+		   TMath::Abs(mother->GetPDG()->Mass()-0.940) > 0.004 && mother->R() < fRadiusCut && abs(mother->Vz()) < fVzCut) 
+	    store = kTRUE; // except nucleons and heavy fragments
+	}
+      } //no points
     }
-
     // --> Set storage flag
     fStoreMap[i] = store;
-
-
   }
-
-  // --> If flag is set, flag recursively mothers of selected tracks
-  /*AZ
-  if (fStoreMothers) {
-    for (Int_t i=0; i<fNParticles; i++) {
-      if (fStoreMap[i]) {
-	Int_t iMother = GetParticle(i)->GetMother(0);
-	while(iMother >= 0) {
-	  fStoreMap[iMother] = kTRUE;
-	  iMother = GetParticle(iMother)->GetMother(0);
-	}
-      }
-    }
-  }
-  */
 
   //AZ If flag is set, flag recursively mothers of selected tracks and their sisters
   if (fStoreMothers) {
@@ -521,17 +516,27 @@ void FairStack::SelectTracks() {
     }
 
     for (Int_t i=0; i<fNParticles; i++) {
-      if (copyMap[i]) {
-	Int_t iMother = GetParticle(i)->GetMother(0);
-	while(iMother >= 0) {
-	  fStoreMap[iMother] = kTRUE;
-	  ret = moths.equal_range(iMother);
-	  for (it = ret.first; it != ret.second; ++it) fStoreMap[it->second] = kTRUE; // sister
-	  iMother = GetParticle(iMother)->GetMother(0);
-	}
-      }
-    }
-  }
+      if (copyMap[i]) { //if particle is to be stored
+	    Int_t iMother = GetParticle(i)->GetMother(0);
+	    while(iMother >= 0) { //and it's mother is not primary
+	      TParticle* mother = GetParticle(iMother);
+	      if (mother->GetPDG()->Mass() < 0.1 && mother->P() < 0.01) break;
+	      if (abs(mother->Vz()) > fVzCut || mother->R() > fRadiusCut) break; //NG and doesn't originate within Rcut/Zcut
+	      fStoreMap[iMother] = kTRUE;//store the mother
+	      ret = moths.equal_range(iMother);
+	      for (it = ret.first; it != ret.second; ++it) {
+		TParticle* daught = GetParticle(it->second);
+	    if (abs(daught->Vz()) > fVzCut || daught->R() > fRadiusCut) continue; //NG and doesn't originate within Rcut/Zcut
+		if (daught->GetPDG()->Mass() < 0.1 && daught->P() < 0.01) continue;
+	        fStoreMap[it->second] = kTRUE; // sister
+	      }
+	      iMother = mother->GetMother(0); //mother of the mother, loop again
+	    }//not primary
+      }//store
+    }//nparticle
+  }//store mothers
+  
+//*/
 
 }
 // -------------------------------------------------------------------------

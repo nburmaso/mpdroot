@@ -7,7 +7,7 @@
 #define FAIRMCMODULEDRAW_H
 
 #include "FairTask.h"
-#include "FairEventManager.h"
+#include "MpdEventManager.h"
 
 #include "TClonesArray.h"
 #include "TObject.h"
@@ -23,7 +23,7 @@ class FairMCModuleDraw : public FairTask
     *@param name        Name of task
     *@param iVerbose    Verbosity level
     **/
-    FairMCModuleDraw(const char* name, Color_t color ,Style_t mstyle, Int_t iVerbose = 1);
+    FairMCModuleDraw(const char* name, Color_t color ,Style_t mstyle, Int_t iVerbose = 0);
 
     /** Destructor **/
     virtual ~FairMCModuleDraw();
@@ -44,7 +44,7 @@ protected:
 
     // Verbosity level
     Int_t   fVerbose;
-    FairEventManager* fEventManager; //!
+    MpdEventManager* fEventManager; //!
     TClonesArray* fPointList; //!
     TClonesArray* fMCTracks; //!
 

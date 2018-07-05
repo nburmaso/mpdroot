@@ -9,7 +9,7 @@
 #define BMNTRACKDRAWH_H
 
 #include "FairTask.h"
-#include "FairEventManager.h"
+#include "MpdEventManager.h"
 
 #include "TEveTrackPropagator.h"
 #include "TEveTrack.h"
@@ -28,7 +28,7 @@ class BmnTrackDrawH : public FairTask
     *@param name        Name of task and branch with BmnTrack* collection
     *@param iVerbose    Verbosity level
     **/
-    BmnTrackDrawH(const char* name, TString hitsBranchName, Int_t iVerbose = 1);
+    BmnTrackDrawH(const char* name, TString hitsBranchName, Int_t iVerbose = 0);
 
     /** Destructor **/
     virtual ~BmnTrackDrawH();
@@ -55,7 +55,7 @@ class BmnTrackDrawH : public FairTask
 
     // EVE track propagator
     TEveTrackPropagator* fTrPr;
-    FairEventManager* fEventManager;    //!
+    MpdEventManager* fEventManager;    //!
     TObjArray* fEveTrList;              //!
     TEveTrackList* fTrList;             //!
     Double_t MinEnergyLimit;

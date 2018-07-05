@@ -9,7 +9,7 @@
 #define BMNTRACKDRAWP_H
 
 #include "FairTask.h"
-#include "FairEventManager.h"
+#include "MpdEventManager.h"
 #include "FairGeanePro.h"
 #include "TEveTrack.h"
 #include "FairTrajFilter.h"
@@ -27,7 +27,7 @@ class BmnTrackDrawP : public FairTask
     *@param name        Name of task and branch with BmnTrack* collection
     *@param iVerbose    Verbosity level
     **/
-    BmnTrackDrawP(const char* name, Int_t iVerbose = 1);
+    BmnTrackDrawP(const char* name, Int_t iVerbose = 0);
 
     /** Destructor **/
     virtual ~BmnTrackDrawP();
@@ -48,7 +48,7 @@ class BmnTrackDrawP : public FairTask
     void InitGeant3();
 
   protected:
-    FairEventManager* fEventManager;//!
+    MpdEventManager* fEventManager;//!
     TClonesArray*  fTrackList;      //!
     TEveTrackList* fTrList;         //!
 

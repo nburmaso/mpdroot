@@ -17,12 +17,12 @@ public:
 
     MpdEmcHit(UInt_t sec, UInt_t row, UInt_t supMod, UInt_t mod, Float_t e);
 
-    /** Destructor **/
+    MpdEmcHit(UInt_t sec, UInt_t row, UInt_t supMod, UInt_t mod, Float_t e, Float_t time);
+
     virtual ~MpdEmcHit();
 
     void Print(const Option_t* opt = 0) const;
 
-    /** Accessors **/
     Int_t GetFlag() const {
         return fFlag;
     };
@@ -35,9 +35,6 @@ public:
         return fModId;
     };
 
-    Int_t GetSupMod() const {
-        return fSupModId;
-    };
 
     Int_t GetRow() const {
         return fRowId;
@@ -47,12 +44,28 @@ public:
         return fE;
     };
 
-    Float_t GetZcenter() const {
+    Float_t GetTime() const {
+        return fTime;
+    };
+
+    Int_t GetSupMod() const {
+        return fSupModId;
+    }; 
+
+    Float_t GetRhoCenter() const {
+        return fRhoCenter;
+    }
+
+    Float_t GetZCenter() const {
         return fZCenter;
     }
 
     Float_t GetPhiCenter() const {
         return fPhiCenter;
+    }
+
+    Float_t GetThetaCenter() const {
+        return fThetaCenter;
     }
 
     Int_t GetTrackId() const {
@@ -71,7 +84,6 @@ public:
         return fZ;
     }
 
-    /** Modifiers **/
     void SetFlag(Int_t flag) {
         fFlag = flag;
     };
@@ -80,8 +92,16 @@ public:
         fE = e;
     };
 
+    void SetTime(Float_t time) {
+	fTime = time;     
+    };
+
     void IncreaseEnergy(Float_t e) {
         fE += e;
+    };
+
+    void IncreaseEnergyTime(Float_t timeEnergy) {
+        fTime += timeEnergy;
     };
 
     void SetTrackId(Int_t id) {
@@ -96,12 +116,20 @@ public:
         fNumTracks = n;
     };
 
+    void SetRhoCenter(Float_t rho) {
+        fRhoCenter = rho;
+    };
+
     void SetZCenter(Float_t z) {
         fZCenter = z;
     };
 
     void SetPhiCenter(Float_t phi) {
         fPhiCenter = phi;
+    };
+
+    void SetThetaCenter(Float_t theta) {
+        fThetaCenter = theta;
     };
 
     void SetSecId(UInt_t id) {
@@ -112,9 +140,6 @@ public:
         fRowId = row;
     };
 
-    void SetSupModId(UInt_t id) {
-        fSupModId = id;
-    };
 
     void SetModId(UInt_t id) {
         fModId = id;
@@ -122,20 +147,22 @@ public:
 
 protected:
 
-    // base digi-part
     UInt_t fSecId;
     UInt_t fRowId;
     UInt_t fModId;
-    UInt_t fSupModId; // super module = square of modules (3x3)
-    Float_t fE; //energy
+    UInt_t fSupModId; // super module = square of modules (3x3) (only)
 
-    //extra reco-part
+    Float_t fE; //energy
+    Float_t fTime; // hit mean time
+
     Int_t fTrackID; // -1 if more than one track in module
     Int_t fFlag; // Flag for general purposes [TDC, event tagging...]
     Int_t fPDG; // code of particle if only one track presented in module 
     UInt_t fNumTracks; // number of tracks, which have contribution in module
+    Float_t fRhoCenter;// rho-coordinate of the center of module
     Float_t fZCenter; // z-coordinate of the center of module
     Float_t fPhiCenter; // phi-angle of the center of module
+    Float_t fThetaCenter; // theta-angle of the center of module
 
     ClassDef(MpdEmcHit, 1)
 

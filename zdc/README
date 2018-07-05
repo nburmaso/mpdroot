@@ -1,0 +1,20 @@
+One should not use special cuts (especially for ZDC):
+in mpdroot/gconfig/g4Config.C
+   TG4RunConfiguration* runConfiguration
+           = new TG4RunConfiguration("geomRoot", "FTFP_BERT");
+
+
+To have fPhi info in MpdMCEventHeader comment in runMC.C (if one uses LA-QGSM generator):
+    //MpdMCEventHeader* mcHeader = new MpdMCEventHeader();
+    //FairMCEventHeader* mcHeader = new FairMCEventHeader();
+                                                                         
+    //fRun->SetMCEventHeader(mcHeader);
+
+
+ZDC and FWall geometry files:
+
+mpdroot/geometry/zdc_oldnames_7sect_v1.root;
+mpdroot/macro/mpd/geometry/create_rootgeom_zdc_oldnames_7sect_v1.C
+
+mpdroot/geometry/wall_oldnames_v1.root;
+mpdroot/macro/mpd/geometry/create_rootgeom_wall_oldnames_v1.C

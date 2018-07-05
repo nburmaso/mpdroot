@@ -2,19 +2,14 @@
 // -----                      ZdcTowerDraw header file                 -----
 // -------------------------------------------------------------------------
 
-#ifndef ZDCTOWERDRAW_H
-#define ZDCTOWERDRAW_H
+#ifndef MPDZDCTOWERDRAW_H
+#define MPDZDCTOWERDRAW_H
 
 #include "FairTask.h"
-#include "FairEventManager.h"
-#include "TEvePointSet.h"               // for TEvePointSet
-
-#include <TObject.h>
-#include <TString.h>
+#include "MpdEventManager.h"
+#include "TEvePointSet.h"
 #include <TClonesArray.h>
-#include <TMath.h>
 
-using namespace TMath;
 
 class MpdZdcTowerDraw : public FairTask
 {
@@ -26,28 +21,32 @@ class MpdZdcTowerDraw : public FairTask
     *@param name        Name of task
     *@param verbose    Verbosity level   
     **/
-    MpdZdcTowerDraw(const char* name,Double_t zdcMinEnergyThreshold = 0, Bool_t shadow = kFALSE,  Int_t verbose = 1);
+    MpdZdcTowerDraw(const char* name,Double_t zdcMinEnergyThreshold = 0, Bool_t shadow = kFALSE,  Int_t verbose = 0);
 
     /** Destructor **/
     virtual ~MpdZdcTowerDraw();
+
     /** Set verbosity level. For this task and all of the subtasks. **/
-    void SetVerbose(UInt_t verboselvl) { fVerboselvl = verboselvl; }
+    void SetVerbose(UInt_t verbose) { fVerbose = verbose; }
     /** Executed task **/
     virtual void Exec(Option_t* option);
     void Reset();
 
   protected:    
     TClonesArray* fDigitList; //!
-    FairEventManager* fEventManager; //! 
+    MpdEventManager* fEventManager; //! 
     TEvePointSet* fq;    //!
     
     virtual InitStatus Init();
-    virtual void Finish(); ///< Action after each event
+    // Action after each event
+    virtual void Finish();
+
     void RecursiveChangeNodeTransparent(TGeoNode* node, int transparency);
-    void DrawTowers(); ///< adjust towers heights
+    // adjust towers heights
+    void DrawTowers();
     
     /** Accessors **/
-    UInt_t GetVerboselvl() const { return fVerboselvl; }
+    UInt_t GetVerbose() const { return fVerbose; }
     Bool_t GetShadowFlag() const { return fShadow; }
     Bool_t GetResetRequiredFlag() const { return fResetRequiredFlag; }
     Double_t GetEneArrValue(UInt_t i) const { return fEneArr[i]; }
@@ -58,23 +57,24 @@ class MpdZdcTowerDraw : public FairTask
     
     /** Modifiers **/
     void SetResetRequiredFlag(Bool_t resetRequiredFlag) { fResetRequiredFlag = resetRequiredFlag; }
-    void SetEneArr(UInt_t i, Double_t val) { fEneArr[i] = val; } ///< set energy loss array value
+    // set energy loss array value
+    void SetEneArr(UInt_t i, Double_t val) { fEneArr[i] = val; }
     void SetMaxE(Double_t maxE) { fMaxE = maxE; }
     void SetNumModules(UInt_t numModules) { fNumModules = numModules; }
     void SetModuleZLen(Double_t moduleZLen) { fModuleZLen = moduleZLen; }
     
-  private:   
-    Int_t fVerboselvl; ///< Verbosity level   
-    Bool_t fShadow; ///< kTRUE to display transparent contur of zdc
-    Bool_t fResetRequiredFlag; ///< flag true is box sizes are adjusted
+  private:
+    Int_t fVerbose; // Verbosity level
+    Bool_t fShadow; // kTRUE to display transparent contur of zdc
+    Bool_t fResetRequiredFlag; // flag true is box sizes are adjusted
     
-    Double_t* fEneArr; //!< array of energies in each box of ZDC, GeV
-    Double_t fMaxE; ///< energy loss at the bin with maximum energy loss, GeV
+    Double_t* fEneArr; //! array of energies in each box of ZDC, GeV
+    Double_t fMaxE; // energy loss at the bin with maximum energy loss, GeV
     
-    UInt_t fNumModules; ///< number of modules in one ZDC detector
-    Double_t fModuleZLen; ///< z lenght of ZDC module, cm    
+    UInt_t fNumModules; // number of modules in one ZDC detector
+    Double_t fModuleZLen; // z lenght of ZDC module, cm
     
-    Double_t fZdcMinEnergyThreshold;///< min energy threshold
+    Double_t fZdcMinEnergyThreshold;// min energy threshold
     
     MpdZdcTowerDraw(const MpdZdcTowerDraw&);
     MpdZdcTowerDraw& operator=(const MpdZdcTowerDraw&);

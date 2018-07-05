@@ -33,7 +33,7 @@ class MpdParticle : public TObject
   /** Default constructor  **/
   MpdParticle(); ///< Default ctor
   MpdParticle(const MpdParticle& part); ///< copy constructor
-  MpdParticle(const MpdKalmanTrack& track, Int_t indx = -1); ///< ctor from Kalman track
+  MpdParticle(const MpdKalmanTrack& track, Int_t indx = -1, Double_t mass = 0.1396); ///< ctor from Kalman track
 
   MpdParticle& operator= (const MpdParticle& part); ///< assignment operator
 

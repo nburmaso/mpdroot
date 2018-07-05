@@ -38,20 +38,12 @@
 using namespace std;
 
 //------------------------------------------------------------------------------------------------------------------------
-struct less_by_pointer 
-{
-    inline bool operator() (const intervalType& struct1, const intervalType& struct2)
-    {
-        return (struct1.value < struct2.value);
-    }
-};
-//------------------------------------------------------------------------------------------------------------------------
 ClassImp(MpdTofMatching)
 const Double_t	MpdTofMatching::isNan = numeric_limits<double>::quiet_NaN();
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatching::MpdTofMatching(const char *name, Int_t verbose, Bool_t test, const char *flnm)
   : FairTask(name, verbose), fDoTest(test), fUseMCData(false), fMode(kIntervalTree), pKF(nullptr), pRandom(new TRandom2),
-  fThreshZ(1.5), fThreshPhi(15.), fSmearedTheta_plate(0.001), fNSmeared(20), fTofBarrelRadius(152.),  
+  fThreshZ(1.5), fThreshPhi(15.), fSmearedTheta_plate(0.001), fNSmeared(25), fTofBarrelRadius(152.),  
   aMcPoints(nullptr), aMcTracks(nullptr), aTofHits(nullptr), aKFtpcTracks(nullptr), aKFectTracks(nullptr), aTofMatchings(nullptr)
 {
 	pMatchingQA = fDoTest ? new MpdTofMatchingQA(flnm, false) : nullptr;
@@ -101,322 +93,6 @@ void		MpdTofMatching::Finish()
 	if(pMatchingQA) pMatchingQA->Finish(); 
 }
 //------------------------------------------------------------------------------------------------------------------------
-Int_t		MpdTofMatching::ExecByBruteForce(const TsPt& tids, double& chi2)
-{
-	Int_t 		charge, uid, mcPID = -1; 
-	Double_t 	trackLength;
-     	TVector3	hitPosition, estPointOnCyl, estPointOnPlate, Momentum;    	
-     	const LStrip *pStrip;
-     	
-     	Int_t nTofHits = aTofHits->GetEntriesFast(); 
-	for(TsPt::const_iterator it = tids.begin(), itEnd = tids.end(); it != itEnd; it++)// cycle by TPC KF tracks
-	{   	
-		const MpdTpcKalmanTrack *pKfTrack = (MpdTpcKalmanTrack*) it->first;
-		Int_t KfIndex = it->second;
-	
-		for(Int_t hitIndex = 0; hitIndex < nTofHits; hitIndex++) // cycle by tof hits
-		{   
-			MpdTofHit *pTofHit = (MpdTofHit*) aTofHits->At(hitIndex);
-			Int_t volumeUID = pTofHit->GetDetectorID();
-
-			pStrip = MpdTofGeoUtils::Instance()->FindStrip(volumeUID);
-
-			MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));
-			
-			if(EstTrackOnPlane(ReFittedTrack, pStrip->center, pStrip->perp, estPointOnPlate, trackLength, Momentum, charge)) // Estimate point on plane; true, if point exist
-			{
-				pTofHit->Position(hitPosition);
-							 
-				double devHit, devHitZ, devHitR, devHitPhi;
-				GetDelta(hitPosition, estPointOnPlate, devHit, devHitZ, devHitR, devHitPhi); 		
-			
-				if(abs(devHitZ) < fThreshZ && abs(devHitPhi) < fThreshPhi)	
-				{	
-					pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), pTofHit, mcPID, pTofHit->GetFlag(), trackLength, estPointOnCyl, estPointOnPlate, pStrip->center, Momentum, charge, devHitR, devHitPhi));
-				}
-			}						
-
-		} // cycle by tof hits		
-
-	} // cycle by TPC KF tracks
-	
-	Int_t nKFTracks = aKFtpcTracks->GetEntriesFast();
-	Int_t MatchingOK = pMF->Processing(nKFTracks, chi2);	// accept candidates
-	Int_t nEntries = pMF->UpdateContainer(); 		// remove unmatched candidates
-
-assert(nEntries	== MatchingOK);
-return MatchingOK;	
-}
-//------------------------------------------------------------------------------------------------------------------------
-Int_t		MpdTofMatching::ExecByIntervalTree(const TsPt& tids, const TmmD2H& dets, const TmmP2T& p2ts, double& chi2)
-{
-	const intervalTreeType*	mDetectorsZ = MpdTofGeoUtils::Instance()->GetDetZ();
-	const intervalTreeType*	mDetectorsPhi = MpdTofGeoUtils::Instance()->GetDetPhi();
-			
-     	TVector3 	hitPosition, estPointOnCyl, estPointOnPlate, Momentum;		
-	vector<intervalType> 	segmentZ, segmentPhi, intersect;
-	
-	// The MC run variables. VALID ONLY if fUseMCData = true	
-        Int_t		mcTrackIndex = -1,  mcPID = -1;        
-        TVector3 	mcPosition;			 
-        Int_t		mcNpoints = -1; 			
-        bool		mcTofTouch, mcIsSameIDs, mcHaveCand = false, mcHaveTrueCand = false;
-        Int_t 		mcPadUID = -1;
-     
-//cout<<"\n ------------------------------------------------------------------------------------------------------------->> EVENT";    
-//mDetectorsZ->dump("\n\n ----->>>	mDetectorsZ INTERVALS");
-//mDetectorsPhi->dump("\n\n ----->>>          mDetectorsPhi INTERVALS");
-
-	TmmP2T::const_iterator 	mmMCpointCiter;
-	TmmD2H::const_iterator	mmHitCiter;
-	Int_t  selectedTracks  = 0;
-
-	for(TsPt::const_iterator it = tids.begin(), itEnd = tids.end(); it != itEnd; it++)// cycle by TPC KF tracks
-	{   	
-		const MpdTpcKalmanTrack *pKfTrack = (MpdTpcKalmanTrack*) it->first;
-		Int_t KfIndex = it->second;
-	
-		if(fUseMCData) mcTofTouch = MpdTofMatching::GetMcInfo(mcTrackIndex, mcPadUID, mcPosition, mcPID, mcNpoints, p2ts, pKfTrack, aMcTracks);
-	
-                estPointOnCyl = EstTrackOnR(pKfTrack); 		// Estimate point on cylinder		
-			
-		if(fDoMCTest)
-		{
-			if(mcNpoints == 1) // only SINGLE tof point per MCtrack
-				pMatchingQA->FillDevPoint2EstCyl(mcPosition, estPointOnCyl, pKfTrack->Momentum());
-				
-		 	if(mcTofTouch) // KF track have TOFpoint 
-			{
-				selectedTracks++; 	
-				pMatchingQA->FillSelectedKfTracks(pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
-			}
-		}
-             	
-		// ---------------------------------------------------------------------------------------->>> Looking for overlaping of estPointR & detectors
-		double estZ = estPointOnCyl.Z(), estPhi = estPointOnCyl.Phi();	
-
-		const double Zerror = 10.; // [cm] // FIXME:  should be dependent on the parameters of the KFtrack
-		const double PhiError = 0.1; // [rads] // FIXME:  should be dependent on the parameters of the KFtrack
-
-		segmentZ.clear();
-		segmentPhi.clear();
-		intersect.clear();
-		
-		mDetectorsZ->findOverlapping(estZ-Zerror,  estZ+Zerror, segmentZ); 	
-		mDetectorsPhi->findOverlapping(estPhi-PhiError, estPhi+PhiError, segmentPhi);
-
-//cout<<"\n <<<--Z-->>>>> ("<<estZ-Zerror<<", "<<estZ+Zerror<<")";
-//MpdTof::intervalTreeType::dumpIntervals(&segmentZ, "\n\n ----->>>	mDetectorsZ findOverlapping");
-
-//cout<<"\n <<<--Phi-->>>>> ("<<estPhi-PhiError<<", "<<estPhi+PhiError<<")";
-//MpdTof::intervalTreeType::dumpIntervals(&segmentPhi, "\n\n ----->>>	mDetectorsPhi findOverlapping");
-		
-		if(!segmentZ.empty() && !segmentPhi.empty()) // have overlaped segments both Z and Phi 
-		{
-			// calc. intersection
-			sort(segmentZ.begin(), segmentZ.end(), less_by_pointer());
-    			sort(segmentPhi.begin(), segmentPhi.end(), less_by_pointer());  
-		 	set_intersection(segmentZ.begin(), segmentZ.end(), segmentPhi.begin(), segmentPhi.end(), std::back_inserter(intersect), less_by_pointer());  //FIXME: MAYBE  std::inserter ???? 
-
-			MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));
-
-			for(vector<intervalType>::const_iterator cit = intersect.begin(), citEnd = intersect.end(); cit != citEnd; cit++) // cycle by the overlaped detectors
-			{
-				Int_t detUID = (*cit).value->volumeUID;
-				Int_t charge;
-				Double_t trackLength;
-				
-				if(EstTrackOnPlane(ReFittedTrack, (*cit).value->center, (*cit).value->perp, estPointOnPlate, trackLength, Momentum, charge)) // Estimate point on detector plane; true, if point exist
-				{		
-					if(fDoMCTest && mcNpoints == 1) // only one tof point per MCtrack
-						pMatchingQA->FillDevPoint2EstP(mcPosition, estPointOnPlate, pKfTrack->Momentum());
-				
-					mmHitCiter = dets.find(detUID);
-					if(mmHitCiter != dets.end()) // the estimated detector have hits
-					{
-						int counter = dets.count(detUID);
-						for(int hit = 0; hit < counter; hit++, mmHitCiter++) // cycle by hits into the estimated detector
-						{
-	 						MpdTofHit *TofHit = mmHitCiter->second.first;
-	 						Int_t hitIndex = mmHitCiter->second.second;
-							TofHit->Position(hitPosition);
-							 
-							double devHit, devHitZ, devHitR, devHitPhi;
-							GetDelta(hitPosition, estPointOnPlate, devHit, devHitZ, devHitR, devHitPhi); 
-							
-							bool mcIsSameVolumeUID = (TofHit->GetDetectorID() == mcPadUID);						
-
-							if(fDoMCTest) pMatchingQA->FillHitDev2EstP(mcIsSameVolumeUID, devHitZ, devHitPhi);
-					
-							devHitZ = abs(devHitZ);
-							devHitPhi = abs(devHitPhi);
-							
-							if(devHitZ < fThreshZ && devHitPhi < fThreshPhi) // inside matching window
-							{	
-								if(fDoMCTest)
-								{
-									if(mcIsSameVolumeUID) mcHaveTrueCand = true;
-									mcHaveCand = true;
-								}
-								
-								pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), TofHit, mcPID, TofHit->GetFlag(), trackLength, estPointOnCyl, estPointOnPlate, (*cit).value->center, Momentum, charge, devHitZ, devHitPhi));
-							}
-							
-						} // cycle by hits into the estimated detector
-					}
-		
-				} // Estimate point on plane; true, if point exist
-				
-			} // cycle by the overlaped detectors 
-		
-		} // have overlaped segments both Z and Phi 
-		
-		if(fDoMCTest && mcTofTouch) pMatchingQA->FillCandidates(mcHaveTrueCand, mcHaveCand, pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
-			
-	} // cycle by KF tracks
-
-	Int_t nKFTracks = aKFtpcTracks->GetEntriesFast();
-	if(fDoTest) pMatchingQA->FillTrackPerEvent(nKFTracks, selectedTracks);	
-
-	Int_t MatchingOK = pMF->Processing(nKFTracks, chi2);	// accept candidates
-	Int_t nEntries = pMF->UpdateContainer(); 		// remove unmatched candidates
-
-assert(nEntries	== MatchingOK);
-return MatchingOK;
-}
-//------------------------------------------------------------------------------------------------------------------------	
-Int_t		MpdTofMatching::ExecBySmearingDummyTracks(const TsPt& tids, const TmmD2H& dets, double& chi2)
-{
-	Int_t 		detUID;
-	TVector3 	estPointOnPlate, Momentum, hitPosition;
-	Double_t 	trackLength, devRough;
-	Int_t 		charge;
-	
-	TmmD2H::const_iterator	mmHitCiter;		
-	const LStrip *pStrip;   	
-     	TmmW2C mmWeightedHits; // pair< cand. weight, pair<MpdTofHit*, LStrip*> >
-	
-	for(TsPt::const_iterator it = tids.begin(), itEnd = tids.end(); it != itEnd; it++)// cycle by TPC KF tracks
-	{   	
-		const MpdTpcKalmanTrack *pKfTrack = (MpdTpcKalmanTrack*) it->first;
-		Int_t KfIndex = it->second;
-		
-		for(TmmD2H::const_iterator iter = dets.begin(), iterEnd = dets.end(); iter != iterEnd;  iter = dets.upper_bound(iter->first)) // cycle by unique detectorUID
-		{
-	 		detUID  = iter->first;
-	 		
-	 		// rough test
- 			pStrip = MpdTofGeoUtils::Instance()->FindStrip(detUID+1);// detectorUID ---> volumeUID, stripID = 1
-
-			MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));	 		
-	 		
-	 		if(EstTrackOnPlane(ReFittedTrack, pStrip->center, pStrip->perp, estPointOnPlate, trackLength, Momentum, charge)) // Estimate point on plane; true, if point exist
-			{
-	 			devRough = (estPointOnPlate - pStrip->center).Mag(); 			
-	 			if(devRough > 80.) continue; // [cm]  			
- 	
- 				mmWeightedHits.clear();
- 				
- 				for(int sample = 0; sample < fNSmeared; sample++)
- 				{	
- 					MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));	 
- 					
- 					if(EstSmearedTrackOnPlane(ReFittedTrack, pStrip->center, pStrip->perp, estPointOnPlate, trackLength, Momentum, charge))
- 						AddSample(mmWeightedHits, estPointOnPlate, iter, dets.count(detUID));				
-	 			}
-	 			
-	 			
-	 			
-/*	 		
-				mmHitCiter = dets.find(detUID); //  pair< detUID, pair<MpdTofHit*, hitIndex> >		
-assert(mmHitCiter != dets.end()); // the  detector have hits
-					
-			
-			
-				int counter = dets.count(detUID);
-				for(int hit = 0; hit < counter; hit++, mmHitCiter++) // cycle by hits into the estimated detector
-				{
-	 				MpdTofHit *TofHit = mmHitCiter->second.first;
-	 				Int_t hitIndex = mmHitCiter->second.second;
-					TofHit->Position(hitPosition);
-			
-			
-				}
-				
-*/				
-							 
-	 		}
-		}
-		
-	} // cycle by TPC KF tracks
-}
-//------------------------------------------------------------------------------------------------------------------------
-Int_t 	MpdTofMatching::AddSample(const TmmW2C& mWeights, const TVector3& position, TmmD2H::const_iterator iter, Int_t nHits)
-{   	
-	for(int hit = 0; hit < nHits; hit++, iter++) // cycle by hits on selected detector  it ---> pair< detUID, pair<MpdTofHit*, hitIndex> >
-	{
-		Int_t detUID  = iter->first;
-		
-		const LStrip *pStrip = MpdTofGeoUtils::Instance()->FindStrip(detUID+1);
-
-
-
-	
-	}
-	
-
-}
-//------------------------------------------------------------------------------------------------------------------------
-bool	MpdTofMatching::GetMcInfo(Int_t& mcTrackIndex, Int_t& mcPadUID, TVector3& mcPosition, Int_t& mcPID, Int_t& mcNpoints, const TmmP2T& p2ts, const MpdKalmanTrack* pKfTrack, TClonesArray* aMcTracks)
-{
-	mcTrackIndex = pKfTrack->GetTrackID();
-	FairMCTrack *mcTrack = (FairMCTrack*) aMcTracks->UncheckedAt(mcTrackIndex);
-			
-	mcPID = mcTrack->GetPdgCode();               
-	mcNpoints = p2ts.count(mcTrackIndex);
-	bool mcTofTouch = (mcNpoints >= 1);
-		              	
-	TmmP2T::const_iterator cit = p2ts.find(mcTrackIndex); 
-	
-	if(cit != p2ts.end())
-	{	
-		cit->second->Position(mcPosition); // update mcPosition
-		mcPadUID = cit->second->GetDetectorID();
-	}
-	else	assert(mcTofTouch == false);
-	
-return 	mcTofTouch;
-}
-//------------------------------------------------------------------------------------------------------------------------
-void	MpdTofMatching::MappingMcPoints2McTracks(TClonesArray *aMcPoints, TmmP2T& mmMCpoints)
-{
-	for(Int_t index = 0, nTofPoints = aMcPoints->GetEntriesFast(); index < nTofPoints; index++)  // cycle by MpdTofPoint
-	{
-		MpdTofPoint *mcPoint = (MpdTofPoint*) aMcPoints->UncheckedAt(index);
-
-		Int_t trackID = mcPoint->GetTrackID();
-		Double_t time = mcPoint->GetTime();
-
-		TmmP2T::iterator iter = mmMCpoints.find(trackID);
-		if(iter != mmMCpoints.end()) // same trackID already inserted, insert to position (sorting by time)
-		{
-			int count = mmMCpoints.count(trackID);
-			for(int i = 0; i < count; i++, iter++) // cycle by hits with same trackID
-			{
- 				if(time < iter->second->GetTime())
-				{
-					mmMCpoints.insert(iter, make_pair(trackID, mcPoint));
-					break;	
-				}
-
-				if(i == count-1) mmMCpoints.insert(++iter, make_pair(trackID, mcPoint)); // insert to last		
-			}
-		}
-		else 	mmMCpoints.insert(make_pair(trackID, mcPoint));
-
-	} // cycle by MpdTofPoint	
-}		
-//------------------------------------------------------------------------------------------------------------------------
 void 		MpdTofMatching::Exec(Option_t *option)
 {
 	fDoMCTest = fUseMCData && fDoTest;
@@ -464,16 +140,19 @@ void 		MpdTofMatching::Exec(Option_t *option)
 	if(fUseMCData) MpdTofMatching::MappingMcPoints2McTracks(aMcPoints, mmMCpoints);
 	
 	// ---------------------------------------------------------------------------------------->>> Mapping hits to detectorUIDs	
-	TmmD2H 			mmHits; // pair< detUID, pair<MpdTofHit*, hitIndex> >
-
+	TmmD2H 		mmHits; // pair< detUID, pair<MpdTofHit*, hitIndex> >
+	TmH2S		mHits; // pair< stripUID, pair<MpdTofHit*, hitIndex> >
+	
         for(Int_t hitIndex = 0; hitIndex < nTofHits; hitIndex++) // cycle by tof hits
 	{   
 		MpdTofHit *pTofHit = (MpdTofHit*) aTofHits->At(hitIndex);
 		Int_t volumeUID = pTofHit->GetDetectorID();	
 	
-		mmHits.insert(make_pair( (volumeUID & 0xFFFFFF00), make_pair(pTofHit, hitIndex))); // convert strip volumeUID to detectorUID (reset stripID to 0)
+		mmHits.insert(make_pair( (volumeUID & 0xFFFFFF00), make_pair(pTofHit, hitIndex))); // convert strip stripUID to detectorUID (reset stripID to 0)
+		mHits.insert(make_pair(volumeUID, make_pair(pTofHit, hitIndex)));
 	}	
 	// ----------------------------------------------------------------------------------------
+
 		
 	Double_t 	chi2 = isNan;
 	Int_t 		MatchingOK = 0;	
@@ -486,8 +165,8 @@ void 		MpdTofMatching::Exec(Option_t *option)
 		case kIntervalTree:
 			MatchingOK = ExecByIntervalTree(sTpcTracks, mmHits, mmMCpoints, chi2);
 		break;	
-		case kSmearingDummyTracks:
-			MatchingOK = ExecBySmearingDummyTracks(sTpcTracks, mmHits, chi2);
+		case kSmearedDummyTracks:
+			MatchingOK = ExecBySmearedDummyTracks(sTpcTracks, mmHits, mHits, mmMCpoints, chi2);
 		break;
 	};
 	
@@ -499,6 +178,367 @@ void 		MpdTofMatching::Exec(Option_t *option)
 		if(MatchingOK != 0) cout<<" ("<<chi2/MatchingOK<<")";	
 	}	
 }
+//------------------------------------------------------------------------------------------------------------------------
+Int_t		MpdTofMatching::ExecByBruteForce(const TsPt& tids, double& chi2)
+{
+	Int_t 		charge, uid, mcPID = -1; 
+	Double_t 	trackLength;
+     	TVector3	hitPosition, estPointOnCyl, estPointOnPlate, Momentum;    	
+
+     	
+     	Int_t nTofHits = aTofHits->GetEntriesFast(); 
+	for(const auto& it : tids) // cycle by TPC KF tracks
+	{   	
+		auto pKfTrack = (const MpdTpcKalmanTrack*) it.first;
+		Int_t KfIndex = it.second;
+	
+		for(Int_t hitIndex = 0; hitIndex < nTofHits; hitIndex++) // cycle by tof hits
+		{   
+			auto pTofHit = (MpdTofHit*) aTofHits->At(hitIndex);
+			Int_t volumeUID = pTofHit->GetDetectorID();
+			auto pStrip = MpdTofGeoUtils::Instance()->FindStrip(volumeUID);
+
+			// Estimate point on plane; true, if point exist
+			if(EstTrackOnPlane(RefitTrack(pKfTrack), pStrip->center, pStrip->perp, estPointOnPlate, trackLength, Momentum, charge)) 
+			{
+				pTofHit->Position(hitPosition);
+							 
+				double devHit, devHitZ, devHitR, devHitPhi;
+				GetDelta(hitPosition, estPointOnPlate, devHit, devHitZ, devHitR, devHitPhi); 		
+			
+				if(abs(devHitZ) < fThreshZ && abs(devHitPhi) < fThreshPhi)	
+				{	
+					pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), pTofHit, mcPID, pTofHit->GetFlag(), trackLength, estPointOnCyl, estPointOnPlate, pStrip->center, Momentum, charge, devHitR, devHitPhi));
+				}
+			}						
+
+		} // cycle by tof hits		
+
+	} // cycle by TPC KF tracks
+	
+	Int_t nKFTracks = aKFtpcTracks->GetEntriesFast();
+	Int_t MatchingOK = pMF->Processing(nKFTracks, chi2);	// accept candidates
+	Int_t nEntries = pMF->UpdateContainer(); 		// remove unmatched candidates
+
+assert(nEntries	== MatchingOK);
+return MatchingOK;	
+}
+//------------------------------------------------------------------------------------------------------------------------
+Int_t		MpdTofMatching::ExecByIntervalTree(const TsPt& tids, const TmmD2H& dets, const TmmP2T& p2ts, double& chi2)
+{
+	const intervalTreeType*	mDetectorsZ = MpdTofGeoUtils::Instance()->GetDetZ();
+	const intervalTreeType*	mDetectorsPhi = MpdTofGeoUtils::Instance()->GetDetPhi();
+   	auto less_by_value = [](const intervalType& struct1, const intervalType& struct2){ return (struct1.value < struct2.value); };
+			
+     	TVector3 		hitPosition, estPointOnCyl, estPointOnPlate, Momentum;		
+	vector<intervalType> 	segmentZ, segmentPhi, intersect;		
+	mcInfo 			MCdata; // The MC run variables. VALID ONLY if fUseMCData = true
+
+//cout<<"\n ------------------------------------------------------------------------------------------------------------->> EVENT";    
+//mDetectorsZ->dump("\n\n ----->>>	mDetectorsZ INTERVALS");
+//mDetectorsPhi->dump("\n\n ----->>>          mDetectorsPhi INTERVALS");
+
+	TmmD2H::const_iterator	mmHitCiter;
+	Int_t  selectedTracks  = 0;
+
+	for(const auto& it : tids) // cycle by TPC KF tracks
+	{   	
+		auto pKfTrack = (const MpdTpcKalmanTrack*) it.first;
+		Int_t KfIndex = it.second;
+	
+		if(fUseMCData) MpdTofMatching::GetMcInfo(MCdata, p2ts, pKfTrack, aMcTracks);
+	
+                estPointOnCyl = EstTrackOnR(pKfTrack); 		// Estimate point on cylinder		
+			
+		if(fDoMCTest)
+		{
+			if(MCdata.Npoints == 1) // only SINGLE tof point per MCtrack
+				pMatchingQA->FillDevPoint2EstCyl(MCdata.Position, estPointOnCyl, pKfTrack->Momentum());
+				
+		 	if(MCdata.TofTouch) // KF track have TOFpoint 
+			{
+				selectedTracks++; 	
+				pMatchingQA->FillSelectedKfTracks(pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
+			}
+		}
+             	
+		// ---------------------------------------------------------------------------------------->>> Looking for overlaping of estPointR & detectors
+		double estZ = estPointOnCyl.Z(), estPhi = estPointOnCyl.Phi();	
+
+		const double Zerror = 10.; // [cm] // FIXME:  should be dependent on the parameters of the KFtrack
+		const double PhiError = 0.1; // [rads] // FIXME:  should be dependent on the parameters of the KFtrack
+
+		segmentZ.clear();
+		segmentPhi.clear();
+		intersect.clear();
+		
+		mDetectorsZ->findOverlapping(estZ-Zerror,  estZ+Zerror, segmentZ); 	
+		mDetectorsPhi->findOverlapping(estPhi-PhiError, estPhi+PhiError, segmentPhi);
+
+//cout<<"\n <<<--Z-->>>>> ("<<estZ-Zerror<<", "<<estZ+Zerror<<")";
+//MpdTof::intervalTreeType::dumpIntervals(&segmentZ, "\n\n ----->>>	mDetectorsZ findOverlapping");
+
+//cout<<"\n <<<--Phi-->>>>> ("<<estPhi-PhiError<<", "<<estPhi+PhiError<<")";
+//MpdTof::intervalTreeType::dumpIntervals(&segmentPhi, "\n\n ----->>>	mDetectorsPhi findOverlapping");
+		
+		if(!segmentZ.empty() && !segmentPhi.empty()) // have overlaped segments both Z and Phi 
+		{
+			// calc. intersection
+			sort(segmentZ.begin(), segmentZ.end(), less_by_value);
+    			sort(segmentPhi.begin(), segmentPhi.end(), less_by_value);  
+		 	set_intersection(segmentZ.begin(), segmentZ.end(), segmentPhi.begin(), segmentPhi.end(), std::back_inserter(intersect), less_by_value);
+
+			MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));
+
+			for(const auto& cit : intersect) // cycle by the overlaped detectors
+			{
+				Int_t detUID = cit.value->volumeUID;
+				Int_t charge;
+				Double_t trackLength;
+				
+				// Estimate point on detector plane; true, if point exist
+				if(EstTrackOnPlane(ReFittedTrack, cit.value->center, cit.value->perp, estPointOnPlate, trackLength, Momentum, charge)) 
+				{		
+					if(fDoMCTest && MCdata.Npoints == 1) // only one tof point per MCtrack
+						pMatchingQA->FillDevPoint2EstP(MCdata.Position, estPointOnPlate, pKfTrack->Momentum());
+				
+					mmHitCiter = dets.find(detUID);
+					if(mmHitCiter != dets.end()) // the estimated detector have hits
+					{
+						int counter = dets.count(detUID);
+						for(int hit = 0; hit < counter; hit++, mmHitCiter++) // cycle by hits into the estimated detector
+						{
+	 						MpdTofHit *TofHit = mmHitCiter->second.first;
+	 						Int_t hitIndex = mmHitCiter->second.second;
+							TofHit->Position(hitPosition);
+							 
+							double devHit, devHitZ, devHitR, devHitPhi;
+							GetDelta(hitPosition, estPointOnPlate, devHit, devHitZ, devHitR, devHitPhi); 
+							
+							bool mcIsSameVolumeUID = (TofHit->GetDetectorID() == MCdata.stripUID);						
+
+							if(fDoMCTest) pMatchingQA->FillHitDev2EstP(mcIsSameVolumeUID, devHitZ, devHitPhi);
+					
+							devHitZ = abs(devHitZ);
+							devHitPhi = abs(devHitPhi);
+							
+							if(devHitZ < fThreshZ && devHitPhi < fThreshPhi) // inside matching window
+							{	
+								if(fDoMCTest)
+								{
+									if(mcIsSameVolumeUID) MCdata.HaveTrueCand = true;
+									MCdata.HaveCand = true;
+								}
+								
+								pMF->AddCandidate(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), TofHit, MCdata.pid, TofHit->GetFlag(), trackLength, estPointOnCyl, estPointOnPlate, cit.value->center, Momentum, charge, devHitZ, devHitPhi));
+							}
+							
+						} // cycle by hits into the estimated detector
+					}
+		
+				} // Estimate point on plane; true, if point exist
+				
+			} // cycle by the overlaped detectors 
+		
+		} // have overlaped segments both Z and Phi 
+		
+		if(fDoMCTest && MCdata.TofTouch) pMatchingQA->FillCandidates(MCdata.HaveTrueCand, MCdata.HaveCand, pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
+			
+	} // cycle by KF tracks
+
+	Int_t nKFTracks = aKFtpcTracks->GetEntriesFast();
+	if(fDoTest) pMatchingQA->FillTrackPerEvent(nKFTracks, selectedTracks);	
+
+	Int_t MatchingOK = pMF->Processing(nKFTracks, chi2);	// accept candidates
+	Int_t nEntries = pMF->UpdateContainer(); 		// remove unmatched candidates
+
+assert(nEntries	== MatchingOK);
+return MatchingOK;
+}
+//------------------------------------------------------------------------------------------------------------------------	
+Int_t		MpdTofMatching::ExecBySmearedDummyTracks(const TsPt& tids, const TmmD2H& dets, const TmH2S& mHits, const TmmP2T& p2ts, double& chi2)
+{
+	Int_t 		detUID;
+	TVector3 	estPointOnPlate, Momentum, hitPosition;
+	Double_t 	trackLength, devRough;
+	Int_t 		charge;
+	mcInfo 		MCdata; // The MC run variables. VALID ONLY if fUseMCData = true
+	Int_t  		selectedTracks  = 0;
+     	TmStripWeight 	mStripWeight; // pair<stripUID, matching weight>
+	
+	for(const auto& it : tids) // cycle by TPC KF tracks
+	{   	
+		auto pKfTrack = (const MpdTpcKalmanTrack*) it.first;
+		Int_t KfIndex = it.second;
+		
+		if(fUseMCData) MpdTofMatching::GetMcInfo(MCdata, p2ts, pKfTrack, aMcTracks);
+		
+		mStripWeight.clear(); 
+				
+		if(fDoMCTest && MCdata.TofTouch)
+		{
+			selectedTracks++; 	
+			pMatchingQA->FillSelectedKfTracks(pKfTrack->Momentum3().Eta(), pKfTrack->Momentum());
+		}
+
+		for(auto iter = dets.cbegin(), iterEnd = dets.cend(); iter != iterEnd;  iter = dets.upper_bound(iter->first)) // cycle by fired unique detectorUID
+		{
+	 		detUID  = iter->first;
+	 		
+	 		// select central strip of detector for rough test
+ 			auto pStrip = MpdTofGeoUtils::Instance()->FindStrip(detUID | 12);// detectorUID ---> stripUID, stripID = 12(central)	 		
+	 		
+ 			// Propagate the KF track to the Tof detector plane; return true, if propagation successful
+	 		if(EstTrackOnPlane(RefitTrack(pKfTrack), pStrip->center, pStrip->perp, estPointOnPlate, trackLength, Momentum, charge))
+			{
+	 			devRough = (estPointOnPlate - pStrip->center).Mag();  			
+	 					
+	 			if(devRough > 30.) continue; // [cm]	don't pass rough test
+ 				
+ 				// match the sample of probe tracks
+ 				for(int sample = 0; sample < fNSmeared; sample++)
+ 				{						
+ 					if(EstSmearedTrackOnPlane(RefitTrack(pKfTrack), pStrip->center, pStrip->perp, estPointOnPlate, trackLength, Momentum, charge))	
+							AddProbeTrackWeights(mStripWeight, estPointOnPlate, mHits);				
+	 			}							 
+	 		}
+		}
+		
+		// looking for matching with biggest weight
+		double maxWeight = 0.; Int_t stripUIDmaxW = -1; // default uid = dead region
+		for(const auto& iter : mStripWeight) // cycle by strip with weight > 0
+		{
+			double weight = iter.second;
+			
+			if(weight > maxWeight)
+			{
+				maxWeight = weight;
+				stripUIDmaxW = iter.first;
+			}
+		}
+		
+		// Refit KF track to matching strip and add matching data to container
+		if(stripUIDmaxW != -1) // matching to strip
+		{
+			auto pStrip = MpdTofGeoUtils::Instance()->FindStrip(stripUIDmaxW);
+assert(pStrip!=nullptr);			
+			auto iter = mHits.find(stripUIDmaxW); 
+			if(iter != mHits.end()) // matched to fired strip
+			{		
+				MpdTofHit *pTofHit = iter->second.first;
+				Int_t hitIndex = iter->second.second;
+assert(pTofHit!=nullptr);			
+				MpdTpcKalmanTrack ReFittedTrack(RefitTrack(pKfTrack));
+				if(EstTrackOnPlane(ReFittedTrack, pStrip->center, pStrip->perp, estPointOnPlate, trackLength, Momentum, charge))
+				{
+			
+					double devHit, devHitZ, devHitR, devHitPhi;
+					pTofHit->Position(hitPosition);
+					GetDelta(hitPosition, estPointOnPlate, devHit, devHitZ, devHitR, devHitPhi); 
+							
+					pMF->AddCandidate(std::move(MpdTofMatchingData(KfIndex, hitIndex, pKfTrack->GetNofTrHits(), pTofHit, MCdata.pid, pTofHit->GetFlag(), trackLength, TVector3(0.,0.,0.), estPointOnPlate, pStrip->center, Momentum, charge, devHitZ, devHitPhi, maxWeight/fNSmeared)));
+				}
+			}
+			else // matched to blank strip
+			{
+				pMF->AddCandidate(MpdTofMatchingData(KfIndex, - stripUIDmaxW, maxWeight/fNSmeared));
+			}
+		}
+		else // matching to dead region
+		{
+			pMF->AddCandidate(MpdTofMatchingData(KfIndex, -1,  maxWeight/fNSmeared));
+		}
+		
+	} // cycle by TPC KF tracks
+	
+	Int_t nKFTracks = aKFtpcTracks->GetEntriesFast();
+	if(fDoTest) pMatchingQA->FillTrackPerEvent(nKFTracks, selectedTracks);		
+	
+return aTofMatchings->GetEntries();	
+}
+//------------------------------------------------------------------------------------------------------------------------
+Int_t 	MpdTofMatching::AddProbeTrackWeights(TmStripWeight& mWeights, const TVector3& position, const TmH2S& mHits)
+{  
+	static const double Eeff = 0.95; //FIXME: ?????
+	static const double Weight2DeadRegion = 0.00001;	//FIXME: ?????
+ 	static vector<intervalType> list; // list of strips overlapped probe point	
+ 	double weight;
+ 
+	if(MpdTofGeoUtils::Instance()->IsPointInsideStrips(position, list)) // !empty strip list (match to strips)
+	{	
+		for(const auto& it : list) // cycle by PointInsideStrips
+		{
+			Int_t stripUID = it.value->volumeUID;
+
+			auto  itHit = mHits.find(stripUID);
+			if(itHit != mHits.end())   	weight = Eeff; 		// match to fired strip 
+			else   				weight = 1. - Eeff;  	// match to blank strip
+	
+			// fill weight
+			auto itWeight = mWeights.find(stripUID);
+			if(itWeight != mWeights.end()) 	itWeight->second += weight;			// add weight
+			else				mWeights.insert(make_pair(stripUID, weight)); 	// init. weight				
+		}
+		
+		list.clear();		
+	} 
+	else // match to dead region
+	{	
+		// fill weight
+		auto itWeight = mWeights.find(-1); // dead region UID defined as -1
+		if(itWeight != mWeights.end()) 	itWeight->second += Weight2DeadRegion;			// add Weight2DeadRegion
+		else				mWeights.insert(make_pair(-1, Weight2DeadRegion)); 	// init. weight to Weight2DeadRegion	
+	}
+	
+}
+//------------------------------------------------------------------------------------------------------------------------
+void	MpdTofMatching::GetMcInfo(mcInfo& mcData, const TmmP2T& p2ts, const MpdKalmanTrack* pKfTrack, TClonesArray* aMcTracks)
+{
+	mcData.trackIndex = pKfTrack->GetTrackID();
+	auto mcTrack = (const FairMCTrack*) aMcTracks->UncheckedAt(mcData.trackIndex);
+			
+	mcData.pid = mcTrack->GetPdgCode();               
+	mcData.Npoints = p2ts.count(mcData.trackIndex);
+	mcData.TofTouch = (mcData.Npoints >= 1);
+		              	
+	auto cit = p2ts.find(mcData.trackIndex); // pair< MCtrackID, MpdTofPoint*>
+	
+	if(cit != p2ts.end())
+	{	
+		cit->second->Position(mcData.Position); // update mcPosition
+		mcData.stripUID = cit->second->GetDetectorID();
+	}
+	else	assert(mcData.TofTouch == false);
+}
+//------------------------------------------------------------------------------------------------------------------------
+void	MpdTofMatching::MappingMcPoints2McTracks(TClonesArray *aMcPoints, TmmP2T& mmMCpoints)
+{
+	for(Int_t index = 0, nTofPoints = aMcPoints->GetEntriesFast(); index < nTofPoints; index++)  // cycle by MpdTofPoint
+	{
+		auto mcPoint = (MpdTofPoint*) aMcPoints->UncheckedAt(index);
+
+		Int_t trackID = mcPoint->GetTrackID();
+		Double_t time = mcPoint->GetTime();
+
+		auto iter =  mmMCpoints.find(trackID);
+		if(iter != mmMCpoints.end()) // same trackID already inserted, insert to position (sorting by time)
+		{
+			int count = mmMCpoints.count(trackID);
+			for(int i = 0; i < count; i++, iter++) // cycle by hits with same trackID
+			{
+ 				if(time < iter->second->GetTime())
+				{
+					mmMCpoints.insert(iter, make_pair(trackID, mcPoint));
+					break;	
+				}
+
+				if(i == count-1) mmMCpoints.insert(++iter, make_pair(trackID, mcPoint)); // insert to last		
+			}
+		}
+		else 	mmMCpoints.insert(make_pair(trackID, mcPoint));
+
+	} // cycle by MpdTofPoint	
+}		
 //------------------------------------------------------------------------------------------------------------------------
 void		MpdTofMatching::GetDelta(const TVector3& mcPos, const TVector3& estPos, double& dev,  double& devZ, double& devR, double& devPhi)
 {
@@ -516,24 +556,25 @@ TVector3	MpdTofMatching::EstTrackOnR(const MpdTpcKalmanTrack *tr)const
 	MpdTpcKalmanTrack tr1(*tr);
 	TObjArray *hits = tr1.GetHits();
 	
-	if (hits->GetEntriesFast() == 0) 
+	if(hits->GetEntriesFast() == 0) 
 	{
-	  Int_t nh = tr1.GetNofTrHits();
-	  for (Int_t j = 0; j < nh; ++j) hits->Add(tr1.GetTrHits()->UncheckedAt(j));
-	  tr1.SetNofHits(nh);
+	  	Int_t nh = tr1.GetNofTrHits();
+	  	for (Int_t j = 0; j < nh; ++j) hits->Add(tr1.GetTrHits()->UncheckedAt(j));
+	  	tr1.SetNofHits(nh);
 	}
 	
 	tr1.SetParam(*tr1.GetParamAtHit());
         tr1.SetParamNew(*tr1.GetParamAtHit());
         tr1.SetWeight(*tr1.GetWeightAtHit());
         tr1.SetLength(tr1.GetLengAtHit());
-        MpdKalmanHit *h = (MpdKalmanHit*) tr1.GetTrHits()->First();
+        auto h = (MpdKalmanHit*) tr1.GetTrHits()->First();
         tr1.SetPos(tr1.GetPosAtHit());
-        if (h->GetType() == MpdKalmanHit::kFixedZ) tr1.SetType(MpdKalmanTrack::kEndcap);
+        
+	if(h->GetType() == MpdKalmanHit::kFixedZ) tr1.SetType(MpdKalmanTrack::kEndcap);
         tr1.SetPosNew(tr1.GetPos());
 
 	hEnd.SetPos(fTofBarrelRadius); // barrel TOF radius, [cm]
-	pKF->PropagateToHit(&tr1,&hEnd,kTRUE);
+	pKF->PropagateToHit(&tr1, &hEnd, kTRUE);
 
         TVector3 pos(tr1.GetPosNew(), 0.,0.);
 	pos.SetPhi(tr1.GetParamNew(0)/tr1.GetPosNew());
@@ -548,11 +589,11 @@ MpdTpcKalmanTrack 		MpdTofMatching::RefitTrack(const MpdTpcKalmanTrack *tr)
 	tr1.SetDirection(MpdKalmanTrack::kOutward);
 	TObjArray *hits = tr1.GetHits();
 	
-	if (hits->GetEntriesFast() == 0) 
+	if(hits->GetEntriesFast() == 0) 
 	{
-	  Int_t nh = tr1.GetNofTrHits();
-	  for (Int_t j = 0; j < nh; ++j) hits->Add(tr1.GetTrHits()->UncheckedAt(j));
-	  tr1.SetNofHits(nh);
+	  	Int_t nh = tr1.GetNofTrHits();
+	  	for (Int_t j = 0; j < nh; ++j) hits->Add(tr1.GetTrHits()->UncheckedAt(j));
+	  	tr1.SetNofHits(nh);
 	}
 	
 	tr1.SetParam(*tr1.GetParamAtHit());

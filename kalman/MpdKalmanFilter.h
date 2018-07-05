@@ -34,6 +34,7 @@ class MpdKalmanFilter : public FairTask
 
   MpdKalmanGeoScheme* GetGeo() { return fGeoScheme; } ///< pointer to geo manager
   Bool_t PropagateToHit(MpdKalmanTrack *track, const MpdKalmanHit *hit, Bool_t calcLeng = kTRUE, Bool_t local = kFALSE, Double_t stepBack = -1.0); ///< propagate track
+  Bool_t PropagateParamToHit(MpdKalmanTrack *track, const MpdKalmanHit *hit, Bool_t calcLeng = kTRUE, Bool_t local = kFALSE, Double_t stepBack = -1.0); ///< propagate track parameters
   Double_t FilterHit(MpdKalmanTrack *track, const MpdKalmanHit *hit,
 		     TMatrixDSym &pointWeight, TMatrixD &paramTmp); ///< compute Chi2 from hit addition (filter hit)
   Double_t FilterHitR(MpdKalmanTrack *track, const MpdKalmanHit *hit,
@@ -61,6 +62,7 @@ class MpdKalmanFilter : public FairTask
   void GetField(Double_t *position, Double_t *field); // get mag. field vector
   Int_t IsNumer() const { return fNumer; } // if != 0 - numerical propagator
   void SetNumer(Int_t numer) { fNumer = numer; } // if != 0 - numerical propagator
+  Double_t* ExtrapOneStep(MpdKalmanTrack *track, Double_t step, Int_t flag = 0); // propagate thru one step (use cache if flag != 0)
 
  protected:
   virtual InitStatus Init();
@@ -102,10 +104,11 @@ class MpdKalmanFilter : public FairTask
  private:
   MpdKalmanGeoScheme *fGeoScheme; // pointer to geometry manager
   Int_t fNumer; // if != 0 - numerical propagator
+  Double_t fVectorG[8]; // cache for propagator
   // Some constants
   static const Int_t fgkTriesMax; // max number of attempts to find exact position
   static const Double_t fgkEpsilon; // tracking precision (cm)
 
-  ClassDef(MpdKalmanFilter,1);
+  ClassDef(MpdKalmanFilter,0);
 };
 #endif

@@ -10,7 +10,6 @@
 #include "TParticle.h"
 #include "TVirtualMC.h"
 
-//#include "FairDetectorList.h"
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"

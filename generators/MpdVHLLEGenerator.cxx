@@ -73,7 +73,7 @@ Bool_t MpdVHLLEGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     }
     fFreezout->Clear();
     for (Int_t iTrack = 0; iTrack < fNpart; iTrack++) {
-        primGen->AddTrack(fPID[iTrack], fPx[iTrack], fPy[iTrack], fPz[iTrack], fX[iTrack], fY[iTrack], fZ[iTrack]);
+        primGen->AddTrack(fPID[iTrack], fPx[iTrack], fPy[iTrack], fPz[iTrack], 0.0, 0.0, 0.0);
         TLorentzVector *freezpos = (TLorentzVector*)fFreezout->ConstructedAt(iTrack);
         freezpos->SetXYZT(fX[iTrack],fY[iTrack],fZ[iTrack],fT[iTrack]);
         // cout << iTrack << " " << fPID[iTrack] << " " <<

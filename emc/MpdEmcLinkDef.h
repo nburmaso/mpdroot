@@ -7,10 +7,14 @@
 #pragma link C++ class MpdEmcContFact;
 #pragma link C++ class MpdEmcGeo;
 #pragma link C++ class MpdEmcGeoPar;
+#pragma link C++ class MpdEmcGeoParams;
 #pragma link C++ class MpdEmc+;
 #pragma link C++ class MpdEmcPoint+;
 #pragma link C++ class MpdEmcHitProducer+;
 #pragma link C++ class MpdEmcHit+;
+#pragma link C++ class MpdEmcCluster+;
+#pragma link C++ class MpdEmcHitCreation+;
+#pragma link C++ class MpdEmcClusterCreation+;
 
 #pragma link C++ class MpdEmcHitProducerA+;
 #pragma link C++ class MpdEmcHitA+;

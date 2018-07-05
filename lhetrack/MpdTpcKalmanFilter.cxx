@@ -54,7 +54,7 @@ FILE *lunTpc = 0x0; //fopen("dl.dat","w");
 
 //__________________________________________________________________________
 MpdTpcKalmanFilter::MpdTpcKalmanFilter() 
-  : FairTask(),
+  : FairTask("TPC Kalman filter"),
     fNofEvents(0),
     fNTracks(0),
     fNPass(1),
@@ -80,7 +80,8 @@ MpdTpcKalmanFilter::MpdTpcKalmanFilter()
 //__________________________________________________________________________
 MpdTpcKalmanFilter::MpdTpcKalmanFilter(const char *name,
                                        const char *title)
-  : FairTask(name),
+  //: FairTask(name),
+  : FairTask("TPC Kalman filter"),
     fNofEvents(0),
     fNTracks(0),
     fNPass(1),
@@ -103,6 +104,7 @@ MpdTpcKalmanFilter::MpdTpcKalmanFilter(const char *name,
   FairTask *dedx = new MpdTpcDedxTask();
   Add(dedx);
   fUseMCHit = kTRUE;
+
 }
 
 //__________________________________________________________________________
@@ -122,6 +124,7 @@ InitStatus MpdTpcKalmanFilter::Init() {
 
   cout << "InitStatus MpdTpcKalmanFilter::Init\n\n";
 
+  //fVerbose = 10;
   FairRootManager *manager = FairRootManager::Instance();
   fSecGeo = MpdTpcSectorGeo::Instance();
 
@@ -456,10 +459,10 @@ void MpdTpcKalmanFilter::FillGeoScheme()
       const Double_t *transl = gGeoManager->GetCurrentMatrix()->GetTranslation();
       p3pos.SetXYZ(transl[0], transl[1], 0.);
       geo->SetGlobalPos(detId, p3pos); // padrow position
-      TGeoTrd1 *shape = (TGeoTrd1*) node->GetVolume()->GetShape();
-      if (TString(shape->Class()->GetName()) != "TGeoTrd1")  { cout << 
+      TGeoTrd1 *shape1 = (TGeoTrd1*) node->GetVolume()->GetShape();
+      if (TString(shape1->Class()->GetName()) != "TGeoTrd1")  { cout << 
 	  " !!! MpdTpcKalmanFilter::FillGeoScheme(): Wrong shape " << endl; exit(0); }
-      p2.Set((shape->GetDx1()+shape->GetDx2())/2, shape->GetDy());
+      p2.Set((shape1->GetDx1()+shape1->GetDx2())/2, shape1->GetDy());
       geo->SetSize(detId, p2); // sector size
     }
     //exit(0);
@@ -536,6 +539,9 @@ void MpdTpcKalmanFilter::GoToBeamLine()
     Double_t ptCor = CorrectForLoss(TMath::Abs(pt), theta, track->GetTrackID()); // ionization loss correction
     track->SetParam(4,TMath::Sign(1./ptCor,pt));
     track->SetParamNew(*track->GetParam());
+    Double_t sigmaPt = CorrectForLossFluct(TMath::Abs(ptCor), theta, 0.1396, 1); // ionization loss correction fluct.
+    (*cov)(4,4) += sigmaPt*sigmaPt;
+
     //*/
     
     //*
@@ -1679,7 +1685,7 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
     Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(track,hit,pointWeight,param);
     if (ifirst && dChi2 > 1000) {
       ifirst = 0;
-      cout << " !!! Back: " << dChi2 << " " << nHits << " " <<  hit->GetLayer() << " " << ok << " " << step << " " << track->GetNode() << " " << track->GetNodeNew() << endl;
+      //cout << " !!! Back: " << dChi2 << " " << nHits << " " <<  hit->GetLayer() << " " << ok << " " << step << " " << track->GetNode() << " " << track->GetNodeNew() << endl;
     }
     track->SetChi2(track->GetChi2()+dChi2);
     weight = *track->GetWeight();
@@ -1776,7 +1782,6 @@ void MpdTpcKalmanFilter::GoOut()
   }
   // Below is just for debugging
   if (0) {
-    TVector3 pos;
     TClonesArray *tofPoints = (TClonesArray*) FairRootManager::Instance()->GetObject("TOFPoint");
     Int_t nTof = tofPoints->GetEntriesFast();
     //cout << nTof << endl;
@@ -2152,9 +2157,10 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
 
   for (Int_t i = ibeg; i != iend; i+=iDir) {
     hit = (MpdKalmanHit*) track->GetHits()->UncheckedAt(i); 
+    if (hit->GetUniqueID()) continue; // 5-jan-2018 - skip ITS hits
     //if (!MpdKalmanFilter::Instance()->PropagateToHit(track, hit, kTRUE, kTRUE)) return kFALSE;
     if (!MpdKalmanFilter::Instance()->PropagateToHit(track, hit, kTRUE, kTRUE)) {
-      cout << " III " << i << " " << hit->GetDist() << endl;
+      if (fVerbose > 1) cout << " III " << i << " " << hit->GetDist() << " " << track->Pt() << " " << track->GetDirection() << endl;
       return kFALSE;
     }
     Double_t step = track->GetLength() - leng;
@@ -2239,11 +2245,46 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
   //track->SetLengAtHit(track->GetLength()-track->GetLengAtHit()); // track length from PCA to the nearest hit
 
   if (0) {
-    TVector3 pos = MpdKalmanFilter::Instance()->GetGeo()->GlobalPos(hit);
-    cout << " Hit: " << pos.Pt()*pos.Phi() << " " << pos.Pt() << " " << pos.Z() << endl;
+    TVector3 pos3 = MpdKalmanFilter::Instance()->GetGeo()->GlobalPos(hit);
+    cout << " Hit: " << pos3.Pt()*pos3.Phi() << " " << pos3.Pt() << " " << pos3.Z() << endl;
     cout << " Track: " << nHits << " " << track->GetParamNew(0) << " " << track->GetPosNew() << " " << track->GetParamNew(1) << " " << track->GetChi2() << endl;
   }
   return kTRUE;
+}
+
+//__________________________________________________________________________
+Double_t MpdTpcKalmanFilter::CorrectForLossFluct(Double_t pt, Double_t the, Double_t mass, Int_t charge)
+{
+  // Ionization loss correction fluctuations - only for low momentum pions
+
+  // Pion
+  const Int_t nP = 4, nThe = 5;
+  const Double_t moms[nP] = {0.1, 0.2, 0.3, 0.4}; // p
+  const Double_t thes[nThe] = {0.015, 0.315, 0.615, 0.915, 1.215}; // dip angle
+  static vector<vector<Double_t> > sigmas(nP,vector<Double_t>(nThe));
+  static Int_t first = 1;
+
+  if (first) {
+    first = 0;
+    sigmas[0][0] = 3.2; sigmas[0][1] = 3.3; sigmas[0][2] = 3.6; sigmas[0][3] = 5.3; sigmas[0][4] = 10.7;  
+    sigmas[1][0] = 2.8; sigmas[1][1] = 2.4; sigmas[1][2] = 2.1; sigmas[1][3] = 2.3; sigmas[1][4] = 2.8;
+    sigmas[2][0] = 1.6; sigmas[2][1] = 1.7; sigmas[2][2] = 1.7; sigmas[2][3] = 1.5; sigmas[2][4] = 2.0;
+    sigmas[3][0] = 2.5; sigmas[3][1] = 2.4; sigmas[3][2] = 2.2; sigmas[3][3] = 1.8; sigmas[3][4] = 1.9;
+    for (Int_t i = 0; i < nP; ++i) {
+      for (Int_t j = 0; j < nThe; ++j) sigmas[i][j] *= 1.e-4;
+    }
+  }
+
+  if (mass < 0.1 || mass > 0.2) return 0;
+
+  Double_t p = pt / TMath::Sin(the) * charge;
+  if (p > 0.4) return 0;
+  Double_t e = TMath::Sqrt (p*p + mass*mass), sigt = 0.0;
+  sigt = Interp2d(moms, thes, sigmas, p, TMath::Abs(TMath::PiOver2()-the));
+  //fprintf(lunTpc,"%f %f %f\n",p,TMath::Abs(TMath::PiOver2()-the),sigt);
+  sigt /= TMath::Sin(the);
+
+  return e * sigt / p / p / p / TMath::Sin(the); // Delta (1/pt)
 }
 
 //__________________________________________________________________________
@@ -2257,8 +2298,10 @@ Double_t MpdTpcKalmanFilter::CorrectForLoss(Double_t pt, Double_t the, Double_t 
   //  			          1.200, 1.500, 2.000, 2.500, 3.500};
   const Double_t momPi[nPi] =  {0.055, 0.091, 0.197, 0.297, 0.398, 0.498, 0.698, 0.898,
 				1.198, 1.498, 1.998, 2.498, 3.498};
-  const Double_t dedxPi[nPi] = {8.773, 5.002, 2.597, 2.259, 2.175, 2.143, 2.129, 2.131,
+  //const Double_t dedxPi[nPi] = {8.773, 5.002, 2.597, 2.259, 2.175, 2.143, 2.129, 2.131,
+  const Double_t dedxPi[nPi] = {8.476, 5.050, 2.625, 2.304, 2.175, 2.143, 2.129, 2.131,
 				2.152, 2.154, 2.182, 2.193, 2.239}; // mean of fit Gauss*Landau
+  const Double_t sigmaPi[nPi] = {4.2e-4, 3.4e-4, 2.2e-4, 2.0e-4}; // gaussian fit
   // Kaon
   const Int_t nK = 12; // K-
   //const Double_t momK[nK] =  {0.200, 0.250, 0.300, 0.400, 0.500, 0.700, 0.900, 1.200,
@@ -2317,7 +2360,13 @@ Double_t MpdTpcKalmanFilter::CorrectForLoss(Double_t pt, Double_t the, Double_t 
   Double_t t = TMath::Sqrt (p*p + mass2) - mass, dt = 0.0;
 
   if (mass < 0.1) dt = 2.9; // 2.9 MeV loss for electrons
-  else if (mass < 0.2) dt = MpdKalmanFilter::Instance()->Interp(nPi, momPi, dedxPi, p); // Pion
+  else if (mass < 0.2) {
+    if (p < 0.45) {
+      dt = 0.0152867 - 0.0905572*p - 1.98303*p*p + 35.3591*p*p*p - 245.426*p*p*p*p + 915.386*p*p*p*p*p 
+	- 1926.86*p*p*p*p*p*p + 2157.13*p*p*p*p*p*p*p - 999.496*p*p*p*p*p*p*p*p;
+      dt *= 1000;
+    } else dt = MpdKalmanFilter::Instance()->Interp(nPi, momPi, dedxPi, p); // Pion
+  }
   else if (mass < 0.6) dt = MpdKalmanFilter::Instance()->Interp(nK, momK, dedxK, p); // Kaon
   else if (mass < 1.0) dt = MpdKalmanFilter::Instance()->Interp(nP, momP, dedxP, p); // Proton
   else if (mass < 2.0) dt = MpdKalmanFilter::Instance()->Interp(nD, momD, dedxD, p); // Deuteron
@@ -2468,45 +2517,51 @@ void MpdTpcKalmanFilter::MergeTracks(Int_t ipass)
 	MpdKalmanHit hitTmp;
 	hitTmp.SetType(MpdKalmanHit::kFixedR);
 
+	//if (track.GetDirection() == MpdKalmanTrack::kInward) MpdKalmanFilter::Instance()->Refit(&track, 1);
 	if (track.GetDirection() == MpdKalmanTrack::kInward) {
+	  track.SetDirection(MpdKalmanTrack::kOutward);
+	  MpdKalmanFilter::Instance()->Refit(&track, -1);
+	}
+	//else if (track.GetDirection() == MpdKalmanTrack::kOutward) MpdKalmanFilter::Instance()->Refit(&track, -1);
+	//cout << " Refit chi2: " << track.GetChi2() << " " << track.GetNofHits() << " " << trL->GetDirection() << endl;
+	if (track.GetChi2() > 1000) continue; // do not merge tracks
+
+	Int_t ok = 0;
+	if (trL->GetDirection() == MpdKalmanTrack::kInward) {
 	  //hitTmp.SetDist(fSecGeo->GetMaxY()/TMath::Cos(fSecGeo->Dphi()/2));
 	  Double_t radMax = TMath::Max (((MpdKalmanHit*)trL->GetHits()->First())->GetDist(), 
 					((MpdKalmanHit*)trS->GetHits()->First())->GetDist());
 	  radMax += fSecGeo->GetMinY() + 5.0;
 	  hitTmp.SetDist(radMax);
-	  MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
+	  ok = MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
 	} else {
 	  hitTmp.SetDist(fSecGeo->GetMinY());
-	  MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
+	  ok = MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
 	}
 	// Save info for further use
 	track.SetWeightAtHit(*track.GetWeight());
 	track.SetParamAtHit(*track.GetParamNew());
 	track.SetPosAtHit(track.GetPosNew());
 
-	TObjArray *hits = track.GetHits();
-	hits->Clear();
+	TObjArray *hitss = track.GetHits();
+	hitss->Clear();
 	for (Int_t ih = 0; ih < 70; ++ih) {
-	  if (hits2[ih]) hits->Add(hits2[ih]);
+	  if (hits2[ih]) hitss->Add(hits2[ih]);
+	  //if (hits2[ih]) { hitss->Add(hits2[ih]); cout << " dist: " << hits2[ih]->GetLayer() << " " << hits2[ih]->GetDist() << " " 
+	  //				       << hits2[ih]->GetMeas(0) << " " << hits2[ih]->GetMeas(1) << endl; }
 	}
-   
-	//cout << " Orig chi2: " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
-	if (track.GetDirection() == MpdKalmanTrack::kInward) MpdKalmanFilter::Instance()->Refit(&track, 1);
-	else if (track.GetDirection() == MpdKalmanTrack::kOutward) MpdKalmanFilter::Instance()->Refit(&track, -1);
-	//cout << " Refit chi2: " << track.GetChi2() << " " << track.GetNofHits() << " " << trL->GetDirection() << endl;
-	if (track.GetChi2() > 1000) continue; // do not merge tracks
 
 	// Refit with multiple scattering
-	if (track.GetDirection() == MpdKalmanTrack::kInward) {
+	if (trL->GetDirection() == MpdKalmanTrack::kInward) {
 	  if (!Refit(&track, 0.13957, 1, kTRUE, 1, kTRUE)) continue; // do not merge tracks
 	  //cout << " *** RefitIn ***: " << trL->GetNofTrHits() << " " << track.GetNofHits() << " " << trL->GetChi2()
 	  //   << " " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
 	  if (1.0*(track.GetNofHits() - trL->GetNofTrHits()) / trS->GetNofTrHits() < 0.3) continue; // do not merge tracks
-	} else if (track.GetDirection() == MpdKalmanTrack::kOutward) {
+	} else if (trL->GetDirection() == MpdKalmanTrack::kOutward) {
 	  // Refit outward
-	  if (!Refit(&track, 0.13957, 1, kTRUE, -1, kTRUE)) continue; // do not merge tracks
+	  if (!Refit(&track, 0.13957, 1, kTRUE, -1, kTRUE) || track.GetNofHits() == 0) continue; // do not merge tracks
 	  //cout << " *** RefitOut ***: " << trL->GetNofTrHits() << " " << track.GetNofHits() << " " << trL->GetChi2()
-	  //   << " " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
+	  //<< " " << track.GetChi2() << " " << trL->GetTrackID() << " " << trS->GetTrackID() << endl;
 	  
 	  //hitTmp.SetDist(fSecGeo->GetMaxY()/TMath::Cos(fSecGeo->Dphi()/2));
 	  hitTmp.SetDist(((MpdKalmanHit*)track.GetHits()->First())->GetDist() + fSecGeo->GetMinY() + 5.0);
@@ -2542,6 +2597,32 @@ void MpdTpcKalmanFilter::MergeTracks(Int_t ipass)
     if (track->GetTrackID() < 0) fTracks->Remove(track);
   }
   fTracks->Compress();
+}
+
+//__________________________________________________________________________
+Double_t MpdTpcKalmanFilter::Interp2d(const Double_t *moms, const Double_t *thes, vector<vector<Double_t> > &sigmas, 
+				      Double_t p, Double_t dip)
+{
+  // 2-d linear interpolation
+
+  Int_t nx = sigmas.size(), ny = sigmas[0].size(), i0 = 0, j0 = 0, i1 = 0, j1 = 0;
+
+  for ( ; i1 < nx; ++i1) if (moms[i1] >= p) break;
+  if (i1 == nx) --i1;
+  if (i1 == 0) i0 = 1;
+  else i0 = i1 - 1;
+  Double_t u = (p - moms[i0]) / (moms[i1] - moms[i0]);
+
+  for ( ; j1 < ny; ++j1) if (thes[j1] >= dip) break;
+  if (j1 == ny) --j1;
+  if (j1 == 0) j0 = 1;
+  else j0 = j1 - 1;
+  Double_t v = (dip - thes[j0]) / (thes[j1] - thes[j0]);
+
+  Double_t uv = u * v;
+  Double_t res = sigmas[i0][j0] * (1 - u - v + uv) + sigmas[i1][j0] * (u - uv) + 
+    sigmas[i0][j1] * (v - uv) + sigmas[i1][j1] * uv;
+  return res;
 }
 
 //__________________________________________________________________________

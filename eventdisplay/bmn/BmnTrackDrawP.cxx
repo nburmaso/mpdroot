@@ -6,6 +6,7 @@
 #include "BmnTrackDrawP.h"
 #include "BmnTrack.h"
 #include "CbmStack.h"
+#include "MpdEventManagerEditor.h"
 
 #include "TROOT.h"
 #include "TGeant3.h"
@@ -53,7 +54,7 @@ InitStatus BmnTrackDrawP::Init()
     if (fVerbose > 1)
         cout<<"BmnTrackDrawP::Init()"<<endl;
 
-    fEventManager = FairEventManager::Instance();
+    fEventManager = MpdEventManager::Instance();
     if (fVerbose > 2)
         cout<<"BmnTrackDrawP::Init() get instance of EventManager"<<endl;
 
@@ -240,12 +241,7 @@ void BmnTrackDrawP::Exec(Option_t* option)
              cout<<"track added "<<track->GetName()<<endl;
     }
 
-    if (fEventManager->EveRecoTracks == NULL)
-    {
-        fEventManager->EveRecoTracks = new TEveElementList("Reco tracks");
-        gEve->AddElement(fEventManager->EveRecoTracks, fEventManager);
-        fEventManager->EveRecoTracks->SetRnrState(kFALSE);
-    }
+    fEventManager->AddEventElement(fTrList, RecoTrackList);
 
     // redraw EVE scenes
     gEve->Redraw3D(kFALSE);

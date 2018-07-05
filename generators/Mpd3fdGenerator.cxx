@@ -20,6 +20,7 @@
 #include "TParticlePDG.h"
 #include "TMath.h"
 #include "TString.h"
+#include "TRegexp.h"
 
 #include <iostream>
 #include <cstring>
@@ -60,9 +61,9 @@ fFileName(fileName) {
     fDstTree->SetBranchAddress("px", fPx);
     fDstTree->SetBranchAddress("py", fPy);
     fDstTree->SetBranchAddress("pz", fPz);
-    fDstTree->SetBranchAddress("x", fX);
-    fDstTree->SetBranchAddress("y", fY);
-    fDstTree->SetBranchAddress("z", fZ);
+    fDstTree->SetBranchAddress("x", fX);    // [fm/c]
+    fDstTree->SetBranchAddress("y", fY);    // [fm/c]
+    fDstTree->SetBranchAddress("z", fZ);    // [fm/c]
     fDstTree->SetBranchAddress("E", fE);
     fDstTree->SetBranchAddress("npart", &fNpart);
     fDstTree->SetBranchAddress("id", fPID);
@@ -105,25 +106,15 @@ Bool_t Mpd3fdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     //Int_t events = fDstTree->GetEntries();
 
     // ---> Define event variables to be read from file
-    Int_t evnr = 0, aProj = 0, zProj = 0, aTarg = 0, zTarg = 0;
-
-    Char_t nucl1;
-    Char_t nucl2;
     Int_t energ;
-    TString name;
 
-    if (fFileName.Contains("Au")) {
-        aProj = 197;
-        zProj = 79;
-        aTarg = 197;
-        zTarg = 79;
-        sscanf(fFileName.Data(), "Au_%d_", &energ);
-    }
+    const TRegexp elb("_elb[0-9]*gev_");
+    TSubString subelb = fFileName(elb);  // select substring by regexp
+    sscanf(subelb.Data(), "_elb%dgev_", &energ);
     
-    cout << fFileName << " " << energ << endl;
-
     Float_t b = 0.0; //TMP!
-
+    
+    /*
     // ---> Calculate beta and gamma for Lorentztransformation
     TDatabasePDG* pdgDB = TDatabasePDG::Instance();
     TParticlePDG* kProton = pdgDB->GetParticle(2212);
@@ -133,14 +124,17 @@ Bool_t Mpd3fdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     Double_t pBeam = TMath::Sqrt(eBeam * eBeam - kProtonMass * kProtonMass);
     Double_t betaCM = pBeam / (eBeam + kProtonMass);
     Double_t gammaCM = TMath::Sqrt(1. / (1. - betaCM * betaCM));
-
+    */
+    
     cout << "-I Mpd3fdGenerator: Event " << fEventNumber << ",  b = " << b
             << " fm,  multiplicity " << fNpart << ", Elab: " << energ << endl;
+
+    if (fNpart>kBatyukConst) {cout <<"-E- 3fdGenerator SELFCHECK ERROR"<< endl; exit(1);}
 
     // Set event id and impact parameter in MCEvent if not yet done
     FairMCEventHeader* event = primGen->GetEvent();
     if (event && (!event->IsSet())) {
-        event->SetEventID(evnr);
+        //event->SetEventID(evnr);
         event->SetB(b);
         event->MarkSet(kTRUE);
     }
@@ -159,7 +153,7 @@ Bool_t Mpd3fdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 //        Double_t ee = sqrt(mass * mass + px * px + py * py + pz * pz);
 
         // Give track to PrimaryGenerator
-        primGen->AddTrack(fPID[itrack], fPx[itrack], fPy[itrack], fPz[itrack], fX[itrack], fY[itrack], fZ[itrack]);
+        primGen->AddTrack(fPID[itrack], fPx[itrack], fPy[itrack], fPz[itrack],  0.0, 0.0, 0.0);  // pdg, mom [GeV/c], vertex [cm]
 
     }
     fEventNumber++;

@@ -18,8 +18,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace CLHEP;
-
 #include "MpdHelix.h"
+#include <TMath.h>
 
 #ifdef __ROOT__
 ClassImpT(MpdHelix,double);
@@ -27,7 +27,18 @@ ClassImpT(MpdHelix,double);
 
 const double MpdHelix::NoSolution = 3.e+33;
 
-MpdHelix::MpdHelix(){ /*noop*/ }
+MpdHelix::MpdHelix():
+		mSingularity(false),
+		mOrigin(),
+		mDipAngle(0),
+		mCurvature(0),
+		mPhase(0),
+		mH(0),
+		mCosDipAngle(0),
+		mSinDipAngle(0),
+		mCosPhase(0),
+		mSinPhase(0)
+	{ /*noop*/ }
 
 MpdHelix::MpdHelix(double c, double d, double Phase,
 		 const TVector3 o, int hh)
@@ -35,6 +46,14 @@ MpdHelix::MpdHelix(double c, double d, double Phase,
     setParameters(c, d, Phase, o, hh);
 }
 
+MpdHelix::MpdHelix(TVector3 mom, TVector3 o, Double_t charge,
+		Double_t Bz) {
+	Double_t temp_h =  -TMath::Sign(1.,charge*Bz);
+	Double_t dip_angle = TMath::ATan2(mom.Pz(),mom.Pt());
+	Double_t curv = TMath::Abs(charge*Bz*0.299792458/mom.Pt())*0.01;
+	Double_t Phase =  mom.Phi()-temp_h*TMath::PiOver2();
+	setParameters(curv,dip_angle,Phase,o,temp_h);
+}
 MpdHelix::~MpdHelix() { /* noop */ };
 
 void MpdHelix::setParameters(double c, double dip, double Phase,

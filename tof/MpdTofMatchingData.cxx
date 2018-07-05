@@ -18,8 +18,8 @@ using namespace std;
 ClassImp(MpdTofMatchingData)
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, 
-					const TVector3& pointR, const TVector3& pointP, const TVector3& perp, const TVector3& Momentum, Int_t charge, Double_t delta1, Double_t delta2)
- : fTime(hit->GetTime()), fLength(length), fDelta1(delta1),  fDelta2(delta2), fDetectorUID(hit->GetDetectorID()), fFlag(flag), fCharge(charge), fPDGcode(pid), fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fNmbTrHits(nTrHits)
+					const TVector3& pointR, const TVector3& pointP, const TVector3& perp, const TVector3& Momentum, Int_t charge, Double_t delta1, Double_t delta2, Double_t weight)
+ : fTime(hit->GetTime()), fLength(length), fDelta1(delta1),  fDelta2(delta2), fDetectorUID(hit->GetDetectorID()), fFlag(flag), fCharge(charge), fPDGcode(pid), fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fNmbTrHits(nTrHits), fWeight(weight)
 {
 	Momentum.GetXYZ(fMom);
 	hit->GetXYZ(fXYZ);
@@ -36,8 +36,8 @@ MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nT
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, 
-						const TVector3& pointP, const TVector3& Momentum, Int_t charge, Double_t delta1, Double_t delta2)
- : fTime(hit->GetTime()), fLength(length), fDelta1(delta1), fDelta2(delta2), fDetectorUID(hit->GetDetectorID()), fFlag(flag), fCharge(charge), fPDGcode(pid), fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fNmbTrHits(nTrHits)
+						const TVector3& pointP, const TVector3& Momentum, Int_t charge, Double_t delta1, Double_t delta2, Double_t weight)
+ : fTime(hit->GetTime()), fLength(length), fDelta1(delta1), fDelta2(delta2), fDetectorUID(hit->GetDetectorID()), fFlag(flag), fCharge(charge), fPDGcode(pid), fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fNmbTrHits(nTrHits), fWeight(weight)
 {
 	Momentum.GetXYZ(fMom);
 	hit->GetXYZ(fXYZ);
@@ -52,13 +52,13 @@ MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nT
 }						
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatchingData::MpdTofMatchingData()
-: fKFTrackIndex(-1), fTofHitIndex(-1), fNmbTrHits(0), fFlag(0), fCharge(0), fPDGcode(0)
+: fKFTrackIndex(-1), fTofHitIndex(-1), fNmbTrHits(0), fFlag(0), fCharge(0), fPDGcode(0), fWeight(0.)
 {
 	fTime = fBeta = fMass2 = fLength = fMom[0] = fMom[1] = fMom[2] = fXYZ[0] = fXYZ[1] = fXYZ[2] = MpdTofMatching::isNan;
 }
 //------------------------------------------------------------------------------------------------------------------------
-MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId)
- : fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fNmbTrHits(0),  fFlag(0), fCharge(0), fPDGcode(0)
+MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Double_t weight)
+ : fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fNmbTrHits(0),  fFlag(0), fCharge(0), fPDGcode(0), fWeight(weight)
 {
 	fTime = fBeta = fMass2 = fLength = fMom[0] = fMom[1] = fMom[2] = fXYZ[0] = fXYZ[1] = fXYZ[2] = MpdTofMatching::isNan;
 }

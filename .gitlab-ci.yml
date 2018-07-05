@@ -1,0 +1,87 @@
+stages:
+- build
+- test_runMC
+- test_run_reco
+ 
+before_script:
+ - source ./SetEnv.sh
+ 
+variables:
+ GIT_SUBMODULE_STRATEGY: recursive
+ 
+.build_template: &build
+  stage: build
+  artifacts:
+    paths:
+      - build
+  script:
+    - mkdir build
+    - cd build
+    - cmake "$CI_PROJECT_DIR"
+    - make
+  allow_failure: false
+  
+build:centos:
+  tags:
+    - build
+    - centos
+  <<: *build
+
+build:ubuntu:
+  tags: 
+    - build
+    - ubuntu
+  <<: *build 
+  
+.runMC_template: &runMC
+  stage: test_runMC
+  artifacts:
+    paths:
+      - macro/mpd/evetest.root
+  script:
+    - source build/config.sh
+    - root -b -q -l '$CI_PROJECT_DIR/macro/mpd/runMC.C("auau.09gev.mbias.98k.ftn14","$VMCWORKDIR/macro/mpd/evetest.root",0,2)' | tee output.txt
+    - (if grep -q "Macro finished successfully." output.txt; then $(exit 0); else $(exit -1); fi);
+  allow_failure: false
+  
+runMC:centos:
+  tags:
+    - test
+    - centos
+  dependencies:
+    - build:centos
+  <<: *runMC
+
+runMC:ubuntu:
+  tags:
+    - test
+    - ubuntu
+  dependencies:
+    - build:ubuntu
+  <<: *runMC
+  
+.run_reco_template: &run_reco
+  stage: test_run_reco
+  script:
+    - source build/config.sh
+    - root -b -q -l "$CI_PROJECT_DIR/macro/mpd/reco.C" | tee output.txt
+    - (if grep -q "Macro finished successfully." output.txt; then $(exit 0); else $(exit -1); fi);
+  allow_failure: false
+  
+run_reco:centos:
+  tags:
+    - test
+    - centos
+  dependencies:
+    - build:centos
+    - runMC:centos
+  <<: *run_reco
+  
+run_reco:ubuntu:
+  tags:
+    - test
+    - ubuntu
+  dependencies:
+    - build:ubuntu
+    - runMC:ubuntu
+  <<: *run_reco

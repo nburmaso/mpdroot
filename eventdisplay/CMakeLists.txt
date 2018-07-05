@@ -1,15 +1,9 @@
 # Create a library called "libEventDisplay" 
-set(INCLUDE_DIRECTORIES
-${CMAKE_SOURCE_DIR}/base/event
-${CMAKE_SOURCE_DIR}/base/sim
-${CMAKE_SOURCE_DIR}/base/source
-${CMAKE_SOURCE_DIR}/base/steer
-${CMAKE_SOURCE_DIR}/geane
-${CMAKE_SOURCE_DIR}/config
-${CMAKE_SOURCE_DIR}/fairtools
-${CMAKE_SOURCE_DIR}/geobase
-${CMAKE_SOURCE_DIR}/parbase
-${CMAKE_SOURCE_DIR}/eventdisplay
+
+Set(INCLUDE_DIRECTORIES
+ ${BASE_INCLUDE_DIRECTORIES}
+ ${CMAKE_SOURCE_DIR}/config
+ ${CMAKE_SOURCE_DIR}/eventdisplay
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -20,25 +14,26 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 )
 
 set(LINK_DIRECTORIES
-  ${ROOT_LIBRARY_DIR}
-  ${XML2_LIBRARY_DIR}
+ ${ROOT_LIBRARY_DIR}
+ ${XML2_LIBRARY_DIR}
+ ${FAIRROOT_LIBRARY_DIR}
 )
 
 set(SRCS
-FairEventManager.cxx  
-FairMCTracks.cxx
-FairMCStack.cxx
-FairEventManagerEditor.cxx
-FairMCTracksEditor.cxx
-FairBoxSet.cxx
-FairBoxSetDraw.cxx
-FairBoxSetEditor.cxx
-FairPointSetDraw.cxx
-FairMCPointDraw.cxx
-FairHitDraw.cxx
-FairHitPointSetDraw.cxx
-FairTimeStampPointDraw.cxx
-FairWebScreenshots.cxx
+MpdEventManager.cxx  
+MpdMCTracks.cxx
+MpdMCStack.cxx
+MpdEventManagerEditor.cxx
+MpdMCTracksEditor.cxx
+MpdBoxSet.cxx
+MpdBoxSetDraw.cxx
+MpdBoxSetEditor.cxx
+MpdPointSetDraw.cxx
+MpdMCPointDraw.cxx
+MpdHitDraw.cxx
+MpdHitPointSetDraw.cxx
+FairXMLNode.cxx
+MpdWebScreenshots.cxx
 )
 
 if (BMNROOT)
@@ -47,6 +42,9 @@ if (BMNROOT)
     ${CMAKE_SOURCE_DIR}/bmndata
     ${CMAKE_SOURCE_DIR}/globaltracking
     ${CMAKE_SOURCE_DIR}/gem
+    ${CMAKE_SOURCE_DIR}/uni_db
+    ${CMAKE_SOURCE_DIR}/uni_db/db_classes
+    ${CMAKE_SOURCE_DIR}/silicon
   )
   Set(SRCS
     ${SRCS}
@@ -61,6 +59,7 @@ if (MPDROOT)
   Set(INCLUDE_DIRECTORIES
     ${INCLUDE_DIRECTORIES}
     ${CMAKE_SOURCE_DIR}/mcstack
+    ${CMAKE_SOURCE_DIR}/mpdbase
     ${CMAKE_SOURCE_DIR}/mpddata
     ${CMAKE_SOURCE_DIR}/kalman
     ${CMAKE_SOURCE_DIR}/tpc
@@ -85,10 +84,14 @@ if (TDAQ_FOUND)
     ${LINK_DIRECTORIES} 
     ${TDAQ_LIBRARY_PATH}
   )
-  Set(SRCS
-    ${SRCS} 
+  if (BMNROOT)
+   Set(SRCS
+    ${SRCS}   
+    tdaq/BmnEventPull.cxx
     #tdaq/BmnEventMonitor.cxx
-  )
+    tdaq/BmnTdaqSource.cxx
+   )
+  endif (BMNROOT)
 endif (TDAQ_FOUND)
 
 Include_Directories(${INCLUDE_DIRECTORIES})
@@ -97,33 +100,38 @@ Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 link_directories(${LINK_DIRECTORIES})
 
 Set(HEADERS)
+if (TDAQ_FOUND)
+ Set(LINKDEF tdaq/EventDLinkDef.h)
+else (TDAQ_FOUND)
+ Set(LINKDEF EventDisplayLinkDef.h)
+endif (TDAQ_FOUND)
 if (BMNROOT)
  if (TDAQ_FOUND)
   Set(LINKDEF bmn/EventBDLinkDef.h)
  else (TDAQ_FOUND)
   Set(LINKDEF bmn/EventBLinkDef.h)
  endif (TDAQ_FOUND)
-else (BMNROOT)
- if (MPDROOT)
-  if (TDAQ_FOUND)
-   Set(LINKDEF mpd/EventMDLinkDef.h)
-  else (TDAQ_FOUND)
-   Set(LINKDEF mpd/EventMLinkDef.h)
-  endif (TDAQ_FOUND)
- else (MPDROOT)
-  if (TDAQ_FOUND)
-   Set(LINKDEF tdaq/EventDLinkDef.h)
-  else (TDAQ_FOUND)
-   Set(LINKDEF EventDisplayLinkDef.h)
-  endif (TDAQ_FOUND)
- endif (MPDROOT)
 endif (BMNROOT)
-Set(LIBRARY_NAME EventDisplay)
+if (MPDROOT)
+ if (TDAQ_FOUND)
+  Set(LINKDEF mpd/EventMDLinkDef.h)
+ else (TDAQ_FOUND)
+  Set(LINKDEF mpd/EventMLinkDef.h)
+ endif (TDAQ_FOUND)
+endif (MPDROOT)
 
-#if (TDAQ_FOUND)
-#  Set(DEPENDENCIES Base Eve Geom EG Physics Ged Gui Graf3d Tree Cint Core xml2 emon emon-dal cmdline ipc owl omniORB4 omnithread ers)
-#else (TDAQ_FOUND)
-  Set(DEPENDENCIES Base Eve Geom EG Physics Ged Gui Graf3d Tree Cint Core xml2)
-#endif (TDAQ_FOUND)
+if (TDAQ_FOUND)
+  Set(DEPENDENCIES Base Eve Geom EG Physics Ged Gui Graf3d Tree Core xml2 emon emon-dal cmdline ipc owl omniORB4 omnithread ers)
+else (TDAQ_FOUND)
+  Set(DEPENDENCIES Base Eve Geom EG Physics Ged Gui Graf3d Tree Core xml2)
+endif (TDAQ_FOUND)
+if (BMNROOT)
+ Set(DEPENDENCIES BmnData Geane ${DEPENDENCIES})
+endif (BMNROOT)
+if (MPDROOT)
+ Set(DEPENDENCIES Emc Geane ${DEPENDENCIES})
+endif (MPDROOT)
+
+Set(LIBRARY_NAME EventDisplay)
 
 GENERATE_LIBRARY()
