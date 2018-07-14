@@ -6,6 +6,7 @@
 //
 // Author List:
 //      Alexander Zinchenko LHEP, JINR, Dubna - 8-May-2016
+//      Alexander Zinchenko LHEP, JINR, Dubna - 24-June-2018 - adapted to projective geometry
 //
 //--------------------------------------------------------------------
 
@@ -13,12 +14,12 @@
 #define MPDEMCDIGITIZER_H 1
 
 #include "MpdEmcDigit.h"
-#include "MpdEmcGeoPar.h"
 
 #include "FairTask.h"
 #include <iostream>
 #include <map>
 
+class MpdEmcGeoParams;
 class TClonesArray;
 
 class MpdEmcDigitizer : public FairTask {
@@ -51,18 +52,13 @@ private:
     TClonesArray* fDigiArray;
 
     void RedoId(TClonesArray *digis, TClonesArray *mctrs);
-    UInt_t GetSecId(Float_t x, Float_t y, Float_t z);
-    UInt_t GetRowId(Float_t z);
-    UInt_t GetSupModId(Float_t x, Float_t y, Float_t z, UInt_t sec);
-    UInt_t GetModId(Float_t x, Float_t y, UInt_t supMod, UInt_t sec);
 
     void FindChanPhiZ(Double_t &phi, Double_t &z);
-    Float_t CalcZCenter(UInt_t sec, UInt_t row, UInt_t mod);
-    Float_t CalcPhiCenter(UInt_t sec, UInt_t supMod, UInt_t mod);
+    void FindChanPhiThe(Double_t &phi, Double_t &the);
 
     MpdEmcDigit* SearchHit(TString tower);
 
-    MpdEmcGeoPar* fGeoPar;
+    MpdEmcGeoParams* fGeoPar;
     std::map<TString,MpdEmcDigit*> fHitMap; //! 
 
     ClassDef(MpdEmcDigitizer, 1);

@@ -169,8 +169,8 @@ Double_t MpdVertexZfinder::FindZ(const Int_t *layPointers, Int_t &flag)
 
   for (Int_t lay = layBeg; lay != layEnd; lay+=iDir) {
     //for (Int_t lay = layMax; lay > layMax-2; --lay) {
-    Int_t nHits1 = (Int_t) fhLays->GetCellContent(lay+1,0);
-    Int_t nHits2 = (Int_t) fhLays->GetCellContent(lay+dLays*iDir+1,0);
+    Int_t nHits1 = (Int_t) fhLays->GetBinContent(lay+1,0);
+    Int_t nHits2 = (Int_t) fhLays->GetBinContent(lay+dLays*iDir+1,0);
     //cout << "Hits: " << nHits1 << " " << nHits2 << endl;
     // Loop over hits in first layer
     for (Int_t ihit1 = 0; ihit1 < nHits1; ++ihit1) {

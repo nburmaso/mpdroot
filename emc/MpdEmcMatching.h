@@ -6,19 +6,23 @@
 //
 // Author List:
 //      Alexander Zinchenko LHEP, JINR, Dubna - 1-June-2016
+//      Alexander Zinchenko LHEP, JINR, Dubna - 8-June-2018 - adapted for projective geometry
 //
 //--------------------------------------------------------------------
 
 #ifndef MPDEMCMATCHING_H
 #define MPDEMCMATCHING_H 1
 
-#include "MpdEmcDigit.h"
-#include "MpdEmcGeoPar.h"
+//#include "MpdEmcDigit.h"
 
 #include "FairTask.h"
+
+#include <TVector3.h>
 #include <iostream>
 #include <map>
+#include <set>
 
+class MpdEmcGeoParams;
 class MpdTpcKalmanTrack;
 class TClonesArray;
 
@@ -59,11 +63,11 @@ class MpdEmcMatching : public FairTask
   TClonesArray* fDigiArray;
   
   void DoMatching(Int_t itrack);
+  void GetTowerCoords(TVector3 &pos, Int_t io, Double_t &phiT, Double_t &theT);
   
-  MpdEmcDigit* SearchHit(TString tower);
-  
-  MpdEmcGeoPar* fGeoPar;
-  std::vector<std::multimap<Double_t,Int_t> > fRecPoints; 
+  MpdEmcGeoParams* fGeoPar;
+  std::vector<std::multimap<Double_t,Int_t> > fRecPoints;
+  std::set<Int_t> fSecRows0;
   
   ClassDef(MpdEmcMatching, 1);
   

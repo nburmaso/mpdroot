@@ -63,9 +63,9 @@ class MpdKalmanFilter : public FairTask
   Int_t IsNumer() const { return fNumer; } // if != 0 - numerical propagator
   void SetNumer(Int_t numer) { fNumer = numer; } // if != 0 - numerical propagator
   Double_t* ExtrapOneStep(MpdKalmanTrack *track, Double_t step, Int_t flag = 0); // propagate thru one step (use cache if flag != 0)
+  virtual InitStatus Init();
 
  protected:
-  virtual InitStatus Init();
   virtual InitStatus ReInit();
   virtual void Finish();
   virtual ~MpdKalmanFilter(); ///< Destructor

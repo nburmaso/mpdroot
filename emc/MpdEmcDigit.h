@@ -18,8 +18,8 @@
 class MpdEmcDigit : public FairHit 
 {
  public:
-  enum Shifts {kSideS = 0, kChannelS = 1, kModuleS = 5, kSectorS = 12};
-  enum Masks {kSideM = 1, kChannelM = 15, kModuleM = 127, kSectorM = 63};
+  enum Shifts {kSideS = 0, kChannelS = 1, kRowS = 7, kSectorS = 13};
+  enum Masks {kSideM = 1, kChannelM = 63, kRowM = 63, kSectorM = 15};
 
  public:
 
@@ -32,7 +32,7 @@ class MpdEmcDigit : public FairHit
     /** Constructor with hit parameters (2) [not the flag]**/
     MpdEmcDigit(Int_t detectorID, TVector3 pos, TVector3 dpos, Int_t refIndex);
 
-    MpdEmcDigit(UInt_t side, UInt_t sector, UInt_t module, UInt_t channel);
+    MpdEmcDigit(UInt_t side, UInt_t sector, UInt_t row, UInt_t channel);
 
     /** Destructor **/
     virtual ~MpdEmcDigit();
@@ -42,7 +42,7 @@ class MpdEmcDigit : public FairHit
     UInt_t SetDetId(UInt_t side, UInt_t sector, UInt_t module, UInt_t channel);
     UInt_t Side() const { return fDetectorID % 2; }
     UInt_t Channel() const { return (fDetectorID >> kChannelS) & kChannelM; }
-    UInt_t Module() const { return (fDetectorID >> kModuleS) & kModuleM; }
+    UInt_t Row() const { return (fDetectorID >> kRowS) & kRowM; }
     UInt_t Sector() const { return (fDetectorID >> kSectorS) & kSectorM; }
 
     /** Accessors **/

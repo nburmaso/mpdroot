@@ -6,11 +6,12 @@
 //
 // Author List:
 //      Alexander Zinchenko LHEP, JINR, Dubna - 8-May-2016
+//      Alexander Zinchenko LHEP, JINR, Dubna - 24-June-2018 - adapted to projective geometry
 //
 //--------------------------------------------------------------------
 
 #include "MpdEmcDigitizer.h"
-#include "MpdEmcGeoPar.h"
+#include "MpdEmcGeoParams.h"
 #include "MpdEmcDigit.h"
 #include "MpdEmcPoint.h"
 
@@ -46,7 +47,7 @@ MpdEmcDigitizer::~MpdEmcDigitizer() {
 
 InitStatus MpdEmcDigitizer::Init() {
 
-    cout << "******************* EMC Digitizer INIT *********************" << endl;
+    cout << "\n******************* EMC Digitizer INIT *********************" << endl;
 
     // Get RootManager
     FairRootManager* ioman = FairRootManager::Instance();
@@ -56,7 +57,7 @@ InitStatus MpdEmcDigitizer::Init() {
         return kFATAL;
     }
 
-    fGeoPar = new MpdEmcGeoPar();
+    fGeoPar = new MpdEmcGeoParams();
 
     // Get input array
     fPointArray = (TClonesArray*) ioman->GetObject("EmcPoint");
@@ -95,8 +96,9 @@ void MpdEmcDigitizer::Exec(Option_t* opt)
 
   cout << "MpdEmcDigitizer::Exec started" << endl;
 
-  static Double_t dzTower = fGeoPar->GetLengthOfModuleByZ();
-  static Double_t dphiTower = TMath::TwoPi() / fGeoPar->GetNsec() / fGeoPar->GetNsupMod() / fGeoPar->GetNModInSuperModByPhi();
+  static Int_t nSecRows = -1;
+  if (nSecRows < 0) 
+    nSecRows = fGeoPar->GetNrows() / (fGeoPar->GetNsec() / 2 - 1); // 6 wide, 2 narrow sectors
 
   // Reset output Array
   if (!fDigiArray) Fatal("MpdEmcDigitizer::Exec", "No array of digits");
@@ -111,64 +113,64 @@ void MpdEmcDigitizer::Exec(Option_t* opt)
     FairMCTrack* tr = (FairMCTrack*) fMcTrackArray->UncheckedAt(trId);
     //        if (tr->GetMotherId() != -1) continue;
     Int_t pdg = tr->GetPdgCode();
-    Float_t x = pnt->GetX();
-    Float_t y = pnt->GetY();
-    Float_t z = pnt->GetZ();
-    /*
-    UInt_t sec = GetSecId(x, y, z);
-    UInt_t row = GetRowId(z);
-    UInt_t supMod = GetSupModId(x, y, z, sec);
-    UInt_t mod = GetModId(x, y, supMod, sec);
-    */
+    Double_t x = pnt->GetX();
+    Double_t y = pnt->GetY();
+    Double_t z = pnt->GetZ();
     Float_t e = pnt->GetEnergyLoss();
-    //AZ
+
     gGeoManager->FindNode(x,y,z); 
     TString path(gGeoManager->GetPath());
     //cout << path << endl; 
     //if (!path.Contains("sc")) exit(0); 
     if (!path.Contains("sc")) continue; 
     gGeoManager->CdUp(); // to tower (channel)
-    Int_t ip = path.Index("ChH");
+    Int_t ip = path.Index("ChH"); // half-EMC
     UInt_t ih = TString(path(ip+4,1)).Atoi();
-    ip = path.Index("Sector");
+    ip = path.Index("Sector"); // sector
     Int_t ip1 = path.Index("/",ip);
-    UInt_t isec = TString(path(ip+7,ip1)).Atoi();
-    ip = path.Index("Tube");
-    ip1 = path.Index("/",ip);
-    UInt_t itube = TString(path(ip+5,ip1)).Atoi();
-    ip = path.Index("box");
-    UInt_t ibox = 1;
-    if (ip >= 0) {
-      // Tower 4x4 cm
-      ibox = TString(path(ip+4,1)).Atoi();
-      if (ibox > 3 || !path.Contains("bt_box")) ibox += 3; // central and edge towers
+    UInt_t isec = TString(path(ip+8,ip1)).Atoi();
+    if (path(ip+6) == '2') {
+      // Narrow sectors
+      if (isec == 0) isec = 2;
+      else isec = 6;
+    } else {
+      if (isec >= 5) isec += 2;
+      else if (isec >= 2) ++isec;
     }
-    //cout << ih << " " << isec << " " << itube << " " << ibox << endl;
-    fprintf(lun,"%d %d %d %d %f %f\n",ih,isec,itube,ibox,TMath::ATan2(y,x),z);
+    ip = path.Index("Crate"); // row
+    ip1 = path.Index("/",ip);
+    UInt_t irow = TString(path(ip+6,ip1)).Atoi();
+    ip = path.Index("box");
+    if (path(ip+4) == '_') --ip; // 1-digit number
+    ip1 = path.Index("/",ip);
+    UInt_t ibox = TString(path(ip+6,ip1)).Atoi();
+    //cout << ih << " " << isec << " " << irow << " " << ibox << endl;
+    fprintf(lun,"%d %d %d %d %f %f %f %f\n",ih,isec,irow,ibox,TMath::ATan2(y,x),x,y,z);
     // Code channel ID
     TString tower = "c"; // channel
     tower += ibox; 
-    tower += "m"; // module
-    tower += itube;
+    tower += "r"; // row
+    tower += irow;
     tower += "s"; // sector
     tower += isec;
     tower += "h"; // EMC half (Z <> 0)
     tower += ih;
-    //AZ
     
     MpdEmcDigit* hit = SearchHit(tower);
     if (hit == NULL) {
-      hit = new((*fDigiArray)[fDigiArray->GetEntriesFast()]) MpdEmcDigit(ih-1, isec-1, itube-1, ibox-1);
+      hit = new((*fDigiArray)[fDigiArray->GetEntriesFast()]) MpdEmcDigit(ih, isec, irow, ibox);
       fHitMap[tower] = hit;
-      Double_t phi, z;
-      FindChanPhiZ(phi,z);
+      Double_t phi, the;
+      //FindChanPhiZ(phi,z);
+      FindChanPhiThe(phi,the);
       hit->SetPhiCenter(phi);
-      hit->SetZCenter(z);
-      Int_t iz = (z / dzTower + 0.5);
-      if (iz <= 0) --iz;
+      hit->SetZCenter(the);
+      Int_t iz = ibox;
+      if (ih == 1) ++iz; // negative Z
       hit->SetChanZId(TMath::Abs(iz));
-      Int_t iphi = phi / dphiTower;
-      //hit->SetChanPhiId(iphi % (fGeoPar->GetNsupMod() * fGeoPar->GetNModInSuperModByPhi()));
+      Int_t iphi = irow + isec * nSecRows;
+      if (isec >= 7) iphi -= nSecRows; // take into account narrow sector
+      else if (isec >= 3) iphi -= nSecRows / 2; // take into account narrow sector
       hit->SetChanPhiId(iphi);
       hit->SetTimeStamp(pnt->GetTime());
     } 
@@ -208,7 +210,7 @@ void MpdEmcDigitizer::RedoId(TClonesArray *digis, TClonesArray *mctrs)
   // Redo track ID numbering 
   // Take IDs of particles produced outside EMC
 
-  static const Double_t rmin = fGeoPar->GetRmin() / 10, rmax = fGeoPar->GetRmax() / 10;
+  static const Double_t rmin = fGeoPar->GetRmin(), rmax = fGeoPar->GetRmax();
   TVector3 vert;
   Int_t nDigis = digis->GetEntriesFast();
 
@@ -240,59 +242,9 @@ void MpdEmcDigitizer::RedoId(TClonesArray *digis, TClonesArray *mctrs)
 
 //__________________________________________________________________________
 
-UInt_t MpdEmcDigitizer::GetSecId(Float_t x, Float_t y, Float_t z) {
-    Float_t ang = ATan2(y, x);
-    if (ang < 0) ang += TwoPi();
-    ang *= RadToDeg();
-    Int_t nSec = fGeoPar->GetNsec();
-    if (z > 0.0)
-        return UInt_t(ang / 360 * nSec);
-    else
-        return nSec + UInt_t(ang / 360 * nSec);
-}
-
-//__________________________________________________________________________
-
-UInt_t MpdEmcDigitizer::GetSupModId(Float_t x, Float_t y, Float_t z, UInt_t sec) {
-    Float_t ang = ATan2(y, x);
-    if (ang < 0) ang += TwoPi();
-    ang *= RadToDeg();
-    Float_t nDegreesInOneSector = fGeoPar->GetAngleOfSector();
-    if (z < 0.0)
-        sec -= fGeoPar->GetNsec();
-
-    Float_t secStartAng = sec * nDegreesInOneSector;
-    Float_t secFinishAng = secStartAng + nDegreesInOneSector;
-    Float_t localAng = ang - secStartAng;
-
-    return UInt_t(localAng * fGeoPar->GetNsupMod() / nDegreesInOneSector);
-}
-
-//__________________________________________________________________________
-
-UInt_t MpdEmcDigitizer::GetModId(Float_t x, Float_t y, UInt_t supMod, UInt_t sec) {
-    Float_t ang = ATan2(y, x);
-    if (ang < 0) ang += TwoPi();
-    ang *= RadToDeg();
-        
-    Float_t secStartAng = (sec % fGeoPar->GetNsec()) * fGeoPar->GetAngleOfSector();
-    Float_t supModStartAng = secStartAng + supMod * fGeoPar->GetAngleOfSuperModule();
-    Float_t localAng = ang - supModStartAng;
-    
-    return UInt_t(localAng * fGeoPar->GetNmod() / fGeoPar->GetAngleOfSuperModule());
-}
-
-//__________________________________________________________________________
-
-UInt_t MpdEmcDigitizer::GetRowId(Float_t z) {
-    return UInt_t(Abs(z) / fGeoPar->GetLength() * fGeoPar->GetNrows());
-}
-
-//__________________________________________________________________________
-
 void MpdEmcDigitizer::FindChanPhiZ(Double_t &phi, Double_t &z) 
 {
-  // Compute Z-position and Phi-angle of the tower (channel) center (at outer Z)
+  // Compute Z-position and Phi-angle of the tower (channel) center (at inner radius)
 
   TString path(gGeoManager->GetPath());
   Int_t ip = path.Last('/');
@@ -300,7 +252,7 @@ void MpdEmcDigitizer::FindChanPhiZ(Double_t &phi, Double_t &z)
   TString volName = path(ip+1,ip1-ip-1);
   TGeoVolume *tower = gGeoManager->GetVolume(volName);
   TGeoBBox *box = (TGeoBBox*) tower->GetShape();
-  Double_t xyzL[3] = {0,box->GetDY(),0}, xyzM[3];
+  Double_t xyzL[3] = {0,0,-box->GetDZ()}, xyzM[3];
   gGeoManager->LocalToMaster(xyzL,xyzM);
   z = xyzM[2];
   phi = TMath::ATan2 (xyzM[1],xyzM[0]);
@@ -309,39 +261,21 @@ void MpdEmcDigitizer::FindChanPhiZ(Double_t &phi, Double_t &z)
 
 //__________________________________________________________________________
 
-Float_t MpdEmcDigitizer::CalcZCenter(UInt_t sec, UInt_t row, UInt_t mod) 
+void MpdEmcDigitizer::FindChanPhiThe(Double_t &phi, Double_t &the) 
 {
-  // Compute Z-position of the tower (channel) center
+  // Compute Phi and Theta angles of the tower (channel) center (at inner radius)
 
-  /*
-  Float_t lengthOfModuleByZ = fGeoPar->GetLengthOfModuleByZ();
-  Float_t lengthOfSuperModuleByZ = fGeoPar->GetLengthOfSuperModuleByZ();
-  Float_t halfLengthOfModuleByZ = lengthOfModuleByZ / 2.0;
-  Float_t leftEdgeOfModuleByZ = row * lengthOfSuperModuleByZ + (mod % fGeoPar->GetNModInSuperModByZ()) * lengthOfModuleByZ;
-  Float_t z = leftEdgeOfModuleByZ + halfLengthOfModuleByZ;
-  return (sec < fGeoPar->GetNsec()) ? z : -z;
-  */
-  return 0;
-}
-
-//__________________________________________________________________________
-
-Float_t MpdEmcDigitizer::CalcPhiCenter(UInt_t sec, UInt_t supMod, UInt_t mod) 
-{
-  // Compute Phi-angle of the tower (chanel) center at outer Z position
-
-  /*
-  Float_t sectorAngle = fGeoPar->GetAngleOfSector();
-  Float_t supModAngle = fGeoPar->GetAngleOfSuperModule();
-  Float_t modAngle = fGeoPar->GetAngleOfModule();
-  
-  Int_t modIdInSupModByPhi = mod / fGeoPar->GetNModInSuperModByPhi(); // 0, 1, 2
-  Float_t sectorAngleEdge = sectorAngle * (sec % fGeoPar->GetNsec());
-  Float_t supModAngleEdge = supModAngle * supMod;
-  Float_t modAngleEdge = modAngle * modIdInSupModByPhi;
-  return sectorAngleEdge + supModAngleEdge + modAngleEdge + modAngle / 2.0;
-  */
-  return 0;
+  TString path(gGeoManager->GetPath());
+  Int_t ip = path.Last('/');
+  Int_t ip1 = path.Last('_');
+  TString volName = path(ip+1,ip1-ip-1);
+  TGeoVolume *tower = gGeoManager->GetVolume(volName);
+  TGeoBBox *box = (TGeoBBox*) tower->GetShape();
+  Double_t xyzL[3] = {0,0,-box->GetDZ()}, xyzM[3];
+  gGeoManager->LocalToMaster(xyzL,xyzM);
+  phi = TMath::ATan2 (xyzM[1],xyzM[0]);
+  if (phi < 0) phi += TMath::TwoPi();
+  the = TMath::ATan2 (TMath::Sqrt(xyzM[0]*xyzM[0]+xyzM[1]*xyzM[1]), xyzM[2]);
 }
 
 //__________________________________________________________________________

@@ -48,15 +48,15 @@ MpdEmcDigit::MpdEmcDigit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index)
 
 // -----   Constructor without flag  ------------------------------------------
 
-MpdEmcDigit::MpdEmcDigit(UInt_t side, UInt_t sector, UInt_t module, UInt_t channel) : FairHit(),
+MpdEmcDigit::MpdEmcDigit(UInt_t side, UInt_t sector, UInt_t row, UInt_t channel) : FairHit(),
   fE(0),
   fTrackID(-1),
   fFlag(0),
   fPDG(0),
   fNumTracks(0) 
 {
-  SetDetId(side, sector, module, channel);
-  //cout << " Decode: " << Side() << " " << Sector() << " " << Module() << " " << Channel() << endl;
+  SetDetId(side, sector, row, channel);
+  //cout << " Decode: " << Side() << " " << Sector() << " " << Row() << " " << Channel() << endl;
 }
 
 // -----   Destructor   ----------------------------------------------------
@@ -88,14 +88,14 @@ void MpdEmcDigit::IncreaseEnergy(Float_t e, Int_t trId)
 }
 // -------------------------------------------------------------------------
 
-UInt_t MpdEmcDigit::SetDetId(UInt_t side, UInt_t sector, UInt_t module, UInt_t channel)
+UInt_t MpdEmcDigit::SetDetId(UInt_t side, UInt_t sector, UInt_t row, UInt_t channel)
 {
   // Code DetectorID
 
   fDetectorID = side;                       // side # (Z<>0)  on bit 0
-  fDetectorID |= (channel << kChannelS);    // channel #      on bit 1 - 4
-  fDetectorID |= (module << kModuleS);      // module #       on bit 5 - 11
-  fDetectorID |= (sector << kSectorS);      // sector #       on bit 12 - 17
+  fDetectorID |= (channel << kChannelS);    // channel #      on bit 1 - 6
+  fDetectorID |= (row << kRowS);            // row #          on bit 7 - 12
+  fDetectorID |= (sector << kSectorS);      // sector #       on bit 13 - 16
   return fDetectorID;
 }
 

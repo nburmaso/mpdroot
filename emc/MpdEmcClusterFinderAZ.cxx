@@ -10,7 +10,8 @@
 //      Software developed for the MPD Detector at NICA.
 //
 // Author List:
-//      Alexandr Zinchenko LHEP, JINR, Dubna - 18-May-2016
+//      Alexander Zinchenko LHEP, JINR, Dubna - 18-May-2016
+//      Alexander Zinchenko LHEP, JINR, Dubna - 24-June-2018 - adapted for projective geometry
 //
 //-----------------------------------------------------------
 
@@ -21,6 +22,7 @@
 #include "MpdTpc2dCluster.h"
 #include "MpdEmcDigit.h"
 #include "MpdEmcGeoPar.h"
+#include "MpdEmcGeoParams.h"
 #include "MpdEmcPoint.h"
 #include "MpdTpcHit.h"
 
@@ -31,11 +33,13 @@
 #include "TFile.h"
 #include "TMath.h"
 #include "TRandom.h"
+#include "TSpline.h"
 #include "TSystem.h"
 #include "TTree.h"
 
 // C/C++ Headers ----------------------
 #include <iostream>
+#include <iterator>
 #include <math.h>
 #include <set>
 #include <vector>
@@ -67,15 +71,34 @@ InitStatus MpdEmcClusterFinderAZ::Init()
 {
 
   // Create containers for digits
-  fEmcGeo = new MpdEmcGeoPar();
-  Int_t nSec = fEmcGeo->GetNsec();
+  //fEmcGeo = new MpdEmcGeoPar();
+  fEmcGeo = new MpdEmcGeoParams();
+  Int_t nSec = fEmcGeo->GetNsec() / 2; // number of long sectors
   set<Int_t> aaa;
   fDigiSet.assign(nSec,aaa);
   //for (Int_t i = 0; i < fgkNsec2; ++i) fDigiSet[i] = new set<Int_t> [nRows];
 
   // Containers for all+2 sectors
-  const Int_t nPhi = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi() * (nSec + 2);
-  const Int_t nZ = fEmcGeo->GetNrows() * fEmcGeo->GetNModInSuperModByZ() * 2;
+  //const Int_t nPhi = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi() * (nSec + 2);
+  //const Int_t nZ = fEmcGeo->GetNrows() * fEmcGeo->GetNModInSuperModByZ() * 2;
+  const Int_t nSecRows = fEmcGeo->GetNrows() / (nSec-1); // rows per wide sector
+  const Int_t nPhi = fEmcGeo->GetNrows() + nSecRows * 2; // extra 2 wide sectors
+  const Int_t nZ = fEmcGeo->GetNmod();
+
+  // Fill starting rows of sectors
+  fSecRows0.push_back(0);
+  for (Int_t isec = 1; isec <= nSec; ++isec) {
+    if (isec == 3 || isec == 7) fSecRows0.push_back(fSecRows0[isec-1]+nSecRows/2);
+    else fSecRows0.push_back(fSecRows0[isec-1]+nSecRows);
+  }
+
+  // Fill ending rows of sectors
+  fSecRows1.insert(nSecRows);
+  for (Int_t isec = 1; isec < nSec; ++isec) {
+    if (isec == 2 || isec == 6) fSecRows1.insert(*fSecRows1.rbegin()+nSecRows/2);
+    else fSecRows1.insert(*fSecRows1.rbegin()+nSecRows);
+  }
+
   vector<Double_t> dVec(nZ);
   vector<Int_t> iVec(nZ);
   fCharges.assign(nPhi,dVec);
@@ -111,6 +134,9 @@ InitStatus MpdEmcClusterFinderAZ::Init()
   fHitArray = new TClonesArray("MpdTpcHit"); 
   ioman->Register("EmcRecPoint", "Emc", fHitArray, fPersistence);
 
+  cout << fEmcGeo->GetPhiRow().size() << " " << fEmcGeo->GetThetaBox().size() << endl;
+  cout << fEmcGeo->GetPhiRow()[0] << " " << *fEmcGeo->GetPhiRow().rbegin() << " " 
+       << fEmcGeo->GetThetaBox()[0] << " " << *fEmcGeo->GetThetaBox().rbegin() << endl;
   return kSUCCESS;
 }
 
@@ -121,8 +147,8 @@ void MpdEmcClusterFinderAZ::Exec(Option_t* opt)
 
   fClusArray->Delete();
   fHitArray->Delete();
-  static const Int_t nSec = fEmcGeo->GetNsec(); // number of EMC sectors
-  static const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
+  static const Int_t nSec = fEmcGeo->GetNsec() / 2; // number of EMC sectors
+  //static const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
   // Clear digi containers
   for (Int_t i = 0; i < nSec; ++i) fDigiSet[i].clear();
   
@@ -131,7 +157,8 @@ void MpdEmcClusterFinderAZ::Exec(Option_t* opt)
   cout << " Total number of digits: " << nDigis << endl;
   for (Int_t i = 0; i < nDigis; ++i) {
     MpdEmcDigit *digi = (MpdEmcDigit*) fDigiArray->UncheckedAt(i);
-    Int_t isec = digi->GetChanPhiId() / nTowSec;
+    //Int_t isec = digi->GetChanPhiId() / nTowSec;
+    Int_t isec = digi->Sector();
     fDigiSet[isec].insert(i);
   }
 
@@ -159,9 +186,10 @@ void MpdEmcClusterFinderAZ::FillEmcInfo()
   // Fill EMC info (matrices)
 
   static const Int_t nPhi = fFlags.size(), nZ = fFlags[0].size(), nZov2 = nZ / 2;
-  static const Int_t nSec = fEmcGeo->GetNsec(); // number of EMC sectors
-  static const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
-  static const Double_t rmin = fEmcGeo->GetRmin() / 10;
+  static const Int_t nSec = fEmcGeo->GetNsec() / 2; // number of EMC sectors
+  //static const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
+  static const Int_t nSecRows = nPhi / (nSec + 1);
+  static const Double_t rmin = fEmcGeo->GetRmin();
 
   for (Int_t i = 0; i < nPhi; ++i) fFlags[i].assign(nZ,0);
 
@@ -178,26 +206,27 @@ void MpdEmcClusterFinderAZ::FillEmcInfo()
       // Apply time window
       Double_t dist = TMath::Sqrt (digi->GetZcenter() * digi->GetZcenter() + rmin * rmin);
       Double_t dt = digi->GetTimeStamp() - dist / 30.; // c = 30 cm/ns       
-      if (dt < -0.5 || dt > 2.0) continue;
-      //if (dt < -0.5 || dt > 1.0) continue;
+      //if (dt < -0.5 || dt > 2.0) continue;
 
       Int_t iphi = digi->GetChanPhiId(), iz = digi->GetChanZId();
-      Int_t ix = iphi + nTowSec;
-      if (digi->Side() == 0) iz = -iz;
-      else --iz;
+      Int_t ix = iphi + nSecRows; // offset by one sector
+      //if (digi->Side() == 1) iz = -iz - 1;
+      if (digi->Side() == 1) iz = -iz - 0; // shift by 1 already accounted for in ChanZId
       iz += nZov2;
       fCharges[ix][iz] = digi->GetE();
       fFlags[ix][iz] = 1;
       fDigis[ix][iz] = *it; // index of digit
       if (isec == 0) {
 	// Fill extra sector (for edge effect)
-	fCharges[ix+nTowSec*nSec][iz] = digi->GetE();
-	fFlags[ix+nTowSec*nSec][iz] = 1;
-	fDigis[ix+nTowSec*nSec][iz] = *it;
+	Int_t offset = fEmcGeo->GetNrows();
+	Int_t ix1 = ix + offset;
+	fCharges[ix1][iz] = digi->GetE();
+	fFlags[ix1][iz] = 1;
+	fDigis[ix1][iz] = *it;
       } else if (isec == nSec - 1) {
-	fCharges[ix%nTowSec][iz] = digi->GetE();
-	fFlags[ix%nTowSec][iz] = 1;
-	fDigis[ix%nTowSec][iz] = *it;
+	fCharges[iphi][iz] = digi->GetE();
+	fFlags[iphi][iz] = 1;
+	fDigis[iphi][iz] = *it;
       }
     }
   }
@@ -209,13 +238,15 @@ void MpdEmcClusterFinderAZ::ProcessSector(Int_t isec)
 {
   // Process one sector
 
-  const Int_t nSec = fEmcGeo->GetNsec(); // number of EMC sectors
-  const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
+  const Int_t nSec = fEmcGeo->GetNsec() / 2; // number of EMC sectors
+  //const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
   const Int_t nPhi = fFlags.size(), nZ = fFlags[0].size();
+  static const Int_t nSecRows = nPhi / (nSec + 1);
 
   // Find (pre)clusters in the central sector
   Int_t nclus0 = fClusArray->GetEntriesFast(), nclus = nclus0;
-  Int_t phiBeg = (isec + 1) * nTowSec, phiEnd = phiBeg + nTowSec;
+  //Int_t phiBeg = (isec + 1) * nTowSec, phiEnd = phiBeg + nTowSec;
+  Int_t phiBeg = fSecRows0[isec] + nSecRows, phiEnd = fSecRows0[isec+1] + nSecRows;
 
   for (Int_t iphi = phiBeg; iphi < phiEnd; ++iphi) {
 
@@ -223,12 +254,14 @@ void MpdEmcClusterFinderAZ::ProcessSector(Int_t isec)
       if (fFlags[iphi][iz] <= 0) continue;
       // New cluster
       MpdTpc2dCluster* clus = new ((*fClusArray)[nclus++]) MpdTpc2dCluster(0, isec); 
-      clus->Insert(fDigis[iphi][iz], 0, iphi-nTowSec, iz, fCharges[iphi][iz]);
+      clus->Insert(fDigis[iphi][iz], 0, iphi-nSecRows, iz, fCharges[iphi][iz]);
       clus->SetID(fDigis[iphi][iz]); // trackID
       clus->SetErrY(fCharges[iphi][iz]); // ADC counts
       fFlags[iphi][iz] = -1;
-      if (isec == 0) fFlags[iphi+nPhi-2*nTowSec][iz] = -1; 
-      else if (isec == nSec-1) fFlags[iphi-nPhi+2*nTowSec][iz] = -1; 
+      //if (isec == 0) fFlags[iphi+nPhi-2*nTowSec][iz] = -1; 
+      //else if (isec == nSec-1) fFlags[iphi-nPhi+2*nTowSec][iz] = -1; 
+      if (isec == 0) fFlags[iphi+nPhi-2*nSecRows][iz] = -1; 
+      else if (isec == nSec-1) fFlags[(iphi+2*nSecRows)%nPhi][iz] = -1; 
       for (Int_t ip = -1; ip < 2; ++ip) {
 	for (Int_t it = -1; it < 2; ++it) {
 	  //if (it == ip) continue;
@@ -252,18 +285,19 @@ void MpdEmcClusterFinderAZ::NextPixel(MpdTpc2dCluster* clus, Int_t iphi, Int_t i
   // Add next pixel to the cluster
 
   const Int_t nPhi = fFlags.size(), nZ = fFlags[0].size();
-  const Int_t nSec = fEmcGeo->GetNsec(); // number of EMC sectors
-  const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
+  const Int_t nSec = fEmcGeo->GetNsec() / 2; // number of EMC sectors
+  //const Int_t nTowSec = fEmcGeo->GetNsupMod() * fEmcGeo->GetNModInSuperModByPhi();
+  const Int_t nSecRows = nPhi / (nSec + 1);
 
-  clus->Insert(fDigis[iphi][iz], clus->Row(), iphi-nTowSec, iz, fCharges[iphi][iz]);
+  clus->Insert(fDigis[iphi][iz], clus->Row(), iphi-nSecRows, iz, fCharges[iphi][iz]);
   clus->SetID (TMath::Min(clus->ID(),fDigis[iphi][iz])); // min trackID
   clus->SetErrY (TMath::Max(Double_t(clus->GetErrY()),fCharges[iphi][iz])); // max ADC counts
   fFlags[iphi][iz] = -1;
   // Edges
-  if (iphi < nTowSec) fFlags[iphi+nPhi-2*nTowSec][iz] = -1; // last sector
-  else if (iphi >= nPhi-nTowSec) fFlags[iphi-nPhi+2*nTowSec][iz] = -1; // first sector
-  else if (iphi >= nPhi-2*nTowSec) fFlags[iphi-nPhi+2*nTowSec][iz] = -1; // last sector
-  else if (iphi < 2*nTowSec) fFlags[iphi+nPhi-2*nTowSec][iz] = -1; // first sector
+  if (iphi < nSecRows) fFlags[iphi+nPhi-2*nSecRows][iz] = -1; // last sector
+  else if (iphi >= nPhi-nSecRows) fFlags[iphi-nPhi+2*nSecRows][iz] = -1; // first sector
+  else if (iphi >= nPhi-2*nSecRows) fFlags[iphi-nPhi+2*nSecRows][iz] = -1; // last sector
+  else if (iphi < 2*nSecRows) fFlags[iphi+nPhi-2*nSecRows][iz] = -1; // first sector
 
   for (Int_t ip = -1; ip < 2; ++ip) {
     for (Int_t it = -1; it < 2; ++it) {
@@ -426,9 +460,9 @@ void MpdTpcClusterFinderAZ::FindHitsLocMax()
 void MpdEmcClusterFinderAZ::FindHits()
 {
   // Reconstruct hits (find local maxima)
-
+  
   static const Int_t nPhi = fFlags.size(), nZ = fFlags[0].size();
-  static const Double_t dphiSec = fEmcGeo->GetAngleOfSector() * TMath::DegToRad();
+  //static const Double_t dphiSec = fEmcGeo->GetAngleOfSector() * TMath::DegToRad();
 
   TVector3 p3loc, p3glob, p3err(0.05,0.0,0.1);
   Int_t nclus = fClusArray->GetEntriesFast(), ihit = 0;
@@ -439,7 +473,7 @@ void MpdEmcClusterFinderAZ::FindHits()
     for (Int_t i = 0; i < nPhi; ++i) fFlags[i].assign(nZ,0);
     Int_t isec = clus->GetSect();
     Int_t ishift = 0;
-    if (isec == 0) ishift = nPhi / 30; // index shift up from 0
+    if (isec == 0) ishift = nPhi / 30; // just to shift index up from 0
 
     for (Int_t idig = 0; idig < nDigis; ++idig) {
       Int_t iphi = clus->Col(idig) + ishift;
@@ -497,9 +531,9 @@ void MpdEmcClusterFinderAZ::FindHits()
       // Process simple cluster (only 1 local max)
       if (localMax.size() == 1) {
       //AZ if (nLocMax0 == 1) {
-	for (Int_t idig = 0; idig < nDigis; ++idig) {
-	  Int_t ip = clus->Col(idig) + ishift;
-	  Int_t it = clus->Bkt(idig);
+	for (Int_t idig1 = 0; idig1 < nDigis; ++idig1) {
+	  Int_t ip = clus->Col(idig1) + ishift;
+	  Int_t it = clus->Bkt(idig1);
 	  phiMean += ip * fCharges[ip][it];
 	  zMean += it * fCharges[ip][it];
 	  adcTot += fCharges[ip][it];
@@ -513,9 +547,9 @@ void MpdEmcClusterFinderAZ::FindHits()
 	  MpdEmcDigit *dig = (MpdEmcDigit*) fDigiArray->UncheckedAt(fDigis[ip][it]);
 	  map<Int_t,Float_t> contrib = dig->GetContrib();
 	  RedoId(contrib);
-	  for (map<Int_t,Float_t>::iterator it = contrib.begin(); it != contrib.end(); ++it) {
-	    if (mapIdQ.find(it->first) == mapIdQ.end()) mapIdQ[it->first] = it->second;
-	    else mapIdQ[it->first] = mapIdQ[it->first] + it->second;
+	  for (map<Int_t,Float_t>::iterator mit = contrib.begin(); mit != contrib.end(); ++mit) {
+	    if (mapIdQ.find(mit->first) == mapIdQ.end()) mapIdQ[mit->first] = mit->second;
+	    else mapIdQ[mit->first] = mapIdQ[mit->first] + mit->second;
 	  }
 
 	  sum2t += it * it * fCharges[ip][it];
@@ -578,9 +612,9 @@ void MpdEmcClusterFinderAZ::FindHits()
 		MpdEmcDigit *dig = (MpdEmcDigit*) fDigiArray->UncheckedAt(fDigis[ip1][it1]);
 		map<Int_t,Float_t> contrib = dig->GetContrib();
 		RedoId(contrib);
-		for (map<Int_t,Float_t>::iterator it = contrib.begin(); it != contrib.end(); ++it) {
-		  if (mapIdQ.find(it->first) == mapIdQ.end()) mapIdQ[it->first] = it->second;
-		  else mapIdQ[it->first] = mapIdQ[it->first] + it->second;
+		for (map<Int_t,Float_t>::iterator mit = contrib.begin(); mit != contrib.end(); ++mit) {
+		  if (mapIdQ.find(mit->first) == mapIdQ.end()) mapIdQ[mit->first] = mit->second;
+		  else mapIdQ[mit->first] = mapIdQ[mit->first] + mit->second;
 		}
 		pixels.insert(pair<Int_t,Int_t>(ip1,it1));
 
@@ -594,8 +628,9 @@ void MpdEmcClusterFinderAZ::FindHits()
 
       phiMean /= adcTot;
       zMean /= adcTot;
-      phiMean += (0.5 - ishift); //
-      zMean += 0.5; //
+      //phiMean += (0.5 - ishift); //
+      phiMean += (0.0 - ishift); //
+      //zMean += 0.5; //
 
       Double_t xloc = phiMean; //fSecGeo->Pad2Xloc(phiMean,clus->Row());
       Int_t padID = 0; //fSecGeo->PadID(clus->GetSect() % fSecGeo->NofSectors(), clus->Row());
@@ -631,15 +666,17 @@ void MpdEmcClusterFinderAZ::FindHits()
 	p3glob[2] -= TMath::Sign (zcor, p3glob[2]);
       }
       */
-      phiMean *= fEmcGeo->GetAngleOfModule() * TMath::DegToRad();
       //zMean -= (fFlags[0].size() / 2 - 0.5);
-      zMean -= (fFlags[0].size() / 2 - 0.0);
-      zMean *= fEmcGeo->GetLengthOfModuleByZ();
+      //AZ zMean -= (fFlags[0].size() / 2 - 0.0);
+      //FIXME phiMean *= fEmcGeo->GetAngleOfModule() * TMath::DegToRad();
+      //zMean *= fEmcGeo->GetLengthOfModuleByZ(); // FIXME - Z-position calculation
+      GetPhiTheta(phiMean, zMean); // get angular coordinates phi and theta at (near) the inner faces of towers 
       p3glob.SetXYZ(phiMean,0,zMean);
 
       MpdTpcHit* hit = new ((*fHitArray)[ihit++]) MpdTpcHit(padID, p3glob, p3errCor, iclus); 
-      //hit->SetLayer(clus->Row());
-      hit->SetLayer(Int_t(phiMean/dphiSec)); // sector number
+      //hit->SetLayer(clus->GetSect()); // sector number
+      set<Int_t>::iterator sit = fSecRows1.upper_bound(xloc);
+      hit->SetLayer(std::distance(fSecRows1.begin(),sit)); // sector number
       hit->SetLocalPosition(p3loc); // point position
       hit->SetEnergyLoss(adcTot);
       Int_t ireg = 0; //(clus->Row() < fSecGeo->NofRowsReg(0)) ? 0 : 1;
@@ -668,9 +705,9 @@ void MpdEmcClusterFinderAZ::FindHits()
 	++mit;
       }
       Int_t ndig = vecDig.size();
-      for (Int_t idig = 0; idig < ndig; ++idig) {
-	hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, vecDig[idig], idig)); // weight = idig
-	hit->AddID(vecDig[idig]);
+      for (Int_t idig1 = 0; idig1 < ndig; ++idig1) {
+	hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, vecDig[idig1], idig1)); // weight = idig
+	hit->AddID(vecDig[idig1]);
       }
       //cout << hit->GetNLinks() << " " << *(vecDig.begin()) << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(0).GetIndex() << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(hit->GetNLinks()-1).GetIndex() << endl;
 
@@ -679,6 +716,63 @@ void MpdEmcClusterFinderAZ::FindHits()
 }
 //*/
   
+//__________________________________________________________________________
+
+void MpdEmcClusterFinderAZ::GetPhiTheta(Double_t &phi, Double_t &theta)
+{
+  // Convert COG in units of bins to angles
+
+  static Int_t first = 1, offset = 0;
+  static TSpline3 *phiS, *theS;
+
+  if (first) {
+    // Get phi and theta angles of the tower centers at their inner face                                
+    first = 0;
+    const vector<Double_t> &phis = fEmcGeo->GetPhiRow();
+    const vector<Double_t> &thes = fEmcGeo->GetThetaBox();
+    const vector<Double_t> &rhos = fEmcGeo->GetRhoCenterBox();
+    const vector<Double_t> &zs =   fEmcGeo->GetZCenterBox();
+
+    Int_t nphi = phis.size();
+    // Offset due to the fact that the 1'st sector starts at phi = -Phi_sec/2; 
+    offset = nphi / (fEmcGeo->GetNsec()/2 - 1) / 2;
+    Double_t *phia = new Double_t [nphi];
+    Double_t *ind = new Double_t [nphi];
+
+    for (Int_t j = 0; j < nphi; ++j) {
+      phia[j] = phis[j];
+      ind[j] = j;
+    }
+    phiS = new TSpline3("grs",ind,phia,nphi); // phi vs ind                     
+    delete [] phia;
+    delete [] ind;
+
+    Int_t nthe = thes.size();
+    Double_t *the = new Double_t [nthe];
+    Double_t *ind1 = new Double_t [nthe];
+    Double_t height = fEmcGeo->GetLengthBox(); // tower half-height
+    
+    for (Int_t j = nthe-1; j >= 0; --j) {
+      Double_t rho = rhos[j];
+      Double_t z = zs[j];
+      Double_t costhe = TMath::Cos(thes[j]*TMath::DegToRad());
+      Double_t sinthe = TMath::Sin(thes[j]*TMath::DegToRad());
+      rho -= height * sinthe;
+      z -= height * costhe;
+      the[j] = TMath::ATan2(rho,z) * TMath::RadToDeg();
+      ind1[j] = j; // - nthe/2;
+    }
+    theS = new TSpline3("grs1",ind1,the,nthe); // theta vs ind                  
+    delete [] the;
+    delete [] ind1;
+  }
+
+  phi = phiS->Eval(phi-offset);
+  if (phi > 180) phi -= 360;
+  theta = theS->Eval(theta);
+
+}
+
 //__________________________________________________________________________
 
 void MpdEmcClusterFinderAZ::PeakAndValley(const MpdTpc2dCluster* clus, multimap<Double_t,Int_t> &localMax, Int_t ishift)
@@ -760,7 +854,7 @@ void MpdEmcClusterFinderAZ::RedoId(map<Int_t,Float_t>& contrib)
   // Redo track ID numbering 
   // Take IDs of particles produced outside EMC
 
-  static const Double_t rmin = fEmcGeo->GetRmin() / 10, rmax = fEmcGeo->GetRmax() / 10; 
+  static const Double_t rmin = fEmcGeo->GetRmin(), rmax = fEmcGeo->GetRmax(); 
   TVector3 vert;
 
   map<Int_t,Float_t> copy(contrib);

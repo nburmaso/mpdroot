@@ -9,6 +9,9 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/emc
  ${CMAKE_SOURCE_DIR}/emc/hitmaker
  ${CMAKE_SOURCE_DIR}/emc/clustering
+ ${CMAKE_SOURCE_DIR}/tpc
+ ${CMAKE_SOURCE_DIR}/kalman
+ ${CMAKE_SOURCE_DIR}/lhetrack
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -39,6 +42,12 @@ MpdEmcCluster.cxx
 MpdEmcHitProducer.cxx
 MpdEmcHitCreation.cxx
 MpdEmcClusterCreation.cxx
+
+MpdEmcDigit.cxx
+MpdEmcDigitizer.cxx
+MpdEmcClusterFinderAZ.cxx
+MpdEmcMatching.cxx
+MpdEmcMatch.cxx
 
 hitmaker/MpdEmcHitA.cxx
 hitmaker/MpdEmcHitProducerA.cxx

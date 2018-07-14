@@ -29,4 +29,10 @@
 #pragma link C++ class EmcClusterInfo0+;
 #pragma link C++ class EmcCLinfo+;
 
+#pragma link C++ class MpdEmcDigit+;
+#pragma link C++ class MpdEmcDigitizer+;
+#pragma link C++ class MpdEmcClusterFinderAZ+;
+#pragma link C++ class MpdEmcMatching+;
+#pragma link C++ class MpdEmcMatch+;
+
 #endif

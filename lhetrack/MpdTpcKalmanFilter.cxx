@@ -686,8 +686,8 @@ void MpdTpcKalmanFilter::GetTrackSeeds(Int_t iPass)
   TVector3 pos1, pos2, posLoc;
   Double_t rad1, phi1, rad2, phi2;
   for (Int_t lay = layBeg; lay != layEnd; lay+=iDir) {
-    Int_t nHits1 = (Int_t) fhLays->GetCellContent(lay+1,0), isec = -1;
-    Int_t nHits2 = (Int_t) fhLays->GetCellContent(lay+dLays*iDir+1,0);
+    Int_t nHits1 = (Int_t) fhLays->GetBinContent(lay+1,0), isec = -1;
+    Int_t nHits2 = (Int_t) fhLays->GetBinContent(lay+dLays*iDir+1,0);
     //cout << "Hits: " << nHits1 << " " << nHits2 << endl;
     // Loop over hits in first layer
     for (Int_t ihit1 = 0; ihit1 < nHits1; ++ihit1) {
@@ -822,8 +822,8 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
 
   // Loop over layers
   for (Int_t lay = layBeg; lay != layEnd; lay+=iDir) {
-    Int_t nHits1 = (Int_t) fhLays->GetCellContent(lay+1,0), isec = -1;
-    Int_t nHits2 = (Int_t) fhLays->GetCellContent(lay+dLays*iDir+1,0);
+    Int_t nHits1 = (Int_t) fhLays->GetBinContent(lay+1,0), isec = -1;
+    Int_t nHits2 = (Int_t) fhLays->GetBinContent(lay+dLays*iDir+1,0);
     if (nHits1 <= 0 || nHits2 <= 0) continue;
 
     // Loop over hits in first layer
@@ -962,11 +962,11 @@ void MpdTpcKalmanFilter::Cluster2KalmanHits()
   fLayPointers = new Int_t [layMax+1];
   Int_t ipos = 0;
   for (Int_t i = layMax; i >= 0; --i) {
-    //cout << i << " " << fhLays->GetCellContent(i+1,0) << endl;
+    //cout << i << " " << fhLays->GetBinContent(i+1,0) << endl;
     //if (ipos) cout << ((TpcLheHit*)fHits->UncheckedAt(ipos))->GetLayer() << " "
     //     << ((TpcLheHit*)fHits->UncheckedAt(ipos-1))->GetLayer() << endl;
     fLayPointers[i] = ipos;
-    ipos += (Int_t) fhLays->GetCellContent(i+1,0);
+    ipos += (Int_t) fhLays->GetBinContent(i+1,0);
   }
 }
 
@@ -1007,12 +1007,12 @@ void MpdTpcKalmanFilter::MakeKalmanHits()
   fLayPointers = new Int_t [layMax+1];
   Int_t ipos = 0;
   for (Int_t i = layMax; i >= 0; --i) {
-    //cout << i << " " << fhLays->GetCellContent(i+1,0) << endl;
+    //cout << i << " " << fhLays->GetBinContent(i+1,0) << endl;
     //if (ipos) cout << ((TpcLheHit*)fHits->UncheckedAt(ipos))->GetLayer() << " "
     //     << ((TpcLheHit*)fHits->UncheckedAt(ipos-1))->GetLayer() << endl;
     fLayPointers[i] = ipos;
     fLaySecBegPointers[i][0] = ipos;
-    ipos += (Int_t) fhLays->GetCellContent(i+1,0);
+    ipos += (Int_t) fhLays->GetBinContent(i+1,0);
     fLaySecEndPointers[i][0] = ipos;
   }
 }
@@ -1060,11 +1060,11 @@ void MpdTpcKalmanFilter::MakeKalmanHitsModul()
   fLayPointers = new Int_t [layMax+1];
   Int_t ipos = 0;
   for (Int_t i = layMax; i >= 0; --i) {
-    //cout << i << " " << fhLays->GetCellContent(i+1,0) << endl;
+    //cout << i << " " << fhLays->GetBinContent(i+1,0) << endl;
     //if (ipos) cout << ((TpcLheHit*)fHits->UncheckedAt(ipos))->GetLayer() << " "
     //     << ((TpcLheHit*)fHits->UncheckedAt(ipos-1))->GetLayer() << endl;
     fLayPointers[i] = ipos;
-    ipos += (Int_t) fhLays->GetCellContent(i+1,0);
+    ipos += (Int_t) fhLays->GetBinContent(i+1,0);
   }
 
   // Fill indices for different sectors
