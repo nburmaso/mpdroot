@@ -224,9 +224,10 @@ void MpdEmcClusterFinderAZ::FillEmcInfo()
 	fFlags[ix1][iz] = 1;
 	fDigis[ix1][iz] = *it;
       } else if (isec == nSec - 1) {
-	fCharges[iphi][iz] = digi->GetE();
-	fFlags[iphi][iz] = 1;
-	fDigis[iphi][iz] = *it;
+	Int_t ix1 = (ix + 2 * nSecRows) % nPhi;
+	fCharges[ix1][iz] = digi->GetE();
+	fFlags[ix1][iz] = 1;
+	fDigis[ix1][iz] = *it;
       }
     }
   }
@@ -473,7 +474,8 @@ void MpdEmcClusterFinderAZ::FindHits()
     for (Int_t i = 0; i < nPhi; ++i) fFlags[i].assign(nZ,0);
     Int_t isec = clus->GetSect();
     Int_t ishift = 0;
-    if (isec == 0) ishift = nPhi / 30; // just to shift index up from 0
+    //if (isec == 0) ishift = nPhi / 30; // just to shift index up from 0
+    if (isec == 0) ishift = 50; // just to shift index up from 0
 
     for (Int_t idig = 0; idig < nDigis; ++idig) {
       Int_t iphi = clus->Col(idig) + ishift;
