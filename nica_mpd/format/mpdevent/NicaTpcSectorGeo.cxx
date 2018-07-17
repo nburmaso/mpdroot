@@ -78,6 +78,7 @@ void NicaTpcSectorGeo::Init(TString geo)
     fZmin = 0.4;
     //fZmax = fZmin + 2 * ((TGeoTube*)shape)->GetDZ();
     fZmax = 170.; 
+    fPhi0=-0.261799;
   }
 
   //fPadH = (fYsec[1] - fYsec[0]) / fNrows;
@@ -85,6 +86,7 @@ void NicaTpcSectorGeo::Init(TString geo)
        << ", boundary: " << fYsec[1] << endl;
   cout << " Number of sectors: " << fgkNsect << ", phi0: " << fPhi0*TMath::RadToDeg() << ", numbers of padrows: " 
        << fNrows[0] << " " << fNrows[1] << ", pad heights: " << fPadH[0] << " " << fPadH[1] << endl; 
+  std::cout<<"Raw phi"<<fPhi0<<" DPhi "<<fDphi<<std::endl;
   cout << " !!!!! ***** ***** ***** !!!!!" << endl;
 
   fPadW[0] = fPadW[1] = 0.5; // pad widths
@@ -103,21 +105,29 @@ Int_t NicaTpcSectorGeo::Global2Local(const Double_t *xyzGlob, Double_t *xyzLoc, 
 {
   /// Transform global coordinates to local (sector)
 
-  Double_t safety = 0.01;
-  xyzLoc[2] = xyzGlob[2];
-  Int_t iSec = iSec0;
-  if (iSec0 < 0) {
-    // Find sector No.
-    Double_t phGlob = TMath::ATan2 (xyzGlob[1], xyzGlob[0]);
-    if (phGlob < 0) phGlob += TMath::TwoPi();
-    iSec = Int_t ((phGlob - fPhi0) / fDphi);
-    if (iSec == fgkNsect) iSec = 0;
-  } else iSec = (iSec0 >> kSectorS) & kSectorM;
-  Double_t phSec = iSec * fDphi;
-  Double_t cosPh = TMath::Cos(phSec);
-  Double_t sinPh = TMath::Sin(phSec);
-  Double_t x = xyzGlob[0] * cosPh + xyzGlob[1] * sinPh;
-  Double_t y = -xyzGlob[0] * sinPh + xyzGlob[1] * cosPh;
+	  Double_t safety = 0.01;
+	  xyzLoc[2] = xyzGlob[2];
+	  Int_t iSec = iSec0;
+	  if (iSec0 < 0) {
+	    // Find sector No.
+	    Double_t phGlob = TMath::ATan2 (xyzGlob[1], xyzGlob[0]);
+	    if (phGlob < 0) phGlob += TMath::TwoPi();
+	    iSec = Int_t ((phGlob - fPhi0) / fDphi);
+	    if (iSec == fgkNsect) iSec = 0;
+	  } else iSec = (iSec0 >> kSectorS) & kSectorM;
+	  Double_t phSec = iSec * fDphi;
+	  Double_t cosPh = TMath::Cos(phSec);
+	  Double_t sinPh = TMath::Sin(phSec);
+	  Double_t x = xyzGlob[0] * cosPh + xyzGlob[1] * sinPh;
+	  Double_t y = -xyzGlob[0] * sinPh + xyzGlob[1] * cosPh;
+	  /*
+  if (x < fYsec[0] + safety || x > fYsec[2] - safety){
+	  std::cout<<"TRANSFORM"<<std::endl;
+	  std::cout<<TMath::Sqrt(xyzGlob[0]*xyzGlob[0]+xyzGlob[1]*xyzGlob[1])<<std::endl;
+	  std::cout<<"\t"<<xyzGlob[0]<<" "<<xyzGlob[1]<<std::endl;
+	  std::cout<<x-fYsec[0]<<" "<<y<<std::endl;
+	  //std::cout<<"\t"<<x<<" "<<fYsec[0]<<" "<<fYsec[2]<<std::endl;
+  }*/
   if (x < fYsec[0] + safety || x > fYsec[2] - safety) return -1; // outside sector in Y
   xyzLoc[0] = y;
   xyzLoc[1] = x - fYsec[0];
