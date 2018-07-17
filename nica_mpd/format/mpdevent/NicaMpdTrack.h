@@ -25,7 +25,7 @@ public:
 	NicaMpdTrack(const NicaMpdTrack &other);
 	NicaMpdTrack &operator=(const NicaMpdTrack &other);
 	inline TVector3 *GetLastPoint()const{return fLastPoint;};
-	inline TVector3 *GetFistPoint()const{return fFirstPoint;};
+	inline TVector3 *GetFirstPoint()const{return fFirstPoint;};
 	inline NicaTpcTrack *GetTpcTrack()const{return fTpcTrack;};
 	inline NicaToFTrack *GetToFTrack()const{return fToFTrack;};
 	inline Bool_t HaveHit(Int_t layer)const{return TESTBIT(fHitsMap,layer);};

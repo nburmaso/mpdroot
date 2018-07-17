@@ -10,7 +10,6 @@
 #include "NicaMpdTrackTpcPads.h"
 
 NicaMpdEventTpcPads::NicaMpdEventTpcPads() :NicaMpdEvent("NicaMpdTrackTpcPads"){
-	// TODO Auto-generated constructor stub
 
 }
 
