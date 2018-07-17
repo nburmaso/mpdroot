@@ -17,9 +17,9 @@ MpdTrackFirstPointCut::MpdTrackFirstPointCut() : NicaTrackCut(3){
 
 Bool_t MpdTrackFirstPointCut::Pass(NicaTrack* track) {
 	NicaMpdTrack *mpd = (NicaMpdTrack*)track;
-	SetValue(mpd->GetFistPoint()->X(),0);
-	SetValue(mpd->GetFistPoint()->Y(),1);
-	SetValue(mpd->GetFistPoint()->Z(),2);
+	SetValue(mpd->GetFirstPoint()->X(),0);
+	SetValue(mpd->GetFirstPoint()->Y(),1);
+	SetValue(mpd->GetFirstPoint()->Z(),2);
 	return Validate();
 }
 

@@ -7,11 +7,17 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "NicaMpdTrackTpcPads.h"
+#include "TLorentzVector.h"
+#include "NicaEvent.h"
 
 NicaMpdTrackTpcPads::NicaMpdTrackTpcPads() {
 	fMaxPads = 53;
 	fSec = NULL;
 	fPadsNo = 0;
+	for(int i=0;i<fMaxPads;i++){
+		fPhiPads[i] =0;
+		fZPads[i] =0;
+	}
 }
 
 void NicaMpdTrackTpcPads::Update(MpdTrack* track) {
@@ -31,15 +37,18 @@ void NicaMpdTrackTpcPads::Update(MpdTrack* track) {
 		R = R_min + i*padH1+0.5*padH1;
 		GetHelix()->PathLength(R, s1, s2);
 		s = TMath::Min(s1,s2);
+		if(s<0){
+			s = TMath::Max(s1,s2);
+		}
 		if(s==NicaHelix::MaxPath()){
 			fPadID[lay] = -1;
 			fPadsNo = lay;
 			return;
 		}
 		glob = GetHelix()->Evaluate(s);
+		fZPads[lay] = glob.Z();
 		glob.SetZ(0);
 		fPadID[lay] =  fSec->Global2Local(glob,loc,-1);
-		fRPads[lay] = R;
 		fPhiPads[lay] = glob.Phi();
 		lay++;
 	}
@@ -48,15 +57,17 @@ void NicaMpdTrackTpcPads::Update(MpdTrack* track) {
 		R = R_min + i*padH2+0.5*padH2;
 		GetHelix()->PathLength(R, s1, s2);
 		s = TMath::Min(s1,s2);
+		if(s<0)
+			s = TMath::Max(s1,s2);
 		if(s==NicaHelix::MaxPath()){
 			fPadID[lay] = -1;
 			fPadsNo = lay+1;
 			return;
 		}
 		glob = GetHelix()->Evaluate(s);
+		fZPads[lay] = glob.Z();
 		glob.SetZ(0);
 		fPadID[lay] =  fSec->Global2Local(glob,loc,-1);
-		fRPads[lay] = R;
 		fPhiPads[lay] = glob.Phi();
 		lay++;
 	}
@@ -72,11 +83,36 @@ NicaMpdTrackTpcPads::NicaMpdTrackTpcPads(const NicaMpdTrackTpcPads& other):
 		{
 	fPadsNo = other.fPadsNo;
 	for(int i=0;i<fPadsNo;i++){
-		fRPads[i] = other.fRPads[i];
 		fPhiPads[i] = other.fPhiPads[i];
+		fZPads[i] = other.fZPads[i];
 		fPadID[i] = other.fPadID[i];
-		fLayersNo[i] = other.fLayersNo[i];
 		fMaxPads = other.fMaxPads;
 		fSec = other.fSec;
+	}
+}
+
+NicaMpdTrackTpcPads& NicaMpdTrackTpcPads::operator =(
+		const NicaMpdTrackTpcPads& other) {
+	if(this!=&other){
+		NicaMpdTrack::operator=(other);
+		fPadsNo = other.fPadsNo;
+		for(int i=0;i<fPadsNo;i++){
+			fPhiPads[i] = other.fPhiPads[i];
+			fPadID[i] = other.fPadID[i];
+			fZPads[i] = other.fZPads[i];
+			fMaxPads = other.fMaxPads;
+			fSec = other.fSec;
+		}
+	}
+	return *this;
+}
+
+Float_t NicaMpdTrackTpcPads::GetR(Int_t lay) const {
+	Double_t R  =0;
+	Double_t L = lay;
+	if(lay<fSec->NofRowsReg(0)){
+		return  fSec->GetMinY()+fSec->PadHeight(0)*(L+0.5);
+	}else{
+		return fSec->GetRocY(1) +fSec->PadHeight(1)*(L-fSec->NofRowsReg(0)+0.5);
 	}
 }

@@ -9,6 +9,9 @@
 #ifndef MPDROOT_NICA_MPD_CUTS_PAIRCUTS_MPDPAIRPADSCUTS_H_
 #define MPDROOT_NICA_MPD_CUTS_PAIRCUTS_MPDPAIRPADSCUTS_H_
 #include "NicaTwoTrackCut.h"
+/**
+ * class for pair cuts that base on pads, you have to use format that support such data
+ */
 class MpdPairPadsCuts : public NicaTwoTrackCut{
 public:
 	MpdPairPadsCuts();
