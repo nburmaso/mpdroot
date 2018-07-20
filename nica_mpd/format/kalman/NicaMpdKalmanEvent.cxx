@@ -37,6 +37,19 @@ void NicaMpdKalmanEvent::Clear(Option_t* opt) {
 	if(fSource)
 		fSource->Clear(opt);
 }
+
+void NicaMpdKalmanEvent::ShallowCopyTracks(NicaEvent *event){
+	fTracks->Clear();
+	fTotalTracksNo = event->GetTotalTrackNo();
+	fTracks->ExpandCreateFast(fTotalTracksNo);
+	NicaMpdKalmanEvent *Event = (NicaMpdKalmanEvent*)event;
+	for(int i=0;i<fTotalTracksNo;i++){
+		NicaMpdKalmanTrack *from = (NicaMpdKalmanTrack*)Event->fTracks->UncheckedAt(i);
+		NicaMpdKalmanTrack *to = (NicaMpdKalmanTrack*)fTracks->UncheckedAt(i);
+		*to = *from;
+	}
+}
+
 NicaMpdKalmanEvent::NicaMpdKalmanEvent(const NicaMpdKalmanEvent& other) {
 	if(other.fSource) CreateSource();
 }

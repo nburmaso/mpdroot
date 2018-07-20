@@ -29,7 +29,8 @@ public:
 	Float_t GetR(Int_t lay)const;
 	Float_t GetZ(Int_t lay)const{return fZPads[lay];};
 	Int_t GetPadID(Int_t lay)const{return fPadID[lay];};
-	void Update(MpdTrack* track);
+	virtual void Update(MpdTrack* track);
+	virtual void CopyData(NicaTrack *other);
 	virtual ~NicaMpdTrackTpcPads();
 	ClassDef(NicaMpdTrackTpcPads,1)
 };

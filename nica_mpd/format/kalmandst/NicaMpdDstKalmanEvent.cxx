@@ -36,11 +36,13 @@ void NicaMpdDstKalmanEvent::Update() {
 			NicaMpdDstKalmanTrack *mpd_track = (NicaMpdDstKalmanTrack*)fTracks->ConstructedAt(count++);
 			mpd_track->Update((MpdTrack*)prim->UncheckedAt(i),NULL);
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i);
 		}
 		for(int i=0;i<event->GetEventInfoNofGlobalTracks();i++){
 			NicaMpdDstKalmanTrack *mpd_track = (NicaMpdDstKalmanTrack*)fTracks->ConstructedAt(count++);
 			mpd_track->Update((MpdTrack*)glob->UncheckedAt(i),NULL);
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i+event->GetEventInfoNofPrimaryTracks());
 		}
 
 	}break;
@@ -51,6 +53,7 @@ void NicaMpdDstKalmanEvent::Update() {
 			NicaMpdDstKalmanTrack *mpd_track = (NicaMpdDstKalmanTrack*)fTracks->ConstructedAt(i);
 			mpd_track->Update((MpdTrack*)prim->UncheckedAt(i),NULL);
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i);
 		}
 	}break;
 	case kGlobalTracks:{
@@ -61,6 +64,7 @@ void NicaMpdDstKalmanEvent::Update() {
 			MpdTpcKalmanTrack *kalman_track = (MpdTpcKalmanTrack*)kalm->UncheckedAt(i);
 			mpd_track->Update((MpdTrack*)glob->UncheckedAt(i), kalman_track);
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i);
 		}
 	}break;
 	}

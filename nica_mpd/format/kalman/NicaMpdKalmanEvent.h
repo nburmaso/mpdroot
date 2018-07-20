@@ -13,6 +13,7 @@
 class NicaMpdKalmanEvent : public NicaEvent {
 protected:
 	void CreateSource();
+	virtual void ShallowCopyTracks(NicaEvent *event);
 public:
 	NicaMpdKalmanEvent();
 	NicaMpdKalmanEvent(const NicaMpdKalmanEvent &other);

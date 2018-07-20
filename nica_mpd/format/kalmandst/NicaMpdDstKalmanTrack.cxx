@@ -10,13 +10,13 @@
 #include "MpdKalmanHit.h"
 #include "TObjArray.h"
 NicaMpdDstKalmanTrack::NicaMpdDstKalmanTrack():fNKalmanhits(0),fSize(MPD_TPC_LAYERS),fLayers(NULL),fIndex(NULL){
-	fLayers = new Int_t[fSize];
+	fLayers = new Short_t[fSize];
 	fIndex = new Int_t[fSize];
-	fLayerMap = new Int_t[fSize];
+	fLayerMap = new Short_t[fSize];
 }
 
 void NicaMpdDstKalmanTrack::Update(MpdTrack* track, MpdTpcKalmanTrack* kalman) {
-	NicaMpdTrack::Update(track);
+	NicaMpdTrackTpcPads::Update(track);
 	if(kalman!=NULL){
 		fNKalmanhits = kalman->GetNofTrHits();
 		for(int i =0;i<fNKalmanhits;i++){
@@ -49,13 +49,39 @@ NicaMpdDstKalmanTrack::~NicaMpdDstKalmanTrack() {
 }
 
 void NicaMpdDstKalmanTrack::CopyData(NicaTrack* other) {
-	NicaMpdTrack::CopyData((NicaMpdTrack*)other);
+	NicaMpdTrackTpcPads::CopyData((NicaMpdTrackTpcPads*)other);
 	NicaMpdDstKalmanTrack *tr = (NicaMpdDstKalmanTrack*)other;
 	fNKalmanhits = tr->fNKalmanhits;
-	for(int i =0;i<fNKalmanhits;i++){
+	for(int i =0;i<fSize;i++){
 		fLayers[i]=tr->fLayers[i];
 		fIndex[i]=tr->fIndex[i];
-	}
-	for(int i=0;i<fSize;i++)
 		fLayerMap[i]=tr->fLayerMap[i];
+	}
+}
+
+NicaMpdDstKalmanTrack::NicaMpdDstKalmanTrack(
+		const NicaMpdDstKalmanTrack& other):NicaMpdTrackTpcPads(other),fSize(MPD_TPC_LAYERS) {
+	fNKalmanhits = other.fNKalmanhits;
+	fLayers = new Short_t[fSize];
+	fIndex = new Int_t[fSize];
+	fLayerMap = new Short_t[fSize];
+	for(int i=0;i<fSize;i++){
+		fLayers[i] = other.fLayers[i];
+		fLayerMap[i]  = other.fLayerMap[i];
+		fIndex[i] = other.fIndex[i];
+	}
+}
+
+NicaMpdDstKalmanTrack& NicaMpdDstKalmanTrack::operator =(
+		const NicaMpdDstKalmanTrack& other) {
+	if(this!=&other){
+		NicaMpdTrackTpcPads::operator=(other);
+		fNKalmanhits = other.fNKalmanhits;
+		for(int i=0;i<fSize;i++){
+			fLayers[i] = other.fLayers[i];
+			fLayerMap[i]  = other.fLayerMap[i];
+			fIndex[i] = other.fIndex[i];
+		}
+	}
+	return *this;
 }

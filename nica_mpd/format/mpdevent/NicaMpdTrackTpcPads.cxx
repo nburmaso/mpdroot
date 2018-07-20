@@ -116,3 +116,16 @@ Float_t NicaMpdTrackTpcPads::GetR(Int_t lay) const {
 		return fSec->GetRocY(1) +fSec->PadHeight(1)*(L-fSec->NofRowsReg(0)+0.5);
 	}
 }
+
+void NicaMpdTrackTpcPads::CopyData(NicaTrack* other) {
+	NicaMpdTrack::CopyData(other);
+	NicaMpdTrackTpcPads *track = (NicaMpdTrackTpcPads*)other;
+	fPadsNo = track->fPadsNo;
+	for(int i=0;i<fPadsNo;i++){
+		fPhiPads[i] = track->fPhiPads[i];
+		fZPads[i] = track->fZPads[i];
+		fPadID[i] = track->fPadID[i];
+		if(track->fSec)
+			fSec = track->fSec;
+	}
+}

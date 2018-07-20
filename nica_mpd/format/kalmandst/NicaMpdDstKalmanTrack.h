@@ -9,18 +9,20 @@
 #ifndef INTERFACES_MPDROOT_FORMAT_KALMANDST_NICAMPDDSTKALMANTRACK_H_
 #define INTERFACES_MPDROOT_FORMAT_KALMANDST_NICAMPDDSTKALMANTRACK_H_
 
-#include "NicaMpdTrack.h"
+#include "NicaMpdTrackTpcPads.h"
 #include "MpdTpcKalmanTrack.h"
 
 #define MPD_TPC_LAYERS 55
-class NicaMpdDstKalmanTrack : public NicaMpdTrack{
+class NicaMpdDstKalmanTrack : public NicaMpdTrackTpcPads{
 	Int_t fNKalmanhits;
 	const Int_t fSize;
-	Int_t *fLayers;//[fSize]
+	Short_t *fLayers;//[fSize]
 	Int_t *fIndex;//[fSize]
-	Int_t *fLayerMap;//[fSize]
+	Short_t *fLayerMap;//[fSize]
 public:
 	NicaMpdDstKalmanTrack();
+	NicaMpdDstKalmanTrack(const NicaMpdDstKalmanTrack &other);
+	NicaMpdDstKalmanTrack &operator=(const NicaMpdDstKalmanTrack &other);
 	/**
 	 *
 	 * @return number of hits in kalman track
