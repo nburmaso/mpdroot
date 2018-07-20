@@ -63,6 +63,7 @@ paircuts/MpdTwoTrackSharedQualityCut.cxx
 paircuts/MpdTwoTrackSharedPadsCut.cxx
 paircuts/MpdPairPadsCuts.cxx
 paircuts/MpdDeltaEtaDeltaPhiStarCut.cxx
+paircuts/MpdPairKalmanPadsCuts.cxx
 )
 
 Set(HEADERS )

@@ -11,11 +11,6 @@
 #include "NicaMpdTrack.h"
 
 MpdTwoTrackSharedPadsCut::MpdTwoTrackSharedPadsCut() {
-	fSec = MpdTpcSectorGeo::Instance();
-	fHelix1 = new NicaHelix();
-	fHelix1->SetMagFiled(0.5);
-	fHelix2 = new NicaHelix();
-	fHelix2->SetMagFiled(0.5);
 }
 
 Bool_t MpdTwoTrackSharedPadsCut::Pass(NicaTwoTrack* pair) {

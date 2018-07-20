@@ -24,6 +24,7 @@
 #pragma link C++ class MpdTwoTrackSharedPadsCut+;
 #pragma link C++ class MpdPairPadsCuts+;
 #pragma link C++ class MpdDeltaEtaDeltaPhiStarCut+;
+#pragma link C++ class MpdPairKalmanPadsCuts+;
 #endif
 
 #endif /* INTERFACES_MPDROOT_CUTS_MPDNICACUTSLINKDEF_H_ */
