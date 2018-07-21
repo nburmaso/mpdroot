@@ -41,6 +41,8 @@ void NicaMpdKalmanEventInterface::Copy(NicaEventInterface* s) {
 void NicaMpdKalmanEventInterface::CopyAndCompress(NicaEventInterface* s,
 		Int_t* map, Int_t map_size) {
 	NicaMpdKalmanEventInterface *ev = (NicaMpdKalmanEventInterface*)s;
+	fTracks->Clear();
+	fTracks->ExpandCreateFast(map_size);
 	for(int i=0;i<map_size;i++){
 		MpdKalmanTrack *from = (MpdKalmanTrack*)ev->fTracks->UncheckedAt(map[i]);
 		MpdKalmanTrack *to = (MpdKalmanTrack*)fTracks->UncheckedAt(i);
