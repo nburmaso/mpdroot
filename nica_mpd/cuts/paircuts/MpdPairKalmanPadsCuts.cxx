@@ -20,7 +20,7 @@ MpdPairKalmanPadsCuts::MpdPairKalmanPadsCuts():NicaTwoTrackCut(7) {
 	SetMinMax(0, 1E+4, AverageSep());
 	SetMinMax(0,1,SharedPads());
 	SetMinMax(0.1,-0.1,MinDeltaPhiStar());
-	SetMinMax(0,1E+4,TPCEntranceDist());
+	SetMinMax(0,1E+6,TPCEntranceDist());
 	SetMinMax(0,1E+4,MinTPCSep());
 	SetMinMax(-2,2,HitQuality());
 	SetMinMax(0,1, HitShared());
@@ -84,7 +84,7 @@ Bool_t MpdPairKalmanPadsCuts::Pass(NicaTwoTrack* pair) {
 			}
 		}
 	}
-	SetValue(av_sep/minHits,AverageSep());
+	SetValue(TMath::Sqrt(av_sep)/minHits,AverageSep());
 	SetValue(sharedPads/minHits,SharedPads());
 	SetValue(minDeltaPhi,MinDeltaPhiStar());
 	SetValue(TMath::Sqrt(entrance),TPCEntranceDist());
