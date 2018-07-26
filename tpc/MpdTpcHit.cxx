@@ -5,6 +5,7 @@
 
 //#include "TpcCommon.h"
 #include "MpdTpcHit.h"
+#include "FairLinkManager.h"
 
 //---------------------------------------------------------------------------
 MpdTpcHit::MpdTpcHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index)
@@ -33,6 +34,8 @@ Int_t MpdTpcHit::Compare(const TObject* hit) const
 Int_t MpdTpcHit::GetTrackID() const
 {
   // Returns track ID (from the link with the smallest weight)
+
+  if (FairLinkManager::Instance() == NULL) return fIDs[0];
 
   FairMultiLinkedData links = GetLinksWithType(MpdTpcHit::MCTrackIndex);
   Int_t nLinks = links.GetNLinks();

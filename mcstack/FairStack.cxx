@@ -57,8 +57,8 @@ FairStack::FairStack(Int_t size) // {
     fStoreMothers(kTRUE),
     fMinMotherMass(0.4),
     fMaxMotherMass(6.1),
-    fRadiusCut(175), //NG ecal outer XYradius, some mm smaller
-    fVzCut(296), //296 NG barrel half length, TODO does not include EndCaps
+    fRadiusCut(172), //175 NG ecal outer XYradius, some mm smaller
+    fVzCut(311), //296 NG barrel half length, TODO does not include EndCaps
     fNoZDC(kTRUE) //NG
 {
 }
@@ -510,6 +510,7 @@ void FairStack::SelectTracks() {
     std::multimap<Int_t,Int_t>::iterator it;
     pair<std::multimap<Int_t,Int_t>::iterator,std::multimap<Int_t,Int_t>::iterator> ret;
     std::map<Int_t,Bool_t> copyMap = fStoreMap;
+
     for (Int_t i=0; i<fNParticles; i++) {
       Int_t iMother = GetParticle(i)->GetMother(0);
       if (iMother >= 0) moths.insert(pair<Int_t,Int_t>(iMother,i));
@@ -517,24 +518,42 @@ void FairStack::SelectTracks() {
 
     for (Int_t i=0; i<fNParticles; i++) {
       if (copyMap[i]) { //if particle is to be stored
-	    Int_t iMother = GetParticle(i)->GetMother(0);
-	    while(iMother >= 0) { //and it's mother is not primary
-	      TParticle* mother = GetParticle(iMother);
-	      if (mother->GetPDG()->Mass() < 0.1 && mother->P() < 0.01) break;
-	      if (abs(mother->Vz()) > fVzCut || mother->R() > fRadiusCut) break; //NG and doesn't originate within Rcut/Zcut
-	      fStoreMap[iMother] = kTRUE;//store the mother
-	      ret = moths.equal_range(iMother);
-	      for (it = ret.first; it != ret.second; ++it) {
-		TParticle* daught = GetParticle(it->second);
+	Int_t iMother = GetParticle(i)->GetMother(0);
+
+	while (iMother >= 0) { //and it's mother is not primary
+	  TParticle* mother = GetParticle(iMother);
+	  if (mother->GetPDG()->Mass() < 0.1 && mother->P() < 0.01) break;
+	  //if (mother->GetPDG()->Mass() < 0.1 && mother->P() < 0.001) break;
+	  if (abs(mother->Vz()) > fVzCut || mother->R() > fRadiusCut) break; //NG and doesn't originate within Rcut/Zcut
+	  fStoreMap[iMother] = kTRUE;//store the mother
+	  ret = moths.equal_range(iMother);
+
+	  for (it = ret.first; it != ret.second; ++it) {
+	    TParticle* daught = GetParticle(it->second);
 	    if (abs(daught->Vz()) > fVzCut || daught->R() > fRadiusCut) continue; //NG and doesn't originate within Rcut/Zcut
-		if (daught->GetPDG()->Mass() < 0.1 && daught->P() < 0.01) continue;
-	        fStoreMap[it->second] = kTRUE; // sister
-	      }
-	      iMother = mother->GetMother(0); //mother of the mother, loop again
-	    }//not primary
-      }//store
-    }//nparticle
-  }//store mothers
+	    if (daught->GetPDG()->Mass() < 0.1 && daught->P() < 0.01) continue;
+	    //if (daught->GetPDG()->Mass() < 0.1 && daught->P() < 0.001) continue;
+	    fStoreMap[it->second] = kTRUE; // sister
+	  }
+	  iMother = mother->GetMother(0); //mother of the mother, loop again
+	} // while (iMother >= 0)
+
+      } // if (copyMap[i])
+    } // for (Int_t i=0; i<fNParticles;
+
+    // AZ - If mother is not stored, find the nearest stored ancestor
+    for (Int_t i = 0; i < fNParticles; ++i) {
+      if (fStoreMap[i]) {
+	Int_t iMother = GetParticle(i)->GetMother(0);
+
+	while (iMother >= 0 && fStoreMap[iMother] == kFALSE) {
+	  TParticle* mother = GetParticle(iMother);
+	  iMother = mother->GetMother(0); //mother of the mother, loop again
+	}
+	if (iMother >= 0) GetParticle(i)->SetFirstMother(iMother);
+      }
+    }
+  } // if (fStoreMothers)
   
 //*/
 
