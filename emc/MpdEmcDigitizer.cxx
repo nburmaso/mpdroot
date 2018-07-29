@@ -122,7 +122,8 @@ void MpdEmcDigitizer::Exec(Option_t* opt)
     TString path(gGeoManager->GetPath());
     //cout << path << endl; 
     //if (!path.Contains("sc")) exit(0); 
-    if (!path.Contains("sc")) continue; 
+    //if (!path.Contains("sc")) continue; // !!! this condition is very bad for Geant4 (not for Geant3)
+    if (!path.Contains("box")) continue; // 
     gGeoManager->CdUp(); // to tower (channel)
     Int_t ip = path.Index("ChH"); // half-EMC
     UInt_t ih = TString(path(ip+4,1)).Atoi();

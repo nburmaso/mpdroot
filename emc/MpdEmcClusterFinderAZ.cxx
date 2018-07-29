@@ -204,7 +204,8 @@ void MpdEmcClusterFinderAZ::FillEmcInfo()
       if (digi->GetE() < fThresh) continue;
 
       // Apply time window
-      Double_t dist = TMath::Sqrt (digi->GetZcenter() * digi->GetZcenter() + rmin * rmin);
+      //Double_t dist = TMath::Sqrt (digi->GetZcenter() * digi->GetZcenter() + rmin * rmin);
+      Double_t dist = rmin / TMath::Sin(digi->GetZcenter());
       Double_t dt = digi->GetTimeStamp() - dist / 30.; // c = 30 cm/ns       
       //if (dt < -0.5 || dt > 2.0) continue;
 
@@ -711,7 +712,7 @@ void MpdEmcClusterFinderAZ::FindHits()
 	hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, vecDig[idig1], idig1)); // weight = idig
 	hit->AddID(vecDig[idig1]);
       }
-      //cout << hit->GetNLinks() << " " << *(vecDig.begin()) << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(0).GetIndex() << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(hit->GetNLinks()-1).GetIndex() << endl;
+      //cout << " EMC IDs: " << hit->GetNLinks() << " " << *(vecDig.begin()) << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(0).GetIndex() << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(hit->GetNLinks()-1).GetIndex() << endl;
 
     } // for ( ; rit != localMax.rend();
   } // for (Int_t iclus = 0; iclus < nclus;
