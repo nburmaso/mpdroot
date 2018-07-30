@@ -49,7 +49,7 @@ using namespace std;
 //__________________________________________________________________________
 
 MpdEmcClusterFinderAZ::MpdEmcClusterFinderAZ()
-  : FairTask("EMC Cluster finder AZ"), fPersistence(kFALSE), fThresh(0.005)
+  : FairTask("EMC Cluster finder AZ"), fPersistence(kFALSE), fThresh(0.005), fTimeWindow(0)
 {
 }
 
@@ -135,8 +135,10 @@ InitStatus MpdEmcClusterFinderAZ::Init()
   ioman->Register("EmcRecPoint", "Emc", fHitArray, fPersistence);
 
   cout << fEmcGeo->GetPhiRow().size() << " " << fEmcGeo->GetThetaBox().size() << endl;
+  Double_t theBeg = fEmcGeo->GetThetaBox()[0];
+  theBeg = TMath::Max (theBeg,180-theBeg);
   cout << fEmcGeo->GetPhiRow()[0] << " " << *fEmcGeo->GetPhiRow().rbegin() << " " 
-       << fEmcGeo->GetThetaBox()[0] << " " << *fEmcGeo->GetThetaBox().rbegin() << endl;
+       << theBeg << " " << *fEmcGeo->GetThetaBox().rbegin() << endl;
   return kSUCCESS;
 }
 
@@ -207,7 +209,7 @@ void MpdEmcClusterFinderAZ::FillEmcInfo()
       //Double_t dist = TMath::Sqrt (digi->GetZcenter() * digi->GetZcenter() + rmin * rmin);
       Double_t dist = rmin / TMath::Sin(digi->GetZcenter());
       Double_t dt = digi->GetTimeStamp() - dist / 30.; // c = 30 cm/ns       
-      //if (dt < -0.5 || dt > 2.0) continue;
+      if (fTimeWindow && (dt < -0.5 || dt > 2.0)) continue;
 
       Int_t iphi = digi->GetChanPhiId(), iz = digi->GetChanZId();
       Int_t ix = iphi + nSecRows; // offset by one sector
@@ -758,8 +760,10 @@ void MpdEmcClusterFinderAZ::GetPhiTheta(Double_t &phi, Double_t &theta)
     for (Int_t j = nthe-1; j >= 0; --j) {
       Double_t rho = rhos[j];
       Double_t z = zs[j];
-      Double_t costhe = TMath::Cos(thes[j]*TMath::DegToRad());
-      Double_t sinthe = TMath::Sin(thes[j]*TMath::DegToRad());
+      Double_t theta1 = thes[j];
+      if (j < nthe-1 && thes[j] <= thes[j+1]+0.1) theta1 = 180 - theta1;
+      Double_t costhe = TMath::Cos(theta1*TMath::DegToRad());
+      Double_t sinthe = TMath::Sin(theta1*TMath::DegToRad());
       rho -= height * sinthe;
       z -= height * costhe;
       the[j] = TMath::ATan2(rho,z) * TMath::RadToDeg();

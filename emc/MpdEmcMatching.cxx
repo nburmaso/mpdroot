@@ -188,8 +188,10 @@ void MpdEmcMatching::DoMatching(Int_t itrack)
     for (Int_t j = nthe-1; j >= 0; --j) {
       Double_t rho = rhos[j];
       Double_t z = zs[j];
-      Double_t costhe = TMath::Cos(thes[j]*TMath::DegToRad());
-      Double_t sinthe = TMath::Sin(thes[j]*TMath::DegToRad());
+      Double_t theta1 = thes[j];
+      if (j < nthe-1 && thes[j] <= thes[j+1]+0.1) theta1 = 180 - theta1;
+      Double_t costhe = TMath::Cos(theta1*TMath::DegToRad());
+      Double_t sinthe = TMath::Sin(theta1*TMath::DegToRad());
       rho += height * sinthe;
       z += height * costhe;
       the[++j1] = TMath::ATan2(rho,z) * TMath::RadToDeg();
@@ -405,8 +407,10 @@ void MpdEmcMatching::GetTowerCoords(TVector3 &pos, Int_t io, Double_t &phiT, Dou
     for (Int_t j = nthe-1; j >= 0; --j) {
       Double_t rho = rhos[j];
       Double_t z = zs[j];
-      Double_t costhe = TMath::Cos(thes[j]*TMath::DegToRad());
-      Double_t sinthe = TMath::Sin(thes[j]*TMath::DegToRad());
+      Double_t theta1 = thes[j];
+      if (j < nthe-1 && thes[j] <= thes[j+1]+0.1) theta1 = 180 - theta1;
+      Double_t costhe = TMath::Cos(theta1*TMath::DegToRad());
+      Double_t sinthe = TMath::Sin(theta1*TMath::DegToRad());
       rho -= height * sinthe;
       z -= height * costhe;
       theMin[++j1] = TMath::ATan2(rho,z) * TMath::RadToDeg(); // at inner tower face

@@ -45,6 +45,7 @@ public:
   // Modifiers -----------------------
   void SetPersistence(Bool_t opt = kTRUE) { fPersistence = opt; }
   void SetThreshold(Double_t thresh) { fThresh = thresh; }
+  void SetTimeWindow(Int_t iwind = 1) { fTimeWindow = iwind; }
 
   // Operations ----------------------
   
@@ -75,6 +76,7 @@ private:
   Bool_t fPersistence;
   MpdEmcGeoParams* fEmcGeo;
   Float_t fThresh;
+  Int_t fTimeWindow;
 
   // Private Methods -----------------
   void FillEmcInfo(); // fill EMC info
