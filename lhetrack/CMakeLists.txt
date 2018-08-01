@@ -113,6 +113,6 @@ lhe.h
 
 Set(LINKDEF LHETrackLinkDef.h)
 Set(LIBRARY_NAME LHETrack)
-Set(DEPENDENCIES Core Base Kalman Tof)
+Set(DEPENDENCIES Core Base Kalman Tof MpdData)
 
 GENERATE_LIBRARY()

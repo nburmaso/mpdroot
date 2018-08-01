@@ -15,7 +15,7 @@ public:
     /** Constructor with hit parameters (2) [not the flag]**/
     MpdEmcHit(Int_t detectorID, TVector3 pos, TVector3 dpos, Int_t refIndex);
 
-    MpdEmcHit(UInt_t sec, UInt_t row, UInt_t supMod, UInt_t mod, Float_t e);
+    MpdEmcHit(UInt_t sec, UInt_t row, UInt_t supMod, UInt_t mod, Float_t e) {} //TEMPORARY FIX: was not implemented -> undefined reference
 
     MpdEmcHit(UInt_t sec, UInt_t row, UInt_t supMod, UInt_t mod, Float_t e, Float_t time);
 

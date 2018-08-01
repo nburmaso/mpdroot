@@ -1,4 +1,4 @@
-# MPDRoot Suppressions
+# MPDRoot Suppressions (valgrind --tool=memcheck --suppressions=valgrind.supp)
 {
    obj1
    Memcheck:Cond

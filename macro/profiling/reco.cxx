@@ -1,4 +1,3 @@
-#if !defined(__CINT__) && !defined(__CLING__)
 // ROOT includes
 #include "TString.h"
 #include "TStopwatch.h"
@@ -37,12 +36,17 @@
 
 #include <iostream>
 using namespace std;
-#endif
 
-R__ADD_INCLUDE_PATH($VMCWORKDIR)
-#include "macro/mpd/mpdloadlibs.C"
-#include "macro/mpd/geometry_stage1.C"
-//#include "macro/mpd/geometry_v2.C"
+bool CheckFileExist(TString fileName){
+    gSystem->ExpandPathName(fileName);
+    if (gSystem->AccessPathName(fileName.Data()) == true)
+    {
+        cout<<endl<<"no specified file: "<<fileName<<endl;
+        return false;
+    }
+
+    return true;
+}
 
 #define Mlem  // Choose: Mlem HitProducer
 
@@ -57,18 +61,11 @@ R__ADD_INCLUDE_PATH($VMCWORKDIR)
 //      "proof:user@proof.server:21001" - to run on the PROOF cluster created with PoD (under user 'MPD', default port - 21001)
 //      "proof:user@proof.server:21001:workers=10" - to run on the PROOF cluster created with PoD with 10 workers (under USER, default port - 21001)
 //	nc-farm : proof:mpd@nc10.jinr.ru:21001
-void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile = "mpddst.root", Int_t nStartEvent = 0, Int_t nEvents = 10, TString run_type = "local") {
+void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile = "mpddst.root", Int_t nStartEvent = 0, Int_t nEvents = 1, TString run_type = "local")
+{
     // ========================================================================
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
     Int_t iVerbose = 0;
-
-    // ----  Load libraries   -------------------------------------------------
-    mpdloadlibs(kTRUE); // load full set of main libraries
-    gSystem->Load("libXMLIO");
-
-    geometry_stage1(0x0, kFALSE);
-    //geometry_v2(0x0, kFALSE);
-    // ------------------------------------------------------------------------
 
     // -----   Timer   --------------------------------------------------------
     TStopwatch timer;
@@ -85,16 +82,8 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     }
 
     FairRunAna* fRun;
-    if (run_type == "proof")
-    {
-        fRun = new FairRunAnaProof(proof_name);
-        ((FairRunAnaProof*)fRun)->SetProofParName("$VMCWORKDIR/gconfig/libMpdRoot.par");
-    }
-    else
-    {
-        if (!CheckFileExist(inFile)) return;
-        fRun = new FairRunAna();
-    }
+    if (!CheckFileExist(inFile)) return;
+    fRun = new FairRunAna();
 
     FairSource* fFileSource = new FairFileSource(inFile);
     fRun->SetSource(fFileSource);
@@ -158,12 +147,12 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 /*
     MpdEtofHitProducer* etofHitProd = new MpdEtofHitProducer("ETOF HitProducer");
     fRun->AddTask(etofHitProd);
-    
+
     // Endcap tracking
     FairTask* tpcECT = new MpdEctTrackFinderTpc();
     tpcECT->SetVerbose(iVerbose);
     fRun->AddTask(tpcECT);
-    
+
     MpdEctTrackFinderCpc* tofECT = new MpdEctTrackFinderCpc();
     tofECT->SetVerbose(iVerbose);
     tofECT->SetTpc(kTRUE);
@@ -193,16 +182,6 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     // -----   Intialise   ----------------------------------------------------
     fRun->Init();
     if (run_type != "proof") cout<<"Field: "<<fRun->GetField()->GetBz(0., 0., 0.)<<endl;
-    else {
-        TProof* pProof = ((FairRunAnaProof*)fRun)->GetProof();
-        pProof->SetParameter("PROOF_PacketizerStrategy", (Int_t) 0);
-        ind = proof_name.Index(":workers=");
-        if (ind >= 0) {
-            TString worker_count = proof_name(ind + 9, proof_name.Length() - ind - 9);
-            if (worker_count.IsDigit())
-                pProof->SetParallel(worker_count.Atoi());
-        }
-    }
 
     // if nEvents is equal 0 then all events of the given file starting with "nStartEvent" should be processed
     if (nEvents == 0)
@@ -223,4 +202,9 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;
     // ------------------------------------------------------------------------
+}
+
+int main(int argc, char** arg)
+{
+   reco();
 }

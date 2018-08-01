@@ -45,8 +45,8 @@ TpcGas::TpcGas(double const E,
 				     _CSDEpol(CSDEpol)
 {}
 
-TpcGas::TpcGas(const std::string& Filename,
-	       double const E):_E(E)
+TpcGas::TpcGas(const std::string& Filename, double const E)
+    :_E(E)
 {
   //Reading the GasFile
   std::ifstream infile(Filename.c_str(), std::fstream::in);
@@ -243,22 +243,23 @@ TpcGas::ReadGasArrays(std::ifstream* const pinfile, int const noent,
 
 const double TpcGas::GetPositionOfE(int const noent, const double* const e)
 {
-  double inTable=0;
-  for (int i=0; i<noent; i++)
-   {
-     if (e[i] >= _E && i == 0)
-     {
-       inTable = i - (e[i]-_E)/(e[1]-e[0]);
-       break;
-     }
-     if (i == noent-1 || 
- 	(e[i] >= _E && i != 0))
-     {
-       inTable = i - (e[i]-_E)/(e[i]-e[i-1]);
-       break;
-     }
-  }
-  return(inTable);
+    double inTable = 0;
+    for (int i = 0; i < noent; i++)
+    {
+        if (e[i] >= _E && i == 0)
+        {
+            if (noent > 1) inTable = i - (e[i]-_E)/(e[1]-e[0]); // FIX to prevent out of range
+            break;
+        }
+
+        if (i == noent-1 || (e[i] >= _E && i != 0))
+        {
+            inTable = i - (e[i]-_E)/(e[i]-e[i-1]);
+            break;
+        }
+    }
+
+    return inTable;
 }
 
 const double TpcGas::LinExpolation(double const inTable, const double* const table,
