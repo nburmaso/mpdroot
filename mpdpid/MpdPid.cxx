@@ -6,7 +6,7 @@ MpdPid::MpdPid() : TObject(){
       parPiBB = 0;
       parKaBB = 0;
       parPrBB = 0;
-      parPrBBLowP = 0;
+      parPrBBMerged = 0;
       parDeBB = 0;
       parTrBB = 0;
       parHe3BB = 0;
@@ -24,6 +24,17 @@ MpdPid::MpdPid() : TObject(){
       fTracking = kTRUE;
 }
 
+Double_t MpdPid::mergedPrBB(Double_t *x, Double_t *par)
+{
+	Double_t ans = -999.;
+	Double_t par1[5] = { par[0], par[1], par[2], par[3], par[4] };
+    Double_t par2[5] = { par[5], par[6], par[7], par[8], par[9] };
+	if (parPrBB) {
+		if (x[0] < 0.211841) ans = parPrBB->EvalPar(x,par1);
+		else ans = parPrBB->EvalPar(x,par2);
+	}
+	return ans;
+}
 
 MpdPid::MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, Double_t koef, TString Generator, TString Tracking, TString NSigPart)
    : TObject(), kSigmaTof(sigmaTof), kSigmaEloss(sigmaEloss), fCharge(1), fKoef(koef),
@@ -243,7 +254,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	parPiBB = new TF1("parPiBB","[0]/pow(x/sqrt(x*x+0.01949),[3])*([1]-pow(x/sqrt(x*x+0.01949),[3])-log([2]+pow(1./(x/0.1396),[4])) )",PMIN,PMAX);
 	parKaBB = new TF1("parKaBB","[0]/pow(x/sqrt(x*x+0.2437),[3])*([1]-pow(x/sqrt(x*x+0.2437),[3])-log([2]+pow(1./(x/0.4937),[4])) )",PMIN,PMAX);
 	parPrBB = new TF1("parPrBB","[0]/pow(x/sqrt(x*x+0.88),[3])*([1]-pow(x/sqrt(x*x+0.88),[3])-log([2]+pow(1./(x/0.9383),[4])) )",PMIN,PMAX);
-	parPrBBLowP = new TF1("parPrBBLowP","[0]/pow(x/sqrt(x*x+0.88),[3])*([1]-pow(x/sqrt(x*x+0.88),[3])-log([2]+pow(1./(x/0.9383),[4])) )",PMIN,PMAX);
+	parPrBBMerged = new TF1("parPrBBMerged",this,&MpdPid::mergedPrBB,PMIN,PMAX,10,"MpdPid","mergedPrBB");
 	parDePol1 = new TF1("parDePol1", "pol1(0)", 0., 0.225); parDePol2 = new TF1("parDePol2", "pol1(0)", 0.225, 0.375);
 	parDeBB = new TF1("parDeBB","[0]/pow(x/sqrt(x*x+3.52),[3])*([1]-pow(x/sqrt(x*x+3.52),[3])-log([2]+pow(1./(x/1.876),[4])) )",PMIN,PMAX);
 	parTrPol1 = new TF1("parTrPol1", "pol1(0)", 0., 0.3); parTrPol2 = new TF1("parTrPol2", "pol1(0)", 0.3, 0.525);
@@ -290,7 +301,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		parKaBB->SetParameters(dedxParam,1.01718,-0.795357,1.80916,0.0707667);
 		/// protons
 		dedxParam = fKoef*(4.40008e-07);
-		parPrBB->SetParameters(dedxParam,2.97563,-0.192657,2.16118,0.61451);
+		parPrBBMerged->SetParameters(dedxParam,2.97563,-0.192657,2.16118,0.61451,dedxParam,2.97563,-0.192657,2.16118,0.61451);
 		/// deuterons
 		dedxParam = fKoef*3.27e-07;
 		parDeBB->SetParameters(dedxParam,3.74,-0.23,2.32,0.987);
@@ -393,10 +404,7 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		dedxParam = fKoef*(-640.087);
 		parKaBB->SetParameters(dedxParam,-4.04746,0.468871,1.1251,3.80837);
 		/// protons
-		dedxParam = fKoef*(-14147.3);
-		parPrBB->SetParameters(dedxParam,3.23534,11.3141,-0.294602,3.27046);
-		dedxParam = fKoef*(-2014.31);
-		parPrBBLowP->SetParameters(dedxParam,-3.1795,-2.18089,1.24223,0.683807);
+		parPrBBMerged->SetParameters(fKoef*(-5906.51),0.227931,-0.102815,1.26866,0.707981,fKoef*(-14146.3),3.16193,10.5214,-0.262496,3.1826);
 		/// deuterons
 		dedxParam = fKoef*(112.e+04); parDePol1->SetParameter(0, dedxParam);
 		dedxParam = fKoef*(-4466.666e+03); parDePol1->SetParameter(1, dedxParam);
@@ -452,8 +460,8 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		piSigmaMid1P = new TF1("piSigmaMid1P", "pol1(0)", 0.32, 0.81); piSigmaMid1P->SetParameters(0.0572968,0.00228388);
 		piSigmaMid2P = new TF1("piSigmaMid2P", "pol1(0)", 0.81, 1.46); piSigmaMid2P->SetParameters(0.0614121,-0.00279866);
 		piSigmaHighP = new TF1("piSigmaHighP", "pol1(0)", 1.46, 3.0); piSigmaHighP->SetParameters(0.0541414,0.00216918);
-		prSigmaLowP = new TF1("prSigmaLowP", "pol1(0)", 0., 0.2); prSigmaLowP->SetParameters(0.157451, -0.481992);
-		prSigmaHighP = new TF1("prSigmaHighP", "pol1(0)", 0.2, 3.0); prSigmaHighP->SetParameters(0.0623534, 0.00287991);
+		prSigmaLowP = new TF1("prSigmaLowP", "pol1(0)", 0., 0.5); prSigmaLowP->SetParameters(0.134444, -0.148889);
+		prSigmaHighP = new TF1("prSigmaHighP", "pol1(0)", 0.5, 3.0); prSigmaHighP->SetParameters(0.0623534, -0.00287991);
 		kaSigmaLowP = new TF1("kaSigmaLowP", "pol1(0)", 0., 0.2); kaSigmaLowP->SetParameters(0.120409, -0.289855);
 		kaSigmaHighP = new TF1("kaSigmaHighP", "pol1(0)", 0.2, 3.0); kaSigmaHighP->SetParameters(0.0630206, -0.00374603);
 		deSigmaLowP = new TF1("deSigmaLowP", "pol1(0)", 0.6, 1.025); deSigmaLowP->SetParameters(0.158871, -0.0961071);
@@ -543,10 +551,91 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	}
 	
 	for (Int_t itr = 0; itr < 14; itr++) Multiplicities[itr] = 0;
-	if ( !( (Generator == "LAQGSM") || (Generator == "QGSM") || (Generator == "URQMD") || (Generator == "NSIG") ) )
+	if ( !( (Generator == "LAQGSM") || (Generator == "QGSM") || (Generator == "URQMD") || (Generator == "NSIG") || (Generator == "PHSD") ) )
 	{
 		cout << "Incorrect generator string! Switching to DEFAULT..." << endl;
 		Generator = "DEFAULT";
+	}
+	
+	if ( Generator == "PHSD" )
+	{
+		if (Tracking == "HP")
+		{
+			if (fEnergy < 7.0) /// not ready
+			{
+				parElPosMom->SetParameters(17.6,-0.12,0.078,0.167,0.00); // QGSM 5-9 gev
+				parElNegMom->SetParameters(16.3,-0.12,0.078,0.167,0.00);
+				parMuPosMom->SetParameters(20.5,0.064,0.107,0.05,0.105); // QGSM 5-9 gev
+				parMuNegMom->SetParameters(20.5,0.064,0.107,0.05,0.105);
+				parPiPosMom->SetParameters(307.0,0.035,0.175,0.127,0.139); // QGSM 5 gev
+				parPiNegMom->SetParameters(325.6,0.035,0.175,0.127,0.139); // QGSM 5 gev
+				parKaPosMom->SetParameters(15.3,0.236,0.203,0.056,0.494); // QGSM 5 gev
+				parKaNegMom->SetParameters(8.88,0.236,0.203,0.056,0.494); // QGSM 5 gev
+				amplParam = 104.0;
+				parPrPosMom->SetParameters(amplParam,0.213,0.294,0.09,0.938); // QGSM 5 gev
+				amplParam /= prrat;
+				parPrNegMom->SetParameters(amplParam,0.213,0.294,0.09,0.938); // QGSM 5 gev
+				parDeMom->SetParameters(5.7,0.338,0.333,0.114,1.878); // QGSM 5 gev
+				parTrMom->SetParameters(0.2,-0.35,0.723,0.2,2.81);
+				parHe3Mom->SetParameters(0.36,-0.784,530.3,0.131,1.983);
+				parHe4Mom->SetParameters(6.6e-03,0.27,0.2,1.42,3.51);
+			}
+			else /// fEnergy > 7.0 not ready
+			{
+				parPiPosMom->SetParameters(473.,0.034,0.187,0.469,0.139); // QGSM 9 gev
+				parPiNegMom->SetParameters(501.6,0.034,0.187,0.469,0.139); // QGSM 9 gev
+				parKaPosMom->SetParameters(21.1,0.157,0.241,0.043,0.494); // QGSM 9 gev
+				parKaNegMom->SetParameters(12.25,0.157,0.241,0.043,0.494); // QGSM 9 gev
+				amplParam = 67.4;
+				parPrPosMom->SetParameters(amplParam,.02,0.365,0.01,0.938); // QGSM 9 gev
+				amplParam /= prrat;
+				parPrNegMom->SetParameters(amplParam,.02,0.365,0.01,0.938); // QGSM 9 gev
+				parDeMom->SetParameters(1.8,0.05,0.432,0.163,1.878); // QGSM 9 gev
+				parTrMom->SetParameters(0.2,-0.35,0.723,0.2,2.81);
+				parHe3Mom->SetParameters(0.36,-0.784,530.3,0.131,1.983);
+				parHe4Mom->SetParameters(6.6e-03,0.27,0.2,1.42,3.51);
+			}
+		}
+		
+		else /// Tracking == "CF"
+		{
+			if (fEnergy < 7.0) /// not ready
+			{
+				parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parPiPosMom->SetParameters(44660.6,1.4425,0.0821871,0.126819,-0.106069); Multiplicities[4] = 13565353;
+				parPiNegMom->SetParameters(1929.85,24.5821,0.111797,0.066913,0.667266); Multiplicities[5] = 17666880;
+				parKaPosMom->SetParameters(3089.81,9.2121,0.136135,0.125175,0.350274); Multiplicities[6] = 621942;
+				parKaNegMom->SetParameters(237.81,-0.746975,0.0771305,0.0365433,2.27772); Multiplicities[7] = 39940;
+				amplParam = 114392.;
+				parPrPosMom->SetParameters(amplParam,6.35265,0.188466,0.166392,0.7605); Multiplicities[8] = 23124724;
+				amplParam /= prrat;
+				parPrNegMom->SetParameters(amplParam,6.35265,0.188466,0.166392,0.7605); Multiplicities[9] = 4;
+				parDeMom->SetParameters(5024.67,0.129733,0.266767,0.00308559,39.0077); Multiplicities[10] = 1011296;
+				parTrMom->SetParameters(938.334,0.368862,0.0161982,0.00680544,109.992); Multiplicities[11] = 34449;
+				parHe3Mom->SetParameters(661.212,8.47325,0.150273,0.135588,1.57518); Multiplicities[12] = 22466;
+				parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+			}
+			else /// fEnergy = 11.0, 03/07/2018, 629K events
+			{
+				parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+				parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+				parPiPosMom->SetParameters(12708,7.25584,0.167878,0.303888,0.277294); Multiplicities[4] = 37433422;
+				parPiNegMom->SetParameters(3319.17,14.7475,0.212685,0.341987,-0.190745); Multiplicities[5] = 40994164;
+				parKaPosMom->SetParameters(24333.9,0.409004,0.283049,0.107653,0.396297); Multiplicities[6] = 4868113;
+				parKaNegMom->SetParameters(12323.4,0.392905,0.267303,0.0952731,0.457674); Multiplicities[7] = 2471313;
+				parPrPosMom->SetParameters(42750.4,1.92747,0.363864,0.273259,0.337891); Multiplicities[8] = 8579069;
+				parPrNegMom->SetParameters(4636.8,1.42461,0.285596,0.181618,0.837135); Multiplicities[9] = 233640;
+				parDeMom->SetParameters(0.,1.,1.,1.,1.);
+				parTrMom->SetParameters(0.,1.,1.,1.,1.);
+				parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+				parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+			}
+		}
 	}
 	
 	if ( (Generator == "LAQGSM") || (Generator == "QGSM") )
@@ -837,22 +926,18 @@ Double_t MpdPid::GetDedxKaParam(Double_t p)
 
 Double_t MpdPid::GetDedxPrParam(Double_t p)
 {
-	Double_t dedx=parPrBB->Eval(p);
+	Double_t dedx=parPrBBMerged->Eval(p);
 	if (fTracking)
 	{
+		if ( (p>0.05) && (p<0.1) ) dedx *= 0.896244;
+		if ( (p>0.1) && (p<0.15) ) dedx *= 0.938972;
+		if ( (p>0.15) && (p<0.2) ) dedx *= 1.05937;
+		if ( (p>0.2) && (p<0.25) ) dedx *= 1.08904;
 		if (p<0.55) dedx *= 0.985;
 		if (p<0.45) dedx *= 1.015;
 		if (p>1.35) dedx *= 0.99;
 		if (p>2.0) dedx *= 1.02;
 		if (p>2.2) dedx *= 1.01;
-		if (p<0.225) 
-		{
-			dedx=parPrBBLowP->Eval(p);
-			if (p<0.25) dedx *= 0.95;
-			if (p<0.2) dedx *= 1.075;
-			if (p<0.15) dedx *= 0.935;
-			if (p<0.1) dedx *= 0.965;
-		}
 	}
 	else
 	{

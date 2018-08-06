@@ -53,7 +53,7 @@ class MpdPid : public TObject
 	
 	MpdPid(); /// default ctor
 	
-	MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, /// generators: "URQMD", "LAQGSM" ("QGSM"), "DEFAULT", "NSIG" (for n-sigma method)
+	MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, /// generators: "PHSD", "URQMD", "LAQGSM" ("QGSM"), "DEFAULT", "NSIG" (for n-sigma method)
 		Double_t koef = 1., TString Generator = "DEFAULT", TString Tracking = "CF", /// tracking: "HP" (Hit Producer), "CF" (Cluster Finder)
 		TString NSigPart = "pikapr"); /// possible expressions: el, mu, pi, ka, pr, de, tr, he3, he4
 	
@@ -76,7 +76,7 @@ class MpdPid : public TObject
 	TF1 *fAsymmetryHe4LowP; TF1 *fAsymmetryHe4MidP; TF1 *fAsymmetryHe4HighP; /// he4
 	
 	/// Bethe-Bloch functions for mean energy deposit description
-	TF1 *parElBB; TF1 *parMuBB; TF1 *parPiBB; TF1 *parKaBB; TF1 *parPrBB; TF1 *parPrBBLowP;
+	TF1 *parElBB; TF1 *parMuBB; TF1 *parPiBB; TF1 *parKaBB; TF1 *parPrBB; TF1 *parPrBBMerged;
 	TF1 *parDeBB; TF1 *parTrBB; TF1 *parHe3BB; TF1 *parHe4BB;
 	TF1 *parDePol1; TF1 *parDePol2; TF1 *parTrPol1; TF1 *parTrPol2;
 	TF1 *parHe3Pol1; TF1 *parHe3Pol2; TF1 *parHe3Pol3; TF1 *parHe4Pol1; TF1 *parHe4Pol2;
@@ -134,6 +134,7 @@ class MpdPid : public TObject
 	Double_t GetDedxWidthValue(Double_t, Int_t);
 	
 	protected:
+	Double_t mergedPrBB(Double_t *x, Double_t *par);
 	
 	TF1 *fgaus;
 	TF2 *fgaus2;

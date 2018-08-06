@@ -436,11 +436,6 @@ void MpdPidQA::GetDedxQA(TString dir)
 			TF1 *Novosib = new TF1("Novosib", this, &MpdPidQA::Novosibirsk, XFUNCMIN, XFUNCMAX, 4, "MpdPidQA", "Novosibirsk");
 			Novosib->SetParameters(Gaus->GetParameter(0), 0.01, Gaus->GetParameter(2), Gaus->GetParameter(1));
 			it->second.dEdXPart[i]->Fit("Novosib","Q0RW");
-			if (it->first == 2212)
-			{
-				if (Xgraph[i] < 0.225) { for (Int_t k=0; k<parBB->GetNpar(); k++) {parBBMultX->SetParameter(k, parPrBBLowP->GetParameter(k));} parBB = parPrBBLowP; parBB->SetName("parBB"); }
-				else { for (Int_t k=0; k<parBB->GetNpar(); k++) {parBBMultX->SetParameter(k, parBB->GetParameter(k));} parBB = parPrBB; parBB->SetName("parBB"); }
-			}
 			mom = parBBMultX->Integral(Xlow[i+ibegloc],Xhigh[i+ibegloc])/(parBB->Integral(Xlow[i+ibegloc],Xhigh[i+ibegloc]));
 			Ygraph[i] = Novosib->GetParameter(3); 
 			Ygraph[i] /= (this->*GetDedxParam)(mom);
