@@ -1,101 +1,64 @@
 R__ADD_INCLUDE_PATH($VMCWORKDIR)
 #include "gconfig/basiclibs.C"
 
-void mpdloadlibs(Bool_t reco = kFALSE, Bool_t detectors = kFALSE)
+void mpdloadlibs()
 {
-  // Load basic libraries
+  /** Load basic and ROOT libraries **/
   basiclibs();
 
-  // Load other libraries
+  /** Load FairRoot libraries **/
   gSystem->Load("libBase");
-  gSystem->Load("libCluster.so");
   gSystem->Load("libFairTools");
   gSystem->Load("libGeoBase");
   gSystem->Load("libParBase");
+  gSystem->Load("libGen");
+  gSystem->Load("libTrkBase");
+  gSystem->Load("libGeane");
+
+  /** Load MpdRoot libraries **/
+  // Base
+  gSystem->Load("libMpdBase");
   gSystem->Load("libMCStack");
   gSystem->Load("libMpdField");
   gSystem->Load("libPassive");
-  gSystem->Load("libGen");
-  gSystem->Load("libTrkBase");
-  gSystem->Load("libMpdBase");
-  gSystem->Load("libMpdData");
   gSystem->Load("libMpdGen");
+  // Hadgen
+  gSystem->Load("libHADGEN");
+  gSystem->Load("libTHadgen");
+  gSystem->Load("libMpdGeneralGenerator");
 
-  // HADGEN
-  gSystem->Load("libHADGEN.so");
-  gSystem->Load("libTHadgen.so");
-  gSystem->Load("libMpdGeneralGenerator.so");
+  // Detectors
+  gSystem->Load("libtpc");
+  gSystem->Load("libTof");
+  gSystem->Load("libEtof");
+  gSystem->Load("libEmc");
+  gSystem->Load("libZdc");
+  gSystem->Load("libSts");
+  gSystem->Load("libCpc");
+  gSystem->Load("libStrawECT");
+  gSystem->Load("libStrawendcap");
+  gSystem->Load("libFfd");
+  //gSystem->Load("libFsa");
+  //gSystem->Load("libBbc");
+  //gSystem->Load("libNDet");
+  //gSystem->Load("libStt");
+  //gSystem->Load("libSft");
 
-  // FEMTOSCOPY
-  gSystem->Load("libMpdFemto.so");
-  
-  gSystem->Load("libTof");  // used by libLHETrack ??
-  
-  // RECONSTRUCTION
-  if (reco)
-  {
-    gSystem->Load("libKalman");
-    gSystem->Load("libtpc");
-    gSystem->Load("libLHETrack");
-    gSystem->Load("libGeane");
-  }
+  // Reconstruction
+  gSystem->Load("libCluster");
+  gSystem->Load("libKalman");
+  gSystem->Load("libLHETrack");
+  gSystem->Load("libMpdPid");
+  gSystem->Load("libMpdDst");
 
-  // DETECTORS
-  if (detectors)
-  {
-    gSystem->Load("libtpc");
-    gSystem->Load("libTof");
-    gSystem->Load("libEtof");
-    gSystem->Load("libEmc");
-    gSystem->Load("libStrawendcap");
-    //gSystem->Load("libStt");
-    gSystem->Load("libSts");
-    //gSystem->Load("libBbc");
-    gSystem->Load("libZdc");
-    //gSystem->Load("libFsa");
-    gSystem->Load("libFfd");
-    gSystem->Load("libCpc");
-    //gSystem->Load("libNDet");
-    //gSystem->Load("libSft");
-    gSystem->Load("libStrawECT");
-  }
-}
-
-TString find_path_to_URQMD_files ()
-{
-  TString hostname = gSystem->HostName();
-  TString path_to_URQMD_files;
-
-  if ((hostname=="nc2.jinr.ru")||(hostname=="nc3.jinr.ru") ||
-      (hostname=="nc8.jinr.ru")||(hostname=="nc9.jinr.ru") || 
-      (hostname=="nc10.jinr.ru")||(hostname=="nc11.jinr.ru")) {
-    path_to_URQMD_files="/nica/mpd1/data4mpd/UrQMD/1.3/";
-  }
-  else {
-    if ((hostname=="lxmpd-ui.jinr.ru")||(hostname=="lxmpd-ui"))    // linux farm
-      path_to_URQMD_files = "/opt/exp_soft/mpd/urqmd/";
-    else {
-      if ( (hostname=="mpd")||(hostname=="mpd.jinr.ru")
-           ||(hostname=="nc12.jinr.ru")||(hostname=="nc13.jinr.ru")||(hostname=="se63-36.jinr.ru")
-	   ||(hostname=="se63-37.jinr.ru")||(hostname=="se63-40.jinr.ru")||(hostname=="se51-99.jinr.ru") )
-	path_to_URQMD_files = "/opt/data/";                        // mpd, nc11
-      else{
-	if (hostname == "seashore")
-          path_to_URQMD_files = "/data/mpd/";
-	else {
-	  if ((hostname=="kanske")||(hostname=="kanske.itep.ru"))     // Moscow
-	    path_to_URQMD_files ="/scratch2/kmikhail/data4mpd/UrQMD/1.3/";
-	  else 
-            path_to_URQMD_files = gSystem->Getenv("HOME") + TString("/");
-	}
-      }
-    }
-  }
-  return  path_to_URQMD_files;
+  // MPD Physics
+  gSystem->Load("libMpdPhysics.so");    // common
+  gSystem->Load("libMpdFemto.so");      // femtoscopy
 }
 
 // check whether file exists
-bool CheckFileExist(TString fileName){
+bool CheckFileExist(TString fileName)
+{
     gSystem->ExpandPathName(fileName);
     if (gSystem->AccessPathName(fileName.Data()) == true)
     {

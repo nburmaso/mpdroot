@@ -1,28 +1,10 @@
-void geometry_v2(FairRunSim *fRun, Bool_t build)
+void geometry_v2(FairRunSim *fRun)
 {
-  // load libs and build detector geometry
-  if (!build) {
-    gSystem->Load("libtpc");
-    gSystem->Load("libTof");
-    gSystem->Load("libEtof");
-    gSystem->Load("libEmc");
-    gSystem->Load("libZdc");
-    gSystem->Load("libStrawendcap");
-    //gSystem->Load("libStt");
-    gSystem->Load("libSts");
-
-    //gSystem->Load("libBbc");
-    gSystem->Load("libCpc");
-    //gSystem->Load("libFsa");
-    gSystem->Load("libFfd");
-  }
-  else {
     // Set Material file Name
     fRun->SetMaterials("media.geo");
   
     // Create and add detectors
     //-------------------------
-
     FairModule *Cave= new FairCave("CAVE");
     Cave->SetGeometryFileName("cave.geo");
     fRun->AddModule(Cave);
@@ -35,17 +17,17 @@ void geometry_v2(FairRunSim *fRun, Bool_t build)
     Magnet->SetGeometryFileName("magnet_v4_0.geo");
     fRun->AddModule(Magnet);
 
-    //   Silicon Tracker Stations
+    // Silicon Tracker Stations
     FairDetector *Sts= new MpdSts("STS", kTRUE);
     Sts->SetGeometryFileName("its_cables.geo");
     fRun->AddModule(Sts);
 
-     FairDetector *Ffd = new MpdFfd("FFD",kTRUE );
-     Ffd->SetGeometryFileName("ffd.geo");
-     fRun->AddModule(Ffd);
+    FairDetector *Ffd = new MpdFfd("FFD",kTRUE );
+    Ffd->SetGeometryFileName("ffd.geo");
+    fRun->AddModule(Ffd);
 
     FairDetector *Tpc = new TpcDetector("TPC", kTRUE);
-   Tpc->SetGeometryFileName("tpc_v7.root");
+    Tpc->SetGeometryFileName("tpc_v7.root");
     fRun->AddModule(Tpc);
   
     FairDetector *Tof= new MpdTof("TOF", kTRUE );
@@ -64,9 +46,9 @@ void geometry_v2(FairRunSim *fRun, Bool_t build)
     straw_ecStt->SetGeometryFileName("ect_v2.geo");
     fRun->AddModule(straw_ecStt);
 
-//     FairDetector *Bbc = new MpdBbc("BBC",kTRUE );
-//     Bbc->SetGeometryFileName("bbc.geo");
-//     fRun->AddModule(Bbc);
+    //FairDetector *Bbc = new MpdBbc("BBC",kTRUE );
+    //Bbc->SetGeometryFileName("bbc.geo");
+    //fRun->AddModule(Bbc);
 
     FairDetector *Cpc = new MpdCpc("CPC",kTRUE );
     Cpc->SetGeometryFileName("cpc.root");
@@ -80,5 +62,4 @@ void geometry_v2(FairRunSim *fRun, Bool_t build)
     //FairDetector *Fsa = new MpdFsa("FSA",kTRUE );
     //Fsa->SetGeometryFileName("fsa.geo");
     //fRun->AddModule(Fsa);
-  }
 }

@@ -62,18 +62,9 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
     Int_t iVerbose = 0;
 
-    // ----  Load libraries   -------------------------------------------------
-    mpdloadlibs(kTRUE); // load full set of main libraries
-    gSystem->Load("libXMLIO");
-
-    geometry_stage1(0x0, kFALSE);
-    //geometry_v2(0x0, kFALSE);
-    // ------------------------------------------------------------------------
-
     // -----   Timer   --------------------------------------------------------
     TStopwatch timer;
     timer.Start();
-    // ------------------------------------------------------------------------
 
     // -----   Digitization run   -------------------------------------------
     // define parallel or sequential execution
@@ -210,7 +201,6 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     // -----   Run   ______________--------------------------------------------
     fRun->Run(nStartEvent, nStartEvent + nEvents);
-    // ------------------------------------------------------------------------
 
     // -----   Finish   -------------------------------------------------------
     timer.Stop();
@@ -222,5 +212,4 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     cout << "Parameter file is " << parFile << endl;
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;
-    // ------------------------------------------------------------------------
 }

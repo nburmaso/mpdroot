@@ -1,18 +1,18 @@
-# Create a library called "MpdFemto" which includes the source files given in
-# the array .
-# The extension is already found.  Any number of sources could be listed here.
+add_subdirectory(femto)
 
+# Create a library called "MpdPhysics" which includes the source files given in the array.
+# The extension is already found. Any number of sources could be listed here.
 set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
  ${CMAKE_SOURCE_DIR}/mcstack
  ${CMAKE_SOURCE_DIR}/passive
  ${CMAKE_SOURCE_DIR}/mpdbase
- ${CMAKE_SOURCE_DIR}/mpddst
  ${CMAKE_SOURCE_DIR}/mpdfield
  ${CMAKE_SOURCE_DIR}/tpc
  ${CMAKE_SOURCE_DIR}/lhetrack
  ${CMAKE_SOURCE_DIR}/kalman
- ${CMAKE_SOURCE_DIR}/physics/femto 
+ ${CMAKE_SOURCE_DIR}/mpddst
+ ${CMAKE_SOURCE_DIR}/physics
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -34,17 +34,12 @@ link_directories(${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-MpdFemto.cxx
-MpdFemtoContainer.cxx
-MpdFemtoHistos.cxx
-MpdFemtoShareQualityPairCut.cxx
-MpdFemtoYlm.cxx
-MpdFemtoSHCF.cxx
+ MpdRoInvMassTask.cxx
 )
 
 Set(HEADERS)
 Set(LINKDEF LinkDef.h)
-Set(LIBRARY_NAME MpdFemto)
-Set(DEPENDENCIES Core Base)
+Set(LIBRARY_NAME MpdPhysics)
+Set(DEPENDENCIES Core Base MpdDst)
 
 GENERATE_LIBRARY()

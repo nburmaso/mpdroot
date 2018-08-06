@@ -34,6 +34,6 @@ MpdKalmanGeoScheme.cxx
 Set(HEADERS)
 Set(LINKDEF KalmanLinkDef.h)
 Set(LIBRARY_NAME Kalman)
-Set(DEPENDENCIES Core Base)
+Set(DEPENDENCIES Core Base MpdField)
 
 GENERATE_LIBRARY()

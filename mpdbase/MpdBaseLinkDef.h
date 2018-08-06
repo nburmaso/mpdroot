@@ -5,5 +5,9 @@
 #pragma link off all functions;
 
 #pragma link C++ class MpdHelix+;
+#pragma link C++ class MpdTrack+;
+#pragma link C++ class MpdVertex+;
+#pragma link C++ class MpdEvent+;
 #pragma link C++ class MpdCodeTimer+;
+
 #endif

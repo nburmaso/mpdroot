@@ -1,19 +1,18 @@
-# Create a library called "libMpdData" which includes the source files given in
-# the array .
-# The extension is already found.  Any number of sources could be listed here.
+# Create a library called "libMpdDst" which includes the source files given in the array.
+# The extension is already found. Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
  ${CMAKE_SOURCE_DIR}/mcstack
  ${CMAKE_SOURCE_DIR}/mpdbase
+ ${CMAKE_SOURCE_DIR}/mpdfield
+ ${CMAKE_SOURCE_DIR}/tpc
+ ${CMAKE_SOURCE_DIR}/tof
+ ${CMAKE_SOURCE_DIR}/etof
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/lhetrack
- ${CMAKE_SOURCE_DIR}/tof
- ${CMAKE_SOURCE_DIR}/tpc
- ${CMAKE_SOURCE_DIR}/etof
- ${CMAKE_SOURCE_DIR}/mpdfield
  ${CMAKE_SOURCE_DIR}/mpdpid
- ${CMAKE_SOURCE_DIR}/mpddata
+ ${CMAKE_SOURCE_DIR}/mpddst
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -27,23 +26,18 @@ set(LINK_DIRECTORIES
  ${ROOT_LIBRARY_DIR}
  ${FAIRROOT_LIBRARY_DIR}
 )
- 
-link_directories( ${LINK_DIRECTORIES})
+
+link_directories(${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-MpdFillDstTask.cxx
-MpdEvent.cxx
-MpdTrack.cxx
-MpdVertex.cxx 
-MpdRoInvMassTask.cxx
-MpdParticle.cxx
-MpdDstCompressTask.cxx
+ MpdFillDstTask.cxx
+ MpdDstCompressTask.cxx
 )
 
 Set(HEADERS)
-Set(LINKDEF MpdDataLinkDef.h)
-Set(LIBRARY_NAME MpdData)
+Set(LINKDEF MpdDstLinkDef.h)
+Set(LIBRARY_NAME MpdDst)
 Set(DEPENDENCIES Core Base MpdBase MpdPid)
 
 GENERATE_LIBRARY()

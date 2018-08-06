@@ -1,15 +1,5 @@
-void geometry_stage1(FairRunSim *fRun, Bool_t build)
+void geometry_stage1(FairRunSim *fRun)
 {
-  // load libs and build detector geometry
-  if (!build){
-    gSystem->Load("libtpc");
-    gSystem->Load("libTof");
-    gSystem->Load("libEmc");
-    gSystem->Load("libZdc");
-    gSystem->Load("libFfd");
-  }
-  else
-  {
     // Set Material file Name
     fRun->SetMaterials("media.geo");
   
@@ -46,5 +36,4 @@ void geometry_stage1(FairRunSim *fRun, Bool_t build)
     FairDetector *Zdc = new MpdZdc("ZDC",kTRUE );
     Zdc->SetGeometryFileName("zdc_oldnames_7sect_v1.root");
     fRun->AddModule(Zdc);
-  }//else
 }

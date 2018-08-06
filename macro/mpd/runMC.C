@@ -33,7 +33,6 @@ using namespace std;
 #endif
 
 R__ADD_INCLUDE_PATH($VMCWORKDIR)
-#include "macro/mpd/mpdloadlibs.C"
 #include "macro/mpd/geometry_stage1.C"
 //#include "macro/mpd/geometry_v2.C"
 
@@ -53,8 +52,6 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     timer.Start();
     gDebug = 0;
 
-    mpdloadlibs(1, 1); // load main libraries
-
     FairRunSim* fRun = new FairRunSim();
     // Choose the Geant Navigation System
 #ifdef GEANT3
@@ -63,8 +60,8 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     fRun->SetName("TGeant4");
 #endif
 
-    geometry_stage1(fRun, kTRUE); // load mpd geometry
-    //geometry_v2(fRun, kTRUE); // load mpd geometry
+    geometry_stage1(fRun); // load mpd geometry
+    //geometry_v2(fRun); // load mpd geometry
 
     // Use extended MC Event header instead of the default one.
     //MpdMCEventHeader* mcHeader = new MpdMCEventHeader();

@@ -36,6 +36,7 @@
 //#pragma link C++ class  MpdMotherFitterTrac+;
 #pragma link C++ class  MpdCellAutomat+;
 #pragma link C++ class  MpdCellTrack+;
+#pragma link C++ class  MpdParticle+;
 
 #endif
 

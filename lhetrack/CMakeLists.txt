@@ -5,7 +5,6 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/mcstack
  ${CMAKE_SOURCE_DIR}/passive
  ${CMAKE_SOURCE_DIR}/mpdbase
- ${CMAKE_SOURCE_DIR}/mpddata
  ${CMAKE_SOURCE_DIR}/mpdfield 
  ${CMAKE_SOURCE_DIR}/tpc
  ${CMAKE_SOURCE_DIR}/kalman
@@ -70,6 +69,7 @@ MpdMotherFitterPart.cxx
 #MpdMotherFitterTrac.cxx
 MpdCellAutomat.cxx
 MpdCellTrack.cxx
+MpdParticle.cxx
 )
 
 # List of header files
@@ -113,6 +113,6 @@ lhe.h
 
 Set(LINKDEF LHETrackLinkDef.h)
 Set(LIBRARY_NAME LHETrack)
-Set(DEPENDENCIES Core Base Kalman Tof MpdData)
+Set(DEPENDENCIES Core Base Kalman Tof MpdBase)
 
 GENERATE_LIBRARY()

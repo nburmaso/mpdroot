@@ -1,6 +1,5 @@
-# Create a library called "libMpdBase" which includes the source files given in
-# the array.
-# The extension is already found.  Any number of sources could be listed here.
+# Create a library called "libMpdBase" which includes the source files given in the array.
+# The extension is already found. Any number of sources could be listed here.
 
 set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
@@ -24,16 +23,18 @@ link_directories(${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-MpdHelix.cxx
-MpdCodeTimer.cxx
+ MpdHelix.cxx
+ MpdTrack.cxx
+ MpdVertex.cxx
+ MpdEvent.cxx
+ MpdCodeTimer.cxx
 )
 
 if(RULE_CHECKER_FOUND)
   CHECK_RULES("${SRCS}" "${INCLUDE_DIRECTORIES}" MPDBASE_RULES)
 endif(RULE_CHECKER_FOUND)
 
-SET_SOURCE_FILES_PROPERTIES(${SRCS} PROPERTIES COMPILE_FLAGS
-  "-O3 ")
+SET_SOURCE_FILES_PROPERTIES(${SRCS} PROPERTIES COMPILE_FLAGS "-O3 ")
 
 Set(HEADERS)
 Set(LINKDEF MpdBaseLinkDef.h)

@@ -6,7 +6,6 @@ set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
  ${CMAKE_SOURCE_DIR}/mcstack
  ${CMAKE_SOURCE_DIR}/mpdbase
- ${CMAKE_SOURCE_DIR}/mpddata
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/lhetrack
  ${CMAKE_SOURCE_DIR}/tof
@@ -40,6 +39,6 @@ MpdPid_AZ.cxx
 Set(HEADERS)
 Set(LINKDEF MpdPidLinkDef.h)
 Set(LIBRARY_NAME MpdPid)
-Set(DEPENDENCIES Core Base)
+Set(DEPENDENCIES Core Base Hist MCStack MpdBase)
 
 GENERATE_LIBRARY()
