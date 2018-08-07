@@ -40,6 +40,6 @@ MpdPid_AZ.cxx
 Set(HEADERS)
 Set(LINKDEF MpdPidLinkDef.h)
 Set(LIBRARY_NAME MpdPid)
-Set(DEPENDENCIES Core Base)
+Set(DEPENDENCIES Core Base Graf)
 
 GENERATE_LIBRARY()
