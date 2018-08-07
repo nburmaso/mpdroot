@@ -13,9 +13,8 @@
 #include "NicaTpcSectorGeo.h"
 
 class NicaMpdTrackTpcPads : public NicaMpdTrack{
-	Float_t fPhiPads[56];
-	Float_t fZPads[56];
-	Int_t fPadID[56];
+	Float_t fPaths[53];
+	Int_t fPadID[53];
 	Short_t fMaxPads;
 	Short_t fPadsNo;
 	NicaTpcSectorGeo *fSec = NULL;
@@ -25,9 +24,10 @@ public:
 	NicaMpdTrackTpcPads &operator=(const NicaMpdTrackTpcPads &other);
 	Int_t GetPadsNo()const{return fPadsNo;};
 	Int_t GetMaxPadsNo()const{return fMaxPads;};
-	Float_t GetPhi(Int_t lay)const{return fPhiPads[lay];};
+	Float_t GetPathAt(Int_t lay)const{return fPaths[lay];};
+	Float_t GetPhi(Int_t lay)const;
 	Float_t GetR(Int_t lay)const;
-	Float_t GetZ(Int_t lay)const{return fZPads[lay];};
+	Float_t GetZ(Int_t lay)const;
 	Int_t GetPadID(Int_t lay)const{return fPadID[lay];};
 	virtual void Update(MpdTrack* track);
 	virtual void CopyData(NicaTrack *other);

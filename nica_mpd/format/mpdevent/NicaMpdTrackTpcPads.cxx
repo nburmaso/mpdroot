@@ -15,8 +15,8 @@ NicaMpdTrackTpcPads::NicaMpdTrackTpcPads() {
 	fSec = NULL;
 	fPadsNo = 0;
 	for(int i=0;i<fMaxPads;i++){
-		fPhiPads[i] =0;
-		fZPads[i] =0;
+		fPaths[i] =0;
+		fPadID[i] =0;
 	}
 }
 
@@ -25,6 +25,7 @@ void NicaMpdTrackTpcPads::Update(MpdTrack* track) {
 	if(fSec==NULL){
 		fSec = NicaTpcSectorGeo::Instance();
 	}
+	/* old version (cylindircal)
 	Double_t R;
 	Double_t R_min = fSec->GetMinY();
 	Double_t padH1 = fSec->PadHeight(0);
@@ -43,13 +44,12 @@ void NicaMpdTrackTpcPads::Update(MpdTrack* track) {
 		if(s==NicaHelix::MaxPath()){
 			fPadID[lay] = -1;
 			fPadsNo = lay;
+			s =0;
 			return;
 		}
 		glob = GetHelix()->Evaluate(s);
-		fZPads[lay] = glob.Z();
-		glob.SetZ(0);
 		fPadID[lay] =  fSec->Global2Local(glob,loc,-1);
-		fPhiPads[lay] = glob.Phi();
+		fPaths[lay] = s;
 		lay++;
 	}
 	R_min = fSec->GetRocY(1);
@@ -65,13 +65,19 @@ void NicaMpdTrackTpcPads::Update(MpdTrack* track) {
 			return;
 		}
 		glob = GetHelix()->Evaluate(s);
-		fZPads[lay] = glob.Z();
-		glob.SetZ(0);
 		fPadID[lay] =  fSec->Global2Local(glob,loc,-1);
-		fPhiPads[lay] = glob.Phi();
+		fPaths[lay] = s;
 		lay++;
 	}
 	fPadsNo = lay;
+	*/
+	// new modular geometry
+	fPadsNo = fSec->CalculatePads(this->GetHelix(), fPaths);
+	for(int i=0;i<fPadsNo;i++){
+		TVector3 glob = GetHelix()->Evaluate(fPaths[i]);
+		TVector3 loc;
+		fPadID[i] =  fSec->Global2Local(glob,loc,-1);
+	}
 }
 
 NicaMpdTrackTpcPads::~NicaMpdTrackTpcPads() {
@@ -83,8 +89,7 @@ NicaMpdTrackTpcPads::NicaMpdTrackTpcPads(const NicaMpdTrackTpcPads& other):
 		{
 	fPadsNo = other.fPadsNo;
 	for(int i=0;i<fPadsNo;i++){
-		fPhiPads[i] = other.fPhiPads[i];
-		fZPads[i] = other.fZPads[i];
+		fPaths[i] = other.fPaths[i];
 		fPadID[i] = other.fPadID[i];
 		fMaxPads = other.fMaxPads;
 		fSec = other.fSec;
@@ -97,9 +102,8 @@ NicaMpdTrackTpcPads& NicaMpdTrackTpcPads::operator =(
 		NicaMpdTrack::operator=(other);
 		fPadsNo = other.fPadsNo;
 		for(int i=0;i<fPadsNo;i++){
-			fPhiPads[i] = other.fPhiPads[i];
+			fPaths[i] = other.fPaths[i];
 			fPadID[i] = other.fPadID[i];
-			fZPads[i] = other.fZPads[i];
 			fMaxPads = other.fMaxPads;
 			fSec = other.fSec;
 		}
@@ -122,10 +126,17 @@ void NicaMpdTrackTpcPads::CopyData(NicaTrack* other) {
 	NicaMpdTrackTpcPads *track = (NicaMpdTrackTpcPads*)other;
 	fPadsNo = track->fPadsNo;
 	for(int i=0;i<fPadsNo;i++){
-		fPhiPads[i] = track->fPhiPads[i];
-		fZPads[i] = track->fZPads[i];
+		fPaths[i] = track->fPaths[i];
 		fPadID[i] = track->fPadID[i];
 		if(track->fSec)
 			fSec = track->fSec;
 	}
+}
+
+Float_t NicaMpdTrackTpcPads::GetPhi(Int_t lay) const {
+	return GetHelix()->Evaluate(fPaths[lay]).Phi();
+}
+
+Float_t NicaMpdTrackTpcPads::GetZ(Int_t lay) const {
+	return GetHelix()->Evaluate(fPaths[lay]).Z();
 }

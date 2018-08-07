@@ -19,12 +19,13 @@
 #pragma link C++ class MpdTrackChargeCut+;
 #pragma link C++ class MpdTrackFirstPointCut+;
 #pragma link C++ class MpdTcpCalibratedCut+;
-#pragma link C++ class MpdTwoTrackSharedQualityCut+;
+//#pragma link C++ class MpdTwoTrackSharedQualityCut+;
 #pragma link C++ class MpdNSigmaCut+;
 #pragma link C++ class MpdTwoTrackSharedPadsCut+;
 #pragma link C++ class MpdPairPadsCuts+;
 #pragma link C++ class MpdDeltaEtaDeltaPhiStarCut+;
 #pragma link C++ class MpdPairKalmanPadsCuts+;
+#pragma link C++ class MpdSplittedPairsCut+;
 #endif
 
 #endif /* INTERFACES_MPDROOT_CUTS_MPDNICACUTSLINKDEF_H_ */

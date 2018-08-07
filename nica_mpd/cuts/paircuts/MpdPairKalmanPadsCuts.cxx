@@ -8,7 +8,7 @@
  */
 #include "MpdPairKalmanPadsCuts.h"
 #include "NicaMpdDstKalmanTrack.h"
-
+#include <bitset>
 MpdPairKalmanPadsCuts::MpdPairKalmanPadsCuts():NicaTwoTrackCut(7) {
 	SetUnitName("Av TPC Sep [cm]",AverageSep());
 	SetUnitName("Shared Pads[%]",SharedPads());
@@ -40,18 +40,44 @@ Bool_t MpdPairKalmanPadsCuts::Pass(NicaTwoTrack* pair) {
 	Double_t minDist = 1E+9;
 	Double_t Z1  = track1->GetEvent()->GetVertex()->Z();
 	Double_t Z2 = track1->GetEvent()->GetVertex()->Z();
+	Double_t mCosDipAngle1 = TMath::Cos(track1->GetHelix()->GetDipAngle());
+	Double_t mCosDipAngle2 = TMath::Cos(track2->GetHelix()->GetDipAngle());
+	Double_t mSinDipAngle1 = TMath::Sin(track1->GetHelix()->GetDipAngle());
+	Double_t mSinDipAngle2 = TMath::Sin(track2->GetHelix()->GetDipAngle());
+	Double_t mCosPhase1 = TMath::Cos(track1->GetHelix()->GetPhi0());
+	Double_t mCosPhase2 = TMath::Cos(track2->GetHelix()->GetPhi0());
+	Double_t mSinPhase1 = TMath::Sin(track1->GetHelix()->GetPhi0());
+	Double_t mSinPhase2 = TMath::Sin(track2->GetHelix()->GetPhi0());
+	NicaHelix *helix1 = track1->GetHelix();
+	NicaHelix *helix2 = track2->GetHelix();
+
 	for(int i=0;i<minHits;i++){
-		Double_t phi1 = track1->GetPhi(i);
-		Double_t phi2 = track2->GetPhi(i);
+		Double_t s1 = track1->GetPathAt(i);
+		/* manual calcuations instead of helix, speed */
+		Double_t x1 = helix1->GetStartX()
+				+ (TMath::Cos(helix1->GetPhi0() + s1 * helix1->GetH() * helix1->GetCurv() * mCosDipAngle1)
+						- mCosPhase1) / helix1->GetCurv();
+		Double_t y1 = helix1->GetStartY()
+				+ (TMath::Sin(helix1->GetPhi0() + s1 * helix1->GetH() *  helix1->GetCurv() * mCosDipAngle1)
+						- mSinPhase1) /  helix1->GetCurv();
+		Double_t z1 =  helix1->GetStartZ() + s1 * mSinDipAngle1;
+		Double_t s2 = track2->GetPathAt(i);
+		Double_t x2 = helix2->GetStartX()
+				+ (TMath::Cos(helix2->GetPhi0() + s2 * helix2->GetH() * helix2->GetCurv() * mCosDipAngle2)
+						- mCosPhase2) / helix2->GetCurv();
+		Double_t y2 = helix2->GetStartY()
+				+ (TMath::Sin(helix2->GetPhi0() + s2 * helix2->GetH() *  helix2->GetCurv() * mCosDipAngle2)
+						- mSinPhase2) /  helix2->GetCurv();
+		Double_t z2 =  helix2->GetStartZ() + s2 * mSinDipAngle2;
+		//-------
+		Double_t phi1 = TMath::ATan2(y1, x1);
+		Double_t phi2 = TMath::ATan2(y2, x2);
+
 		Double_t phi = TVector2::Phi_mpi_pi(phi1-phi2);
 		Double_t aphi = TMath::Abs(phi);
 		Double_t R = track1->GetR(i);
-		Double_t x1 = R*TMath::Cos(phi1);
-		Double_t y1 = R*TMath::Sin(phi1);
-		Double_t x2 = R*TMath::Cos(phi2);
-		Double_t y2 = R*TMath::Sin(phi2);
-		Double_t z1 = track1->GetZ(i)-Z1;
-		Double_t z2 = track2->GetZ(i)-Z2;
+		z1 = z1-Z1;
+		z2 = z2-Z2;
 		Double_t dst2 =(x1-x2)*(x1-x2)+
 				(y1-y2)*(y1-y2) + (z1-z2)*(z1-z2);
 		if(i==0)
@@ -67,30 +93,41 @@ Bool_t MpdPairKalmanPadsCuts::Pass(NicaTwoTrack* pair) {
 	Double_t quality =0;
 	Int_t raw_hits = track1->GetKalmanHits()+track2->GetKalmanHits();
 	Double_t shared_hits = 0;
+	ULong64_t bits1 = track1->GetBitMap();
+	ULong64_t bits2 = track2->GetBitMap();
+//	std::cout<<std::bitset<32>(bits1)<<" "<<std::bitset<32>(bits2)<<std::endl;
+	shared_hits = 0;
+	ULong64_t bit_shared1 = track1->GetBitMapSHared();
+	ULong64_t bit_shared2 = track2->GetBitMapSHared();
 	for(int i=0;i<53;i++){
-		Int_t hit_1 = track1->GetHitId(i);
-		Int_t hit_2 = track2->GetHitId(i);
-	//	std::cout<<hit_1<<" "<<hit_2<<std::endl;
-		if(hit_1==-1){ // no hit in 1st track
-			if(hit_2 != -1)//but hit  in second
-				quality++;
-			continue;
-		}else{ // hit in first track
-			if(hit_2!=-1){//but not in second
-				quality++;
-			}else{// hits in both tracks
-				shared_hits++;
-				quality--;
-			}
+		Int_t hit_1 = track1->LayerStatus(i);
+		Int_t hit_2 = track2->LayerStatus(i);
+		Int_t sum = hit_1+hit_2;
+		Int_t shared = track1->LayerShared(i)*track2->LayerShared(i);
+		shared_hits +=  shared;
+		if( track1->LayerStatus(i)|| track2->LayerStatus(i)){
+			sum =1;
+		}
+		switch(sum){
+		case 0:
+			// nothing
+			break;
+		case 1:
+			quality++;
+			break;
+		case 2:
+			quality--;
+			break;
 		}
 	}
+//	std::cout<<shared_hits/53<<std::endl;
 	SetValue(TMath::Sqrt(av_sep)/minHits,AverageSep());
-	SetValue(sharedPads/minHits,SharedPads());
+	SetValue(sharedPads/maxHits,SharedPads());
 	SetValue(minDeltaPhi,MinDeltaPhiStar());
 	SetValue(TMath::Sqrt(entrance),TPCEntranceDist());
 	SetValue(TMath::Sqrt(minDist),MinTPCSep());
-	SetValue(quality/raw_hits, HitQuality());
-	SetValue(shared_hits/raw_hits,HitShared());
+	SetValue(quality/53, HitQuality());
+	SetValue(shared_hits/53,HitShared());
 //	for(int i=0;i<GetCutSize();i++)
 //			std::cout<<"\t"<<GetValue(i)<<std::endl;
 	if(!InLimits(AverageSep()))return ForcedUpdate(kFALSE);

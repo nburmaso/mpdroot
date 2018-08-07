@@ -35,6 +35,8 @@ ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
  ${ROOT_INCLUDE_DIR} 
+  ${CLHEP_INCLUDE_DIR}
+ ${Boost_INCLUDE_DIRS}
 )
 
 Set(LINK_DIRECTORIES
@@ -72,7 +74,7 @@ mpdevent/NicaTpcSectorGeo.cxx
 Set(HEADERS )
 Set(LINKDEF NicaMpdInterfaceLinkDef.h)
 Set(LIBRARY_NAME NicaMpdFormat)
-Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdData tpc)
+Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdData MpdBase tpc)
 
 GENERATE_LIBRARY()
 

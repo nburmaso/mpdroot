@@ -59,11 +59,12 @@ trackcuts/MpdTpcProbCut.cxx
 trackcuts/MpdTrackChargeCut.cxx
 trackcuts/MpdTrackFirstPointCut.cxx
 trackcuts/MpdNSigmaCut.cxx
-paircuts/MpdTwoTrackSharedQualityCut.cxx
+#paircuts/MpdTwoTrackSharedQualityCut.cxx
 paircuts/MpdTwoTrackSharedPadsCut.cxx
 paircuts/MpdPairPadsCuts.cxx
 paircuts/MpdDeltaEtaDeltaPhiStarCut.cxx
 paircuts/MpdPairKalmanPadsCuts.cxx
+paircuts/MpdSplittedPairsCut.cxx
 )
 
 Set(HEADERS )

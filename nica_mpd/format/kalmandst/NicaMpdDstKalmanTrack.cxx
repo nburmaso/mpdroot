@@ -9,22 +9,17 @@
 #include "NicaMpdDstKalmanTrack.h"
 #include "MpdKalmanHit.h"
 #include "TObjArray.h"
-NicaMpdDstKalmanTrack::NicaMpdDstKalmanTrack():fNKalmanhits(0),fSize(MPD_TPC_LAYERS),fLayers(NULL),fIndex(NULL){
-	fLayers = new Short_t[fSize];
-	fIndex = new Int_t[fSize];
-	fLayerMap = new Short_t[fSize];
+#include "MpdTpcHit.h"
+#include <bitset>
+NicaMpdDstKalmanTrack::NicaMpdDstKalmanTrack():fNKalmanhits(0),fHitMap(0),fSharedHitMap(0){
 }
 
 void NicaMpdDstKalmanTrack::Update(MpdTrack* track, MpdTpcKalmanTrack* kalman) {
 	NicaMpdTrackTpcPads::Update(track);
 	if(kalman!=NULL){
 		fNKalmanhits = kalman->GetNofTrHits();
-		for(int i =0;i<fNKalmanhits;i++){
-			fLayers[i]=0;
-			fIndex[i]=-1;
-		}
-		for(int i=0;i<fSize;i++)
-			fLayerMap[i]=0;
+		fHitMap = 0;
+		fSharedHitMap = 0;
 		TObjArray *khits = kalman->GetTrHits();
 		if(khits){
 			GetTpcTrack()->SetNHits(khits->GetEntriesFast());
@@ -33,43 +28,34 @@ void NicaMpdDstKalmanTrack::Update(MpdTrack* track, MpdTpcKalmanTrack* kalman) {
 		for(int i=0;i<tpchits;i++){
 			MpdKalmanHit *hit = (MpdKalmanHit*)khits->UncheckedAt(i);
 			Int_t layer = hit->GetLayer();
-			fLayerMap[layer] =1;
-			fLayers[layer] = 1;
-			fIndex[i] = hit->GetIndex(0);
+			if(TESTBIT(fHitMap,layer)){
+				SETBIT(fSharedHitMap,layer);
+			}
+			SETBIT(fHitMap,layer);
 		}
 	}else{
 		fNKalmanhits = 0;
 	}
+	//std::cout<<std::bitset<32>(fHitMap)<<std::endl;
+//	std::cout<<"\t"<<std::bitset<32>(fSharedHitMap)<<std::endl;
 }
 
 NicaMpdDstKalmanTrack::~NicaMpdDstKalmanTrack() {
-	delete []fLayers;
-	delete []fIndex;
-	delete []fLayerMap;
+
 }
 
 void NicaMpdDstKalmanTrack::CopyData(NicaTrack* other) {
 	NicaMpdTrackTpcPads::CopyData((NicaMpdTrackTpcPads*)other);
 	NicaMpdDstKalmanTrack *tr = (NicaMpdDstKalmanTrack*)other;
 	fNKalmanhits = tr->fNKalmanhits;
-	for(int i =0;i<fSize;i++){
-		fLayers[i]=tr->fLayers[i];
-		fIndex[i]=tr->fIndex[i];
-		fLayerMap[i]=tr->fLayerMap[i];
-	}
+	fHitMap = tr->fHitMap;
 }
 
 NicaMpdDstKalmanTrack::NicaMpdDstKalmanTrack(
-		const NicaMpdDstKalmanTrack& other):NicaMpdTrackTpcPads(other),fSize(MPD_TPC_LAYERS) {
+		const NicaMpdDstKalmanTrack& other):NicaMpdTrackTpcPads(other) {
 	fNKalmanhits = other.fNKalmanhits;
-	fLayers = new Short_t[fSize];
-	fIndex = new Int_t[fSize];
-	fLayerMap = new Short_t[fSize];
-	for(int i=0;i<fSize;i++){
-		fLayers[i] = other.fLayers[i];
-		fLayerMap[i]  = other.fLayerMap[i];
-		fIndex[i] = other.fIndex[i];
-	}
+	fHitMap = other.fHitMap;
+	fSharedHitMap = other.fSharedHitMap;
 }
 
 NicaMpdDstKalmanTrack& NicaMpdDstKalmanTrack::operator =(
@@ -77,11 +63,8 @@ NicaMpdDstKalmanTrack& NicaMpdDstKalmanTrack::operator =(
 	if(this!=&other){
 		NicaMpdTrackTpcPads::operator=(other);
 		fNKalmanhits = other.fNKalmanhits;
-		for(int i=0;i<fSize;i++){
-			fLayers[i] = other.fLayers[i];
-			fLayerMap[i]  = other.fLayerMap[i];
-			fIndex[i] = other.fIndex[i];
-		}
+		fHitMap = other.fHitMap;
+		fSharedHitMap = other.fSharedHitMap;
 	}
 	return *this;
 }
