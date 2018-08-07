@@ -212,4 +212,74 @@ void NicaTpcSectorGeo::PadID(Float_t xloc, Float_t yloc, UInt_t &row, UInt_t &pa
   }
 }
 
+Int_t  NicaTpcSectorGeo::CalculatePads(NicaHelix* helix, Float_t *Paths) {
+	fCH = 1.0/(helix->GetCurv()*helix->GetH());
+	fSec = 1.0/TMath::Cos(helix->GetDipAngle());
+	fSinPhase = TMath::Sin(helix->GetPhi0());
+	fCosPhase = TMath::Cos(helix->GetPhi0());
+	fHelixR = 1.0/helix->GetCurv();
+	fCosDipAngle = TMath::Cos(helix->GetDipAngle());
+	for(int i=0;i<53;i++){
+		Paths[i]= -1;
+	}
+	Double_t Rmin = GetRocY(0);
+	Int_t sector = 0;
+	Double_t s;
+	Int_t sect = 0;
+	for(int i=0;i<NofRowsReg(0);i++){ // loop over layers
+		Double_t R =Rmin+ (0.5+(Double_t)i)*PadHeight(0);
+		if(GetPad(helix, R, s, sect)){
+			Paths[i] = s;
+		}else{
+			return i;
+		}
+	}
+	Rmin = GetRocY(1);
+	for(int i=NofRowsReg(0);i<NofRows();i++){
+		Double_t R = (0.5+(Double_t)(i-NofRowsReg(0)))*PadHeight(1)+Rmin;
+		if(GetPad(helix, R, s, sect)){
+			Paths[i] = s;
+		}else{
+			return i;
+		}
+	}
+	return 53;
+}
+
+Bool_t NicaTpcSectorGeo::GetPad(NicaHelix* helix, Double_t R,
+		Double_t &S, Int_t& Sect) {
+	S = 0;
+	for(int i = Sect;i<Sect+12;i++){
+		Double_t rot = TVector2::Phi_mpi_pi(TMath::TwoPi()*((Double_t)i)/12.0);
+		Double_t phi = TVector2::Phi_mpi_pi(helix->GetPhi0()+rot);
+		TVector3 start =helix->GetStartPoint();
+		start.RotateZ(-rot);
+		Double_t magfunc = TMath::ACos(
+			-helix->GetCurv()*start.X()
+			+helix->GetCurv()*R
+			+TMath::Cos(phi)
+		);
+		if(magfunc==0) continue; //cannot find overlaped lines
+		Double_t s1 = fSec*(-magfunc-phi)*fCH;
+		Double_t s2 = fSec*(magfunc-phi)*fCH;
+		Double_t s = TMath::Min(s1,s2);
+		Double_t X = helix->GetStartX()+fHelixR*(TMath::Cos(helix->GetPhi0()
+				+s*helix->GetH()*helix->GetCurv()*fCosDipAngle)
+			-fCosPhase);
+		Double_t Y = helix->GetStartY()+fHelixR*(TMath::Sin(helix->GetPhi0()
+				+s*helix->GetH()*helix->GetCurv()*fCosDipAngle)
+			-fSinPhase);
+		Double_t newPhi = TVector2::Phi_mpi_pi(TMath::ATan2(Y, X)+rot);
+		if(newPhi<-fSectAngle)continue;
+		if(newPhi>fSectAngle)continue;
+		S = s;
+		if(i>=12)
+			Sect = i -12;
+		else
+			Sect = i;
+		return kTRUE;
+	}
+	return  kFALSE;
+}
+
 //__________________________________________________________________________
