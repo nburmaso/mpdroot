@@ -19,6 +19,19 @@ ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
+${CMAKE_SOURCE_DIR}/nicaroot/features
+${CMAKE_SOURCE_DIR}/nicaroot/dataformat
+${CMAKE_SOURCE_DIR}/nicaroot/dataformat/compound
+${CMAKE_SOURCE_DIR}/nicaroot/cuts
+${CMAKE_SOURCE_DIR}/nicaroot/cuts/eventcuts
+${CMAKE_SOURCE_DIR}/nicaroot/cuts/trackcuts
+${CMAKE_SOURCE_DIR}/nicaroot/cuts/twotrackcuts
+${CMAKE_SOURCE_DIR}/nicaroot/cuts/virtualcuts
+${CMAKE_SOURCE_DIR}/nicaroot/cuts/cutmonitors
+${CMAKE_SOURCE_DIR}/nicaroot/unigen
+${CMAKE_SOURCE_DIR}/nicaroot/analysis/base
+ ${CLHEP_INCLUDE_DIR}
+ ${Boost_INCLUDE_DIRS}
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -38,12 +51,14 @@ Link_Directories(${LINK_DIRECTORIES})
 # List of source files
 set(SRCS
 MpdPIDOnTheFly.cxx
+NicaPairAnaDebugger.cxx
+MpdSharedHitMap.cxx
 )
 
 Set(HEADERS )
 Set(LINKDEF NicaMpdHelpersLinkDef.h)
 Set(LIBRARY_NAME NicaMpdHelper)
-Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdData tpc)
+Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdData tpc Base NicaCut NicaAna)
 
 GENERATE_LIBRARY()
 

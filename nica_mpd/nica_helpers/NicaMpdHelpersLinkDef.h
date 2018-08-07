@@ -13,4 +13,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class MpdPIDOnTheFly+;
+#pragma link C++ class NicaPairAnaDebugger+;
+#pragma link C++ class MpdSharedHitMap+;
 #endif /* INTERFACES_MPDROOT_NICAMPDINTERFACELINKDEF_H_ */
