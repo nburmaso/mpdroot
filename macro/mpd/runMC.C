@@ -33,6 +33,7 @@ using namespace std;
 #endif
 
 R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "macro/mpd/mpdloadlibs.C"
 #include "macro/mpd/geometry_stage1.C"
 //#include "macro/mpd/geometry_v2.C"
 

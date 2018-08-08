@@ -41,10 +41,8 @@ using namespace std;
 
 R__ADD_INCLUDE_PATH($VMCWORKDIR)
 #include "macro/mpd/mpdloadlibs.C"
-#include "macro/mpd/geometry_stage1.C"
-//#include "macro/mpd/geometry_v2.C"
 
-#define Mlem  // Choose: Mlem HitProducer
+#define UseMlem  // Choose: UseMlem HitProducer
 
 // Macro for running reconstruction:
 // inFile - input file with MC data, default: evetest.root
@@ -109,7 +107,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     MpdKalmanFilter *kalman = MpdKalmanFilter::Instance("KF");
     fRun->AddTask(kalman);
 
-#ifdef Mlem
+#ifdef UseMlem
     MpdTpcDigitizerAZ* tpcDigitizer = new MpdTpcDigitizerAZ();
     tpcDigitizer->SetPersistence(kFALSE);
     fRun->AddTask(tpcDigitizer);
@@ -121,7 +119,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     //  tpcClusterFinder->SetCalcResiduals(kFALSE);
     //  fRun->AddTask(tpcClusterFinder);
 
-#ifdef Mlem
+#ifdef UseMlem
     MpdTpcClusterFinderMlem *tpcClusAZ = new MpdTpcClusterFinderMlem();
     fRun->AddTask(tpcClusAZ);
 #else
@@ -134,7 +132,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     fRun->AddTask(vertZ);
 
     MpdTpcKalmanFilter* recoKF = new MpdTpcKalmanFilter("Kalman filter");
-#ifdef Mlem
+#ifdef UseMlem
     recoKF->UseTpcHit(kFALSE); // do not use hits from the hit producer
 #endif
     fRun->AddTask(recoKF);

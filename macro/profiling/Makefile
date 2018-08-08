@@ -1,12 +1,56 @@
-runMC:
-	g++ -g -O0 -o $@ runMC.cxx -I`root-config --incdir` -I/opt/fairsoft18/install/include -I/opt/fairroot18/install/include -I$(VMCWORKDIR)/base/event -I$(VMCWORKDIR)/base/field -I$(VMCWORKDIR)/base/sim -I$(VMCWORKDIR)/base/source -I$(VMCWORKDIR)/base/steer -I$(VMCWORKDIR)/geobase -I$(VMCWORKDIR)/parbase -I$(VMCWORKDIR)/mcstack -I$(VMCWORKDIR)/mpdfield -I$(VMCWORKDIR)/generators -I$(VMCWORKDIR)/passive -I$(VMCWORKDIR)/trackbase -I$(VMCWORKDIR)/clustering -I$(VMCWORKDIR)/mpdbase -I$(VMCWORKDIR)/mpddata -I$(VMCWORKDIR)/cpc -I$(VMCWORKDIR)/ffd -I$(VMCWORKDIR)/kalman -I$(VMCWORKDIR)/lhetrack -I$(VMCWORKDIR)/geane -I$(VMCWORKDIR)/strawendcap -I$(VMCWORKDIR)/sts -I$(VMCWORKDIR)/ndet -I$(VMCWORKDIR)/etof -I$(VMCWORKDIR)/emc -I$(VMCWORKDIR)/tpc -I$(VMCWORKDIR)/tof -I$(VMCWORKDIR)/zdc -I$(VMCWORKDIR)/fairtools -I$(VMCWORKDIR)/mpdpid -L`root-config --libdir` -L"/usr/lib64" -L/opt/fairsoft18/install/lib -L/opt/fairroot18/install/lib -L$(VMCWORKDIR)/build/lib -lMpdData -lCpc -lEmc -lCluster -lEtof -lFfd -lLHETrack -lStrawendcap -lSts -ltpc -lZdc -lTof -lPassive -lKalman -lMpdGen -lMpdGeneralGenerator -lMpdBase -lFairTools -lMpdField -lMCStack -lTrkBase -lParBase -lGeoBase -lGen -lBase -lGeane -lXMLIO -lMinuit -lGeom -lGeomPainter -lVMC -lEG `root-config --glibs` -lpthread
+# Source files (*.cxx)
+#SRCS=runMC.cxx
+SRCS=reco.cxx
+
+# Compiler
+CC=g++
+
+OBJECTS=$(patsubst %.cxx, %, $(SRCS))
+
+ROOTCONFIG := root-config
+
+CFLAGS := $(shell $(ROOTCONFIG) --cflags)
+CFLAGS += -I$(VMCWORKDIR)/mcstack
+CFLAGS += -I$(VMCWORKDIR)/passive
+CFLAGS += -I$(VMCWORKDIR)/mpdfield
+CFLAGS += -I$(VMCWORKDIR)/generators
+CFLAGS += -I$(VMCWORKDIR)/mpdbase
+CFLAGS += -I$(VMCWORKDIR)/tpc
+CFLAGS += -I$(VMCWORKDIR)/tof
+CFLAGS += -I$(VMCWORKDIR)/etof
+CFLAGS += -I$(VMCWORKDIR)/emc
+CFLAGS += -I$(VMCWORKDIR)/zdc
+CFLAGS += -I$(VMCWORKDIR)/sts
+CFLAGS += -I$(VMCWORKDIR)/cpc
+CFLAGS += -I$(VMCWORKDIR)/strawendcap
+CFLAGS += -I$(VMCWORKDIR)/ffd
+CFLAGS += -I$(VMCWORKDIR)/sft
+CFLAGS += -I$(VMCWORKDIR)/clustering
+CFLAGS += -I$(VMCWORKDIR)/kalman
+CFLAGS += -I$(VMCWORKDIR)/lhetrack
+CFLAGS += -I$(VMCWORKDIR)/mpdpid
+CFLAGS += -I$(VMCWORKDIR)/mpddst
+CFLAGS += -I${FAIRROOTPATH}/include
+CFLAGS += -I$(SIMPATH)/include
+CFLAGS += -I$(ROOT_INCLUDE_PATH)
+CFLAGS += -I$(ROOT_INCLUDE_DIR)
+CFLAGS += --std=c++11 -g -O0
+
+LDFLAGS := $(shell $(ROOTCONFIG) --ldflags)
+LDFLAGS += -lEG $(shell $(ROOTCONFIG) --glibs)
+LDFLAGS += -L$(VMCWORKDIR)/build/lib
+LDFLAGS += -L$(ROOT_LIBRARY_DIR) -L$(FAIRROOTPATH)/lib
+LDFLAGS += -lCluster -lKalman -lLHETrack -lMpdPid -lMpdDst
+LDFLAGS += -ltpc -lTof -lEtof -lEmc -lStrawendcap  -lZdc -lSts -lFfd -lCpc -lStrawECT
+LDFLAGS += -lMpdBase -lMCStack -lPassive -lMpdField -lMpdGen
+LDFLAGS += -lBase -lGeoBase -lParBase -lTrkBase -lGeane -lFairTools
 
 
-#librunMC.a: $(patsubst %.cxx,%.o,$(wildcard *.cxx))
-#	ar rv `root-config --glibs` $@ $^ 
+all:	$(OBJECTS)
 
-#%.o: %.cxx
-#	gcc -Wall -pg -g -c -pthread -m64 -I$(VMCWORKDIR)/base -I$(VMCWORKDIR)/parbase -I$(VMCWORKDIR)/field -I$(VMCWORKDIR)/generators -I`root-config --incdir` -I. $<
+$(OBJECTS): % : $(SRCS)
+	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
-#clean:
-#	@rm -f *.o *.bck *.a
+clean:
+	rm -vf $(basename $(SRCS)) *.o
+
