@@ -48,7 +48,6 @@ TpcLhePoint.cxx
 #TpcLheKalmanFilter.cxx
 #TpcLheKalmanTrack.cxx
 MpdTpcKalmanFilter.cxx
-MpdTpcKalmanTrack.cxx
 MpdItsKalmanTrack.cxx
 
 MpdEctKalmanTrack.cxx
@@ -87,7 +86,6 @@ TpcLhePoint.h
 #TpcLheKalmanFilter.h
 #TpcLheKalmanTrack.h
 MpdTpcKalmanFilter.h
-MpdTpcKalmanTrack.h
 MpdItsKalmanTrack.h
 
 MpdEctKalmanTrack.h

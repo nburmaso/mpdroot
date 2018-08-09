@@ -25,15 +25,16 @@ link_directories( ${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-MpdKalmanFilter.cxx
-MpdKalmanTrack.cxx
-MpdKalmanHit.cxx
-MpdKalmanGeoScheme.cxx
+ MpdKalmanFilter.cxx
+ MpdKalmanGeoScheme.cxx
+ MpdKalmanHit.cxx
+ MpdKalmanTrack.cxx
+ MpdTpcKalmanTrack.cxx
 )
 
 Set(HEADERS)
 Set(LINKDEF KalmanLinkDef.h)
 Set(LIBRARY_NAME Kalman)
-Set(DEPENDENCIES Core Base MpdField)
+Set(DEPENDENCIES Core Base MpdField MpdBase)
 
 GENERATE_LIBRARY()

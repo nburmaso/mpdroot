@@ -17,7 +17,6 @@
 #pragma link C++ class  TpcLheTrackCuts+;
 #pragma link C++ class  TpcLheTrackFinder+;
 #pragma link C++ class  MpdTpcKalmanFilter+;
-#pragma link C++ class  MpdTpcKalmanTrack+;
 #pragma link C++ class  MpdItsKalmanTrack+;
 #pragma link C++ class  MpdEctKalmanTrack+;
 //#pragma link C++ class  MpdEctTrackFinderTofTpc+;
