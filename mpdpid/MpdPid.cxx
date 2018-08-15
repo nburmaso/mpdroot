@@ -551,10 +551,28 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	}
 	
 	for (Int_t itr = 0; itr < 14; itr++) Multiplicities[itr] = 0;
-	if ( !( (Generator == "LAQGSM") || (Generator == "QGSM") || (Generator == "URQMD") || (Generator == "NSIG") || (Generator == "PHSD") ) )
+	if ( !( (Generator == "LAQGSM") || (Generator == "QGSM") || (Generator == "URQMD") || (Generator == "NSIG") || (Generator == "PHSD") || (Generator == "EPOS") ) )
 	{
 		cout << "Incorrect generator string! Switching to DEFAULT..." << endl;
 		Generator = "DEFAULT";
+	}
+	
+	if ( Generator == "EPOS" ) /// sqrt(s) = 10 GeV
+	{
+		parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+		parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+		parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+		parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+		parPiPosMom->SetParameters(3161.11,0.646664,0.0754966,0.195238,0.987294); Multiplicities[4] = 1368810;
+		parPiNegMom->SetParameters(1119.57,-0.373147,0.191633,0.191401,-0.190926); Multiplicities[5] = 1084880;
+		parKaPosMom->SetParameters(365.748,0.345674,0.227486,0.0760626,0.314047); Multiplicities[6] = 73713;
+		parKaNegMom->SetParameters(180.113,0.463601,0.221443,0.0880924,0.334776); Multiplicities[7] = 36449;
+		parPrPosMom->SetParameters(2301.28,-0.575114,0.342074,0.151068,-0.220748); Multiplicities[8] = 174363;
+		parPrNegMom->SetParameters(586.605,-0.82551,0.208189,0.143197,-0.19016); Multiplicities[9] = 6395;
+		parDeMom->SetParameters(0.,1.,1.,1.,1.);
+		parTrMom->SetParameters(0.,1.,1.,1.,1.);
+		parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+		parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
 	}
 	
 	if ( Generator == "PHSD" )

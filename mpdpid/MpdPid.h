@@ -53,7 +53,7 @@ class MpdPid : public TObject
 	
 	MpdPid(); /// default ctor
 	
-	MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, /// generators: "PHSD", "URQMD", "LAQGSM" ("QGSM"), "DEFAULT", "NSIG" (for n-sigma method)
+	MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, /// generators: "PHSD", "URQMD", "LAQGSM" ("QGSM"), "DEFAULT", "EPOS" (for pp collisions), "NSIG" (for n-sigma method)
 		Double_t koef = 1., TString Generator = "DEFAULT", TString Tracking = "CF", /// tracking: "HP" (Hit Producer), "CF" (Cluster Finder)
 		TString NSigPart = "pikapr"); /// possible expressions: el, mu, pi, ka, pr, de, tr, he3, he4
 	
