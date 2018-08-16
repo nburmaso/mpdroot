@@ -58,6 +58,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 Set(CheckSrcDir "${FAIRROOTPATH}/share/fairbase/cmake/checks")
 
 find_package(FairRoot REQUIRED)
+find_package(FairLogger)
 
 # Load some basic macros which are needed later on
 include(FairMacros)
