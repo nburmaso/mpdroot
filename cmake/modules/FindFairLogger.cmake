@@ -1,8 +1,12 @@
-# Find FairLogger installation
-# Once done this will define
-#  FAIRLOGGER_FOUND - system has found FairLogger installation
-#  FairLogger_INCDIR - FairLogger include directory
-#  FairLogger_LIBDIR - FairLogger library directory
+# Find FairLogger module
+#
+# Usage:
+#   find_package(FairLogger [REQUIRED] [QUIET])
+#     
+# It sets the following variables:
+#   FAIRLOGGER_FOUND         ... true if FairLogger is found on the system
+#   FairLogger_INCDIR        ... FairLogger include directory
+#   FairLogger_LIBDIR        ... FairLogger library directory
 
 find_path(FairLogger_INCDIR NAMES fairlogger/Logger.h PATHS
   ${FAIRLOGGER_ROOT}/include
@@ -30,6 +34,8 @@ else (FairLogger_INCDIR AND FairLogger_LIBDIR)
   if (FAIRLOGGER_FIND_REQUIRED)
     message(FATAL_ERROR "Looking for FairLogger... not found")
   else (FAIRLOGGER_FIND_REQUIRED)
-    message(STATUS "Looking for FairLogger... not found")
+    if (NOT FAIRLOGGER_FIND_QUIETLY)
+      message(STATUS "Looking for FairLogger... not found")
+    endif (NOT FAIRLOGGER_FIND_QUIETLY)
   endif (FAIRLOGGER_FIND_REQUIRED)
 endif (FairLogger_INCDIR AND FairLogger_LIBDIR)

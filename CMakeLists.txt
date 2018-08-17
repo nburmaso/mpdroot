@@ -123,6 +123,7 @@ find_package(SSE)
 find_package(PLUTO)
 find_package(GENERATORS REQUIRED)
 find_package(XML2 REQUIRED)
+find_package(FFTW REQUIRED)
 find_package(TDAQ)
 
 #find_package(HEPMC)

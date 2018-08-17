@@ -62,6 +62,6 @@ MpdTpcClusterFinderMlem.cxx
 Set(HEADERS)
 Set(LINKDEF tpcLinkDef.h)
 Set(LIBRARY_NAME tpc)
-Set(DEPENDENCIES Tof FFTW Core Base)
+Set(DEPENDENCIES ${FFTW_LIBRARY} Core Base Tof)
 
 GENERATE_LIBRARY()
