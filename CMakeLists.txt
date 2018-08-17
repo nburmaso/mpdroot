@@ -58,7 +58,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 Set(CheckSrcDir "${FAIRROOTPATH}/share/fairbase/cmake/checks")
 
 find_package(FairRoot REQUIRED)
-find_package(FairLogger)
 
 # Load some basic macros which are needed later on
 include(FairMacros)
@@ -112,14 +111,14 @@ CHECK_EXTERNAL_PACKAGE_INSTALL_DIR()
 # REQUIRED means that cmake will stop if this packages are not found
 # For example the framework can run without GEANT4, but ROOT is
 # mandatory
-find_package(ROOT 5.34.36 REQUIRED)
+find_package(ROOT 6.10.08 REQUIRED)
 find_package(Pythia8)
 find_package(Pythia6)
 find_package(GEANT3 REQUIRED)
 find_package(GEANT4)
 find_package(GEANT4DATA)
 find_package(GEANT4VMC)
-find_package(CLHEP)
+find_package(CLHEP REQUIRED)
 find_package(SSE)
 find_package(PLUTO)
 find_package(GENERATORS REQUIRED)
@@ -164,6 +163,7 @@ find_package(GSL REQUIRED)
 # set a variable which should be used in all CMakeLists.txt
 # Defines all basic include directories from fairbase
 SetBasicVariables()
+find_package(FairLogger)
 SET(PATH ${EXECUTABLE_OUTPUT_PATH} ${PATH})
 set(MPDROOT TRUE)
 add_definitions(-DMPDROOT)

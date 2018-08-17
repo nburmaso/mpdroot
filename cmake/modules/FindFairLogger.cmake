@@ -21,6 +21,7 @@ find_path(FairLogger_LIBDIR NAMES libFairLogger.so PATHS
 if (FairLogger_INCDIR AND FairLogger_LIBDIR)
   set(FAIRLOGGER_FOUND TRUE)
   SET(LD_LIBRARY_PATH ${LD_LIBRARY_PATH} ${FairLogger_LIBDIR})
+  SET(BASE_INCLUDE_DIRECTORIES ${BASE_INCLUDE_DIRECTORIES} ${FairLogger_INCDIR})
   if (NOT FAIRLOGGER_FIND_QUIETLY)
     message(STATUS "Looking for FairLogger... found at ${FairLogger_LIBDIR}")
   endif (NOT FAIRLOGGER_FIND_QUIETLY)
