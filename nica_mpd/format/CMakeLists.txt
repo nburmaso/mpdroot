@@ -3,9 +3,12 @@
 # The extension is already found.  Any number of sources could be listed here.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 Set(INCLUDE_DIRECTORIES
+${BASE_INCLUDE_DIRECTORIES}
 ${CMAKE_SOURCE_FAIRMCSTACK}
+${CMAKE_SOURCE_DIR}/tpc
 ${CMAKE_SOURCE_DIR}/mpddata
 ${CMAKE_SOURCE_DIR}/mpdbase
+${CMAKE_SOURCE_DIR}/mpdpid
 ${CMAKE_SOURCE_DIR}/kalman
 ${CMAKE_SOURCE_DIR}/lhetrack
 ${CMAKE_SOURCE_DIR}/base/event
@@ -32,10 +35,13 @@ ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
  ${ROOT_INCLUDE_DIR} 
+  ${CLHEP_INCLUDE_DIR}
+ ${Boost_INCLUDE_DIRS}
 )
 
 Set(LINK_DIRECTORIES
-  ${NICA_LINK_DIRECTORIES}
+  ${ROOT_LIBRARY_DIR}
+  ${FAIRROOT_LIBRARY_DIR}
 )
 
 Include_Directories(${INCLUDE_DIRECTORIES})
@@ -47,6 +53,7 @@ Link_Directories(${LINK_DIRECTORIES})
 set(SRCS
 combined/NicaMpdDstMCEvent.cxx
 combined/NicaMpdFullEvent.cxx
+combined/NicaMpdDstMCEventTpcPads.cxx
 kalman/NicaMpdKalmanTrackInterface.cxx
 kalman/NicaMpdKalmanEvent.cxx
 kalman/NicaMpdKalmanEventInterface.cxx
@@ -59,12 +66,15 @@ mpdevent/NicaMpdEvent.cxx
 mpdevent/NicaMpdEventInterface.cxx
 mpdevent/NicaMpdTrackInterface.cxx
 mpdevent/NicaMpdTrack.cxx
+mpdevent/NicaMpdTrackTpcPads.cxx
+mpdevent/NicaMpdEventTpcPads.cxx
+mpdevent/NicaTpcSectorGeo.cxx
 )
 
 Set(HEADERS )
 Set(LINKDEF NicaMpdInterfaceLinkDef.h)
 Set(LIBRARY_NAME NicaMpdFormat)
-Set(DEPENDENCIES NicaFeatures NicaDataFormat)
+Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdData MpdBase tpc)
 
 GENERATE_LIBRARY()
 

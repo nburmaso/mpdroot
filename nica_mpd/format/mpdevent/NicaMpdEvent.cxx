@@ -37,11 +37,13 @@ void NicaMpdEvent::Update() {
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(count++);
 			mpd_track->Update((MpdTrack*)prim->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i);
 		}
 		for(int i=0;i<event->GetEventInfoNofGlobalTracks();i++){
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(count++);
 			mpd_track->Update((MpdTrack*)glob->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i+event->GetEventInfoNofPrimaryTracks());
 		}
 
 	}break;
@@ -52,6 +54,7 @@ void NicaMpdEvent::Update() {
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(i);
 			mpd_track->Update((MpdTrack*)prim->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i);
 		}
 	}break;
 	case kGlobalTracks:{
@@ -61,6 +64,7 @@ void NicaMpdEvent::Update() {
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(i);
 			mpd_track->Update((MpdTrack*)glob->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->SetLink(0, i);
 		}
 	}break;
 	}
@@ -127,3 +131,7 @@ NicaMpdEvent::NicaMpdEvent() :NicaExpEvent("NicaMpdTrack"){
 	fMode = kAllTracks;
 }
 
+NicaMpdEvent::NicaMpdEvent(TString trackname) :NicaExpEvent(trackname){
+	fSource = new NicaMpdEventInterface();
+	fMode = kAllTracks;
+}

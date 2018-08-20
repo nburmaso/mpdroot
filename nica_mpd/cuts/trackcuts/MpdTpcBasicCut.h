@@ -31,7 +31,6 @@ public:
 	MpdTcpCalibratedCut(TString calib_file="");
 	virtual Bool_t Pass(NicaTrack *track);
 	virtual ~MpdTcpCalibratedCut(){};
-	CutDef(MpdTcpCalibratedCut);
 	ClassDef(MpdTcpCalibratedCut,1);
 };
 #endif /* NICAROOT_CUTS_TRACKCUTS_NICATRACKTPCBASICCUT_H_ */

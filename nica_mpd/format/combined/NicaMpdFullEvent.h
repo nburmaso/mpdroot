@@ -16,6 +16,7 @@ public:
 	NicaMpdFullEvent();
 	void OnlyPrimary();
 	void OnlyGlobal();
+	void Update();
 	virtual TString GetFormatName()const{return "MpdFullEvent";};
 	virtual ~NicaMpdFullEvent();
 	ClassDef(NicaMpdFullEvent,1)

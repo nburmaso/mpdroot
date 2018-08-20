@@ -49,7 +49,8 @@ MpdHelix MpdTrack::GetHelix() const {
 	Double_t charge = GetCharge();
 	Double_t Bz = 0.5;
 	if(FairRunAna::Instance()){
-		Bz = FairRunAna::Instance()->GetField()->GetBz(0,0,0)*0.1;
+		if(FairRunAna::Instance()->GetField())
+			Bz = FairRunAna::Instance()->GetField()->GetBz(0,0,0)*0.1;
 	}
 	return MpdHelix(mom,pos,charge,Bz);
 }

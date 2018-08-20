@@ -21,7 +21,6 @@ public:
 	static Int_t PidKaon(){return 2;};
 	static Int_t PidElectron(){return 3;};
 	virtual ~MpdTpcProbCut();
-	CutDef(MpdTpcProbCut)
 	ClassDef(MpdTpcProbCut,1)
 };
 

@@ -31,7 +31,6 @@ public:
 	static Int_t SigmaKaon(){return 1;};
 	static Int_t SigmaProton(){return 2;};
 	static Int_t SigmaElectron(){return 3;};
-	CutDef(MpdNSigmaCut);
 	ClassDef(MpdNSigmaCut,1)
 };
 
