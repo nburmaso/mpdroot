@@ -65,6 +65,7 @@ include(WriteConfigFile)
 include(CTest)
 include(CheckCompiler)
 include(CheckFortran)
+include(CreateMpdConfig)
 
 # Set the build type: None, Debug, Release, RelWithDebInfo or MinSizeRel 
 If(NOT CMAKE_BUILD_TYPE)
@@ -226,12 +227,16 @@ add_subdirectory (physics)
 add_subdirectory (macro)
 add_subdirectory (eventdisplay)
 
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/macro/mpd_scheduler/CMakeLists.txt")
  add_subdirectory (macro/mpd_scheduler)
 endif()
 if(EXISTS "${CMAKE_SOURCE_DIR}/nicaroot/CMakeLists.txt")
  add_subdirectory (nicaroot)
  add_subdirectory (nica_mpd)
+ GENERATE_MPDCONFIG(TRUE)
+else()
+ GENERATE_MPDCONFIG(FALSE)
 endif()
 
 Option(BUILD_DOXYGEN "Build Doxygen" OFF)
