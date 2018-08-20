@@ -39,7 +39,7 @@ Bool_t MpdPairKalmanPadsCuts::Pass(NicaTwoTrack* pair) {
 	Double_t minDeltaPhi = 1E+9;
 	Double_t minDist = 1E+9;
 	Double_t Z1  = track1->GetEvent()->GetVertex()->Z();
-	Double_t Z2 = track1->GetEvent()->GetVertex()->Z();
+	Double_t Z2 = track2->GetEvent()->GetVertex()->Z();
 	Double_t mCosDipAngle1 = TMath::Cos(track1->GetHelix()->GetDipAngle());
 	Double_t mCosDipAngle2 = TMath::Cos(track2->GetHelix()->GetDipAngle());
 	Double_t mSinDipAngle1 = TMath::Sin(track1->GetHelix()->GetDipAngle());
@@ -104,9 +104,20 @@ Bool_t MpdPairKalmanPadsCuts::Pass(NicaTwoTrack* pair) {
 		Int_t hit_2 = track2->LayerStatus(i);
 		Int_t sum = hit_1+hit_2;
 		Int_t shared = track1->LayerShared(i)*track2->LayerShared(i);
-		shared_hits +=  shared;
-		if( track1->LayerStatus(i)|| track2->LayerStatus(i)){
-			sum =1;
+		if(sum==2){
+			if(track1->GetPadID(i)==track2->GetPadID(i)&&track1->GetPadID(i)!=-1){
+				sum = 1;
+				shared_hits++;
+			}
+		}
+	//	shared_hits +=  shared;
+		if(sum==2){
+			//shared pads
+			if(track1->GetPadID(i)==track2->GetPadID(i)){
+				shared_hits++;
+				sum = 1;
+			}
+
 		}
 		switch(sum){
 		case 0:

@@ -11,10 +11,10 @@
 
 #include "NicaTwoTrackCut.h"
 #include  "NicaHelix.h"
-#include "MpdTpcSectorGeo.h"
+#include "NicaTpcSectorGeo.h"
 
 class MpdTwoTrackSharedPadsCut : public NicaTwoTrackCut{
-	MpdTpcSectorGeo *fSec;
+	NicaTpcSectorGeo *fSec;
 	NicaHelix *fHelix1;
 	NicaHelix *fHelix2;
 	void Overlap(NicaHelix *helix, Double_t R, Double_t &x, Double_t &y);

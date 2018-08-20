@@ -10,7 +10,7 @@
 #include "NicaExpTrack.h"
 #include "NicaMpdTrack.h"
 
-MpdTwoTrackSharedPadsCut::MpdTwoTrackSharedPadsCut() {
+MpdTwoTrackSharedPadsCut::MpdTwoTrackSharedPadsCut():fSec(NULL) {
 }
 
 Bool_t MpdTwoTrackSharedPadsCut::Pass(NicaTwoTrack* pair) {
