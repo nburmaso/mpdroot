@@ -39,8 +39,8 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH1D *amplpiplus = new TH1D("amplpiplus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(211,amplpiplus) );
 		TH1D *amplpiminus = new TH1D("amplpiminus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(-211,amplpiminus) );
 		EffContStruct EC1, EC2;
-		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"PiPlus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(211,EC1) );
-		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"PiMinus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(-211,EC2) );
+		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"PiPlus","",60,0.,3.); EC1.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(211,EC1) );
+		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"PiMinus","",60,0.,3.); EC2.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(-211,EC2) );
 	}
 	if (Particles.Contains("ka"))
 	{
@@ -67,8 +67,8 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH1D *amplkaplus = new TH1D("amplkaplus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(321,amplkaplus) );
 		TH1D *amplkaminus = new TH1D("amplkaminus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(-321,amplkaminus) );
 		EffContStruct EC1, EC2;
-		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"KaPlus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(321,EC1) );
-		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"KaMinus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(-321,EC2) );
+		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"KaPlus","",60,0.,3.); EC1.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(321,EC1) );
+		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"KaMinus","",60,0.,3.); EC2.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(-321,EC2) );
 	}
 	if (Particles.Contains("pr"))
 	{
@@ -95,8 +95,8 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH1D *amplprplus = new TH1D("amplprplus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(2212,amplprplus) );
 		TH1D *amplprminus = new TH1D("amplprminus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(-2212,amplprminus) );
 		EffContStruct EC1, EC2;
-		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"PrPlus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(2212,EC1) );
-		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"PrMinus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(-2212,EC2) );
+		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"PrPlus","",60,0.,3.); EC1.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(2212,EC1) );
+		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"PrMinus","",60,0.,3.); EC2.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(-2212,EC2) );
 	}
 	if (Particles.Contains("el"))
 	{
@@ -114,9 +114,9 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		m2Hists.insert( pair<Int_t,TH2D*>(11,mass2El) );
 		TH1D *amplelplus = new TH1D("amplelplus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(-11,amplelplus) );
 		TH1D *amplelminus = new TH1D("amplelminus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(11,amplelminus) );
-		EffContStruct EC;
-		for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"ElMinus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(11,EC) );
-		for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"ElPlus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(-11,EC) );
+		EffContStruct EC1, EC2;
+		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"ElMinus","",60,0.,3.); EC1.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(11,EC1) );
+		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"ElPlus","",60,0.,3.); EC2.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(-11,EC2) );
 	}
 	if (Particles.Contains("mu"))
 	{
@@ -135,8 +135,8 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH1D *amplmuplus = new TH1D("amplmuplus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(-13,amplmuplus) );
 		TH1D *amplmuminus = new TH1D("amplmuminus","",600,0.,3.); ampls.insert( pair<Int_t,TH1D*>(13,amplmuminus) );
 		EffContStruct EC1, EC2;
-		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"MuMinus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(13,EC1) );
-		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"MuPlus","",60,0.,3.); } effcont.insert( pair<Int_t,EffContStruct>(-13,EC2) );
+		for (Int_t i = 0; i < 4; i++) { EC1.EffContPart[i] = new TH1D(ECHistNames[i]+"MuMinus","",60,0.,3.); EC1.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(13,EC1) );
+		for (Int_t i = 0; i < 4; i++) { EC2.EffContPart[i] = new TH1D(ECHistNames[i]+"MuPlus","",60,0.,3.); EC2.EffContPart[i]->Sumw2(); } effcont.insert( pair<Int_t,EffContStruct>(-13,EC2) );
 	}
 	if (Particles.Contains("de"))
 	{
@@ -157,7 +157,7 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH2D *mass2De = new TH2D("mass2De", "", nbins, 0., 4., nbins, -0.5, 10.);
 		m2Hists.insert( pair<Int_t,TH2D*>(PDG_DEUTERON,mass2De) );
 		TH1D *ampldeplus = new TH1D("ampldeplus","",300,0.,3.); ampls.insert( pair<Int_t,TH1D*>(PDG_DEUTERON,ampldeplus) );
-		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"De","",60,0.,3.); }
+		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"De","",60,0.,3.); EC.EffContPart[i]->Sumw2(); }
 		effcont.insert( pair<Int_t,EffContStruct>(PDG_DEUTERON,EC) );
 	}
 	if (Particles.Contains("tr"))
@@ -183,7 +183,7 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH2D *mass2Tr = new TH2D("mass2Tr", "", nbins, 0., 4., nbins, -0.5, 15.);
 		m2Hists.insert( pair<Int_t,TH2D*>(PDG_TRITON,mass2Tr) );
 		TH1D *ampltrplus = new TH1D("ampltrplus","",300,0.,3.); ampls.insert( pair<Int_t,TH1D*>(PDG_TRITON,ampltrplus) );
-		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"Tr","",60,0.,3.); }
+		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"Tr","",60,0.,3.); EC.EffContPart[i]->Sumw2(); }
 		effcont.insert( pair<Int_t,EffContStruct>(PDG_TRITON,EC) );
 	}
 	if (Particles.Contains("he3"))
@@ -209,7 +209,7 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH2D *mass2He3 = new TH2D("mass2He3", "", nbins, 0., 4., nbins, -0.5, 6.);
 		m2Hists.insert( pair<Int_t,TH2D*>(PDG_HE3,mass2He3) );
 		TH1D *amplhe3plus = new TH1D("amplhe3plus","",150,0.,1.5); ampls.insert( pair<Int_t,TH1D*>(PDG_HE3,amplhe3plus) );
-		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"He3","",30,0.,1.5); }
+		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"He3","",30,0.,1.5); EC.EffContPart[i]->Sumw2(); }
 		effcont.insert( pair<Int_t,EffContStruct>(PDG_HE3,EC) );
 	}
 	if (Particles.Contains("he4"))
@@ -235,7 +235,7 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 		TH2D *mass2He4 = new TH2D("mass2He4", "", nbins, 0., 4., nbins, -0.5, 8.);
 		m2Hists.insert( pair<Int_t,TH2D*>(PDG_HE4,mass2He4) );
 		TH1D *amplhe4plus = new TH1D("amplhe4plus","",150,0.,1.5); ampls.insert( pair<Int_t,TH1D*>(PDG_HE4,amplhe4plus) );
-		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"He4","",30,0.,1.5); }
+		EffContStruct EC; for (Int_t i = 0; i < 4; i++) { EC.EffContPart[i] = new TH1D(ECHistNames[i]+"He4","",30,0.,1.5); EC.EffContPart[i]->Sumw2(); }
 		effcont.insert( pair<Int_t,EffContStruct>(PDG_HE4,EC) );
 	}
 	
@@ -406,7 +406,7 @@ void MpdPidQA::GetDedxQA(TString dir)
 		{
 			case 211: parBB = parPiBB; GetDedxParam = &MpdPid::GetDedxPiParam; break;
 			case 321: parBB = parKaBB; GetDedxParam = &MpdPid::GetDedxKaParam; break;
-			case 2212: parBB = parPrBB; GetDedxParam = &MpdPid::GetDedxPrParam; break;
+			case 2212: parBB = parPrBBMerged; GetDedxParam = &MpdPid::GetDedxPrParam; break;
 			case 11: parBB = parElBB; GetDedxParam = &MpdPid::GetDedxElParam; break;
 			case 13: parBB = parMuBB; GetDedxParam = &MpdPid::GetDedxMuParam; break;
 			case PDG_DEUTERON: parBB = parDeBB; GetDedxParam = &MpdPid::GetDedxDeParam; break;
@@ -777,8 +777,8 @@ void MpdPidQA::SaveEffContHists(TString dir, TString s1, TString s2, TString s3)
 							ret->second.EffContPart[histNum[k]]->SetMarkerColor(colors[i]);
 							ret->second.EffContPart[histNum[k]]->SetLineColor(colors[i]);
 							ret->second.EffContPart[histNum[k]]->SetLineWidth(6);
-							if (match) ret->second.EffContPart[histNum[k]]->Draw("hist p same");
-							else { match = kTRUE; ret->second.EffContPart[histNum[k]]->Draw("hist p"); }
+							if (match) ret->second.EffContPart[histNum[k]]->Draw("P X0 E1 SAME");
+							else { match = kTRUE; ret->second.EffContPart[histNum[k]]->Draw("P X0 E1"); }
 						}
 					}
 				}
@@ -793,7 +793,7 @@ void MpdPidQA::SaveEffContHists(TString dir, TString s1, TString s2, TString s3)
 							auto ret = k % 2 ? effcont.find(-codes[i]) : effcont.find(codes[i]);
 							if ( ret != effcont.end() )
 							{ 
-								if (i < 5) leg->AddEntry(ret->second.EffContPart[2], partSymbol[i] + sign[k%2], "l");
+								if (i < 5) leg->AddEntry(ret->second.EffContPart[2], partSymbol[i] + sign[k%2], "p");
 								else leg->AddEntry(ret->second.EffContPart[2], partSymbol[i], "p");
 							}
 						}
