@@ -12,6 +12,7 @@ find_path(FairLogger_INCDIR NAMES fairlogger/Logger.h PATHS
   ${FAIRLOGGER_ROOT}/include
   $ENV{FAIRLOGGER_ROOT}/include
   ${FAIRROOTPATH}/include
+  ${SIMPATH}/include
   NO_DEFAULT_PATH
 )
 
@@ -19,6 +20,7 @@ find_path(FairLogger_LIBDIR NAMES libFairLogger.so PATHS
   ${FAIRLOGGER_ROOT}/lib
   $ENV{FAIRLOGGER_ROOT}/lib
   ${FAIRROOTPATH}/lib
+  ${SIMPATH}/lib
   NO_DEFAULT_PATH
 )
 
