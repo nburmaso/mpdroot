@@ -234,9 +234,6 @@ endif()
 if(EXISTS "${CMAKE_SOURCE_DIR}/nicaroot/CMakeLists.txt")
  add_subdirectory (nicaroot)
  add_subdirectory (nica_mpd)
- GENERATE_MPDCONFIG(TRUE)
-else()
- GENERATE_MPDCONFIG(FALSE)
 endif()
 
 Option(BUILD_DOXYGEN "Build Doxygen" OFF)
@@ -246,6 +243,7 @@ if(BUILD_DOXYGEN)
 endif(BUILD_DOXYGEN)
 
 WRITE_CONFIG_FILE(config.sh)
+GENERATE_MPDCONFIG()
 SET(ROOT_INCLUDE_PATH ${CMAKE_INSTALL_PREFIX}/include)
 
 configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake 
