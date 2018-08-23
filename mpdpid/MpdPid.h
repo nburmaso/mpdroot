@@ -134,6 +134,8 @@ class MpdPid : public TObject
 	Double_t GetDedxWidthValue(Double_t, Int_t);
 	
 	protected:
+	Double_t mergedPrBB(Double_t *x, Double_t *par);
+	
 	TF1 *fgaus;
 	TF2 *fgaus2;
 	TF1 *fasymgaus;

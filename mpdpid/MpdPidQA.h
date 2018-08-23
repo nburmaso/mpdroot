@@ -46,6 +46,8 @@ class MpdPidQA : public MpdPid
 	void GetEffContQA(TString dir, TString s1 = "", TString s2 = "", TString s3 = "");
 	
 		private:
+		
+	Double_t mergedPrBBMultX(Double_t *x, Double_t *par);
 	
 	Double_t Xlow[nQAHists]; 
 	Double_t Xhigh[nQAHists];

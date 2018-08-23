@@ -13,6 +13,13 @@ MpdPidQA::MpdPidQA(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts,
 		Init(Tracking, NSigPart);
 	}
 	
+Double_t MpdPidQA::mergedPrBBMultX(Double_t *x, Double_t *par)
+{
+	Double_t ans = -999.;
+	if (parPrBBMerged) { ans = x[0] * parPrBBMerged->EvalPar(x,par); }
+	return ans;
+}
+	
 void MpdPidQA::Init(TString Tracking, TString Particles)
 {
 	cout << "MpdPidQA::Init().." << endl;
@@ -417,8 +424,16 @@ void MpdPidQA::GetDedxQA(TString dir)
 		}
 		parBB->SetName("parBB");
 		FuncFormula = "x*(" + parBB->GetExpFormula() + ")";
-		parBBMultX = new TF1("parPiBBMultX", FuncFormula, 0., 3.);
-		for (Int_t k=0; k<parBB->GetNpar(); k++) {parBBMultX->SetParameter(k, parBB->GetParameter(k));}
+		if (it->first == 2212)
+		{
+			parBBMultX = new TF1("parBBMultX",this,&MpdPidQA::mergedPrBBMultX,0.0,3.0,10,"MpdPidQA","mergedPrBBMultX");
+			for (Int_t k=0; k<parPrBBMerged->GetNpar(); k++) {parBBMultX->SetParameter(k, parPrBBMerged->GetParameter(k)); cout << "parPrBBMerged->GetParameter(" << k << ") = " << parPrBBMerged->GetParameter(k) << endl;}
+		}
+		else
+		{
+			parBBMultX = new TF1("parPiBBMultX", FuncFormula, 0., 3.);
+			for (Int_t k=0; k<parBB->GetNpar(); k++) {parBBMultX->SetParameter(k, parBB->GetParameter(k));}
+		}
 		
 		Double_t *Xgraph = new Double_t[nQAHistsloc]; Double_t *Xerrgraph = new Double_t[nQAHistsloc];
 		Double_t *Ygraph = new Double_t[nQAHistsloc]; Double_t *sigma = new Double_t[nQAHistsloc];
@@ -436,6 +451,7 @@ void MpdPidQA::GetDedxQA(TString dir)
 			TF1 *Novosib = new TF1("Novosib", this, &MpdPidQA::Novosibirsk, XFUNCMIN, XFUNCMAX, 4, "MpdPidQA", "Novosibirsk");
 			Novosib->SetParameters(Gaus->GetParameter(0), 0.01, Gaus->GetParameter(2), Gaus->GetParameter(1));
 			it->second.dEdXPart[i]->Fit("Novosib","Q0RW");
+			cout << "pdg = " << it->first << ", parBBMultX->Eval(mom) = " << parBBMultX->Eval(mom) << endl;
 			mom = parBBMultX->Integral(Xlow[i+ibegloc],Xhigh[i+ibegloc])/(parBB->Integral(Xlow[i+ibegloc],Xhigh[i+ibegloc]));
 			Ygraph[i] = Novosib->GetParameter(3); 
 			Ygraph[i] /= (this->*GetDedxParam)(mom);

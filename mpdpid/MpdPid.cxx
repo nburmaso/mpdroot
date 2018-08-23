@@ -24,6 +24,18 @@ MpdPid::MpdPid() : TObject(){
       fTracking = kTRUE;
 }
 
+Double_t MpdPid::mergedPrBB(Double_t *x, Double_t *par)
+{
+	Double_t ans = -999.;
+	Double_t par1[5] = { par[0], par[1], par[2], par[3], par[4] };
+    Double_t par2[5] = { par[5], par[6], par[7], par[8], par[9] };
+	if (parPrBB) {
+		if (x[0] < 0.211841) ans = parPrBB->EvalPar(x,par1);
+		else ans = parPrBB->EvalPar(x,par2);
+	}
+	return ans;
+}
+
 MpdPid::MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, Double_t koef, TString Generator, TString Tracking, TString NSigPart)
    : TObject(), kSigmaTof(sigmaTof), kSigmaEloss(sigmaEloss), fCharge(1), fKoef(koef), fEnergy(sqrts) 
 {
@@ -234,14 +246,12 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	/// Bethe-Bloch versus p (MC with STRA=0!)
 	///
 	
-	TFormula PrMerged("PrMerged", "[0]*(x<0.211841)/pow(x/sqrt(x*x+0.88),[3])*([1]-pow(x/sqrt(x*x+0.88),[3])-log([2]+pow(1./(x/0.9383),[4])))+[5]*(x>=0.211841)/pow(x/sqrt(x*x+0.88),[8])*([6]-pow(x/sqrt(x*x+0.88),[8])-log([7]+pow(1./(x/0.9383),[9])))");
-	
 	parElBB=new TF1("parElBB","[0]/x+[1]",PMIN,PMAX);
 	parMuBB = new TF1("parMuBB","[0]/pow(x/sqrt(x*x+0.011),[3])*([1]-pow(x/sqrt(x*x+0.011),[3])-log([2]+pow(1./(x/0.1057),[4])) )",PMIN,PMAX);
 	parPiBB = new TF1("parPiBB","[0]/pow(x/sqrt(x*x+0.01949),[3])*([1]-pow(x/sqrt(x*x+0.01949),[3])-log([2]+pow(1./(x/0.1396),[4])) )",PMIN,PMAX);
 	parKaBB = new TF1("parKaBB","[0]/pow(x/sqrt(x*x+0.2437),[3])*([1]-pow(x/sqrt(x*x+0.2437),[3])-log([2]+pow(1./(x/0.4937),[4])) )",PMIN,PMAX);
 	parPrBB = new TF1("parPrBB","[0]/pow(x/sqrt(x*x+0.88),[3])*([1]-pow(x/sqrt(x*x+0.88),[3])-log([2]+pow(1./(x/0.9383),[4])) )",PMIN,PMAX);
-	parPrBBMerged = new TF1("parPrBBMerged","PrMerged",PMIN,PMAX);
+	parPrBBMerged = new TF1("parPrBBMerged",this,&MpdPid::mergedPrBB,PMIN,PMAX,10,"MpdPid","mergedPrBB");
 	parDePol1 = new TF1("parDePol1", "pol1(0)", 0., 0.225); parDePol2 = new TF1("parDePol2", "pol1(0)", 0.225, 0.375);
 	parDeBB = new TF1("parDeBB","[0]/pow(x/sqrt(x*x+3.52),[3])*([1]-pow(x/sqrt(x*x+3.52),[3])-log([2]+pow(1./(x/1.876),[4])) )",PMIN,PMAX);
 	parTrPol1 = new TF1("parTrPol1", "pol1(0)", 0., 0.3); parTrPol2 = new TF1("parTrPol2", "pol1(0)", 0.3, 0.525);
