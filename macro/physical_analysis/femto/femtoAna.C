@@ -1,3 +1,4 @@
+#if !defined(__CINT__) && !defined(__CLING__)
 #include <iostream>
 #include <TChain.h>
 #include <TParticle.h>
@@ -7,22 +8,22 @@
 #include <TH1.h>
 
 using namespace std;
+#endif
 
-void femtoAna(TString inFileDST = "/nica/mpd16/basalaev/mpddata/mpddst_", //tutaj wrzucam path do initial root
-        TString inFileEve = "/nica/user/b/basalaev/mpdroot_vHLLE/macro/mpd/simReco/evetest_",
-	      TString outFile = "_test.root", Int_t nStartEvent = 0, Int_t nEvents = 1000, Int_t nFiles = 93) {
-    gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-    mpdloadlibs(1, 1); // load main libraries
-
+void femtoAna(TString inFileDST = "/nica/mpd16/basalaev/mpddata/mpddst_",
+              TString inFileEve = "/nica/user/b/basalaev/mpdroot_vHLLE/macro/mpd/simReco/evetest_",
+              TString outFile = "_test.root", Int_t nStartEvent = 0, Int_t nEvents = 1000, Int_t nFiles = 93)
+{
     Float_t Qinv = 0.30;
-    Int_t nKtBins = 6; //Define number of kT-bins to be used
-    const Int_t dim = nKtBins + 1;
-    Float_t KtRanges[dim] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5};
+    Int_t nKtBins = 6; // Define number of kT-bins to be used
+    Int_t dim = nKtBins + 1;
+    Float_t* KtRanges = new Float_t[dim]{0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5};
 
-    MpdFemtoHistos* histos = new MpdFemtoHistos(Qinv, nKtBins, 3,outFile);
+    MpdFemtoHistos* histos = new MpdFemtoHistos(Qinv, nKtBins, 3, outFile);
     histos->SetfKtBins(nKtBins);
     for (Int_t idx = 0; idx < dim; idx++)
         histos->SetfKtRange(idx, KtRanges[idx]);
+    delete [] KtRanges;
    
     for (Int_t iFile = 0; iFile < nFiles; iFile++) {
         // /nica/user/b/basalaev/vHLLE_mpdroot - is a path on NICA-cluster to the test data sample (vHLLE+UrQMD, 11.5 GeV/n, 1PT, MPD, geometry_stage1)

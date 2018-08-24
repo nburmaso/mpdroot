@@ -1,6 +1,6 @@
 // Macro for running physic analysis
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined(__CINT__) && !defined(__CLING__)
 // ROOT includes
 #include "TString.h"
 #include "TStopwatch.h"
@@ -21,7 +21,7 @@
 using namespace std;
 #endif
 
-void phys_RoInvMass (TString inFile = "mpddst.root")
+void phys_RoInvMass(TString inFile = "mpddst.root")
 {
 
   // ========================================================================
@@ -32,22 +32,15 @@ void phys_RoInvMass (TString inFile = "mpddst.root")
   //TString inFile = "mc.root";
 
   // Parameter file
-  TString parFile = "evetest.root";
+  TString parFile = "$VMCWORKDIR/macro/mpd/evetest.root";
   //TString parFile = inFile;
 
   // Output file
   //TString outFile = "test.raw.1251-1500.root";
   TString outFile = "mpdphys.root";
 
-//   // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-  mpdloadlibs(kTRUE,1);      // load full set of main libraries
-  //  gSystem->Load("libMpdPhysics");
+  //gSystem->Load("libXMLIO");
 
-  gSystem->Load("libXMLIO");
-
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/geometry_v2.C");
-  geometry_v2(0x0, kFALSE);
   // ------------------------------------------------------------------------
 
   // ---  Now choose concrete engines for the different tasks   -------------

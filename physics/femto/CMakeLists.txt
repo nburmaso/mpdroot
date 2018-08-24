@@ -45,6 +45,6 @@ MpdFemtoSHCF.cxx
 Set(HEADERS)
 Set(LINKDEF LinkDef.h)
 Set(LIBRARY_NAME MpdFemto)
-Set(DEPENDENCIES Core Base)
+Set(DEPENDENCIES Core Base Physics MpdBase)
 
 GENERATE_LIBRARY()
