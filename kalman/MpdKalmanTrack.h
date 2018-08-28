@@ -27,7 +27,7 @@ class MpdKalmanTrack : public TObject
   MpdKalmanTrack(Double_t pos, TVector3 &vertex); ///< Ctor from position and vertex
   virtual ~MpdKalmanTrack(); ///< Destructor
   MpdKalmanTrack (const MpdKalmanTrack& track); ///< copy constructor
-  MpdKalmanTrack& operator=(const MpdKalmanTrack& track); // assignment operator
+  MpdKalmanTrack& operator=(const MpdKalmanTrack& track); ///< assignment operator
 
   Int_t GetTrackID() const { return fID; } ///< get track ID
   TrackDir GetDirection() const { return fTrackDir; } ///< Get track direction
@@ -119,14 +119,14 @@ class MpdKalmanTrack : public TObject
   Double32_t fLength; ///< track length
   Double32_t fLengAtHit; ///< track length at last hit
   TMatrixD *fParam; ///< pointer to track parameter matrix
-  TMatrixD *fParamNew; //!< pointer to track parameter matrix after propagation
+  TMatrixD *fParamNew; ///<! pointer to track parameter matrix after propagation
   TMatrixD *fParamAtHit; ///< pointer to track parameter matrix at last hit
   TMatrixDSym *fCovar; ///< pointer to covariance matrix
-  TMatrixDSym *fWeight; //!< pointer to weight matrix
+  TMatrixDSym *fWeight; ///<! pointer to weight matrix
   TMatrixDSym *fWeightAtHit; ///< pointer to weight matrix at last hit
   TVector3 fVertex; ///< track vertex
-  TObjArray *fHits; //!< array of hit pointers assigned to the track
-  std::map<Int_t,Double_t> fStepMap; //!< steps between points on track
+  TObjArray *fHits; ///<! array of hit pointers assigned to the track
+  std::map<Int_t,Double_t> fStepMap; ///<! steps between points on track
 
   ClassDef(MpdKalmanTrack,4);
 };
