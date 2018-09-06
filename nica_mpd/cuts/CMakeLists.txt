@@ -31,6 +31,7 @@ ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpd
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/combined
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/kalman
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/kalmandst
+${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/trackcuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts
@@ -59,6 +60,8 @@ trackcuts/MpdTpcProbCut.cxx
 trackcuts/MpdTrackChargeCut.cxx
 trackcuts/MpdTrackFirstPointCut.cxx
 trackcuts/MpdNSigmaCut.cxx
+trackcuts/MpdPadsEdgeSectorCut.cxx
+trackcuts/MpdHitsEdgeSectorCut.cxx
 #paircuts/MpdTwoTrackSharedQualityCut.cxx
 paircuts/MpdTwoTrackSharedPadsCut.cxx
 paircuts/MpdPairPadsCuts.cxx
@@ -70,7 +73,7 @@ paircuts/MpdSplittedPairsCut.cxx
 Set(HEADERS )
 Set(LINKDEF MpdNicaCutsLinkDef.h)
 Set(LIBRARY_NAME NicaMpdCuts)
-Set(DEPENDENCIES  NicaCut NicaMpdFormat)
+Set(DEPENDENCIES  NicaCut NicaMpdFormat NicaMpdHelper)
 
 GENERATE_LIBRARY()
 

@@ -9,6 +9,7 @@
 #include "MpdNSigmaCut.h"
 #include "NicaTpcTrack.h"
 #include "NicaExpTrack.h"
+#include "MpdDetectorID.h"
 
 MpdNSigmaCut::MpdNSigmaCut() : NicaTrackCut(4){
 	SetUnitName("pion_sigma [#sigma]",SigmaPion());
@@ -62,7 +63,8 @@ MpdNSigmaCut::MpdNSigmaCut() : NicaTrackCut(4){
 }
 
 Bool_t MpdNSigmaCut::Pass(NicaTrack* track) {
-	NicaTpcTrack *tpc = ((NicaExpTrack*)track)->GetTpcTrack();
+	NicaTpcTrack *tpc =(NicaTpcTrack*)
+			((NicaExpTrack*)track)->GetDetTrack(MpdDetectorID::kTPC);
 	Double_t P = TMath::Sqrt(track->GetPx()*track->GetPx()+track->GetPy()*track->GetPy()+track->GetPz()*track->GetPz());
 	Double_t s_pion = GetDedxWidthValue(P,SigmaPion());
 	Double_t s_kaon = GetDedxWidthValue(P,SigmaKaon());

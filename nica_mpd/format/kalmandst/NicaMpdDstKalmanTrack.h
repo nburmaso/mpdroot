@@ -12,7 +12,7 @@
 #include "NicaMpdTrackTpcPads.h"
 #include "MpdTpcKalmanTrack.h"
 
-#define MPD_TPC_LAYERS 55
+#define MPD_TPC_LAYERS 53
 class NicaMpdDstKalmanTrack : public NicaMpdTrackTpcPads{
 	Int_t fNKalmanhits;
 	ULong64_t fHitMap;

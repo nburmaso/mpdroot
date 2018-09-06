@@ -7,6 +7,7 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "NicaMpdTrack.h"
+#include "NicaDetectorID.h"
 #include <iostream>
 #include <Rtypes.h>
 NicaMpdTrack::NicaMpdTrack() :NicaExpTrack(){
@@ -86,4 +87,18 @@ void NicaMpdTrack::PrintHitMaps() const {
 		}
 	}
 	std::cout<<std::endl;
+}
+
+TObject* NicaMpdTrack::GetDetTrack(const UInt_t detID) const {
+	switch(detID){
+	case NicaDetectorID::kTPC:{
+		return fTpcTrack;
+	}break;
+	case NicaDetectorID::kTOF:{
+		return fToFTrack;
+	}break;
+	default:
+		return NULL;
+		break;
+	}
 }

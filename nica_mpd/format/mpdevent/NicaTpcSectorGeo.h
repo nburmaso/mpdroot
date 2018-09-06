@@ -1,5 +1,5 @@
-#ifndef MPDTPCSECTORGEO_H
-#define MPDTPCSECTORGEO_H
+#ifndef NICATPCSECTORGEO_H
+#define NICATPCSECTORGEO_H
 
 /// \ingroup rec
 /// \class NicaTpcSectorGeo

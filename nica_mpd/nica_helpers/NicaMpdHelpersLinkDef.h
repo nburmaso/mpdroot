@@ -15,4 +15,5 @@
 #pragma link C++ class MpdPIDOnTheFly+;
 #pragma link C++ class NicaPairAnaDebugger+;
 #pragma link C++ class MpdSharedHitMap+;
+#pragma link C++ namespace MpdDetectorID;
 #endif /* INTERFACES_MPDROOT_NICAMPDINTERFACELINKDEF_H_ */

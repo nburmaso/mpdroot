@@ -36,8 +36,7 @@ void NicaMpdDstKalmanTrack::Update(MpdTrack* track, MpdTpcKalmanTrack* kalman) {
 	}else{
 		fNKalmanhits = 0;
 	}
-	//std::cout<<std::bitset<32>(fHitMap)<<std::endl;
-//	std::cout<<"\t"<<std::bitset<32>(fSharedHitMap)<<std::endl;
+//	std::cout<<std::bitset<32>(fHitMap)<<std::endl;
 }
 
 NicaMpdDstKalmanTrack::~NicaMpdDstKalmanTrack() {

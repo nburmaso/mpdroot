@@ -19,6 +19,8 @@
 #pragma link C++ class MpdTrackChargeCut+;
 #pragma link C++ class MpdTrackFirstPointCut+;
 #pragma link C++ class MpdTcpCalibratedCut+;
+#pragma link C++ class MpdPadsEdgeSectorCut+;
+#pragma link C++ class MpdHitsEdgeSectorCut+;
 //#pragma link C++ class MpdTwoTrackSharedQualityCut+;
 #pragma link C++ class MpdNSigmaCut+;
 #pragma link C++ class MpdTwoTrackSharedPadsCut+;

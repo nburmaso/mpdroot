@@ -10,6 +10,7 @@
 #include "NicaMpdDstKalmanTrack.h"
 #include "NicaDataFormatManager.h"
 #include "NicaComplexTrack.h"
+#include "MpdDetectorID.h"
 #include <fstream>
 
 Double_t MpdTcpCalibratedCut::BetheBlochFunction(Double_t X, Double_t* par) {
@@ -79,7 +80,8 @@ MpdTcpCalibratedCut::MpdTcpCalibratedCut(TString calib_file) : NicaTrackTpcCut()
 }
 
 Bool_t MpdTcpCalibratedCut::Pass(NicaTrack* track) {
-	NicaTpcTrack *tpc = ((NicaMpdTrack*)track)->GetTpcTrack();
+	NicaTpcTrack *tpc =(NicaTpcTrack*)
+			((NicaMpdTrack*)track)->GetDetTrack(MpdDetectorID::kTPC);
 	SetValue(track->GetCharge(),fgChargeId);
 	SetValue(tpc->GetDeDx(),fgDeDxId);
 	SetValue(tpc->GetNHits(),fgTpcHitsId);
