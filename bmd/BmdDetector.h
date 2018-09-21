@@ -10,7 +10,7 @@
 //      Software developed for the PANDA Detector at FAIR.
 //
 // Author List:
-//     Mario Rodriguez (original author) translation from AliRoot by Pedro Gonzalez Zamora
+//     Pedro Gonzalez Zamora (original author) 
 //
 //
 //-----------------------------------------------------------
@@ -91,7 +91,9 @@ public:
 
   BmdPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos,
  		   TVector3 mom, Double_t time, Double_t length,
- 		   Double_t eLoss);
+ 		   Double_t eLoss,Int_t statusCode);
+  
+  Int_t GetVolumeID(TString volname);
   // Operators
 
 
@@ -115,6 +117,7 @@ private:
   Double_t		fLength;            //!  length
   Double_t		fELoss;             //!  energy loss
   Int_t                 currentTrackID;     //!
+  Int_t                 currentEvent;       //! current event
   Bool_t                fNewTrack;
   const double	nan;			    //!
   

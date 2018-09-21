@@ -33,13 +33,13 @@ BmdPoint::BmdPoint()
 {}
 
 BmdPoint::BmdPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom,
-             Double_t tof, Double_t length, Double_t eLoss)
+             Double_t tof, Double_t length, Double_t eLoss,Int_t statusCode)
   : FairMCPoint(trackID, detID, pos, mom, tof, length, eLoss)
 {
   
   pT = mom.Pt();
   eta = mom.Eta();
-  
+  fStatusCode = statusCode;
   
   
 }

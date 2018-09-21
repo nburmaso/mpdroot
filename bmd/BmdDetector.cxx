@@ -46,6 +46,7 @@ using namespace std;
 #include "TGeoManager.h"
 #include "TGDMLParse.h"
 #include "FairGeoMedia.h"
+#include "TParticle.h"
 
 // Class Member definitions -----------
 
@@ -59,15 +60,9 @@ BmdDetector::BmdDetector(const char * Name, Bool_t Active)
   fVerboseLevel = 1;
   fNewTrack = kFALSE;
   currentTrackID = -1;
+  currentEvent   = -1;
 }
 
-//BmdDetector::BmdDetector()
-//{
-  //fBmdPointCollection= new TClonesArray("BmdPoint");
-
-  //fVerboseLevel = 1;
-  //nan=(std::numeric_limits<double>::quiet_NaN());
-//}
 
 BmdDetector::~BmdDetector()
 {
@@ -105,75 +100,59 @@ void BmdDetector::Register() {
 
 Bool_t BmdDetector::ProcessHits( FairVolume *v)
 {
-
+    
+  // create Hit for every MC step
+  const char* volName = v->getRealName();   
+  Int_t eventNumber = gMC->CurrentEvent();
   
-    const char* volName = v->getRealName();
-    Int_t copyNo;
-    Int_t volIDMC = gMC->CurrentVolID(copyNo);
-    TString volID = gMC->CurrentVolName();
-    Int_t maxStep = gMC->GetMaxNStep();
-    TLorentzVector	currentPos; 
-    gMC->TrackPosition(currentPos);
-    Int_t cTrackID = gMC->GetStack()->GetCurrentTrackNumber();
-    
-    
-    
-     //cout<<" ** "<<gMC->GetStack()->GetCurrentTrackNumber()<<" "<<gMC->IsTrackEntering()<<" "<<gMC->IsTrackExiting()<<" "<<gMC->IsTrackStop()<<" "<<gMC->IsTrackDisappeared()<<" "<<gMC->TrackStep()<<" "<<gMC->IsTrackOut()<<" "<<volID<<" "<<maxStep;
-    
+   
+  if ( ! gMC->IsTrackAlive()  ) return kTRUE;
   
-      // Set parameters at entrance of volume. Reset ELoss.
-     if( gMC->IsTrackEntering() && fNewTrack  == kFALSE && cTrackID != currentTrackID ) 
-     {
-		fELoss  = 0.;
-		fTime   = gMC->TrackTime() * 1.0e09;
-		fLength = gMC->TrackLength();
+  if (   gMC->IsTrackEntering() )
+  {
+		fELoss   = 0.;
+		fTime    = gMC->TrackTime() * 1.0e09;
+		fLength  = gMC->TrackLength();
+                fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
 		
 		gMC->TrackMomentum(fMom);
 		gMC->TrackPosition(fPos);
-		cout<<fPos.Vect().X()<<" " <<fPos.Vect().Y()<<" "<<fPos.Vect().Z();
-		fNewTrack = kTRUE;
-		currentTrackID = cTrackID;
-      }
+		
+		
+                TString volID = gMC->CurrentVolName();
+                fVolumeID = GetVolumeID(volID);
+               
+  }
   
-      // Sum energy loss for all steps in the active volume
-      fELoss += gMC->Edep();
-      
-      //cout<<" ** "<<gMC->GetStack()->GetCurrentTrackNumber()<<" "<<gMC->IsTrackEntering()<<" "<<gMC->IsTrackExiting()<<" "<<gMC->IsTrackStop()<<" "<<gMC->IsTrackDisappeared()<<" "<<gMC->TrackStep()<<" "<<gMC->IsTrackOut()<<" "<<volID<<" "<<maxStep<<" "<<fELoss;
-     
-      
+  
+   // Sum energy loss for all steps in the active volume
+   
+  fELoss += gMC->Edep();
+   
+ 
+  
+  
+ 
+  if( fELoss > 0. &&  (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()) && gMC->TrackCharge() )   {
+  
+        TParticle* currentParticle = (TParticle*)gMC->GetStack()->GetCurrentTrack();
        
-      if(  ( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared() )  && (TMath::Abs (currentPos.Vect().Z() ) > 201.25 ) && fNewTrack == kTRUE )
-      {	
-	       
-	        if( fELoss == 0. ) {
-		 
-		  ResetParameters();
-		  fNewTrack = kFALSE;
-		  return kFALSE;
-		  
-		}
-		
-		
-		
-		fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
-		fVolumeID = v->getMCid();
-		BmdPoint* p=AddHit(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss);
-		p->SetStep(gMC->TrackStep());
-		
-		((FairStack*)gMC->GetStack())->AddPoint(kBMD);
-		TLorentzVector fPosFin;
-		
-		gMC->TrackPosition(fPosFin);
-		
-		//cout<<" ** "<<fELoss<<" Salio "<<fPosFin.Vect().X()<<" "<<fPosFin.Vect().Y()<<" "<<fPosFin.Vect().Z()<<endl;
-		
-    		ResetParameters();
-		fNewTrack = kFALSE;
-		
-      }
+              
+          
+        Int_t statusCode = currentParticle->GetStatusCode();
+ 
+        if( fLength  < 207.0 ) {
+            BmdPoint* p=AddHit(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss,statusCode);
+            p->SetStep(gMC->TrackStep());
+            ((FairStack*)gMC->GetStack())->AddPoint(kBMD);
+        }
+        
+        ResetParameters();
 
-return kTRUE;
-
+  }
+ 
+  return kTRUE;
+ 
 }
 
 
@@ -186,11 +165,11 @@ TClonesArray* BmdDetector::GetCollection(Int_t iColl) const {
 
 BmdPoint* BmdDetector::AddHit(Int_t trackID, Int_t detID, TVector3 pos,
     TVector3 mom, Double_t time, Double_t length,
-    Double_t eLoss) {
+    Double_t eLoss,Int_t statusCode) {
   TClonesArray& clref = *fBmdPointCollection;
   Int_t size = clref.GetEntriesFast();
   return new(clref[size]) BmdPoint(trackID, detID, pos, mom,
-      time, length, eLoss);
+      time, length, eLoss,statusCode);
 }
 
 void BmdDetector::Reset() {
@@ -455,21 +434,259 @@ void BmdDetector::ExpandNodeForGdml(TGeoNode* node)
 
 //Check if Sensitive-----------------------------------------------------------
 Bool_t BmdDetector::CheckIfSensitive(std::string name) {
+
+    
     TString tsname = name;
-    cout<<tsname.Data()<<endl;
-   
-    if (tsname.Contains("BMDPlusA1Sec") || tsname.Contains("BMDPlusA2Sec") ||
-        tsname.Contains("BMDPlusA3Sec") || tsname.Contains("BMDPlusA4Sec") ||
-        tsname.Contains("BMDPlusA5Sec") || 
-        tsname.Contains("BMDPlusC1Sec") || tsname.Contains("BMDPlusC2Sec") ||
-        tsname.Contains("BMDPlusC3Sec") || tsname.Contains("BMDPlusC4Sec") ||
-        tsname.Contains("BMDPlusC5Sec") ) 
-    {
-      return kTRUE;
+    //cout<<tsname.Data()<<endl;
+    if( tsname.Contains("Hexagon5cm") ) {
+        
+        if( tsname.Contains("Hexagon5cmA") || tsname.Contains("Hexagon5cmC") )
+        {
+        
+            return kTRUE;
+       
+        }
+        
+    } else if( tsname.Contains("Hexagon") ) {
+        
+        if( tsname.Contains("HexagonA") || tsname.Contains("HexagonC") )
+        {
+        
+            return kTRUE;
+       
+        }
+        
+    } else if ( tsname.Contains("BBCPlus") ) {
+        cout<<"Entro pay only"<<endl;
+    
+        if( tsname.Contains("BBCPlusC1Sec") || tsname.Contains("BBCPlusA1Sec") ||
+            tsname.Contains("BBCPlusC2Sec") || tsname.Contains("BBCPlusA2Sec") ||
+            tsname.Contains("BBCPlusC3Sec") || tsname.Contains("BBCPlusA3Sec") ||
+            tsname.Contains("BBCPlusC4Sec") || tsname.Contains("BBCPlusA4Sec") ||
+            tsname.Contains("BBCPlusC5Sec") || tsname.Contains("BBCPlusA5Sec") )
+        {
+    
+            return kTRUE;
+        
+        }
+    
+    } else if ( tsname.Contains("HybridPay") ||  tsname.Contains("HybridHex") ) {
+        
+        if( tsname.Contains("HybridPayPlusA4Sec") || tsname.Contains("HybridPayPlusC4Sec") ||
+            tsname.Contains("HybridPayPlusA5Sec") || tsname.Contains("HybridPayPlusC5Sec") ||
+            tsname.Contains("HybridHexA")         || tsname.Contains("HybridHexC") )
+        {
+        
+            return kTRUE;
+        
+        }
     }
+        
+      
+     
     return kFALSE;
 
 }
+
+Int_t BmdDetector::GetVolumeID(TString volname) {
+  
+
+  Int_t     detectorID = -1;
+  
+  
+  if( volname.Contains("Hexagon5cm") ) {
+      
+    //cout<<"Entro a la geometria de hexagono"<<endl;
+    
+    TObjArray *svolnameArr = volname.Tokenize("_");
+    if(svolnameArr->GetEntries()<2){
+        cout << "ERROR: invalid name of volume'" << endl; 
+        return -1;
+    }
+  
+  
+  
+    TObjString* ringNameObjStr;
+    TObjString* cellNameObjStr;
+   
+    ringNameObjStr = (TObjString*)svolnameArr->At(0);
+    cellNameObjStr = (TObjString*)svolnameArr->At(1);
+
+    TString ringNameStr = ringNameObjStr->GetString();
+    TString cellNameStr = cellNameObjStr->GetString();
+  
+    Int_t   offSet = 0;
+    
+    
+  
+    if( ringNameStr.CompareTo("Hexagon5cmA2") == 0 ) offSet = 12;
+    if( ringNameStr.CompareTo("Hexagon5cmA3") == 0 ) offSet = 30;
+    if( ringNameStr.CompareTo("Hexagon5cmA4") == 0 ) offSet = 54;
+    if( ringNameStr.CompareTo("Hexagon5cmA5") == 0 ) offSet = 84;
+    if( ringNameStr.CompareTo("Hexagon5cmA6") == 0 ) offSet = 120;
+    
+    if( ringNameStr.CompareTo("Hexagon5cmC1") == 0 ) offSet = 162;
+    if( ringNameStr.CompareTo("Hexagon5cmC2") == 0 ) offSet = 174;
+    if( ringNameStr.CompareTo("Hexagon5cmC3") == 0 ) offSet = 192;
+    if( ringNameStr.CompareTo("Hexagon5cmC4") == 0 ) offSet = 216;
+    if( ringNameStr.CompareTo("Hexagon5cmC5") == 0 ) offSet = 246;
+    if( ringNameStr.CompareTo("Hexagon5cmC6") == 0 ) offSet = 282;
+    
+  
+    detectorID = offSet + cellNameStr.Atoi() + 1;
+    
+  } else if( volname.Contains("Hexagon") ) {
+      
+    //cout<<"Entro a la geometria de hexagono"<<endl;
+    
+    TObjArray *svolnameArr = volname.Tokenize("_");
+    if(svolnameArr->GetEntries()<2){
+        cout << "ERROR: invalid name of volume'" << endl; 
+        return -1;
+    }
+  
+  
+  
+    TObjString* ringNameObjStr;
+    TObjString* cellNameObjStr;
+   
+    ringNameObjStr = (TObjString*)svolnameArr->At(0);
+    cellNameObjStr = (TObjString*)svolnameArr->At(1);
+
+    TString ringNameStr = ringNameObjStr->GetString();
+    TString cellNameStr = cellNameObjStr->GetString();
+  
+    Int_t   offSet = 0;
+  
+    if( ringNameStr.CompareTo("HexagonA2") == 0) offSet = 6 ;
+    if( ringNameStr.CompareTo("HexagonA3") == 0) offSet = 18;
+    if( ringNameStr.CompareTo("HexagonA4") == 0) offSet = 36;
+    if( ringNameStr.CompareTo("HexagonA5") == 0) offSet = 60;
+    if( ringNameStr.CompareTo("HexagonA6") == 0) offSet = 90;
+    if( ringNameStr.CompareTo("HexagonA7") == 0) offSet = 126;
+  
+    if( ringNameStr.CompareTo("HexagonC1") == 0 ) offSet = 168;
+    if( ringNameStr.CompareTo("HexagonC2") == 0) offSet = 168 + 6 ;
+    if( ringNameStr.CompareTo("HexagonC3") == 0) offSet = 168 + 18;
+    if( ringNameStr.CompareTo("HexagonC4") == 0) offSet = 168 + 36;
+    if( ringNameStr.CompareTo("HexagonC5") == 0) offSet = 168 + 60;
+    if( ringNameStr.CompareTo("HexagonC6") == 0) offSet = 168 + 90;
+    if( ringNameStr.CompareTo("HexagonC7") == 0) offSet = 168+ 126;
+ 
+  
+    detectorID = offSet + cellNameStr.Atoi() + 1;
+    
+  } else if( volname.Contains("BBCPlus") ) {
+    
+    //cout<<"Entro a la geometria de pay only"<<endl;
+    
+    Int_t sectionID  = -1;
+    Int_t sectorID   = -1;
+    Int_t ringID     = -1;
+  
+    
+    
+    if( volname.Contains("BBCPlusA") ) sectionID = 0;
+    else if( volname.Contains("BBCPlusC")) sectionID = 1;
+  
+    for(Int_t ring = 1; ring <= 5;  ring++)
+    {
+      for(Int_t sector = 1; sector<=16; sector++)
+      {
+	if( volname.CompareTo(Form("BBCPlusA%dSec%d",ring,sector) ) == 0  || 
+	    volname.CompareTo(Form("BBCPlusC%dSec%d",ring,sector) ) == 0 ) {
+	    sectorID=sector;
+	    ringID=ring;
+	    break;
+	}
+      }	  
+    }
+  
+    if ( ringID > 0 && sectorID > 0 ){
+    
+        detectorID = 80*sectionID+16*(ringID-1) + sectorID;
+        
+    }
+      
+    
+  } else if ( volname.Contains("HybridHex") || volname.Contains("HybridPay") ) {
+      
+    
+    
+            
+            if( volname.Contains("HybridHex") ) {
+      
+                //cout<<"Entro a la geometria hibrida en hexagono"<<endl;
+            
+                TObjArray *svolnameArr = volname.Tokenize("_");
+                if(svolnameArr->GetEntries()<2){
+                cout << "ERROR: invalid name of volume'" << endl; 
+                return -1;
+                }
+
+  
+                TObjString* ringNameObjStr;
+                TObjString* cellNameObjStr;
+   
+                ringNameObjStr = (TObjString*)svolnameArr->At(0);
+                cellNameObjStr = (TObjString*)svolnameArr->At(1);
+
+                TString ringNameStr = ringNameObjStr->GetString();
+                TString cellNameStr = cellNameObjStr->GetString();
+  
+                Int_t   offSet = 0;
+
+                //if( ringNameStr.CompareTo("HybridHexA2") == 0 ) offSet = 12; //7 ;
+                //if( ringNameStr.CompareTo("HybridHexA3") == 0)  offSet  = 31;//; //37
+                
+                if( ringNameStr.Contains("HybridHexC") ) offSet = 86;
+                
+                //if( ringNameStr.CompareTo("HybridHexC1") == 0) offSet = 86; //69;//36; 68;
+                //if( ringNameStr.CompareTo("HybridHexC2") == 0) offSet = 98;//75;//42; 74;
+                //if( ringNameStr.CompareTo("HybridHexC3") == 0) offSet = 116;//54; 86;
+                
+                detectorID = offSet + cellNameStr.Atoi();
+                
+      
+            } else if ( volname.Contains("HybridPay") ) {
+                
+                //cout<<"Entro a la geometria hibrida en pay"<<endl;
+                  
+                Int_t sectionID  = -1;
+                Int_t sectorID   = -1;
+                Int_t ringID     = -1;
+                
+                if( volname.Contains("HybridPayPlusA") )     sectionID = 54;
+                else if( volname.Contains("HybridPayPlusC")) sectionID = 140;
+  
+                for(Int_t ring = 4; ring <= 5;  ring++)
+                {
+                   
+                    for(Int_t sector = 1; sector<=16; sector++)
+                    {
+                        if( volname.CompareTo(Form("HybridPayPlusA%dSec%d",ring,sector) ) == 0 || 
+                            volname.CompareTo(Form("HybridPayPlusC%dSec%d",ring,sector) ) == 0 ){
+                            sectorID=sector;
+                            ringID=ring;
+                            break;
+                        }
+                     }	  
+                }
+  
+                    if ( ringID > 0 && sectorID > 0 ){
+    
+                        detectorID = sectionID+16*(ringID-4) + sectorID;
+        
+                    }
+            }
+    }
+  
+  
+    return detectorID;
+
+}
+
+
 //---------------------------------------------------------
 
 ClassImp(BmdDetector)
