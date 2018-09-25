@@ -54,7 +54,7 @@ class MpdPid : public TObject
 	
 	MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, /// generators: "PHSD", "URQMD", "LAQGSM" ("QGSM"), "DEFAULT", "EPOS" (for pp collisions), "NSIG" (for n-sigma method)
 		Double_t koef = 1., TString Generator = "DEFAULT", TString Tracking = "CF", /// tracking: "HP" (Hit Producer), "CF" (Cluster Finder)
-		TString NSigPart = "pikapr"); /// possible expressions: el, mu, pi, ka, pr, de, tr, he3, he4
+		TString NSigPart = "pikapr"); /// possible expressions: pi, ka, pr, el, mu, de, tr, he3, he4
 	
 	virtual ~MpdPid(){} /// destructor
 	
@@ -132,8 +132,16 @@ class MpdPid : public TObject
 	/// Returns expected dE/dx width (variables: full momentum, specie)
 	Double_t GetDedxWidthValue(Double_t, Int_t);
 	
+	/// Returns distance to the most probable dE/dx and m2 value in terms of sigmas
+	/// possible expressions: pi, ka, pr, el, mu, de, tr, he3, he4
+	/// use it after MpdPid::FillProbs usage only!!!
+	
+	Double_t GetNsigmaToBetheBloch(TString);
+	Double_t GetNsigmaToAverageMass2(TString);
+	
 	protected:
 	Double_t mergedPrBB(Double_t *x, Double_t *par);
+	Double_t dEdXSigmasArray[9], m2SigmasArray[9]; /// order: pi, ka, pr, el, mu, de, tr, he3, he4
 	
 	TF1 *fgaus;
 	TF2 *fgaus2;

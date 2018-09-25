@@ -173,6 +173,10 @@ Double_t MpdPid::GetDedxProb_asym(Double_t cut, Double_t p, Double_t dedx, Doubl
 		fasymgaus->SetParameters(n, 1., sige, delta);
 		fProb = fasymgaus->Eval(dedx/emean);
 	}
+	
+	dEdXSigmasArray[specie-1] = TMath::Abs((dedx/emean-1.)/sige);
+	if (SideOfAsymmetry >= 0.) dEdXSigmasArray[specie-1] /= 1. + TMath::Abs(delta);
+	m2SigmasArray[specie-1] = -1.0;
 	return fProb;
 }
 
@@ -189,6 +193,8 @@ Double_t MpdPid::GetCombProb_asym(Double_t cut_dedx, Double_t cut_m2, Double_t p
 		fasymgaus2->SetParameters(n, 1., sige, delta, mmean, sigm);
 		fProb = fasymgaus2->Eval(dedx/emean, m2);
 	}
+	dEdXSigmasArray[specie-1] = TMath::Abs(xx);
+	m2SigmasArray[specie-1] = TMath::Abs(yy);
 	return fProb;
 }
 
@@ -1340,7 +1346,8 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Double_t m2, Int_t charge){
 	return kTRUE;
 }
 
-Long_t MpdPid::GetMaxProb() {
+Long_t MpdPid::GetMaxProb() 
+{
 	Long_t pdg=211;
 	Double_t pcut=0.501;
 	const Int_t nCodes=9;
@@ -1372,6 +1379,36 @@ Long_t MpdPid::GetMaxProb() {
    }
    
    return (fCharge*pdg);   
+}
+
+Double_t MpdPid::GetNsigmaToBetheBloch(TString specie)
+{
+	Double_t ans = -1.0;
+	if (specie.EqualTo("pi")) ans = dEdXSigmasArray[0];
+	else if (specie.EqualTo("ka")) ans = dEdXSigmasArray[1];
+	else if (specie.EqualTo("pr")) ans = dEdXSigmasArray[2];
+	else if (specie.EqualTo("el")) ans = dEdXSigmasArray[3];
+	else if (specie.EqualTo("mu")) ans = dEdXSigmasArray[4];
+	else if (specie.EqualTo("de")) ans = dEdXSigmasArray[5];
+	else if (specie.EqualTo("tr")) ans = dEdXSigmasArray[6];
+	else if (specie.EqualTo("he3")) ans = dEdXSigmasArray[7];
+	else if (specie.EqualTo("he4")) ans = dEdXSigmasArray[8];
+	return ans;
+}
+
+Double_t MpdPid::GetNsigmaToAverageMass2(TString specie)
+{
+	Double_t ans = -1.0;
+	if (specie.EqualTo("pi")) ans = m2SigmasArray[0];
+	else if (specie.EqualTo("ka")) ans = m2SigmasArray[1];
+	else if (specie.EqualTo("pr")) ans = m2SigmasArray[2];
+	else if (specie.EqualTo("el")) ans = m2SigmasArray[3];
+	else if (specie.EqualTo("mu")) ans = m2SigmasArray[4];
+	else if (specie.EqualTo("de")) ans = m2SigmasArray[5];
+	else if (specie.EqualTo("tr")) ans = m2SigmasArray[6];
+	else if (specie.EqualTo("he3")) ans = m2SigmasArray[7];
+	else if (specie.EqualTo("he4")) ans = m2SigmasArray[8];
+	return ans;
 }
 
 ClassImp(MpdPid);

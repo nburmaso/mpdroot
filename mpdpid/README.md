@@ -17,7 +17,8 @@ Table of content:
        *   [1.3.1 How to fill probability vector](#MpdPid_3_1)
        *   [1.3.2 How to get probabilities](#MpdPid_3_2)
        *   [1.3.3 Getting the most probable pdg value](#MpdPid_3_3)
-       *   [1.3.4 Example](#MpdPid_3_4)
+       *   [1.3.4 Getting n-sigma distances](#MpdPid_3_4)
+       *   [1.3.5 Example](#MpdPid_3_5)
    *   [1.4 Track selection criteria](#MpdPid_4)
 2.  [MpdPidQA class](#MpdPidQA)
    *   [2.1 Constructor with arguments](#MpdPidQA_1)
@@ -110,7 +111,16 @@ Each function returns the probability normalized to 1.
 Function `Long_t MpdPid::GetMaxProb()` returns the most probable PDG-code (including charge information). It may be called when `MpdPid::FillProbs(...)` has already called.
 
 <a name="MpdPid_3_4"></a>
-#### 1.3.4 Example
+#### 1.3.4 Getting n-sigma distances
+
+Function `Double_t GetNsigmaToBetheBloch` returns the distance from dE/dx value of the track to dE/dx value expected from Bethe-Bloch function in terms of sigmas. The input parameter is the specie (possible expressions are the same as the last initialization parameter of MpdPid class).
+
+Function `Double_t GetNsigmaToAverageMass2` does the same but for m<sup>2</sup> value.
+
+NOTE: distances are calculating while `MpdPid::FillProbs` execution, so use `Double_t GetNsigmaToBetheBloch` and `Double_t GetNsigmaToAverageMass2` AFTER that!
+
+<a name="MpdPid_3_5"></a>
+#### 1.3.5 Example
 
 The following code illustrates how `MpdPid` can be used in external macro:
 ```
