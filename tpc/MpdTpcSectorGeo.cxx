@@ -96,8 +96,12 @@ void MpdTpcSectorGeo::Init()
     //fNrows = Int_t ((fYsec[1] - fYsec[0] + 0.1) / 1.2); // 66 lays
     //fNrows = Int_t ((fYsec[1] - fYsec[0] + 0.1) / 1.5); // 53 lays
     //fNrows = Int_t ((fYsec[1] - fYsec[0] + 0.1) / 1.0);
-    //fPhi0 = params->At(0) * TMath::DegToRad() - fDphi;
-    fPhi0 = ((TGeoPgon*)shape)->Phi1() * TMath::DegToRad() - fDphi;
+    // Starting phi
+    fPhi0 = -((TGeoPgon*)shape)->Phi1() * TMath::DegToRad();
+    Double_t loc[3] = {100, 0, 10}, glob[3] = {0};
+    gGeoManager->FindNode(loc[0],loc[1],loc[2]);
+    gGeoManager->LocalToMaster(loc,glob);
+    fPhi0 += TMath::ATan2 (glob[1],glob[0]); // due to rotation
     // Extract sensitive volume Z-coordinates
     TGeoVolume *membr = gGeoManager->GetVolume("tpc01mb"); // membrane
     fZmin = ((TGeoTube*)membr->GetShape())->GetDZ();
