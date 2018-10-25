@@ -63,6 +63,8 @@ class MpdTrack : public TObject {
     Float_t   fLastPointZ;  //   
     Short_t   fHelixQ;  //   
     Bool_t    fEdgeCut;  // kTRUE if number of hits closer to boundaries than 1.5 cm divided by nHits is larger than 50% (else: kFALSE)
+    ULong64_t fHitMap; // n-th bit is 1 if there is hit in layer, 0 otherwise
+    ULong64_t fSharedHitMap;// n-th bit if bit if hit in given layer shared with any other track
 
  public:
 
@@ -113,6 +115,8 @@ class MpdTrack : public TObject {
     void SetLastPointZ( Float_t n ) {fLastPointZ=n;}
     void SetHelixQ( Short_t n ) {fHelixQ=n;}
     void SetEdgeCut( Bool_t n ) {fEdgeCut=n;}
+    void SetLayerHitMap(ULong64_t map){fHitMap = map;};
+    void SetSharedHitMap(ULong64_t map){fSharedHitMap = map;}
 
     Int_t     GetID()const {return fID;}
     Int_t     GetNofHits()const {return fNofHits;}
@@ -169,9 +173,11 @@ class MpdTrack : public TObject {
     Float_t   GetCharge() const{return -TMath::Sign(1.0,GetPt());}
     Short_t   GetHelixQ() const{return fHelixQ;}
     Bool_t    GetEdgeCut() {return fEdgeCut;}
+    ULong64_t GetLayerHitMap()const{return fHitMap;};
+    ULong64_t GetSharedHitMap()const{return fSharedHitMap;};
+    Int_t GetNSharedTpcHits()const;
     MpdHelix GetHelix()const;
-    
-  ClassDef(MpdTrack,3)
+  ClassDef(MpdTrack,4)
 };
 
 #endif

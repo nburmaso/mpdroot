@@ -31,6 +31,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <bitset>
 
 using namespace std;
 
@@ -43,7 +44,7 @@ using namespace std;
 
 MpdFillDstTask::MpdFillDstTask(const char *name, const char *title)
 : FairTask(name),fEvent(NULL),
-  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL),
+  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL),fTpcHits(NULL),
   fMCEventHeader(NULL),fTofMatching(NULL),fEtofMatching(NULL),
   fVertex(NULL),fZdcSkeletonesSaved(kFALSE),
   fHistZdc1En(NULL),fHistZdc2En(NULL),
@@ -51,13 +52,14 @@ MpdFillDstTask::MpdFillDstTask(const char *name, const char *title)
   fELossZdc1Value(NULL),fELossZdc2Value(NULL),
   fhTrackMotherId(NULL),fhTrackPrimaryPDG(NULL),
   fhTrackVertex(NULL),fhTruthVertex(NULL),
-  fPID(NULL)
+  fPID(NULL),fSharedHitArraySize(0),fSharedHitArray(NULL)
   {
 }
 // -----   Destructor -----------------------------------------------
 
 MpdFillDstTask::~MpdFillDstTask() {
     if (fEvent) delete fEvent;
+    if(fSharedHitArraySize>0) delete []fSharedHitArray;
 }
 // -------------------------------------------------------------------
 
@@ -69,6 +71,7 @@ InitStatus MpdFillDstTask::Init() {
     fKFTracks = (TClonesArray *) manager->GetObject("TpcKalmanTrack");
     fKFEctTracks = (TClonesArray *) manager->GetObject("EctTrack");
     fMCTracks = (TClonesArray *) manager->GetObject("MCTrack");
+    fTpcHits = (TClonesArray*) manager->GetObject("TpcRecPoint");
     fMCEventHeader = (FairMCEventHeader*) manager->GetObject("MCEventHeader.");
     fTofMatching = (TClonesArray *) manager->GetObject("TOFMatching");
     fEtofMatching = (TClonesArray *) manager->GetObject("ETOFMatching");
@@ -86,7 +89,11 @@ InitStatus MpdFillDstTask::Init() {
     	//PID with cluster finder
    // 	fPID->Init("DEFAULT","CF","");
     }
-
+    if(fTpcHits==NULL){
+    	cout<<"WARNING: no TpcRec array, can't fill hit maps!"<<endl;
+    }
+    fSharedHitArraySize = 1000;
+    fSharedHitArray = new Short_t[fSharedHitArraySize];
 
     FairRootManager::Instance()->Register("MCEventHeader.", "MC", fMCEventHeader, kTRUE);
     FairRootManager::Instance()->Register("MCTrack", "MC", fMCTracks, kTRUE);
@@ -121,6 +128,10 @@ void MpdFillDstTask::Exec(Option_t * option) {
     Int_t nReco = fKFTracks ? fKFTracks->GetEntriesFast() : 0;
     Int_t nEctReco = fKFEctTracks ? fKFEctTracks->GetEntriesFast() : 0;
     cout << "\n-I- [MpdFillDstTask::Exec] " << nReco + nEctReco << " reconstruced tracks to write" << endl;
+
+    if(fTpcHits)
+    	CalculateSharedArrayMap();
+
 
     FairRunAna *fRun = FairRunAna::Instance();
     fEvent->SetRunInfoRunId(fRun->GetRunId());
@@ -232,6 +243,7 @@ void MpdFillDstTask::Exec(Option_t * option) {
         track->SetLastPointZ(0.); // AZ - currently not available 
         FillTrackDCA(track, &recoVertex, &mcVertex);
         FillTrackPID(track);
+        FillTrackTpcHits(i, track);
     }
 
 
@@ -386,6 +398,60 @@ void MpdFillDstTask::Finish() {
     fEvent = NULL;
 }
 
+void MpdFillDstTask::CalculateSharedArrayMap() {
+	if(fTpcHits->GetEntriesFast()>fSharedHitArraySize){
+		delete []fSharedHitArray;
+		fSharedHitArraySize = fTpcHits->GetEntriesFast();
+		fSharedHitArray = new Short_t [fSharedHitArraySize];
+	}
+	for(int i=0;i<fTpcHits->GetEntriesFast();i++){
+		fSharedHitArray[i]=0;
+	}
+	for(int i=0;i<fKFTracks->GetEntriesFast();i++){
+		MpdTpcKalmanTrack *kalman = (MpdTpcKalmanTrack*) fKFTracks->UncheckedAt(i);
+		TObjArray *khits = kalman->GetTrHits();
+		if(khits)
+		for(int j=0;j<khits->GetEntriesFast();j++){
+			MpdKalmanHit *hit = (MpdKalmanHit*)khits->UncheckedAt(j);
+			Int_t id = hit->GetIndex();// index of MpdTpcHit
+			if(fSharedHitArray[id]<3)
+				fSharedHitArray[id]++;
+		}
+	}
+}
+
+void MpdFillDstTask::FillTrackTpcHits(Int_t particle_index, MpdTrack *track) {
+    MpdTpcKalmanTrack *kalman = (MpdTpcKalmanTrack*) fKFTracks->UncheckedAt(particle_index);
+    ULong64_t layerHit = 0;
+    ULong64_t sharedHit = 0;
+    if(fTpcHits){// calculate both maps
+		TObjArray *khits = kalman->GetTrHits();
+		if(khits)
+		for(int j=0;j<khits->GetEntriesFast();j++){
+			MpdKalmanHit *hit = (MpdKalmanHit*)khits->UncheckedAt(j);
+			Int_t id = hit->GetIndex();// index of MpdTpcHit
+			Int_t layer = hit->GetLayer();
+			if(layer>=0){
+				if(fSharedHitArray[id]>1)
+					SETBIT(sharedHit,layer);
+				SETBIT(layerHit,layer);
+    		}
+		}
+    }else{//calculate only hit layer map
+		TObjArray *khits = kalman->GetTrHits();
+		if(khits)
+		for(int j=0;j<khits->GetEntriesFast();j++){
+			MpdKalmanHit *hit = (MpdKalmanHit*)khits->UncheckedAt(j);
+			Int_t layer = hit->GetLayer();
+			if(layer>=0){
+				SETBIT(layerHit,layer);
+    		}
+		}
+    }
+    track->SetLayerHitMap(layerHit);
+    track->SetSharedHitMap(sharedHit);
+}
+
 // -------------------------------------------------------------------
 
 /*MpdEvent *MpdFillDstTask::AddEvent(Option_t * option)
@@ -399,8 +465,6 @@ void MpdFillDstTask::Finish() {
 MpdTrack *MpdFillDstTask::AddPrimaryTrack() {
     return NULL;
 }
-// -------------------------------------------------------------------
-ClassImp(MpdFillDstTask);
 
 void MpdFillDstTask::FillTrackDCA(MpdTrack* track, TVector3 *recoVertex, TVector3 *mcVertex) {
     MpdHelix helix = track->GetHelix();
@@ -449,3 +513,7 @@ void MpdFillDstTask::FillTrackPID(MpdTrack* track) {
 	track->SetNSigmaPion(sigma_pi);
 	track->SetNSigmaProton(sigma_pr);
 }
+
+// -------------------------------------------------------------------
+ClassImp(MpdFillDstTask);
+

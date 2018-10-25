@@ -21,6 +21,7 @@ private:
     MpdEvent* fEvent;
     TClonesArray *fKFTracks, *fKFEctTracks; // array of kalman filter tracks
     TClonesArray *fMCTracks;                // array of MC events to write
+    TClonesArray *fTpcHits; //map with TPC hits
     FairMCEventHeader *fMCEventHeader;      // MC event header
     TClonesArray *fTofMatching, *fEtofMatching; // tof information
     TClonesArray *fVertex;  //AZ
@@ -39,8 +40,12 @@ private:
     TH2F *fhTrackVertex;
     TH2F *fhTruthVertex;
     MpdPid *fPID;
+    Int_t fSharedHitArraySize;
+    Short_t *fSharedHitArray;//[fTempArraySize]
     void FillTrackDCA(MpdTrack *track, TVector3 *recoVertex, TVector3 *mcVertex);
     void FillTrackPID(MpdTrack *track);
+    void FillTrackTpcHits(Int_t index, MpdTrack *track);
+    void CalculateSharedArrayMap();
 public:
 
   MpdFillDstTask(const char *name="MpdFillDstTask", const char *title="MPD Task");
