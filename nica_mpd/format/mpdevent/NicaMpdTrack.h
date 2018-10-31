@@ -20,6 +20,7 @@ class NicaMpdTrack : public NicaExpTrack{
 	NicaTpcTrack *fTpcTrack;
 	NicaToFTrack *fToFTrack;
 	ULong64_t fHitsMap;
+	ULong64_t fSharedHitsMap;
 protected:
 	inline NicaTpcTrack *GetTpcTrack()const{return fTpcTrack;};
 	inline NicaToFTrack *GetToFTrack()const{return fToFTrack;};
@@ -30,7 +31,11 @@ public:
 	inline TVector3 *GetLastPoint()const{return fLastPoint;};
 	inline TVector3 *GetFirstPoint()const{return fFirstPoint;};
 	TObject *GetDetTrack(const UInt_t detID)const;
+	inline ULong64_t GetHitMap()const{return fHitsMap;};
+	inline ULong64_t GetSharedHitMap()const{return fSharedHitsMap;};
 	inline Bool_t HaveHit(Int_t layer)const{return TESTBIT(fHitsMap,layer);};
+	inline Bool_t HaveSharedHit(Int_t layer)const{return TESTBIT(fSharedHitsMap,layer);};
+	inline Int_t GetNHitsTpc()const{return fTpcTrack->GetNHits();};
 	virtual void Update(MpdTrack* track);
 	void PrintHitMaps()const;
 	virtual void CopyData(NicaTrack *other);

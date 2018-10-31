@@ -44,7 +44,7 @@ class NicaTpcSectorGeo : public TObject
   Int_t GetZmax () { return fZmax; } ///< sensitive volume Zmax
   const Int_t* NPadsInRows() const { return fNPadsInRows; } ///< numbers of pads in rows
   Double_t Pad2Xloc(Double_t pad, Int_t row); ///< Pad number-to-Xlocal conversion
-  Int_t CalculatePads(NicaHelix *helix, Float_t *Paths);
+  void CalculatePads(const NicaHelix *helix, Float_t *Paths, Short_t *Pads);
   void SetNofRows(Int_t nRows, Int_t ireg = 0) { fNrows[ireg] = nRows; }
   void SetPadHeight(Double_t height, Int_t ireg = 0) { fPadH[ireg] = height; }
   void SetMinY(Double_t rmin) { fYsec[0] = rmin; }
@@ -52,8 +52,13 @@ class NicaTpcSectorGeo : public TObject
  protected:
   //virtual void Finish();
   NicaTpcSectorGeo(TString geo="full"):fSectAngle(TMath::Pi()/12.0) { Init(geo); } ///< Default ctor
-  Bool_t  GetPad(NicaHelix *helix, Double_t R, Double_t &S, Int_t &Sect);
+  Bool_t  GetPad(const NicaHelix *helix, Double_t R, Double_t &S, Int_t &Sect);
+  Bool_t CheckSector(const NicaHelix *helix, Double_t R, Double_t &S, Int_t Sect);
+  Bool_t AdditionalCheck(const NicaHelix *helix, Double_t S, Double_t R, Double_t sect)const;
   virtual ~NicaTpcSectorGeo() {;} ///< Destructor
+  Int_t FindFirstPad(const NicaHelix *helix, Float_t *Paths, Int_t &sect);
+  Int_t FindLastPad(const NicaHelix *helix, Float_t *Paths, Int_t first_pad, Int_t &sect);
+
 
  private:
   void Init(TString geo);
@@ -74,12 +79,13 @@ class NicaTpcSectorGeo : public TObject
   Int_t* fNPadsInRows; // numbers of pads in rows
 /** for pad calcuation **/
   Int_t fLastSector;
-  Double_t fCH;
-  Double_t fSec;
+  Double_t fSecCH;
   Double_t fSinPhase;
   Double_t fCosPhase;
-  Double_t fCosDipAngle;
+  Double_t fCHCosDipAngle;
+  Double_t fSinDipAngle;
   Double_t fHelixR;
+  Double_t fPeriod;
   const Double_t fSectAngle;
   ClassDef(NicaTpcSectorGeo,1);
 };
@@ -93,6 +99,7 @@ inline Double_t NicaTpcSectorGeo::Pad2Xloc(Double_t pad, Int_t row)
   Double_t padW = (row < NofRowsReg(0)) ? fPadW[0] : fPadW[1];
   return padW * (pad - fNPadsInRows[row] + 0.5);
 }
+
 
 
 //__________________________________________________________________________

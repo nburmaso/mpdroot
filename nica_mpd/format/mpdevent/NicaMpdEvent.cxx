@@ -37,12 +37,14 @@ void NicaMpdEvent::Update() {
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(count++);
 			mpd_track->Update((MpdTrack*)prim->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i);
 		}
 		for(int i=0;i<event->GetEventInfoNofGlobalTracks();i++){
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(count++);
 			mpd_track->Update((MpdTrack*)glob->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i+event->GetEventInfoNofPrimaryTracks());
 		}
 
@@ -54,6 +56,7 @@ void NicaMpdEvent::Update() {
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(i);
 			mpd_track->Update((MpdTrack*)prim->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i);
 		}
 	}break;
@@ -64,12 +67,12 @@ void NicaMpdEvent::Update() {
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(i);
 			mpd_track->Update((MpdTrack*)glob->UncheckedAt(i));
 			mpd_track->SetEvent(this);
+			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i);
 		}
 	}break;
 	}
 	fTracks->Compress();
-	NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(0);
 }
 
 void NicaMpdEvent::CreateSource() {

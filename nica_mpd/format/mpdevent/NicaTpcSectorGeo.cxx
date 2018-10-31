@@ -212,21 +212,225 @@ void NicaTpcSectorGeo::PadID(Float_t xloc, Float_t yloc, UInt_t &row, UInt_t &pa
   }
 }
 
-Int_t  NicaTpcSectorGeo::CalculatePads(NicaHelix* helix, Float_t *Paths) {
-	fCH = 1.0/(helix->GetCurv()*helix->GetH());
-	fSec = 1.0/TMath::Cos(helix->GetDipAngle());
+void  NicaTpcSectorGeo::CalculatePads(const NicaHelix* helix, Float_t *Paths,Short_t *Pads) {
+	fCHCosDipAngle = TMath::Cos(helix->GetDipAngle())*helix->GetCurv()*helix->GetH();
+	fSecCH = 1.0/fCHCosDipAngle;
+	fSinDipAngle = TMath::Sin(helix->GetDipAngle());
 	fSinPhase = TMath::Sin(helix->GetPhi0());
 	fCosPhase = TMath::Cos(helix->GetPhi0());
 	fHelixR = 1.0/helix->GetCurv();
-	fCosDipAngle = TMath::Cos(helix->GetDipAngle());
+	fPeriod = helix->GetPeriod();
+	if(fPeriod==0||TMath::IsNaN(fPeriod)){
+		Pads[0] = -1;
+		Pads[1] = -1;
+		return ;
+	}
 	for(int i=0;i<53;i++){
 		Paths[i]= -1;
 	}
-	Double_t Rmin = GetRocY(0);
-	Int_t sector = 0;
 	Double_t s;
 	Int_t sect = 0;
-	for(int i=0;i<NofRowsReg(0);i++){ // loop over layers
+	Int_t start_pad = FindFirstPad(helix, Paths,sect);
+	if(start_pad ==-1){//no first pad
+		Pads[0] = -1;
+		Pads[1] = -1;
+		return;
+	}
+	Int_t end_pad = FindLastPad(helix,Paths,start_pad+1,sect);
+	Pads[0] = start_pad;
+	Pads[1] = end_pad;
+}
+
+Bool_t NicaTpcSectorGeo::GetPad(const NicaHelix* helix, Double_t R,
+		Double_t &S, Int_t& Sect) {
+	S = 0;
+	if(CheckSector(helix, R, S, Sect)){
+		return kTRUE;// found in this sector
+	}
+	/*no found in this sector, we have to look into another sector, but basically
+	 helix might pass through many rows in many sector, lets find pad with shortest
+	 helix lenght by staring from neighbors pads
+	*/
+
+	for(int i=0;i<6;i++){
+		Int_t sect_plus = (Sect+i)%12;
+		Int_t sect_minus = (Sect-i)%12;
+		Double_t s_plus = 0;
+		Double_t s_minus = 0;
+		Int_t opt = 0;
+		if(CheckSector(helix, R, s_plus, sect_plus)) opt +=1;
+		if(CheckSector(helix, R, s_minus, sect_minus)) opt+=2;
+		switch(opt){
+		case 0://no overlap continue
+			break;
+		case 1: {//plus okay, minus not
+			Sect = sect_plus;
+			S = s_plus;
+			return kTRUE;
+		}break;
+		case 2:{//minus okay, plus not
+			Sect = sect_minus;
+			S = s_minus;
+			return kTRUE;
+		}break;
+		case 3:{//both okay we need to find minimum
+			if(s_plus<s_minus){
+				Sect = sect_plus;
+				S = s_plus;
+			}else{
+				Sect = sect_minus;
+				S = s_minus;
+			}
+			return kTRUE;
+		}break;
+		}
+	}
+	//check opposite sector
+	Sect+=6;
+	if(CheckSector(helix,R,S,Sect)){
+		return kTRUE;
+	}
+	return  kFALSE;
+}
+
+Bool_t NicaTpcSectorGeo::CheckSector(const NicaHelix* helix, Double_t R,
+		Double_t& S, Int_t Sect) {
+	Double_t mz = Sect;
+	if(Sect>=12) mz = Sect-12;
+	const Double_t rot = TVector2::Phi_mpi_pi(TMath::TwoPi()*mz/12.0);
+	const Double_t phi = TVector2::Phi_mpi_pi(helix->GetPhi0()+rot);
+	const Double_t x = helix->GetStartX()*TMath::Cos(-rot)+helix->GetStartY()*TMath::Sin(-rot);
+	Double_t magfunc = TMath::ACos(
+		-helix->GetCurv()*x
+		+helix->GetCurv()*R
+		+TMath::Cos(phi)
+	);
+	if(magfunc==0) return kFALSE; //cannot find overlaped lines
+	Double_t s1 = fSecCH*(-magfunc-phi);
+	Double_t s2 = fSecCH*(magfunc-phi);
+	while(s1<0)
+		s1+=fPeriod;
+	while(s2<0)
+		s2+=fPeriod;
+	S = TMath::Min(s1,s2);
+	if(S==0)
+		return kFALSE;
+//	if(S>fPeriod*0.5)
+	//	return kFALSE;
+	Double_t X = helix->GetStartX()+fHelixR*(TMath::Cos(helix->GetPhi0()
+			+S*fCHCosDipAngle)
+		-fCosPhase);
+	Double_t Y = helix->GetStartY()+fHelixR*(TMath::Sin(helix->GetPhi0()
+			+S*fCHCosDipAngle)
+		-fSinPhase);
+	Double_t newPhi = TVector2::Phi_mpi_pi(TMath::ATan2(Y, X)+rot);
+
+	if(newPhi<-fSectAngle)
+		return kFALSE;
+	if(newPhi>fSectAngle)
+		return kFALSE;
+
+	/*TVector3 pos = helix->Evaluate(S);
+	pos.RotateZ(rot);
+	if(TMath::Abs(pos.X()-R)>1E-13){
+		std::cout<<" BAD CALC "<<R<<" "<<pos.X()<<" \t"<<(pos.X()-R)<<std::endl;
+		std::cout<<"S="<<S<<"\t sector: "<<Sect<<" p = "<<X<<" "<<Y<<std::endl;
+		std::cout<<"\tstart="<<helix->GetStartX()<<" "<<helix->GetStartY()<<std::endl;
+		//helix->Print();
+	}*/
+
+	Double_t Z = helix->GetStartZ() + S * fSinDipAngle;
+	if(TMath::Abs(Z)>GetZmax())
+		return kFALSE;
+	return kTRUE;
+}
+
+
+Int_t NicaTpcSectorGeo::FindFirstPad(const NicaHelix* helix,
+		Float_t* Paths, Int_t &sect) {
+	Double_t Rmin = GetRocY(0);
+	Double_t s = 0;
+	Double_t S[fgkNsect];
+	for(int i=0;i<NofRowsReg(0);i++){ // loop over inner layers
+		Double_t R =Rmin+ (0.5+(Double_t)i)*PadHeight(0);
+		Bool_t found_good_sector = kFALSE;
+		for(int j=0;j<fgkNsect;j++){//check all sectors, find all overlaps
+			if(!CheckSector(helix, R, S[j], j)){
+				S[j]= 1E+39;
+			}else{
+				if(AdditionalCheck(helix, S[j],R, j)){
+					found_good_sector = kTRUE;
+				}else{
+					S[j]= 1E+39;
+				}
+			}
+		}
+		if(found_good_sector){//at least one good secor found
+			Int_t min_sec = fgkNsect;
+			Double_t s_min = 1E+39;
+			for(int j=0;j<fgkNsect;j++){
+				if(S[j]<s_min){
+					s_min = S[j];
+					min_sec = j;
+				}
+			}
+			Paths[i] = s_min;
+			sect = min_sec;
+			return i;
+		}
+	}
+	Rmin = GetRocY(1);
+	for(int i=NofRowsReg(0);i<NofRows();i++){//loop over outer layers
+		Double_t R = (0.5+(Double_t)(i-NofRowsReg(0)))*PadHeight(1)+Rmin;
+		Bool_t found_good_sector = kFALSE;
+		for(int j=0;j<fgkNsect;j++){//check all sectors, find all overlaps
+			if(!CheckSector(helix, R, S[j], j)){
+				S[j]= 1E+39;
+			}else{
+				if(AdditionalCheck(helix, S[j],R, j)){
+					found_good_sector = kTRUE;
+				}else{
+					S[j]= 1E+39;
+				}
+			}
+		}
+		if(found_good_sector){//at least one good secor found
+			Int_t min_sec = fgkNsect;
+			Double_t s_min = 1E+39;
+			for(int j=0;j<fgkNsect;j++){
+				if(S[j]<s_min){
+					s_min = S[j];
+					min_sec = j;
+				}
+			}
+			Paths[i] = s_min;
+			sect = min_sec;
+			return i;
+		}
+	}
+	return -1;
+}
+
+Bool_t NicaTpcSectorGeo::AdditionalCheck(const NicaHelix* helix,
+		Double_t S, Double_t R, Double_t sect) const {
+	Double_t angle = TMath::TwoPi()*sect/((Double_t)fgkNsect);
+	TVector3 pos = helix->Evaluate(S);
+	pos.RotateZ(angle);
+	TVector3 start = helix->GetStartPoint();
+	if(TMath::Abs(pos.X()-R)>1E-6){
+		return kFALSE;
+	}
+	// reject point that pass pad but is closer than start vector
+	if(start.Pt()>R)
+		return kFALSE;
+	return kTRUE;
+}
+
+Int_t NicaTpcSectorGeo::FindLastPad(const NicaHelix* helix,
+		Float_t* Paths, Int_t first_pad, Int_t &sect) {
+	Double_t Rmin = GetRocY(0);
+	Double_t s = 0;
+	for(int i=first_pad;i<NofRowsReg(0);i++){ // loop over inner layers
 		Double_t R =Rmin+ (0.5+(Double_t)i)*PadHeight(0);
 		if(GetPad(helix, R, s, sect)){
 			Paths[i] = s;
@@ -235,7 +439,9 @@ Int_t  NicaTpcSectorGeo::CalculatePads(NicaHelix* helix, Float_t *Paths) {
 		}
 	}
 	Rmin = GetRocY(1);
-	for(int i=NofRowsReg(0);i<NofRows();i++){
+	if(first_pad<NofRowsReg(0))
+		first_pad = NofRowsReg(0);
+	for(int i=first_pad;i<NofRows();i++){//loop over outer layers
 		Double_t R = (0.5+(Double_t)(i-NofRowsReg(0)))*PadHeight(1)+Rmin;
 		if(GetPad(helix, R, s, sect)){
 			Paths[i] = s;
@@ -244,42 +450,6 @@ Int_t  NicaTpcSectorGeo::CalculatePads(NicaHelix* helix, Float_t *Paths) {
 		}
 	}
 	return 53;
-}
-
-Bool_t NicaTpcSectorGeo::GetPad(NicaHelix* helix, Double_t R,
-		Double_t &S, Int_t& Sect) {
-	S = 0;
-	for(int i = Sect;i<Sect+12;i++){
-		Double_t rot = TVector2::Phi_mpi_pi(TMath::TwoPi()*((Double_t)i)/12.0);
-		Double_t phi = TVector2::Phi_mpi_pi(helix->GetPhi0()+rot);
-		TVector3 start =helix->GetStartPoint();
-		start.RotateZ(-rot);
-		Double_t magfunc = TMath::ACos(
-			-helix->GetCurv()*start.X()
-			+helix->GetCurv()*R
-			+TMath::Cos(phi)
-		);
-		if(magfunc==0) continue; //cannot find overlaped lines
-		Double_t s1 = fSec*(-magfunc-phi)*fCH;
-		Double_t s2 = fSec*(magfunc-phi)*fCH;
-		Double_t s = TMath::Min(s1,s2);
-		Double_t X = helix->GetStartX()+fHelixR*(TMath::Cos(helix->GetPhi0()
-				+s*helix->GetH()*helix->GetCurv()*fCosDipAngle)
-			-fCosPhase);
-		Double_t Y = helix->GetStartY()+fHelixR*(TMath::Sin(helix->GetPhi0()
-				+s*helix->GetH()*helix->GetCurv()*fCosDipAngle)
-			-fSinPhase);
-		Double_t newPhi = TVector2::Phi_mpi_pi(TMath::ATan2(Y, X)+rot);
-		if(newPhi<-fSectAngle)continue;
-		if(newPhi>fSectAngle)continue;
-		S = s;
-		if(i>=12)
-			Sect = i -12;
-		else
-			Sect = i;
-		return kTRUE;
-	}
-	return  kFALSE;
 }
 
 //__________________________________________________________________________

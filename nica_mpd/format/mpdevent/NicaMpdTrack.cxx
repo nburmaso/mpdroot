@@ -10,12 +10,14 @@
 #include "NicaDetectorID.h"
 #include <iostream>
 #include <Rtypes.h>
-NicaMpdTrack::NicaMpdTrack() :NicaExpTrack(){
+NicaMpdTrack::NicaMpdTrack() :NicaExpTrack(),
+fHitsMap(0),
+fSharedHitsMap(0)
+{
 	fFirstPoint = new TVector3();
 	fLastPoint = new TVector3();
 	fTpcTrack = new NicaTpcTrack();
 	fToFTrack = new NicaToFTrack();
-	fHitsMap = 0;
 }
 
 NicaMpdTrack::~NicaMpdTrack() {
@@ -45,6 +47,8 @@ void NicaMpdTrack::Update(MpdTrack* track) {
 	GetDCA()->SetXYZ(track->GetDCAGlobalX(), track->GetDCAGlobalY(),track->GetDCAGlobalZ());
 	fFirstPoint->SetXYZ(track->GetFirstPointX(),track->GetFirstPointY(), track->GetFirstPointZ());
 	fLastPoint->SetXYZ(track->GetLastPointX(),track->GetLastPointY(),track->GetLastPointZ());
+	fSharedHitsMap = track->GetSharedHitMap();
+	fHitsMap = track->GetLayerHitMap();
 	NicaHelix *helix = GetHelix();
 	TVector3 mom = GetMomentum()->Vect();
 	helix->SetParams(*fFirstPoint,mom, fCharge);
@@ -56,6 +60,8 @@ void NicaMpdTrack::CopyData(NicaTrack* other) {
 	*fLastPoint = *track->fLastPoint;
 	*fTpcTrack = *track->fTpcTrack;
 	*fToFTrack = *track->fToFTrack;
+	fHitsMap = track->fHitsMap;
+	fSharedHitsMap = track->fSharedHitsMap;
 	NicaExpTrack::CopyData(track);
 }
 
@@ -65,6 +71,7 @@ NicaMpdTrack::NicaMpdTrack(const NicaMpdTrack& other) :NicaExpTrack(other){
 	fTpcTrack = new NicaTpcTrack(*other.fTpcTrack);
 	fToFTrack = new NicaToFTrack(*other.fToFTrack);
 	fHitsMap = other.fHitsMap;
+	fSharedHitsMap = other.fSharedHitsMap;
 }
 
 NicaMpdTrack& NicaMpdTrack::operator =(const NicaMpdTrack& other) {
@@ -74,12 +81,25 @@ NicaMpdTrack& NicaMpdTrack::operator =(const NicaMpdTrack& other) {
 	*fLastPoint  = *other.fLastPoint;
 	*fTpcTrack = *other.fTpcTrack;
 	*fToFTrack = *other.fToFTrack;
+	fHitsMap = other.fHitsMap;
+	fSharedHitsMap = other.fSharedHitsMap;
 	return *this;
 }
 
 void NicaMpdTrack::PrintHitMaps() const {
-	for(int i=0;i<52;i++){
+	std::cout<<"HIT MAP:\t";
+	for(int i=0;i<53;i++){
 		Bool_t bit = TESTBIT(fHitsMap,i);
+		if(bit){
+			std::cout<<'1';
+		}else{
+			std::cout<<'0';
+		}
+	}
+	std::cout<<std::endl;
+	std::cout<<"SHARED HIT MAP\t";
+	for(int i=0;i<53;i++){
+		Bool_t bit = TESTBIT(fSharedHitsMap,i);
 		if(bit){
 			std::cout<<'1';
 		}else{

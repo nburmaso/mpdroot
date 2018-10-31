@@ -11,10 +11,10 @@
 #include "NicaEvent.h"
 
 NicaMpdTrackTpcPads::NicaMpdTrackTpcPads() {
-	fMaxPads = 53;
-	fSec = NULL;
-	fPadsNo = 0;
-	for(int i=0;i<fMaxPads;i++){
+	fSec = NicaTpcSectorGeo::Instance();
+	fPadsNo[0] = -2;
+	fPadsNo[1] = -2;
+	for(int i=0;i<GetMaxPadsNo();i++){
 		fPaths[i] =0;
 		fPadID[i] =0;
 	}
@@ -22,62 +22,14 @@ NicaMpdTrackTpcPads::NicaMpdTrackTpcPads() {
 
 void NicaMpdTrackTpcPads::Update(MpdTrack* track) {
 	NicaMpdTrack::Update(track);
-	if(fSec==NULL){
-		fSec = NicaTpcSectorGeo::Instance();
-	}
-	/* old version (cylindircal)
-	Double_t R;
-	Double_t R_min = fSec->GetMinY();
-	Double_t padH1 = fSec->PadHeight(0);
-	Double_t padH2 = fSec->PadHeight(1);
-	Double_t s1,s2, s;
-	Int_t lay = 0;
-	fPadsNo = 0;
-	TVector3 glob,loc;
-	for(double i=0;i<fSec->NofRowsReg(0);i++){
-		R = R_min + i*padH1+0.5*padH1;
-		GetHelix()->PathLength(R, s1, s2);
-		s = TMath::Min(s1,s2);
-		if(s<0){
-			s = TMath::Max(s1,s2);
-		}
-		if(s==NicaHelix::MaxPath()){
-			fPadID[lay] = -1;
-			fPadsNo = lay;
-			s =0;
-			return;
-		}
-		glob = GetHelix()->Evaluate(s);
-		fPadID[lay] =  fSec->Global2Local(glob,loc,-1);
-		fPaths[lay] = s;
-		lay++;
-	}
-	R_min = fSec->GetRocY(1);
-	for(double i =0;i<fSec->NofRowsReg(1);i++){
-		R = R_min + i*padH2+0.5*padH2;
-		GetHelix()->PathLength(R, s1, s2);
-		s = TMath::Min(s1,s2);
-		if(s<0)
-			s = TMath::Max(s1,s2);
-		if(s==NicaHelix::MaxPath()){
-			fPadID[lay] = -1;
-			fPadsNo = lay+1;
-			return;
-		}
-		glob = GetHelix()->Evaluate(s);
-		fPadID[lay] =  fSec->Global2Local(glob,loc,-1);
-		fPaths[lay] = s;
-		lay++;
-	}
-	fPadsNo = lay;
-	*/
-	// new modular geometry
-	fPadsNo = fSec->CalculatePads(this->GetHelix(), fPaths);
-	for(int i=0;i<fPadsNo;i++){
-		TVector3 glob = GetHelix()->Evaluate(fPaths[i]);
-		TVector3 loc;
-		fPadID[i] =  fSec->Global2Local(glob,loc,-1);
-	}
+#ifdef NICAMPDTRACKTPCPADS_CALCULATEMPDPAD_ON_DEMAND
+	fPadsNo[0] = -2;
+	fPadsNo[1] = -2;
+#else
+	fPadsNo[0] = -2;
+	fPadsNo[1] = -2;
+	CalculatePads();
+#endif
 }
 
 NicaMpdTrackTpcPads::~NicaMpdTrackTpcPads() {
@@ -87,12 +39,12 @@ NicaMpdTrackTpcPads::~NicaMpdTrackTpcPads() {
 NicaMpdTrackTpcPads::NicaMpdTrackTpcPads(const NicaMpdTrackTpcPads& other):
 	NicaMpdTrack(other)
 		{
-	fPadsNo = other.fPadsNo;
-	for(int i=0;i<fPadsNo;i++){
+	fPadsNo[0] = other.fPadsNo[0];
+	fPadsNo[1] = other.fPadsNo[1];
+	fSec = other.fSec;
+	for(int i=fPadsNo[0];i<fPadsNo[1];i++){
 		fPaths[i] = other.fPaths[i];
 		fPadID[i] = other.fPadID[i];
-		fMaxPads = other.fMaxPads;
-		fSec = other.fSec;
 	}
 }
 
@@ -100,12 +52,11 @@ NicaMpdTrackTpcPads& NicaMpdTrackTpcPads::operator =(
 		const NicaMpdTrackTpcPads& other) {
 	if(this!=&other){
 		NicaMpdTrack::operator=(other);
-		fPadsNo = other.fPadsNo;
-		for(int i=0;i<fPadsNo;i++){
+		fPadsNo[0] = other.fPadsNo[0];
+		fPadsNo[1] = other.fPadsNo[1];
+		for(int i=fPadsNo[0];i<fPadsNo[1];i++){
 			fPaths[i] = other.fPaths[i];
 			fPadID[i] = other.fPadID[i];
-			fMaxPads = other.fMaxPads;
-			fSec = other.fSec;
 		}
 	}
 	return *this;
@@ -124,12 +75,11 @@ Float_t NicaMpdTrackTpcPads::GetR(Int_t lay) const {
 void NicaMpdTrackTpcPads::CopyData(NicaTrack* other) {
 	NicaMpdTrack::CopyData(other);
 	NicaMpdTrackTpcPads *track = (NicaMpdTrackTpcPads*)other;
-	fPadsNo = track->fPadsNo;
-	for(int i=0;i<fPadsNo;i++){
+	fPadsNo[0] = track->fPadsNo[0];
+	fPadsNo[1] = track->fPadsNo[1];
+	for(int i=fPadsNo[0];i<fPadsNo[1];i++){
 		fPaths[i] = track->fPaths[i];
 		fPadID[i] = track->fPadID[i];
-		if(track->fSec)
-			fSec = track->fSec;
 	}
 }
 
@@ -139,4 +89,26 @@ Float_t NicaMpdTrackTpcPads::GetPhi(Int_t lay) const {
 
 Float_t NicaMpdTrackTpcPads::GetZ(Int_t lay) const {
 	return GetHelix()->Evaluate(fPaths[lay]).Z();
+}
+
+void NicaMpdTrackTpcPads::CalculatePads() {
+	if(PadsCalculated())
+		return;//dont repeat calculations if pads calculated
+	 fSec->CalculatePads(this->GetHelix(), fPaths,fPadsNo);
+	 for(int i=fPadsNo[0];i<fPadsNo[1];i++){
+		TVector3 glob = GetHelix()->Evaluate(fPaths[i]);
+		TVector3 loc;
+		fPadID[i] =  fSec->Global2Local(glob,loc,-1);
+	}
+	for(int i=0;i<fPadsNo[0];i++){// fill other layers
+		fPadID[i] = -1;
+	}
+	for(int i=fPadsNo[1];i<53;i++){
+		fPadID[i] = -1;
+	}
+}
+
+Bool_t NicaMpdTrackTpcPads::PadsCalculated() const {
+	if(fPadsNo[0]==-2) return kFALSE;
+	return kTRUE;
 }

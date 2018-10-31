@@ -52,22 +52,13 @@ Link_Directories(${LINK_DIRECTORIES})
 # List of source files
 set(SRCS
 combined/NicaMpdDstMCEvent.cxx
-combined/NicaMpdFullEvent.cxx
-combined/NicaMpdDstMCEventTpcPads.cxx
-kalman/NicaMpdKalmanTrackInterface.cxx
-kalman/NicaMpdKalmanEvent.cxx
-kalman/NicaMpdKalmanEventInterface.cxx
-kalman/NicaMpdKalmanTrack.cxx
-kalmandst/NicaMpdDstKalmanEvent.cxx
-kalmandst/NicaMpdDstKalmanEventInterface.cxx
-kalmandst/NicaMpdDstKalmanTrack.cxx
-kalmandst/NicaMpdDstKalmanTrackInterface.cxx
-mpdevent/NicaMpdEvent.cxx
 mpdevent/NicaMpdEventInterface.cxx
-mpdevent/NicaMpdTrackInterface.cxx
-mpdevent/NicaMpdTrack.cxx
-mpdevent/NicaMpdTrackTpcPads.cxx
+combined/NicaMpdDstMCEventTpcPads.cxx
+mpdevent/NicaMpdEvent.cxx
 mpdevent/NicaMpdEventTpcPads.cxx
+mpdevent/NicaMpdTrack.cxx
+mpdevent/NicaMpdTrackInterface.cxx
+mpdevent/NicaMpdTrackTpcPads.cxx
 mpdevent/NicaTpcSectorGeo.cxx
 )
 
