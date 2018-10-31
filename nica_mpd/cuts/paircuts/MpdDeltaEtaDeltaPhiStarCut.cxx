@@ -43,7 +43,6 @@ Bool_t MpdDeltaEtaDeltaPhiStarCut::Pass(NicaTwoTrack* pair) {
 		//phi1 = track1->GetPhi(i);
 		//phi2 = track2->GetPhi(i);
 		Double_t dPhi = (Phi2-Phi1+(TMath::ASin(-0.075*charge2*magSign*rad/ptv2))-(TMath::ASin(-0.075*charge1*magSign*rad/ptv1)));
-
 		Double_t dphi = TVector2::Phi_mpi_pi(dPhi);
 		if(TMath::Abs(dphi)<TMath::Abs(phi_star_min))
 			phi_star_min = dphi;

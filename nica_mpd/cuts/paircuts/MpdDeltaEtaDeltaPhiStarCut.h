@@ -11,6 +11,9 @@
 
 #include "NicaTwoTrackCut.h"
 
+/**
+ * calculate delta-eta delta-phi*
+ */
 class MpdDeltaEtaDeltaPhiStarCut: public NicaTwoTrackCut {
 public:
 	MpdDeltaEtaDeltaPhiStarCut();

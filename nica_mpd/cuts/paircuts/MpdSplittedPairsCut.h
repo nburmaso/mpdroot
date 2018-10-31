@@ -11,6 +11,10 @@
 #include "NicaTwoTrackCut.h"
 #include "NicaComplexTrack.h"
 
+/**
+ * by default remove pairs with the same matched ID (parents that have the same mathed
+ * MC parent)
+ */
 class MpdSplittedPairsCut : public NicaTwoTrackCut{
 	Bool_t fReject;
 public:

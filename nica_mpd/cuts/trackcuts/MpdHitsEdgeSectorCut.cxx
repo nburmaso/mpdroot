@@ -7,7 +7,7 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "MpdHitsEdgeSectorCut.h"
-#include "NicaMpdDstKalmanTrack.h"
+#include "NicaMpdTrackTpcPads.h"
 #include <bitset>
 
 MpdHitsEdgeSectorCut::MpdHitsEdgeSectorCut() :NicaTrackCut(1){
@@ -29,13 +29,14 @@ Bool_t MpdHitsEdgeSectorCut::Init(Int_t format_id) {
 }
 
 Bool_t MpdHitsEdgeSectorCut::Pass(NicaTrack* track) {
-	NicaMpdDstKalmanTrack *tr = (NicaMpdDstKalmanTrack*)track;
+	NicaMpdTrackTpcPads *tr = (NicaMpdTrackTpcPads*)track;
 	TVector3 loc;
 	Double_t dphi = TMath::Pi()/12.0;
 	Double_t bad_points = 0;
 	Double_t total_points = 0;
+	ULong64_t hit_map = tr->GetHitMap();
 	for(int iLay=0;iLay<tr->GetPadsNo();iLay++){
-		if(!tr->LayerStatus(iLay))continue;
+		if(!TESTBIT(hit_map,iLay)) continue;
 		Double_t s = tr->GetPathAt(iLay);
 		TVector3 pos = tr->GetHelix()->Evaluate(s);
 		Int_t sector = fSec->Sector(tr->GetPadID(iLay));

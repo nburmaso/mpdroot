@@ -7,7 +7,7 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "MpdTpcBasicCut.h"
-#include "NicaMpdDstKalmanTrack.h"
+#include "NicaMpdTrack.h"
 #include "NicaDataFormatManager.h"
 #include "NicaComplexTrack.h"
 #include "MpdDetectorID.h"
