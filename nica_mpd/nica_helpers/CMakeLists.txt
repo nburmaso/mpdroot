@@ -55,6 +55,7 @@ MpdPIDOnTheFly.cxx
 NicaPairAnaDebugger.cxx
 MpdSharedHitMap.cxx
 MpdDetectorID.cxx
+MpdHitsOnTheFly.cxx
 )
 
 Set(HEADERS )
