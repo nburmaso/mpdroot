@@ -29,7 +29,7 @@ Bool_t MpdPadsEdgeSectorCut::Pass(NicaTrack* track) {
 		Double_t phi_pos = pos.Phi();
 		Double_t d1 = TVector2::Phi_mpi_pi(angle_m-phi_pos);
 		Double_t d2 = TVector2::Phi_mpi_pi(angle_p-phi_pos);
-		if(TMath::Abs(d1)<TMath::Abs(d1)){
+		if(TMath::Abs(d1)<TMath::Abs(d2)){
 			angle_p = angle_m;
 		}
 		Double_t  m = TMath::Tan(angle_p);

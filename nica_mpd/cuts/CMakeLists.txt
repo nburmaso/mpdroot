@@ -63,11 +63,17 @@ trackcuts/MpdNSigmaCut.cxx
 trackcuts/MpdPadsEdgeSectorCut.cxx
 trackcuts/MpdHitsEdgeSectorCut.cxx
 #paircuts/MpdTwoTrackSharedQualityCut.cxx
-paircuts/MpdTwoTrackSharedPadsCut.cxx
-paircuts/MpdPairPadsCuts.cxx
+paircuts/MpdAlicePairQuality.cxx
 paircuts/MpdDeltaEtaDeltaPhiStarCut.cxx
+paircuts/MpdHelixSep.cxx
+paircuts/MpdNominalTpcPairDistanceCut.cxx
 paircuts/MpdPairKalmanPadsCuts.cxx
+paircuts/MpdPairSharedPadsCut.cxx
+paircuts/MpdPairTpcEntranceCut.cxx
+paircuts/MpdPairSharedHitsCut.cxx
 paircuts/MpdSplittedPairsCut.cxx
+paircuts/MpdStarPairQualityCut.cxx
+paircuts/MpdTpcPairSeparationCut.cxx
 )
 
 Set(HEADERS )

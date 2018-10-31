@@ -21,13 +21,20 @@
 #pragma link C++ class MpdTcpCalibratedCut+;
 #pragma link C++ class MpdPadsEdgeSectorCut+;
 #pragma link C++ class MpdHitsEdgeSectorCut+;
-//#pragma link C++ class MpdTwoTrackSharedQualityCut+;
 #pragma link C++ class MpdNSigmaCut+;
-#pragma link C++ class MpdTwoTrackSharedPadsCut+;
-#pragma link C++ class MpdPairPadsCuts+;
+
+#pragma link C++ class MpdAlicePairQuality+;
 #pragma link C++ class MpdDeltaEtaDeltaPhiStarCut+;
+#pragma link C++ class MpdHelixSep+;
+#pragma link C++ class MpdNominalTpcPairDistanceCut+;
 #pragma link C++ class MpdPairKalmanPadsCuts+;
+#pragma link C++ class MpdPairSharedPadsCut+;
+#pragma link C++ class MpdPairTpcEntranceCut+;
+#pragma link C++ class MpdPairSharedHitsCut+;
 #pragma link C++ class MpdSplittedPairsCut+;
+#pragma link C++ class MpdStarPairQualityCut+;
+#pragma link C++ class MpdTpcPairSeparationCut+;
+
 #endif
 
 #endif /* INTERFACES_MPDROOT_CUTS_MPDNICACUTSLINKDEF_H_ */
