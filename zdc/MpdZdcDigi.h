@@ -66,7 +66,7 @@ class MpdZdcDigi: public TObject
   static Double_t fEnergyDigiThreshold;
 
   Int_t    fDetectorID;      // Detector Id
-  Int_t fModuleID;           // Hardware channel number (Module number)
+  Int_t    fModuleID;        // Hardware channel number (Module number)
   Int_t    fChannelID;       // Hardware channel number (Sub-module number)
   UInt_t   fELossDigi;       // Sum of the energy losses as digital response of the detector/channel
   Double_t fELoss;           // Sum of the energy losses as analog signal accumulated prior to digitalization

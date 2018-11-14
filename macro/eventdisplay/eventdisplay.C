@@ -1,20 +1,15 @@
-#include "../mpd/mpdloadlibs.C"
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "macro/mpd/mpdloadlibs.C"
 void SetTasks(MpdEventManager* fMan);
 
 // EVENT DISPLAY macro for MPD simulated data
 //
 // sim_file - path to the file with MC data and detector geometry
 // reco_file - file with reconstructed data for simulated events
-// is_online: false - use Offline Mode (manual switching of events), default; true - use Online Mode (continious view events)
+// is_online: false - use Offline Mode (manual switching of events), default; true - use Online Mode (continious viewing of events)
 void eventdisplay(const char* sim_file = "$VMCWORKDIR/macro/mpd/evetest.root", const char* reco_file = "$VMCWORKDIR/macro/mpd/mpddst.root", bool is_online = false)
 {
     gDebug = 0;
-
-    // load main and detectors libraries
-    mpdloadlibs(1,1);
-    // load TEve libraries
-    gSystem->Load("libEve");
-    gSystem->Load("libEventDisplay");
 
     // CREATE FairRunAna
     FairRunAna* fRun = new FairRunAna();

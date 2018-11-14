@@ -998,7 +998,7 @@ C             9      x**2/A2+y**2/B2+z**2/C2-1=0           3 |
 C-------------------------------------------------------------
 C
 	DIMENSION RTMP(30)
-	DIMENSION JTMP(20)
+	DIMENSION JTMP(30)
 	DIMENSION IZSYM(20)
 	DIMENSION JTY1(MAXZ),JTY2(MAXZ)          ! 21 may 1998 AVDem
 C
