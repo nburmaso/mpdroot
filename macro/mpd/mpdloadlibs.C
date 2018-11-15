@@ -57,7 +57,7 @@ void mpdloadlibs()
 }
 
 // check whether file exists
-bool CheckFileExist(TString fileName)
+bool CheckFileExist(TString& fileName)
 {
     gSystem->ExpandPathName(fileName);
     if (gSystem->AccessPathName(fileName.Data()) == true)

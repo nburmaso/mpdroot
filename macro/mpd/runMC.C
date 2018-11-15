@@ -81,8 +81,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     // Use user defined decays https://fairroot.gsi.de/?q=node/57
     fRun->SetUserDecay(kTRUE);
 
-#ifdef URQMD
-    // ------- Urqmd  Generator    
+#ifdef URQMD // <---- Urqmd  Generator
     if (!CheckFileExist(inFile)) return;
 
     MpdUrqmdGenerator* urqmdGen = new MpdUrqmdGenerator(inFile);
@@ -98,12 +97,16 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
 #else
 #ifdef VHLLE
+    if (!CheckFileExist(inFile)) return;
+
     MpdVHLLEGenerator* vhlleGen = new MpdVHLLEGenerator(inFile, kTRUE); // kTRUE corresponds to hydro + cascade, kFALSE -- hydro only
     vhlleGen->SkipEvents(0);
     primGen->AddGenerator(vhlleGen);
 
 #else 
 #ifdef FLUID
+    if (!CheckFileExist(inFile)) return;
+
     Mpd3fdGenerator* fluidGen = new Mpd3fdGenerator(inFile);
     fluidGen->SkipEvents(0);
     primGen->AddGenerator(fluidGen);
@@ -114,23 +117,20 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     //      nEvents = MpdGetNumEvents::GetNumURQMDEvents(inFile.Data()) - nStartEvent;
 
 #else
-#ifdef PART
-    // ------- Particle Generator
+#ifdef PART // <---- Particle Generator
     FairParticleGenerator* partGen =
             new FairParticleGenerator(211, 10, 1, 0, 3, 1, 0, 0);
     primGen->AddGenerator(partGen);
 
 #else
-#ifdef ION
-    // ------- Ion Generator
+#ifdef ION // <---- Ion Generator
     FairIonGenerator *fIongen =
             new FairIonGenerator(79, 197, 79, 1, 0., 0., 25, 0., 0., -1.);
     primGen->AddGenerator(fIongen);
 
 #else
-#ifdef BOX
+#ifdef BOX // <---- Box Generator
     gRandom->SetSeed(0);
-    // ------- Box Generator
     FairBoxGenerator* boxGen = new FairBoxGenerator(13, 100); // 13 = muon; 1 = multipl.
     boxGen->SetPRange(0.25, 2.5); // GeV/c, setPRange vs setPtRange
     boxGen->SetPhiRange(0, 360); // Azimuth angle range [degree]
@@ -139,8 +139,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     primGen->AddGenerator(boxGen);
 
 #else
-#ifdef HSD
-    // ------- HSD/PHSD Generator
+#ifdef HSD // <---- HSD/PHSD Generator
     if (!CheckFileExist(inFile)) return;
 
     MpdPHSDGenerator *hsdGen = new MpdPHSDGenerator(inFile.Data());
@@ -153,8 +152,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
         nEvents = MpdGetNumEvents::GetNumPHSDEvents(inFile.Data()) - nStartEvent;
 
 #else
-#ifdef LAQGSM
-    // ------- LAQGSM Generator
+#ifdef LAQGSM // <---- LAQGSM Generator
     if (!CheckFileExist(inFile)) return;
 
     MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(inFile.Data(), kTRUE, 0, 1+nStartEvent+nEvents);
