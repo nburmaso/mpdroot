@@ -14,7 +14,7 @@ void geometry_stage1(FairRunSim *fRun)
     fRun->AddModule(Pipe);
   
     FairModule *Magnet= new FairMagnet("MAGNET");
-    Magnet->SetGeometryFileName("magnet_v4_0.geo");
+    Magnet->SetGeometryFileName("magnet_v5.root");
     fRun->AddModule(Magnet);
 
     //FairDetector *Ffd = new MpdFfd("FFD",kTRUE );
@@ -34,6 +34,6 @@ void geometry_stage1(FairRunSim *fRun)
     fRun->AddModule(Emc);
 	
     FairDetector *Zdc = new MpdZdc("ZDC",kTRUE );
-    Zdc->SetGeometryFileName("zdc_oldnames_7sect_v1.root");
+    Zdc->SetGeometryFileName("zdc_oldnames_7sect_v1_no_overlaps_w_pipe_magnet.root");
     fRun->AddModule(Zdc);
 }

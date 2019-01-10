@@ -206,6 +206,7 @@ void CreateROCPressingInFrame(TGeoVolume *mother_volume, Double_t width, Double_
 void CreateROCPressingOutFrame(TGeoVolume *mother_volume, Double_t width, Double_t rmin, Double_t rmax);
 void CreateThermoscreenEnds(TGeoVolume *mother_volume, Double_t endcap_zwidth);
 void CreateThermoscreenRadial(TGeoVolume *mother_volume);
+TGeoVolume * CreateMotherVolTPCandThermoscreen();
 
 void create_rootgeom_TPC_v8(ElectronicsGeometryDetailLevel egdl = Low, Bool_t wrGeoWithMaterials = false)
 {
@@ -246,6 +247,14 @@ void create_rootgeom_TPC_v8(ElectronicsGeometryDetailLevel egdl = Low, Bool_t wr
     gGeoManager->SetTopVolume(top);
     //gGeoMan->SetTopVisible(1);
     // --------------------------------------------------------------------------
+    TGeoVolume * tpc_mother_vol = CreateMotherVolTPCandThermoscreen();
+    tpc_mother_vol->SetMedium(pMedAir);
+    tpc_mother_vol->SetTransparency(95);
+
+    TGeoTranslation *tpc_mother_vol_pos = new TGeoTranslation("tpc_mother_vol_pos", TPC_Xpos, TPC_Ypos, TPC_Zpos);
+
+    top->AddNode(tpc_mother_vol, 0, tpc_mother_vol_pos);
+    ///////////////////////////////////////////////////////////////////////////////////
 
     // Define TPC Geometry
     TString tpc_chamber_name = "tpcChamber1";
@@ -253,10 +262,10 @@ void create_rootgeom_TPC_v8(ElectronicsGeometryDetailLevel egdl = Low, Bool_t wr
     TGeoVolume *tpcChamberV = new TGeoVolume(tpc_chamber_name, tpcChamberS);
     tpcChamberV->SetMedium(pMedAir);
     //tpcChamberV->SetVisibility(kTRUE);
-    tpcChamberV->SetTransparency(95);
+    //tpcChamberV->SetTransparency(95);
 
     //TPC position
-    TGeoTranslation *tpc_position= new TGeoTranslation("tpc_position", TPC_Xpos, TPC_Ypos, TPC_Zpos);
+    TGeoTranslation *tpc_position= new TGeoTranslation("tpc_position", 0., 0., 0.);
     //tpc_position->RegisterYourself();
 
     CreateInnerWall(tpcChamberV);
@@ -269,9 +278,9 @@ void create_rootgeom_TPC_v8(ElectronicsGeometryDetailLevel egdl = Low, Bool_t wr
     CreateEndCaps(tpcChamberV);
 
     //Adding the tpc mother valume to the global TOP Volume
-    top->AddNode(tpcChamberV, 0, tpc_position);
+    tpc_mother_vol->AddNode(tpcChamberV, 0, tpc_position);
     
-    CreateThermoscreenRadial(top);
+    CreateThermoscreenRadial(tpc_mother_vol);
 
     top->SetVisContainers(kTRUE);
 
@@ -1434,7 +1443,7 @@ void MakeROCFramesHoles(TGeoVolume * bpG10Vol, TGeoVolume * bpAlVol)
     tpcElHoleG10EV->SetLineColor(kWhite);
     TGeoCombiTrans * eheG10pos0 = new TGeoCombiTrans(Connector_hole_length / 2 - x_offset, 0.0, 0.0, NULL);
     tpcElHoleG10V->AddNode(tpcElHoleG10EV, 0, eheG10pos0);
-    TGeoCombiTrans * eheG10pos1 = new TGeoCombiTrans(*eheG10pos0);
+    TGeoCombiTrans * eheG10pos1 = new TGeoCombiTrans(Connector_hole_length / 2 + x_offset, 0.0, 0.0, NULL);
     eheG10pos1->ReflectX(true);
     tpcElHoleG10V->AddNode(tpcElHoleG10EV, 1, eheG10pos1);
     tpcElHoleG10V->SetMedium(pMedG10);
@@ -1466,7 +1475,7 @@ void MakeROCFramesHoles(TGeoVolume * bpG10Vol, TGeoVolume * bpAlVol)
     tpcElHoleEV->SetLineColor(kWhite);
     TGeoCombiTrans * eheAlpos0 = new TGeoCombiTrans(Connector_hole_length / 2 - x_offset, 0.0, 0.0, NULL);
     tpcElHoleV->AddNode(tpcElHoleEV, 0, eheAlpos0);
-    TGeoCombiTrans * eheAlpos1 = new TGeoCombiTrans(*eheAlpos0);
+    TGeoCombiTrans * eheAlpos1 = new TGeoCombiTrans(Connector_hole_length / 2 + x_offset, 0.0, 0.0, NULL);
     eheAlpos1->ReflectX(true);
     tpcElHoleV->AddNode(tpcElHoleEV, 1, eheAlpos1);
     tpcElHoleV->SetMedium(pMedAluminium);
@@ -1700,6 +1709,7 @@ void CreateThermoscreenRadial(TGeoVolume *mother_volume)
     
     TString hold_name = "tpc01ThermoScrHold";
     
+#if 0
     Int_t npoints_structure = 12;
     unique_ptr<Double_t[]> x(new Double_t[npoints_structure]);
     unique_ptr<Double_t[]> y(new Double_t[npoints_structure]);
@@ -1713,6 +1723,24 @@ void CreateThermoscreenRadial(TGeoVolume *mother_volume)
     y[5] = y[6] = -Thermoscreen_Rad_Hold_Open / 2;
     y[7] = y[8] = -Thermoscreen_Rad_Hold_Width / 2 + Thermoscreen_Rad_Hold_Thick;
     y[9] = y[10] = Thermoscreen_Rad_Hold_Width / 2 - Thermoscreen_Rad_Hold_Thick;
+#else
+    Int_t npoints_structure = 14;
+    unique_ptr<Double_t[]> x(new Double_t[npoints_structure]);
+    unique_ptr<Double_t[]> y(new Double_t[npoints_structure]);
+    x[0] = x[1] = x[5] = x[6] = 0.;
+    x[2] = x[4] = Thermoscreen_Rad_Hold_Height;
+    x[7] = x[8] = x[12] = x[13] = Thermoscreen_Rad_Hold_Thick;
+    x[9] = x[11] = Thermoscreen_Rad_Hold_Height - Thermoscreen_Rad_Hold_Thick / TMath::Tan((90. + Thermoscreen_Rad_Seg_Angle / 2) / 2 * TMath::DegToRad());
+    x[3] = Thermoscreen_Rad_Hold_Height + Thermoscreen_Rad_Hold_Width / 2. * TMath::Tan(Thermoscreen_Rad_Seg_Angle / 2 * TMath::DegToRad());
+    x[10] = x[3] - Thermoscreen_Rad_Hold_Thick / TMath::Cos(Thermoscreen_Rad_Seg_Angle / 2 * TMath::DegToRad());
+    y[0] = y[13] = Thermoscreen_Rad_Hold_Open / 2;
+    y[1] = y[2] = Thermoscreen_Rad_Hold_Width / 2;
+    y[4] = y[5] = -Thermoscreen_Rad_Hold_Width / 2;
+    y[6] = y[7] = -Thermoscreen_Rad_Hold_Open / 2;
+    y[8] = y[9] = -Thermoscreen_Rad_Hold_Width / 2 + Thermoscreen_Rad_Hold_Thick;
+    y[11] = y[12] = Thermoscreen_Rad_Hold_Width / 2 - Thermoscreen_Rad_Hold_Thick;
+    y[3] = y[10] = 0.;
+#endif
     
     TGeoXtru *TScrHoldS = new TGeoXtru(2);
     TScrHoldS->DefinePolygon(npoints_structure, x.get(), y.get());
@@ -1784,6 +1812,52 @@ void CreateThermoscreenRadial(TGeoVolume *mother_volume)
     mother_volume->AddNode(TScrHold1V, 1, posreflY);
     mother_volume->AddNode(TScrHold1V, 2, posreflX);
     mother_volume->AddNode(TScrHold1V, 3, posreflXY);
+
+}
+
+TGeoVolume * CreateMotherVolTPCandThermoscreen()
+{
+    TString Xtru_for_mother_volume = "base_vol";
+    TString Pcon_for_mother_volume = "subtrahend_vol";
+
+    Int_t npoints_for_xtru = 16;
+    unique_ptr<Double_t[]> x(new Double_t[npoints_for_xtru]);
+    unique_ptr<Double_t[]> y(new Double_t[npoints_for_xtru]);
+    
+    Double_t xR = (Thermoscreen_Rad_R + Thermoscreen_Thick / 2) * TMath::Cos(Thermoscreen_Rad_Seg_Angle / 2 * TMath::DegToRad()) + Thermoscreen_Rad_R_shift;
+    Double_t yR = (Thermoscreen_Rad_R + Thermoscreen_Thick / 2) * TMath::Sin(Thermoscreen_Rad_Seg_Angle / 2 * TMath::DegToRad());
+    Double_t R = TMath::Sqrt(xR * xR + yR * yR);
+    Double_t MotherVolR = R + Thermoscreen_Rad_Hold_Height + Thermoscreen_Rad_Hold_Width / 2. * TMath::Tan(Thermoscreen_Rad_Seg_Angle / 2 * TMath::DegToRad());
+    
+    for (Int_t i = 0; i < 6; i++)
+    {
+        x[i] = x[13 - i] = MotherVolR * TMath::Cos((90. + Thermoscreen_Rad_Seg_Angle / 2. + Thermoscreen_Rad_Seg_Angle * (i - 3)) * TMath::DegToRad());
+        y[i] = y[13 - i] = MotherVolR * TMath::Sin((90. + Thermoscreen_Rad_Seg_Angle / 2. + Thermoscreen_Rad_Seg_Angle * (i - 3)) * TMath::DegToRad());
+        y[13 - i] = -y[i];
+    }
+
+    x[14] = x [15] = R - (Thermoscreen_Rad_R - Thermoscreen_Rad_R*TMath::Cos(TMath::Pi() - 7 * Thermoscreen_Rad_Seg_Angle * TMath::DegToRad())) + Thermoscreen_Rad_Hold1_Height;
+    x[6] = x[7] = -x[14];
+    y[6] = y[15] = Thermoscreen_Rad_Hold1_GapBetween / 2 + Thermoscreen_Rad_Hold1_Yp[0];
+    y[7] = y[14] = -y[6];
+
+    TGeoXtru * xtru_for_mother_volume = new TGeoXtru(2);
+    xtru_for_mother_volume->DefinePolygon(npoints_for_xtru, x.get(), y.get());
+    xtru_for_mother_volume->DefineSection(0, -Thermoscreen_Rad_Length / 2.);
+    xtru_for_mother_volume->DefineSection(1, Thermoscreen_Rad_Length / 2.);
+    xtru_for_mother_volume->SetName(Xtru_for_mother_volume);
+
+    TGeoPcon *pcon_for_mother_volume = new TGeoPcon (Pcon_for_mother_volume, 0., 360., 6);
+    pcon_for_mother_volume -> DefineSection(0, -Thermoscreen_Rad_Length / 2., 0., R - Thermoscreen_Thick);
+    pcon_for_mother_volume -> DefineSection(1, -Container_tpc_z / 2., 0., R - Thermoscreen_Thick);
+    pcon_for_mother_volume -> DefineSection(2, -Container_tpc_z / 2., 0., TpcInnerRadius);
+    pcon_for_mother_volume -> DefineSection(3, Container_tpc_z / 2., 0., TpcInnerRadius);
+    pcon_for_mother_volume -> DefineSection(4, Container_tpc_z / 2., 0., R - Thermoscreen_Thick);
+    pcon_for_mother_volume -> DefineSection(5, Thermoscreen_Rad_Length / 2., 0., R - Thermoscreen_Thick);
+
+    TString top_mother_volume = "TPC_mother_volume";
+    TGeoCompositeShape *TOP_mother_volumeS = new TGeoCompositeShape(top_mother_volume, Xtru_for_mother_volume + "-" + Pcon_for_mother_volume);
+    return new TGeoVolume(top_mother_volume, TOP_mother_volumeS);
 }
 
 void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild) {
