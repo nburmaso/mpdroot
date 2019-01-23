@@ -157,7 +157,7 @@ TGeoMedium *pMedAluminium = 0;
 TGeoMedium *pMedTedlar = 0;
 TGeoMedium *pMedKevlar = 0;
 TGeoMedium *pMedMylar = 0;
-TGeoMedium *pMedCO2 = 0;
+TGeoMedium *pMedN2 = 0;
 TGeoMedium *pMedRohacellhf71 = 0;
 TGeoMedium *pMedPolypropylene= 0;
 TGeoMedium *pMedTPCmixture = 0;
@@ -323,7 +323,7 @@ void CreateInnerWall(TGeoVolume* mother_volume)
 
     TGeoTube *tpcWallS = new TGeoTube(wall_name, wall_rmin, wall_rmax, Chamber_tpc_z/2);
     TGeoVolume *tpcWallV = new TGeoVolume(wall_name, tpcWallS);
-    tpcWallV->SetMedium(pMedCO2);
+    tpcWallV->SetMedium(pMedN2);
     tpcWallV->SetLineColor(TColor::GetColor("#b6e1fc"));
     tpcWallV->SetTransparency(90);
     
@@ -425,7 +425,7 @@ void CreateOuterWall(TGeoVolume* mother_volume)
 
     TGeoTube *tpcWallS = new TGeoTube(wall_name, wall_rmin, wall_rmax, Chamber_tpc_z/2);
     TGeoVolume *tpcWallV = new TGeoVolume(wall_name, tpcWallS);
-    tpcWallV->SetMedium(pMedCO2);
+    tpcWallV->SetMedium(pMedN2);
     tpcWallV->SetLineColor(TColor::GetColor("#b6e1fc"));
     
     mother_volume->AddNode(tpcWallV, 0);
@@ -491,7 +491,7 @@ void CreateTubeAlFoilRings(TGeoVolume* mother_volume, Double_t rmin, Double_t rm
 
     TGeoTube * FoilTubeInS = new TGeoTube (foil_tube_in_name, rmin, rmin + Barrel_Al_thick, Chamber_tpc_z/2);
     TGeoVolume *FoilTubeInV = new TGeoVolume(foil_tube_in_name, FoilTubeInS);
-    FoilTubeInV->SetMedium(is_outer_wall ? pMedTPCmixture : pMedCO2);
+    FoilTubeInV->SetMedium(is_outer_wall ? pMedTPCmixture : pMedN2);
     FoilTubeInV->SetLineColor(TColor::GetColor("#a0a0a0"));
     
     mother_volume->AddNode(FoilTubeInV, 0);
@@ -500,7 +500,7 @@ void CreateTubeAlFoilRings(TGeoVolume* mother_volume, Double_t rmin, Double_t rm
 
     TGeoTube * FoilTubeOutS = new TGeoTube (foil_tube_out_name, rmax - Barrel_Al_thick, rmax, Chamber_tpc_z/2);
     TGeoVolume *FoilTubeOutV = new TGeoVolume(foil_tube_out_name, FoilTubeOutS);
-    FoilTubeOutV->SetMedium(is_outer_wall ? pMedCO2 : pMedTPCmixture);
+    FoilTubeOutV->SetMedium(is_outer_wall ? pMedN2 : pMedTPCmixture);
     FoilTubeOutV->SetLineColor(TColor::GetColor("#a0a0a0"));
     
     mother_volume->AddNode(FoilTubeOutV, 0);
@@ -1896,12 +1896,12 @@ void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild) {
     pMedMylar = gGeoManager->GetMedium("mylar");
     if ( ! pMedMylar  ) Fatal("Main", "Medium mylar not found");
 
-    //CO2 medium
-    FairGeoMedium* mCO2 = geoMedia->getMedium("CO2");
-    if ( ! mCO2  ) Fatal("Main", "FairMedium CO2 not found");
-    geoBuild->createMedium(mCO2);
-    pMedCO2 = gGeoManager->GetMedium("CO2");
-    if ( ! pMedCO2  ) Fatal("Main", "Medium CO2 not found");
+    //N2 medium
+    FairGeoMedium* mN2 = geoMedia->getMedium("N2");
+    if ( ! mN2  ) Fatal("Main", "FairMedium N2 not found");
+    geoBuild->createMedium(mN2);
+    pMedN2 = gGeoManager->GetMedium("N2");
+    if ( ! pMedN2  ) Fatal("Main", "Medium N2 not found");
 
     //rohacellhf71 medium
     FairGeoMedium* mRohacellhf71 = geoMedia->getMedium("rohacellhf71");
