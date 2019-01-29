@@ -61,7 +61,7 @@ MpdHitsOnTheFly.cxx
 Set(HEADERS )
 Set(LINKDEF NicaMpdHelpersLinkDef.h)
 Set(LIBRARY_NAME NicaMpdHelper)
-Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdData tpc Base NicaCut NicaAna)
+Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdDst tpc MpdBase NicaCut NicaAna)
 
 GENERATE_LIBRARY()
 

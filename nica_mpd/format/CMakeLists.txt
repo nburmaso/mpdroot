@@ -65,7 +65,7 @@ mpdevent/NicaTpcSectorGeo.cxx
 Set(HEADERS )
 Set(LINKDEF NicaMpdInterfaceLinkDef.h)
 Set(LIBRARY_NAME NicaMpdFormat)
-Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdData MpdBase tpc)
+Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdDst MpdBase tpc)
 
 GENERATE_LIBRARY()
 
