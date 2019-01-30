@@ -9,8 +9,8 @@
 #ifndef MPDROOT_NICA_MPD_CUTS_PAIRCUTS_TPC_DIST_MPDTPCENTRANCECUT_H_
 #define MPDROOT_NICA_MPD_CUTS_PAIRCUTS_TPC_DIST_MPDTPCENTRANCECUT_H_
 
-#include "NicaTwoTrackCut.h"
 #include "MpdNominalTpcPairDistanceCut.h"
+#include "NicaTwoTrackCut.h"
 /**
  * cut that calculate distance between particles at entrance to ACTIVE TPC area
  */

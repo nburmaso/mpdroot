@@ -44,7 +44,7 @@ class NicaTpcSectorGeo : public TObject
   Int_t GetZmax () { return fZmax; } ///< sensitive volume Zmax
   const Int_t* NPadsInRows() const { return fNPadsInRows; } ///< numbers of pads in rows
   Double_t Pad2Xloc(Double_t pad, Int_t row); ///< Pad number-to-Xlocal conversion
-  void CalculatePads(const NicaHelix *helix, Float_t *Paths, Short_t *Pads);
+  void CalculatePads(const NicaHelix *helix, Float_t *Paths, Short_t *Pads, Bool_t shift);
   void SetNofRows(Int_t nRows, Int_t ireg = 0) { fNrows[ireg] = nRows; }
   void SetPadHeight(Double_t height, Int_t ireg = 0) { fPadH[ireg] = height; }
   void SetMinY(Double_t rmin) { fYsec[0] = rmin; }

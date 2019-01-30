@@ -11,7 +11,7 @@
 
 #include "NicaMpdTrackTpcPads.h"
 
-MpdNominalTpcPairDistanceCut::MpdNominalTpcPairDistanceCut(Int_t size) : NicaTwoTrackCut(size),
+MpdNominalTpcPairDistanceCut::MpdNominalTpcPairDistanceCut(Int_t size) : MpdModularTpcPairCut(size),
 fCosDipAngle1(0),fCosDipAngle2(0),fSinDipAngle1(0),fSinDipAngle2(0),
 fCosPhase1(0),fCosPhase2(0),fSinPhase1(0),fSinPhase2(0),
 fTrack1(NULL),fTrack2(NULL),
@@ -74,7 +74,7 @@ void MpdNominalTpcPairDistanceCut::InitPass(NicaTwoTrack* pair) {
 }
 
 MpdNominalTpcPairDistanceCut::MpdNominalTpcPairDistanceCut(const MpdNominalTpcPairDistanceCut& other) :
-		NicaTwoTrackCut(other),
+		MpdModularTpcPairCut(other),
 		fCosDipAngle1(other.fCosDipAngle1),fCosDipAngle2(other.fCosDipAngle2),
 		fSinDipAngle1(other.fSinDipAngle1),fSinDipAngle2(other.fSinDipAngle2),
 		fCosPhase1(other.fCosPhase1),fCosPhase2(other.fCosPhase2),
@@ -89,7 +89,7 @@ MpdNominalTpcPairDistanceCut::MpdNominalTpcPairDistanceCut(const MpdNominalTpcPa
 MpdNominalTpcPairDistanceCut& MpdNominalTpcPairDistanceCut::operator =(
 		const MpdNominalTpcPairDistanceCut& other) {
 	if(this !=&other){
-		NicaTwoTrackCut::operator=(other);
+		MpdModularTpcPairCut::operator=(other);
 		fCosDipAngle1 = other.fCosDipAngle1;
 		fCosDipAngle2 = other.fCosDipAngle2;
 		fSinDipAngle1 = other.fSinDipAngle1;

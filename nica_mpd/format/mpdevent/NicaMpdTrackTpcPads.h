@@ -48,8 +48,9 @@ public:
 	 * taken into pair analysis. So this method should be called by NicaTwoTrack based class or analysis class.
 	 * You can calculate those values by commenting #define NICAMPDTRACKTPCPADS_CALCULATEMPDPAD_ON_DEMAND.
 	 * To avoid double counting fPadsNo for tracks without calculations is equal to -2
+	 * @param shift - shift  by - vertex
 	 */
-	void CalculatePads();
+	void CalculatePads(Bool_t shift=kFALSE);
 	virtual void Update(MpdTrack* track);
 	virtual void CopyData(NicaTrack *other);
 	virtual ~NicaMpdTrackTpcPads();

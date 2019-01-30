@@ -67,6 +67,9 @@ void MpdPIDOnTheFly::FillTrackPID(MpdTrack* track) {
 	track->SetNSigmaKaon(sigma_ka);
 	track->SetNSigmaPion(sigma_pi);
 	track->SetNSigmaProton(sigma_pr);
+	if(track->GetTofMass2()==0){
+		track->SetTofMass2(-5);
+	}
 }
 
 void MpdPIDOnTheFly::FillTrackDCA(MpdTrack* track, TVector3* recoVertex,

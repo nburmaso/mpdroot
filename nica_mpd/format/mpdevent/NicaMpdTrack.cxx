@@ -44,7 +44,7 @@ void NicaMpdTrack::Update(MpdTrack* track) {
 	fToFTrack->SetFlag(track->GetTofFlag());
 	fTpcTrack->SetSigma(track->GetNSigmaPion(),track->GetNSigmaKaon(),track->GetNSigmaProton(),track->GetNSigmaProton());
 	SetChi2(track->GetChi2());
-	GetDCA()->SetXYZ(track->GetDCAGlobalX(), track->GetDCAGlobalY(),track->GetDCAGlobalZ());
+	GetDCA()->SetXYZ(track->GetDCAX(), track->GetDCAY(),track->GetDCAZ());
 	fFirstPoint->SetXYZ(track->GetFirstPointX(),track->GetFirstPointY(), track->GetFirstPointZ());
 	fLastPoint->SetXYZ(track->GetLastPointX(),track->GetLastPointY(),track->GetLastPointZ());
 	fSharedHitsMap = track->GetSharedHitMap();

@@ -212,7 +212,7 @@ void NicaTpcSectorGeo::PadID(Float_t xloc, Float_t yloc, UInt_t &row, UInt_t &pa
   }
 }
 
-void  NicaTpcSectorGeo::CalculatePads(const NicaHelix* helix, Float_t *Paths,Short_t *Pads) {
+void  NicaTpcSectorGeo::CalculatePads(const NicaHelix* helix, Float_t *Paths,Short_t *Pads,Bool_t shift) {
 	fCHCosDipAngle = TMath::Cos(helix->GetDipAngle())*helix->GetCurv()*helix->GetH();
 	fSecCH = 1.0/fCHCosDipAngle;
 	fSinDipAngle = TMath::Sin(helix->GetDipAngle());

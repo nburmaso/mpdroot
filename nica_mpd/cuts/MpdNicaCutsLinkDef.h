@@ -26,14 +26,26 @@
 #pragma link C++ class MpdAlicePairQuality+;
 #pragma link C++ class MpdDeltaEtaDeltaPhiStarCut+;
 #pragma link C++ class MpdHelixSep+;
+#pragma link C++ class MpdPairSharedHitsCut+;
+#pragma link C++ class MpdSplittedPairsCut+;
+#pragma link C++ class MpdStarPairQualityCut+;
+#pragma link C++ class MpdPairDeltaDCA+;
+
+#pragma link C++ class MpdModularTpcPairCut+;
 #pragma link C++ class MpdNominalTpcPairDistanceCut+;
 #pragma link C++ class MpdPairKalmanPadsCuts+;
 #pragma link C++ class MpdPairSharedPadsCut+;
 #pragma link C++ class MpdPairTpcEntranceCut+;
-#pragma link C++ class MpdPairSharedHitsCut+;
-#pragma link C++ class MpdSplittedPairsCut+;
-#pragma link C++ class MpdStarPairQualityCut+;
 #pragma link C++ class MpdTpcPairSeparationCut+;
+#pragma link C++ class MpdPairTpcEntranceCut2D+;
+
+#pragma link C++ class MpdPairTpcEntrySimpleCut+;
+#pragma link C++ class MpdPairTpcSeparationSimpleCut+;
+#pragma link C++ class MpdPairTpcSimpleCut+;
+#pragma link C++ class MpdCylinderTpcPairCut+;
+#pragma link C++ class MpdPairTcpSeparationSimpleNegCut+;
+
+
 
 #endif
 

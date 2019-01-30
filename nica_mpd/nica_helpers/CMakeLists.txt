@@ -19,6 +19,7 @@ ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
+${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
 ${CMAKE_SOURCE_DIR}/nicaroot/features
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat/detector
@@ -34,6 +35,7 @@ ${CMAKE_SOURCE_DIR}/nicaroot/analysis/base
  ${CLHEP_INCLUDE_DIR}
  ${Boost_INCLUDE_DIRS}
 )
+
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
  ${ROOT_INCLUDE_DIR} 
@@ -61,7 +63,7 @@ MpdHitsOnTheFly.cxx
 Set(HEADERS )
 Set(LINKDEF NicaMpdHelpersLinkDef.h)
 Set(LIBRARY_NAME NicaMpdHelper)
-Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdDst tpc MpdBase NicaCut NicaAna)
+Set(DEPENDENCIES NicaFeatures NicaDataFormat MpdDst tpc Base NicaCut NicaAna)
 
 GENERATE_LIBRARY()
 

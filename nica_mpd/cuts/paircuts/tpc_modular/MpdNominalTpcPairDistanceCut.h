@@ -9,13 +9,13 @@
 #ifndef MPDROOT_NICA_MPD_CUTS_PAIRCUTS_TPC_DIST_MPDTPCDISTANCECUT_H_
 #define MPDROOT_NICA_MPD_CUTS_PAIRCUTS_TPC_DIST_MPDTPCDISTANCECUT_H_
 
-#include "NicaTwoTrackCut.h"
+#include "MpdModularTpcPairCut.h"
 #include "NicaHelix.h"
 #include "NicaMpdTrackTpcPads.h"
 /**
  * basic  abstractu cut that calculates values based on distances between tracks in active TPC area
  */
-class MpdNominalTpcPairDistanceCut : public NicaTwoTrackCut {
+class MpdNominalTpcPairDistanceCut : public MpdModularTpcPairCut {
 protected:
 	Float_t fCosDipAngle1;
 	Float_t fCosDipAngle2;

@@ -35,6 +35,8 @@ ${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/trackcuts
 ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts
+${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/tpc_modular
+${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/tpc_cylinder
 ${CMAKE_SOURCE_DIR}/mpdbase
 )
 
@@ -66,14 +68,23 @@ trackcuts/MpdHitsEdgeSectorCut.cxx
 paircuts/MpdAlicePairQuality.cxx
 paircuts/MpdDeltaEtaDeltaPhiStarCut.cxx
 paircuts/MpdHelixSep.cxx
-paircuts/MpdNominalTpcPairDistanceCut.cxx
-paircuts/MpdPairKalmanPadsCuts.cxx
-paircuts/MpdPairSharedPadsCut.cxx
-paircuts/MpdPairTpcEntranceCut.cxx
 paircuts/MpdPairSharedHitsCut.cxx
 paircuts/MpdSplittedPairsCut.cxx
 paircuts/MpdStarPairQualityCut.cxx
-paircuts/MpdTpcPairSeparationCut.cxx
+paircuts/MpdPairDeltaDCA.cxx
+
+paircuts/tpc_modular/MpdModularTpcPairCut.cxx
+paircuts/tpc_modular/MpdNominalTpcPairDistanceCut.cxx
+paircuts/tpc_modular/MpdPairKalmanPadsCuts.cxx
+paircuts/tpc_modular/MpdPairSharedPadsCut.cxx
+paircuts/tpc_modular/MpdPairTpcEntranceCut.cxx
+paircuts/tpc_modular/MpdTpcPairSeparationCut.cxx
+
+paircuts/tpc_cylinder/MpdPairTpcSimpleCut.cxx
+paircuts/tpc_cylinder/MpdPairTpcSeparationSimpleCut.cxx
+paircuts/tpc_cylinder/MpdPairTpcEntrySimpleCut.cxx
+paircuts/tpc_cylinder/MpdCylinderTpcPairCut.cxx
+
 )
 
 Set(HEADERS )

@@ -91,10 +91,17 @@ Float_t NicaMpdTrackTpcPads::GetZ(Int_t lay) const {
 	return GetHelix()->Evaluate(fPaths[lay]).Z();
 }
 
-void NicaMpdTrackTpcPads::CalculatePads() {
+void NicaMpdTrackTpcPads::CalculatePads(Bool_t shift) {
 	if(PadsCalculated())
 		return;//dont repeat calculations if pads calculated
-	 fSec->CalculatePads(this->GetHelix(), fPaths,fPadsNo);
+	if(shift){
+		NicaHelix Helix = NicaHelix(*this->GetHelix());
+		TLorentzVector *ver = this->GetEvent()->GetVertex();
+		Helix.Shift(-ver->X(),-ver->Y(),-ver->Z());
+		fSec->CalculatePads(&Helix, fPaths,fPadsNo,shift);
+	}else{
+		 fSec->CalculatePads(this->GetHelix(), fPaths,fPadsNo,shift);
+	}
 	 for(int i=fPadsNo[0];i<fPadsNo[1];i++){
 		TVector3 glob = GetHelix()->Evaluate(fPaths[i]);
 		TVector3 loc;

@@ -21,7 +21,7 @@ Bool_t MpdPairSharedHitsCut::Pass(NicaTwoTrack* pair) {
 		if(TESTBIT(sum,i))
 			shared++;
 	}
-	SetValue(shared/63.0);
+	SetValue(shared/53.0);
 	return Validate();
 }
 
