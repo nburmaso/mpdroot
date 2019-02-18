@@ -57,18 +57,35 @@ fFileName(fileName) {
     fDstTree = new TChain("out");
     fDstTree->Add(fFileName);
 
-    //    // Activate branches
+    // Deactivate All
+    fDstTree->SetBranchStatus("*",0);
+    // Activate only selected branches
+    fDstTree->SetBranchStatus("npart",1);
+    fDstTree->SetBranchStatus("px",1);
+    fDstTree->SetBranchStatus("py",1);
+    fDstTree->SetBranchStatus("pz",1);
+    //fDstTree->SetBranchStatus("x",1);
+    //fDstTree->SetBranchStatus("y",1);
+    //fDstTree->SetBranchStatus("z",1);
+    fDstTree->SetBranchStatus("E",1);
+    fDstTree->SetBranchStatus("id",1);
+    
     fDstTree->SetBranchAddress("px", fPx);
     fDstTree->SetBranchAddress("py", fPy);
     fDstTree->SetBranchAddress("pz", fPz);
-    fDstTree->SetBranchAddress("x", fX);    // [fm/c]
-    fDstTree->SetBranchAddress("y", fY);    // [fm/c]
-    fDstTree->SetBranchAddress("z", fZ);    // [fm/c]
+    //fDstTree->SetBranchAddress("x", fX);  // [fm]
+    //fDstTree->SetBranchAddress("y", fY);  // [fm]
+    //fDstTree->SetBranchAddress("z", fZ);  // [fm]
     fDstTree->SetBranchAddress("E", fE);
     fDstTree->SetBranchAddress("npart", &fNpart);
     fDstTree->SetBranchAddress("id", fPID);
     
     fEventNumber = 0;
+    fPsiRP=0.;
+    fisRP=kTRUE;  // by default RP is random
+    frandom = new TRandom2();
+    frandom->SetSeed(0);
+    fPNCorr = 0.; // by default no correction
 }
 // ------------------------------------------------------------------------
 
@@ -79,6 +96,7 @@ fFileName(fileName) {
 Mpd3fdGenerator::~Mpd3fdGenerator() {
     delete fInputFile;
     delete fDstTree;
+    delete frandom;
 }
 // ------------------------------------------------------------------------
 
@@ -106,13 +124,16 @@ Bool_t Mpd3fdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     //Int_t events = fDstTree->GetEntries();
 
     // ---> Define event variables to be read from file
-    Int_t energ;
+    Int_t energ, impact;
 
     const TRegexp elb("_elb[0-9]*gev_");
-    TSubString subelb = fFileName(elb);  // select substring by regexp
+    TSubString subelb = fFileName(elb);  // select substring by regexp "elab"
     sscanf(subelb.Data(), "_elb%dgev_", &energ);
+    const TRegexp imp("_[0-9]*fm_");
+    TSubString subimp = fFileName(imp);  // select substring by regexp "impact"
+    sscanf(subelb.Data(), "_%dfm_", &impact);
     
-    Float_t b = 0.0; //TMP!
+    Float_t b = (Float_t) impact;
     
     /*
     // ---> Calculate beta and gamma for Lorentztransformation
@@ -131,30 +152,50 @@ Bool_t Mpd3fdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 
     if (fNpart>kBatyukConst) {cout <<"-E- 3fdGenerator SELFCHECK ERROR"<< endl; exit(1);}
 
+    /* set random Reaction Plane angle */
+    if (fisRP) {fPsiRP=frandom->Uniform(2.0*TMath::Pi());}
+
     // Set event id and impact parameter in MCEvent if not yet done
     FairMCEventHeader* event = primGen->GetEvent();
     if (event && (!event->IsSet())) {
-        //event->SetEventID(evnr);
-        event->SetB(b);
-        event->MarkSet(kTRUE);
+      //event->SetEventID(evnr);
+      event->SetB(b);
+      event->SetRotZ(fPsiRP);
+      event->MarkSet(kTRUE);
     }
 
     // ---> Loop over tracks in the current event
     for (int itrack = 0; itrack < fNpart; itrack++) {
+      Double_t px = fPx[itrack];
+      Double_t py = fPy[itrack];
+      Double_t pz = fPz[itrack];
+      /*
+      // Lorentztransformation to lab
+      Double_t e = fE[itrack];
+      Double_t mass = Sqrt(e * e - px * px - py * py - pz * pz);
+      if (gCoordinateSystem == sysLaboratory) {
+        pz = gammaCM * (pz + betaCM * e);
+      }
+      Double_t ee = sqrt(mass * mass + px * px + py * py + pz * pz);
+      */
 
-        // Lorentztransformation to lab
-//        Double_t px = fPx[itrack];
-//        Double_t py = fPy[itrack];
-//        Double_t pz = fPz[itrack];
-//        Double_t e = fE[itrack];
-//        Double_t mass = Sqrt(e * e - px * px - py * py - pz * pz);
-//        if (gCoordinateSystem == sysLaboratory)
-//            pz = gammaCM * (pz + betaCM * e);
-//        Double_t ee = sqrt(mass * mass + px * px + py * py + pz * pz);
-
-        // Give track to PrimaryGenerator
-        primGen->AddTrack(fPID[itrack], fPx[itrack], fPy[itrack], fPz[itrack],  0.0, 0.0, 0.0);  // pdg, mom [GeV/c], vertex [cm]
-
+      /* in Theseus 2018-03-17-bc2a06d <neutrons>=<protons> */
+      Int_t pid= fPID[itrack];
+      if (fPNCorr!=0. && (pid==2212 || pid==2112)) {
+        Float_t xx=frandom->Rndm();
+        if (xx>fPNCorr) { pid=2112; } else { pid=2212; };
+      }
+      /* rotate RP angle */
+      if (fPsiRP!=0.)
+      {
+        Double_t cosPsi = TMath::Cos(fPsiRP);
+        Double_t sinPsi = TMath::Sin(fPsiRP);
+        Double_t px1=px*cosPsi-py*sinPsi;
+        Double_t py1=px*sinPsi+py*cosPsi;
+        px=px1; py=py1;
+      }
+      // Give track to PrimaryGenerator
+      primGen->AddTrack(pid, px,py,pz,  0.0, 0.0, 0.0);  // pdg, mom [GeV/c], vertex [cm]
     }
     fEventNumber++;
 

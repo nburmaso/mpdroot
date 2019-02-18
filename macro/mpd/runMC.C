@@ -108,13 +108,10 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     if (!CheckFileExist(inFile)) return;
 
     Mpd3fdGenerator* fluidGen = new Mpd3fdGenerator(inFile);
-    fluidGen->SkipEvents(0);
+    if (nStartEvent > 0) fluidGen->SkipEvents(nStartEvent);
+    //fluidGen->SetPsiRP(0.); // set fixed Reaction Plane angle [rad] instead of random
+    //fluidGen->SetProtonNumberCorrection(79./197.); // Z/A Au for Theseus 2018-03-17-bc2a06d
     primGen->AddGenerator(fluidGen);
-    //if (nStartEvent > 0) urqmdGen->SkipEvents(nStartEvent);
-
-    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
-    // if (nEvents == 0)
-    //      nEvents = MpdGetNumEvents::GetNumURQMDEvents(inFile.Data()) - nStartEvent;
 
 #else
 #ifdef PART // <---- Particle Generator
