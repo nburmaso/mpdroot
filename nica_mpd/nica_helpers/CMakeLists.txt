@@ -21,6 +21,9 @@ ${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
 ${CMAKE_SOURCE_DIR}/nicaroot/features
+${CMAKE_SOURCE_DIR}/nicaroot/features/io
+${CMAKE_SOURCE_DIR}/nicaroot/features/hist
+${CMAKE_SOURCE_DIR}/nicaroot/features/std
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat/detector
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat/compound

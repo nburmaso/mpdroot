@@ -19,6 +19,10 @@ ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/mpdbase
 ${CMAKE_SOURCE_DIR}/nicaroot/features
+${CMAKE_SOURCE_DIR}/nicaroot/features
+${CMAKE_SOURCE_DIR}/nicaroot/features/io
+${CMAKE_SOURCE_DIR}/nicaroot/features/hist
+${CMAKE_SOURCE_DIR}/nicaroot/features/std
 ${CMAKE_SOURCE_DIR}/nicaroot/unigen
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat
 ${CMAKE_SOURCE_DIR}/nicaroot/dataformat/compound
