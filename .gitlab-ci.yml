@@ -139,7 +139,7 @@ run_reco:ubuntu:
     - make -j 5
     - make install
     - ssh $STRATUM_0 "sudo cvmfs_server transaction nica.jinr.ru"
-    - ssh $STRATUM_0 "cvmfs_rsync -a $IP:/cvmfs/nica.jinr.ru/$CI_ENVIRONMENT_NAME/mpdoot/$CI_COMMIT_REF_NAME /cvmfs/nica.jinr.ru/$CI_ENVIRONMENT_NAME/mpdroot/"
+    - ssh $STRATUM_0 "cvmfs_rsync -a $IP:/cvmfs/nica.jinr.ru/$CI_ENVIRONMENT_NAME/mpdroot/$CI_COMMIT_REF_NAME /cvmfs/nica.jinr.ru/$CI_ENVIRONMENT_NAME/mpdroot/"
     - ssh $STRATUM_0 "sudo cvmfs_server publish nica.jinr.ru"
     - ssh-agent -k
   only:
