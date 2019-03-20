@@ -475,13 +475,13 @@ void MpdFillDstTask::FillTrackDCA(MpdTrack* track, TVector3 *recoVertex, TVector
     TVector3 DCA_MC = helix.at(path_at_mcVertex);
     TVector3 DCA_RECO = helix.at(path_at_recoVertex);
     // set dca global as dca to MC vertex DW
-    track->SetDCAGlobalX(DCA_MC.X());
-    track->SetDCAGlobalY(DCA_MC.Y());
-    track->SetDCAGlobalZ(DCA_MC.Z());
+    track->SetDCAGlobalX(DCA_MC.X()-mcVertex->X());
+    track->SetDCAGlobalY(DCA_MC.Y()-mcVertex->Y());
+    track->SetDCAGlobalZ(DCA_MC.Z()-mcVertex->Z());
     // set dca as dca to reconstructed vertex DW
-    track->SetDCAX(DCA_RECO.X());
-    track->SetDCAY(DCA_RECO.Y());
-    track->SetDCAZ(DCA_RECO.Z());
+    track->SetDCAX(DCA_RECO.X()-recoVertex->X());
+    track->SetDCAY(DCA_RECO.Y()-recoVertex->Y());
+    track->SetDCAZ(DCA_RECO.Z()-recoVertex->Z());
 }
 
 void MpdFillDstTask::FillTrackPID(MpdTrack* track) {
