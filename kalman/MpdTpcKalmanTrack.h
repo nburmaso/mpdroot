@@ -20,9 +20,10 @@ class MpdTpcKalmanTrack : public MpdKalmanTrack
   MpdTpcKalmanTrack(); ///< Default ctor
   virtual ~MpdTpcKalmanTrack(); ///< Destructor
   MpdTpcKalmanTrack(MpdKalmanHit *hitOut, MpdKalmanHit *hitIn,
-		    TVector3 &vertex, Double_t pt); ///< Ctor from 2 hits
+		    TVector3 &vertex, Double_t pt, Double_t *params); ///< Ctor from 2 hits
   MpdTpcKalmanTrack(MpdKalmanHit *hitOut, MpdKalmanHit *hitIn,
-		    TVector3 &vertex, TVector3 &posOut, TVector3 &posIn, Double_t pt); ///< Ctor from 2 hits and 2 TVector3
+		    TVector3 &vertex, TVector3 &posOut, TVector3 &posIn, 
+		    Double_t pt, Double_t *params); ///< Ctor from 2 hits and 2 TVector3
   MpdTpcKalmanTrack (const MpdTpcKalmanTrack& track); ///< copy constructor
   MpdTpcKalmanTrack& operator=(const MpdTpcKalmanTrack& track); // assignment operator
   Int_t GetNofTrHits() const { return fTrHits->GetEntriesFast(); } ///< get number of track hits
@@ -37,7 +38,7 @@ class MpdTpcKalmanTrack : public MpdKalmanTrack
 
  private:
 
-  void EvalParams(MpdKalmanHit *hitOut, const MpdKalmanHit *hitIn, Double_t *parOut, Double_t *parIn, Double_t pt); ///< evaluate track params
+  void EvalParams(MpdKalmanHit *hitOut, const MpdKalmanHit *hitIn, Double_t *parOut, Double_t *parIn, Double_t pt, Double_t *params); ///< evaluate track params
   void EvalCovar(const MpdKalmanHit *hitOut, const MpdKalmanHit *hitIn, Double_t *parOut, Double_t *parIn); ///< evaluate covar. matrix
 
   TClonesArray *fTrHits; ///< track hits

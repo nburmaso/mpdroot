@@ -50,41 +50,12 @@ MpdVertexZfinder::~MpdVertexZfinder()
 //__________________________________________________________________________
 InitStatus MpdVertexZfinder::Init()
 {
-  fhZ = new TH1F("hZfinder","Zv",250,-50.2,49.8);
+  //AZ fhZ = new TH1F("hZfinder","Zv",250,-50.2,49.8);
+  fhZ = new TH1F("hZfinder","Zv",500,-100.2,99.8);
   fUnc = new TF1("fUnc","[0]*exp(-0.5*(x-[1])*(x-[1])/[2]/[2])+[3]",-10,10);
 
   //return ReInit();
   ReInit();
-
-  // Read database
-  /*
-  FairRuntimeDb* rtdb = FairRun::Instance()->GetRuntimeDb();
-  MpdStsGeoPar *geoPar = (MpdStsGeoPar*) rtdb->getContainer("MpdStsGeoPar");
-  //cout << geoPar << endl;
-  TString volName = "sts01 ";
-  TObjArray* sensNodes = geoPar->GetGeoSensitiveNodes();
-  //cout << sensNodes->GetEntriesFast() << " " << geoPar->GetGeoPassiveNodes()->GetEntriesFast() << endl;
-  Int_t nLay = 4;
-  Double_t size = 6.2;
-  for (Int_t i = 0; i < nLay; ++i) {
-    volName[5] = 97 + i; // 'a', 'b', ..
-    FairGeoNode* sensVol = (FairGeoNode*) (sensNodes->FindObject(volName));
-    TArrayD* params = sensVol->getParameters();
-    fRad[2*i] = params->At(0);
-    fRad[2*i+1] = params->At(1);
-    //dR = (rMax-rMin) / 50; 
-    fDz[i] = params->At(2);
-    Int_t nMods = Int_t (fDz[i] * 2. / size + 0.1);
-    fZmod[i] = fDz[i] * 2. / nMods;
-    cout << " *** STS sensitive volume: " << sensVol->GetName() << " " << params->At(0) 
-	 << " " << fDz[i] << " " << fZmod[i] << endl;
-  }
-  fStereoA[0] = -7.5;
-  fStereoA[1] = 7.5;
-  //for (Int_t i = 0; i < 2; ++i) fStereoA[i] = 
-  //TMath::Tan (fStereoA[i]*TMath::DegToRad()); 
-  for (Int_t i = 0; i < 2; ++i) fStereoA[i] *= TMath::DegToRad();
-  */
 
   return kSUCCESS;
 }

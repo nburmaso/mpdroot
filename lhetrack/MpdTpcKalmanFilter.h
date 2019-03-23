@@ -67,14 +67,14 @@ class MpdTpcKalmanFilter : public FairTask
   void GetTrackSeeds(Int_t iPass); // build track seeds 
   void GetTrackSeedsEndCaps(); // build track seeds from end-cap regions 
   void DoTracking(Int_t iPass); // run tracking
-  Double_t EvalPt(const MpdKalmanHit *hit1, const MpdKalmanHit *hit2); // evaluate Pt
+  Double_t EvalPt(const MpdKalmanHit *hit1, const MpdKalmanHit *hit2, Double_t *params); // evaluate Pt
   void Cluster2KalmanHits(); // create Kalman hits from clusters
   void MakeKalmanHits(); // create Kalman hits  
   void MakeKalmanHitsModul(); // create Kalman hits for modular geom. of r/out chambers  
   void GoOutward(MpdTpcKalmanTrack *track); // propagate track outward
   void BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight, Int_t iDir = 1, Bool_t corDedx = kFALSE); // propagate track thru found hits
   void GoOut(); // backpropagate tracks outward
-  void RemoveDoubles(); // remove double tracks
+  void RemoveDoubles(TClonesArray *tracks); // remove double tracks
   Int_t GetNofCommonHits(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2); // get common hits
   // Are compared tracks similar each other (if common hits in 2 tracks is greater limit)
   Bool_t AreTracksDoubles(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2);

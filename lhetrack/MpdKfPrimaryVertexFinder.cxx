@@ -27,7 +27,7 @@
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <TMatrixFSym.h>
-#include <TPad.h>
+#include <TRandom.h>
 
 #include <iostream>
 #include <vector>
@@ -140,12 +140,12 @@ void MpdKfPrimaryVertexFinder::EvalVertex()
   /// Primary vertex position evaluator
 
   Int_t nTracks = fTracks->GetEntriesFast();
-  Double_t dMax = 0., dMin = 0.1, xyzM[3], xyzF[3] = {0,0,0}, xyz[3];
+  Double_t dMax = 0., dMin = 0.1, xyzM[3], xyzF[3] = {0,0,0}, xyz[3] = {0};
   TAxis *axis[3];
   for (Int_t i = 0; i < 3; ++i) {
     axis[i] = fHist[i]->GetXaxis();
     axis[i]->SetRange(10,0); // reset axes ranges
-    xyz[i] = fXYZ[i];
+    //AZ xyz[i] = fXYZ[i];
   }
   fCovar = 0.;
 
@@ -179,8 +179,10 @@ void MpdKfPrimaryVertexFinder::EvalVertex()
     for (Int_t i = 0; i < 3; ++i) {
       // Take mean value
       xyzM[i] = fHist[i]->GetMean();
-      fHist[i]->SetAxisRange(xyzM[i]-2.,xyzM[i]+2.);
+      //AZ fHist[i]->SetAxisRange(xyzM[i]-2.,xyzM[i]+2.);
+      fHist[i]->SetAxisRange(xyzM[i]-5.,xyzM[i]+5.);
       xyzM[i] = fHist[i]->GetMean(); // restricted mean
+      if (fHist[i]->GetMaximum() > 0) xyzM[i] = fHist[i]->GetBinCenter(fHist[i]->GetMaximumBin()); // peak 
       Double_t rms = TMath::Min (fHist[i]->GetRMS(), fHist[i]->GetMeanError() * 3);
       /*
       fUnc->SetParameters(fHist[i]->GetMaximum(),xyzM[i],rms/2);
@@ -219,6 +221,15 @@ void MpdKfPrimaryVertexFinder::EvalVertex()
     if (dMax < dMin) break;
   } // for (Int_t iter = 0; iter < 5;
   for (Int_t i = 0; i < 3; ++i) fCovar(i,i) = TMath::Max (fCovar(i,i),0.02*0.02);
+
+  // Use beam tolerances
+  Double_t sigx = 9, sigy = 9, sigxy = 0.02; // sigma 200 um
+  while (sigx > 3*sigxy || sigy > 3*sigxy) 
+    gRandom->Rannor(sigx,sigy);
+  fXYZ[0] = sigx * sigxy; // position
+  fCovar(0,0) = sigxy*sigxy;
+  fXYZ[1] = sigy * sigxy; // position
+  fCovar(1,1) = sigxy*sigxy;
 }
 
 //__________________________________________________________________________
@@ -310,6 +321,9 @@ void MpdKfPrimaryVertexFinder::FindVertex()
 	TVector3 v3(v7[0], v7[1], v7[2]);
 	d += v3 * norm;
 	if (d < 0) track1.SetDirection(MpdKalmanTrack::kOutward);
+	// 03-jan-2018
+	ok = 0;
+	continue;
       }
 
       MpdKalmanFilter::Instance()->PropagateToHit(&track1,&hit,kFALSE,kTRUE);
@@ -386,8 +400,11 @@ void MpdKfPrimaryVertexFinder::FindVertex()
       TMatrixD chi22(dx,TMatrixD::kTransposeMult,tmp42);
       //chi22.Print();
       if (chi21(0,0) < 0 || chi22(0,0) < 0) {
-	cout << chi21(0,0) << " " << chi22(0,0) << " " << ipass << " " << itr << endl;
-	exit(0);
+	cout << " FindVertex: chi2 < 0 " << chi21(0,0) << " " << chi22(0,0) << " " << ipass << " " << itr << endl;
+	cout << track->GetNode() << " " << track->GetNodeNew() << " " << track->GetUniqueID() << " " << track->Momentum() << " " << track->GetDirection() << endl;
+	//exit(0);
+	chi21(0,0) = TMath::Max (chi21(0,0),0.);
+	chi22(0,0) = TMath::Max (chi22(0,0),0.);
       }
       chi21 += chi22;
       if (chi21(0,0) > cutChi2) { ok = 0; continue; } // skip track
@@ -739,7 +756,9 @@ void MpdKfPrimaryVertexFinder::Chi2Vertex()
   TMatrixFSym covM(3);
   vtx->CovMatrix(covM);
   cov = covM;
-  cov.Invert();
+  //AZ cov.Invert();
+  Int_t iii = 0;
+  MpdKalmanFilter::Instance()->MnvertLocal(cov.GetMatrixArray(), 3, 3, 3, iii);
 
   //vvv.Print();
   //fCovar.Print();
@@ -819,6 +838,7 @@ void MpdKfPrimaryVertexFinder::Chi2Vertex()
     dx -= xk0;
     TMatrixD tmp42(cov,TMatrixD::kMult,dx);
     TMatrixD chi22(dx,TMatrixD::kTransposeMult,tmp42);
+    //cout << " Chi2Vertex: " << chi21(0,0) << " " << chi22(0,0) << endl;
     chi21 += chi22;
     //chi21.Print();
 

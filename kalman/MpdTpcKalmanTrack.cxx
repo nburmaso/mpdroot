@@ -13,6 +13,8 @@
 #include "MpdKalmanGeoScheme.h"
 #include "MpdKalmanHit.h"
 #include "MpdKalmanTrack.h"
+//#include "MpdTpcHit.h" // debug
+//#include "TpcPoint.h" // debug
 
 #include <TMatrixD.h>
 #include <TMatrixDSym.h>
@@ -33,7 +35,7 @@ MpdTpcKalmanTrack::MpdTpcKalmanTrack()
 
 //__________________________________________________________________________
 MpdTpcKalmanTrack::MpdTpcKalmanTrack(MpdKalmanHit *hitOut, MpdKalmanHit *hitIn,
-				     TVector3 &vertex, Double_t pt) 
+				     TVector3 &vertex, Double_t pt, Double_t *params) 
   : MpdKalmanTrack(0., vertex),
     fTrHits(new TClonesArray("MpdKalmanHit",70))
 {
@@ -45,12 +47,13 @@ MpdTpcKalmanTrack::MpdTpcKalmanTrack(MpdKalmanHit *hitOut, MpdKalmanHit *hitIn,
   Double_t phiIn = hitIn->GetMeas(0) / rIn;
   Double_t parOut[4] = {rOut, phiOut, 0., 0.};
   Double_t parIn[4] = {rIn, phiIn, 0., 0.};
-  EvalParams(hitOut, hitIn, parOut, parIn, pt);
+  EvalParams(hitOut, hitIn, parOut, parIn, pt, params);
 }
 
 //__________________________________________________________________________
 MpdTpcKalmanTrack::MpdTpcKalmanTrack(MpdKalmanHit *hitOut, MpdKalmanHit *hitIn,
-				     TVector3 &vertex, TVector3 &posOut, TVector3 &posIn, Double_t pt) 
+				     TVector3 &vertex, TVector3 &posOut, TVector3 &posIn,
+				     Double_t pt, Double_t *params) 
   : MpdKalmanTrack(0., vertex),
     fTrHits(new TClonesArray("MpdKalmanHit",70))
 {
@@ -60,7 +63,7 @@ MpdTpcKalmanTrack::MpdTpcKalmanTrack(MpdKalmanHit *hitOut, MpdKalmanHit *hitIn,
   Double_t rIn = posIn.Pt(), phiIn = posIn.Phi();
   Double_t parOut[4] = {rOut, phiOut, 0., 0.};
   Double_t parIn[4] = {rIn, phiIn, 0., 0.};
-  EvalParams(hitOut, hitIn, parOut, parIn, pt);
+  EvalParams(hitOut, hitIn, parOut, parIn, pt, params);
 }
 
 //__________________________________________________________________________
@@ -129,7 +132,7 @@ void MpdTpcKalmanTrack::Reset()
 
 //__________________________________________________________________________
 void MpdTpcKalmanTrack::EvalParams(MpdKalmanHit *hitOut, const MpdKalmanHit *hitIn, 
-				   Double_t *parOut, Double_t *parIn, Double_t pt)
+				   Double_t *parOut, Double_t *parIn, Double_t pt, Double_t *params)
 {
   /// Evaluate track params
 
@@ -148,17 +151,26 @@ void MpdTpcKalmanTrack::EvalParams(MpdKalmanHit *hitOut, const MpdKalmanHit *hit
   (*fParam)(0,0) = rOut * phiOut; // R-Phi coordinate
   //(*fParam)(1,0) = posOut.Z(); // Z-coordinate
   (*fParam)(1,0) = hitOut->GetMeas(1); // Z-coordinate
-  (*fParam)(2,0) = TMath::ATan2 (yOut-yIn, xOut-xIn); // Track Phi
-  //(*fParam)(3,0) = TMath::ATan2 (posOut.Z()-posIn.Z(), rOut-rIn); // Track Theta
-  (*fParam)(3,0) = TMath::ATan2 (hitOut->GetMeas(1)-hitIn->GetMeas(1), rOut-rIn); // Track Theta
- (*fParam)(4,0) = 1. / pt; // q/Pt
-
- *fParamNew = *fParam;
- fWeight->Zero();
- EvalCovar(hitOut, hitIn, parOut, parIn);
-
- fHits->Add(hitOut);
- fLastLay = hitOut->GetLayer(); // layer number
+  Double_t phi0 = TMath::ATan2 (yOut-yIn, xOut-xIn); // Track Phi - approximation
+  (*fParam)(2,0) = phi0 + TMath::Sign (params[2]/2, pt);
+  //(*fParam)(3,0) = TMath::ATan2 (hitOut->GetMeas(1)-hitIn->GetMeas(1), rOut-rIn); // Track Theta
+  (*fParam)(3,0) = TMath::ATan2 (hitOut->GetMeas(1)-hitIn->GetMeas(1), TMath::Abs(params[0])); // Track Theta
+  (*fParam)(4,0) = 1. / pt; // q/Pt
+  // Debugging
+  /*
+  TClonesArray *hits = (TClonesArray*) FairRootManager::Instance()->GetObject("TpcHit");
+  TClonesArray *points = (TClonesArray*) FairRootManager::Instance()->GetObject("TpcPoint");
+  MpdTpcHit *h = (MpdTpcHit*) hits->UncheckedAt(hitOut->GetIndex());
+  TpcPoint *p = (TpcPoint*) points->UncheckedAt(h->GetRefIndex());
+  cout << " Phi angle: " << TMath::ATan2(p->GetPy(),p->GetPx()) << " " << phi0 << " " << (*fParam)(2,0) << endl;
+  */
+  
+  *fParamNew = *fParam;
+  fWeight->Zero();
+  EvalCovar(hitOut, hitIn, parOut, parIn);
+  
+  fHits->Add(hitOut);
+  fLastLay = hitOut->GetLayer(); // layer number
 }
 
 //__________________________________________________________________________
@@ -184,7 +196,8 @@ void MpdTpcKalmanTrack::EvalCovar(const MpdKalmanHit *hitOut, const MpdKalmanHit
   (*fWeight)(2,2) *= 4.; // extra factor of 2
 
   Double_t tanThe = TMath::Tan((*fParam)(3,0));
-  Double_t dRad = parOut[0] - parIn[0];
+  //31.12.2018 Double_t dRad = parOut[0] - parIn[0];
+  Double_t dRad = TMath::Sqrt (dist2);
   Double_t denom = dRad * (1.+tanThe*tanThe);
   (*fWeight)(3,3) = (*fWeight)(1,1) * 2. / denom / denom; // <TheThe>
   //(*fWeight)(3,3) = (*fWeight)(1,1) * 20. / denom / denom; // <TheThe>
@@ -193,6 +206,9 @@ void MpdTpcKalmanTrack::EvalCovar(const MpdKalmanHit *hitOut, const MpdKalmanHit
   //(*fWeight)(4,4) = ((*fParam)(4,0)*0.75) * ((*fParam)(4,0)*0.75); // error 75%
   (*fWeight)(4,4) = ((*fParam)(4,0)*2.) * ((*fParam)(4,0)*2.); // error 200%
 
+  //for (Int_t jj = 0; jj < 5; ++jj) cout << TMath::Sqrt((*fWeight)(jj,jj)) << " ";
+  //cout << endl;
+  
   //fWeight->Print();
   //fWeight->Invert(); // weight matrix
   Int_t iok = 0;
