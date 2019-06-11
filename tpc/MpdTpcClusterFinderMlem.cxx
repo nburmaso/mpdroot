@@ -895,6 +895,7 @@ void MpdTpcClusterFinderMlem::PeakAndValley(const vector<pixel> &pixels, multima
   }
 
   // Remove failed peaks
+  /*
   multimap<Double_t,Int_t>::iterator it = localMax.begin();
   //for ( ; it != localMax.end(); ++it) cout << it->second << " ";
   //cout << endl;
@@ -909,6 +910,22 @@ void MpdTpcClusterFinderMlem::PeakAndValley(const vector<pixel> &pixels, multima
     //cout << " Before: " << idig << " " << itime << " " << ipad << " " << it->first << ", ";
     localMax.erase(it);
     //cout << " After: " << it->first << endl;
+  }
+  */
+  // Remove failed peaks
+  multimap<Double_t,Int_t>::iterator it = localMax.end(), it1;
+  --it;
+  Int_t iover = 0;
+
+  while (iover == 0) {
+    Int_t ipix = it->second;
+    Int_t ipad = pixels[ipix].iy - 1;
+    Int_t itime = pixels[ipix].ix - 1;
+    if (it == localMax.begin()) iover = 1; 
+    it1 = it;
+    --it;
+    if (flags[ipad][itime] > 0) continue;
+    localMax.erase(it1);
   }
 }
 

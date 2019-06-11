@@ -56,6 +56,7 @@ class MpdKalmanTrack : public TObject
   TMatrixDSym* GetWeightAtHit() const { return fWeightAtHit; } ///< Get weight matrix at last hit
   Int_t GetNofHits() const { return fHits ? fHits->GetEntriesFast() : fNhits; } ///< Get number of track hits
   TObjArray* GetHits() const { return fHits; } ///< Get track hits container
+  TVector3& GetVertex() { return fVertex; } ///< AZ
 
   void SetTrackID(Int_t id) { fID = id; } ///< set track ID
   void SetNofHits(Int_t nHits) { fNhits = nHits; } ///< Set number of track hits
