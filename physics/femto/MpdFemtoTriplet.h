@@ -20,72 +20,95 @@
 #include "TLorentzVector.h"
 
 //_________________
+
 class MpdFemtoTriplet {
+public:
+    /// Default constructor
+    MpdFemtoTriplet();
+    /// Constructor with three particles
+    MpdFemtoTriplet(MpdFemtoParticle*, MpdFemtoParticle*, MpdFemtoParticle*);
+    /// Copy constructor
+    MpdFemtoTriplet(const MpdFemtoTriplet&);
+    // Default destructor
+    virtual ~MpdFemtoTriplet();
 
- public:
-  /// Default constructor
-  MpdFemtoTriplet();
-  /// Constructor with three particles
-  MpdFemtoTriplet(MpdFemtoParticle*, MpdFemtoParticle*, MpdFemtoParticle*);
-  /// Copy constructor
-  MpdFemtoTriplet(const MpdFemtoTriplet&);
-  // Default destructor
-  virtual ~MpdFemtoTriplet();
+    /// Retrieve the first track
 
-  /// Retrieve the first track
-  MpdFemtoParticle* track1() const { return mTrack1; }
-  /// Retrieve the second track
-  MpdFemtoParticle* track2() const { return mTrack2; }
-  /// Retrieve the third track
-  MpdFemtoParticle* track3() const { return mTrack3; }
-  /// Set first track
-  void setTrack1(const MpdFemtoParticle* trkPtr)   { mTrack1 = (MpdFemtoParticle*)trkPtr; }
-  /// Set second track
-  void setTrack2(const MpdFemtoParticle* trkPtr)   { mTrack2=(MpdFemtoParticle*)trkPtr; }
-  /// Set third track
-  void setTrack3(const MpdFemtoParticle* trkPtr)   { mTrack3=(MpdFemtoParticle*)trkPtr; }
+    MpdFemtoParticle* track1() const {
+        return mTrack1;
+    }
+    /// Retrieve the second track
 
-  /// Four-momentum of three particles
-  TLorentzVector fourMomentum() const;
-  /// Relative momentum of three particles
-  double qInv() const;
-  /// Relative momentum the first and second particles
-  double qInv12() const;
-  /// Relative momentum the third and second particles
-  double qInv23() const;
-  /// Relative momentum the first and third particles
-  double qInv31() const;
-  /// Half of transverse momentum of three particles
-  double kT()   const;
-  /// Invariant mass of three particles
-  double mInv() const;
+    MpdFemtoParticle* track2() const {
+        return mTrack2;
+    }
+    /// Retrieve the third track
 
-  /// Track-splitting quantity of three particles
-  double quality() const;
-  /// Track-splitting quantity of three particles
-  double splittinLevel() const { return quality(); }
+    MpdFemtoParticle* track3() const {
+        return mTrack3;
+    }
+    /// Set first track
 
-  // the following two methods calculate the "nominal" separation of the tracks
-  // at the inner field cage (EntranceSeparation) and when they exit the TPC,
-  // which may be at the outer field cage, or at the endcaps.
-  // "nominal" means that the tracks are assumed to start at (0,0,0).  Making this
-  // assumption is important for the Event Mixing-- it is not a mistake
+    void setTrack1(const MpdFemtoParticle* trkPtr) {
+        mTrack1 = (MpdFemtoParticle*) trkPtr;
+    }
+    /// Set second track
 
-  /// Nominal TPC exit separation
-  double nominalTpcExitSeparation() const;
-  /// Nominal TPC entrance separation
-  double nominalTpcEntranceSeparation() const;
-  /// Nominal TPC average separation
-  double nominalTpcAverageSeparation() const;
+    void setTrack2(const MpdFemtoParticle* trkPtr) {
+        mTrack2 = (MpdFemtoParticle*) trkPtr;
+    }
+    /// Set third track
 
- private:
+    void setTrack3(const MpdFemtoParticle* trkPtr) {
+        mTrack3 = (MpdFemtoParticle*) trkPtr;
+    }
 
-  /// The first particle from triplet
-  MpdFemtoParticle* mTrack1;
-  /// The second particle from triplet
-  MpdFemtoParticle* mTrack2;
-  /// The third particle from triplet
-  MpdFemtoParticle* mTrack3;
+    /// Four-momentum of three particles
+    TLorentzVector fourMomentum() const;
+    /// Relative momentum of three particles
+    double qInv() const;
+    /// Relative momentum the first and second particles
+    double qInv12() const;
+    /// Relative momentum the third and second particles
+    double qInv23() const;
+    /// Relative momentum the first and third particles
+    double qInv31() const;
+    /// Half of transverse momentum of three particles
+    double kT() const;
+    /// Invariant mass of three particles
+    double mInv() const;
+
+    /// Track-splitting quantity of three particles
+    double quality() const;
+    /// Track-splitting quantity of three particles
+
+    double splittinLevel() const {
+        return quality();
+    }
+
+    // the following two methods calculate the "nominal" separation of the tracks
+    // at the inner field cage (EntranceSeparation) and when they exit the TPC,
+    // which may be at the outer field cage, or at the endcaps.
+    // "nominal" means that the tracks are assumed to start at (0,0,0).  Making this
+    // assumption is important for the Event Mixing-- it is not a mistake
+
+    /// Nominal TPC exit separation
+    double nominalTpcExitSeparation() const;
+    /// Nominal TPC entrance separation
+    double nominalTpcEntranceSeparation() const;
+    /// Nominal TPC average separation
+    double nominalTpcAverageSeparation() const;
+
+private:
+
+    /// The first particle from triplet
+    MpdFemtoParticle* mTrack1;
+    /// The second particle from triplet
+    MpdFemtoParticle* mTrack2;
+    /// The third particle from triplet
+    MpdFemtoParticle* mTrack3;
+
+    ClassDef(MpdFemtoTriplet, 1)
 };
 
 #endif // MpdFemtoTriplet_h

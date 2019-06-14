@@ -48,64 +48,76 @@ class MpdFemtoPair;
 #include "TList.h"
 
 //_________________
+
 class MpdFemtoBaseCutMonitor {
+public:
+    /// Default constructor
 
- public:
-  /// Default constructor
-  MpdFemtoBaseCutMonitor()            { /* no-op */ };
-  /// Default destructor
-  virtual ~MpdFemtoBaseCutMonitor()   { /* no-op */ };
+    MpdFemtoBaseCutMonitor() {
+        /* no-op */
+    };
+    /// Default destructor
 
-  /// Report details
-  virtual MpdFemtoString report();
+    virtual ~MpdFemtoBaseCutMonitor() {
+        /* no-op */
+    };
 
-  /// Start event processing
-  virtual void eventBegin(const MpdFemtoEvent*) { /* no-op */ }
-  /// Finish event processing
-  virtual void eventEnd(const MpdFemtoEvent*) { /* no-op */ }
+    /// Report details
+    virtual MpdFemtoString report();
 
-  /// Returns pointer to empty list
-  virtual TList* getOutputList();
+    /// Start event processing
 
-  /// Fill method for event
-  virtual void fill(const MpdFemtoEvent*);
-  /// Fill method for track
-  virtual void fill(const MpdFemtoTrack*);
-  /// Fill method for v0
-  virtual void fill(const MpdFemtoV0*);
-  /// Fill method for xi
-  virtual void fill(const MpdFemtoXi*);
-  /// Fill method for kink
-  virtual void fill(const MpdFemtoKink*);
-  /// Fill method for pair
-  virtual void fill(const MpdFemtoPair*);
-  /// Fill method for particle collection
-  virtual void fill(const MpdFemtoParticleCollection*);
-  /// Fill method for event and particle collection
-  virtual void fill(const MpdFemtoEvent*,const MpdFemtoParticleCollection*);
-  /// Fill method for two particle collections
-  virtual void fill(const MpdFemtoParticleCollection*, const MpdFemtoParticleCollection*);
+    virtual void eventBegin(const MpdFemtoEvent*) {
+        /* no-op */
+    }
+    /// Finish event processing
 
-  /// Finish
-  virtual void finish();
-  /// Initialize cut monitor
-  virtual void init();
+    virtual void eventEnd(const MpdFemtoEvent*) {
+        /* no-op */
+    }
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoBaseCutMonitor, 0)
-#endif
+    /// Returns pointer to empty list
+    virtual TList* getOutputList();
+
+    /// Fill method for event
+    virtual void fill(const MpdFemtoEvent*);
+    /// Fill method for track
+    virtual void fill(const MpdFemtoTrack*);
+    /// Fill method for v0
+    virtual void fill(const MpdFemtoV0*);
+    /// Fill method for xi
+    virtual void fill(const MpdFemtoXi*);
+    /// Fill method for kink
+    virtual void fill(const MpdFemtoKink*);
+    /// Fill method for pair
+    virtual void fill(const MpdFemtoPair*);
+    /// Fill method for particle collection
+    virtual void fill(const MpdFemtoParticleCollection*);
+    /// Fill method for event and particle collection
+    virtual void fill(const MpdFemtoEvent*, const MpdFemtoParticleCollection*);
+    /// Fill method for two particle collections
+    virtual void fill(const MpdFemtoParticleCollection*, const MpdFemtoParticleCollection*);
+
+    /// Finish
+    virtual void finish();
+    /// Initialize cut monitor
+    virtual void init();
+
+    ClassDef(MpdFemtoBaseCutMonitor, 0)
 };
 
 //_________________
+
 inline TList* MpdFemtoBaseCutMonitor::getOutputList() {
-  TList *mOutputList = new TList();
-  return mOutputList;
+    TList *mOutputList = new TList();
+    return mOutputList;
 }
 
 //_________________
+
 inline MpdFemtoString MpdFemtoBaseCutMonitor::report() {
-  MpdFemtoString defReport("*** no user defined fill(const MpdFemtoEvent*), take from base class");
-  return defReport;
+    MpdFemtoString defReport("*** no user defined fill(const MpdFemtoEvent*), take from base class");
+    return defReport;
 }
 
 #endif //#define MpdFemtoBaseCutMonitor_h

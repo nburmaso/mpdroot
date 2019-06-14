@@ -38,97 +38,121 @@
 using namespace std;
 
 //_________________
+
 class MpdFemtoMcDstReader : public MpdFemtoBaseEventReader {
+public:
+    /// Default constructor
+    MpdFemtoMcDstReader();
+    /// Parametrized constructor
+    /// \param mcDstReader Takes pointer to McDstReader
+    /// \param debug Set debut value (see the MpdFemtoBaseEventReader class)
+    MpdFemtoMcDstReader(MpdMcDstReader* mcDstReader, int debug = 1);
+    /// Copy constructor
+    MpdFemtoMcDstReader(const MpdFemtoMcDstReader& copy);
+    /// Assignment operator
+    MpdFemtoMcDstReader& operator=(const MpdFemtoMcDstReader& copy);
+    /// Destructor
+    virtual ~MpdFemtoMcDstReader();
 
- public:
-  /// Default constructor
-  MpdFemtoMcDstReader();
-  /// Parametrized constructor
-  /// \param mcDstReader Takes pointer to McDstReader
-  /// \param debug Set debut value (see the MpdFemtoBaseEventReader class)
-  MpdFemtoMcDstReader(MpdMcDstReader* mcDstReader, int debug=1);
-  /// Copy constructor
-  MpdFemtoMcDstReader(const MpdFemtoMcDstReader& copy);
-  /// Assignment operator
-  MpdFemtoMcDstReader& operator=(const MpdFemtoMcDstReader& copy);
-  /// Destructor
-  virtual ~MpdFemtoMcDstReader();
+    /// Prepare report
+    virtual MpdFemtoString report();
+    /// Return instance of MpdFemtoEvent with filled information
+    virtual MpdFemtoEvent* returnHbtEvent();
 
-  /// Prepare report
-  virtual MpdFemtoString report();
-  /// Return instance of MpdFemtoEvent with filled information
-  virtual MpdFemtoEvent* returnHbtEvent();
+    /// Set McDstReader
 
-  /// Set McDstReader
-  void setMcDstReader(MpdMcDstReader* reader) { mMcDstReader = reader; }
-  /// Set magnetic field value in kilogauss (default is 0.5T)
-  void setMagneticField(const float& field) { mMagField = field; }
-  /// Set magnetic field value in kilogauss (default is 0.5T)
-  void SetMagneticField(const float& field) { setMagneticField(field); }
+    void setMcDstReader(MpdMcDstReader* reader) {
+        mMcDstReader = reader;
+    }
+    /// Set magnetic field value in kilogauss (default is 0.5T)
 
-  /// Set event plane rotation
-  void setRotateEventPlane(const bool& rotate) { mDoRotate = rotate; }
-  /// Set event plane rotation
-  void SetRotateEventPlane(const bool& rotate) { setRotateEventPlane(rotate); }
-  /// Set event plane angle range [min, max]
-  void setEventPlaneAngleRange(const float& low, const float& hi)
-  { mPhi[0] = low; mPhi[1] = hi; }
-  /// Set event plane angle range [min, max]
-  void SetEventPlaneAngleRange(const float& low, const float& hi)
-  { setEventPlaneAngleRange(low, hi); }
-  /// Set event plane resolution
-  void setEventPlaneResolution(const float& res) { mEventPlaneResolution = res; }
-  /// Set event plane resolution
-  void SetEventPlaneResolution(const float& res) { setEventPlaneResolution(res); }
+    void setMagneticField(const float& field) {
+        mMagField = field;
+    }
+    /// Set magnetic field value in kilogauss (default is 0.5T)
 
- private:
+    void SetMagneticField(const float& field) {
+        setMagneticField(field);
+    }
 
-  /// Simple dE/dx estimation (not for physics analysis)
-  double dEdxMean(Double_t mass, Double_t momentum);
+    /// Set event plane rotation
 
-  /// Calculate refMult, sphericity and spericity2
-  void estimateEventProperties();
+    void setRotateEventPlane(const bool& rotate) {
+        mDoRotate = rotate;
+    }
+    /// Set event plane rotation
 
-  /// Pointer to the McDstReader
-  MpdMcDstReader *mMcDstReader;
+    void SetRotateEventPlane(const bool& rotate) {
+        setRotateEventPlane(rotate);
+    }
+    /// Set event plane angle range [min, max]
 
-  /// Magnetic field in kilogauss (default is set to 0.5 T)
-  float mMagField;
+    void setEventPlaneAngleRange(const float& low, const float& hi) {
+        mPhi[0] = low;
+        mPhi[1] = hi;
+    }
+    /// Set event plane angle range [min, max]
 
-  /// Current event number
-  //int mCurrentEvent;
+    void SetEventPlaneAngleRange(const float& low, const float& hi) {
+        setEventPlaneAngleRange(low, hi);
+    }
+    /// Set event plane resolution
 
-  /// Pointer MpdFemtoEvent that should be return to MpdFemtoAnalysis
-  MpdFemtoEvent *mHbtEvent;
+    void setEventPlaneResolution(const float& res) {
+        mEventPlaneResolution = res;
+    }
+    /// Set event plane resolution
 
-  /// Use event plane rotation
-  bool mDoRotate;
-  /// Randomizer
-  TRandom3 *mRandom;
-  /// Phi range to generate event plane angle ( default: [-pi;pi] )
-  float mPhi[2];
-  /// Event plane resolution (default: ideal resolution, i.e. unity)
-  float mEventPlaneResolution;
+    void SetEventPlaneResolution(const float& res) {
+        setEventPlaneResolution(res);
+    }
 
-  /// Reference multiplicity (STAR: charged particles with pT>0.15, |eta|<0.5)
-  unsigned short mRefMult;
-  /// Reference multiplicity of positive particles (STAR: charged particles with pT>0.15, |eta|<0.5)
-  unsigned short mRefMultPos;
-  /// Reference multiplicity (STAR: charged particles with pT>0.15, |eta|<1)
-  unsigned short mRefMult2;
-  /// Reference multiplicity of positive particles (STAR: charged particles with pT>0.15, |eta|<1)
-  unsigned short mRefMult2Pos;
-  /// Sphericity esitmated by particles with  |eta|<0.5, pT>0.15
-  float mSphericity;
-  /// Sphericity esitmated by particles with  |eta|<1, pT>0.15
-  float mSphericity2;
+private:
 
-  /// Number of events passed
-  long int mEventsPassed;
+    /// Simple dE/dx estimation (not for physics analysis)
+    double dEdxMean(Double_t mass, Double_t momentum);
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoMcDstReader, 2)
-#endif
+    /// Calculate refMult, sphericity and spericity2
+    void estimateEventProperties();
+
+    /// Pointer to the McDstReader
+    MpdMcDstReader *mMcDstReader;
+
+    /// Magnetic field in kilogauss (default is set to 0.5 T)
+    float mMagField;
+
+    /// Current event number
+    //int mCurrentEvent;
+
+    /// Pointer MpdFemtoEvent that should be return to MpdFemtoAnalysis
+    MpdFemtoEvent *mHbtEvent;
+
+    /// Use event plane rotation
+    bool mDoRotate;
+    /// Randomizer
+    TRandom3 *mRandom;
+    /// Phi range to generate event plane angle ( default: [-pi;pi] )
+    float mPhi[2];
+    /// Event plane resolution (default: ideal resolution, i.e. unity)
+    float mEventPlaneResolution;
+
+    /// Reference multiplicity (STAR: charged particles with pT>0.15, |eta|<0.5)
+    unsigned short mRefMult;
+    /// Reference multiplicity of positive particles (STAR: charged particles with pT>0.15, |eta|<0.5)
+    unsigned short mRefMultPos;
+    /// Reference multiplicity (STAR: charged particles with pT>0.15, |eta|<1)
+    unsigned short mRefMult2;
+    /// Reference multiplicity of positive particles (STAR: charged particles with pT>0.15, |eta|<1)
+    unsigned short mRefMult2Pos;
+    /// Sphericity esitmated by particles with  |eta|<0.5, pT>0.15
+    float mSphericity;
+    /// Sphericity esitmated by particles with  |eta|<1, pT>0.15
+    float mSphericity2;
+
+    /// Number of events passed
+    long int mEventsPassed;
+
+    ClassDef(MpdFemtoMcDstReader, 2)
 };
 
 #endif // MpdFemtoMcDstReader_h

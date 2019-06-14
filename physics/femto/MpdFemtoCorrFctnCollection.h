@@ -19,11 +19,11 @@ using std::list;
 class MpdFemtoBaseCorrFctn;
 
 #ifdef ST_NO_TEMPLATE_DEF_ARGS
-typedef list<MpdFemtoBaseCorrFctn*, allocator<MpdFemtoBaseCorrFctn*> >            MpdFemtoCorrFctnCollection;
-typedef list<MpdFemtoBaseCorrFctn*, allocator<MpdFemtoBaseCorrFctn*> >::iterator  MpdFemtoCorrFctnIterator;
+typedef list<MpdFemtoBaseCorrFctn*, allocator<MpdFemtoBaseCorrFctn*> > MpdFemtoCorrFctnCollection;
+typedef list<MpdFemtoBaseCorrFctn*, allocator<MpdFemtoBaseCorrFctn*> >::iterator MpdFemtoCorrFctnIterator;
 #else
-typedef list<MpdFemtoBaseCorrFctn*>            MpdFemtoCorrFctnCollection;
-typedef list<MpdFemtoBaseCorrFctn*>::iterator  MpdFemtoCorrFctnIterator;
+typedef list<MpdFemtoBaseCorrFctn*> MpdFemtoCorrFctnCollection;
+typedef list<MpdFemtoBaseCorrFctn*>::iterator MpdFemtoCorrFctnIterator;
 #endif
 
 #endif // #define MpdFemtoCorrFctnCollection_h

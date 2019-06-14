@@ -714,9 +714,7 @@ private:
     /// Z position of TPC exit point of V0 negative daughter
     float *mTpcV0NegExitPointZ;
 
-#ifdef __ROOT__
     ClassDef(MpdFemtoParticle, 1)
-#endif
 };
 
 #endif // #define MpdFemtoParticle_h

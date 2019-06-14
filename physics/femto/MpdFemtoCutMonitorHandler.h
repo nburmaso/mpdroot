@@ -31,78 +31,82 @@
 #include "TList.h"
 
 //_________________
+
 class MpdFemtoCutMonitorHandler {
+public:
+    /// Default constructor
+    MpdFemtoCutMonitorHandler();
+    /// Copy constructor
+    MpdFemtoCutMonitorHandler(const MpdFemtoCutMonitorHandler& copy);
+    /// Assignment operator
+    MpdFemtoCutMonitorHandler& operator=(const MpdFemtoCutMonitorHandler& copy);
+    /// Destructor
+    virtual ~MpdFemtoCutMonitorHandler();
 
- public:
-  /// Default constructor
-  MpdFemtoCutMonitorHandler();
-  /// Copy constructor
-  MpdFemtoCutMonitorHandler(const MpdFemtoCutMonitorHandler& copy);
-  /// Assignment operator
-  MpdFemtoCutMonitorHandler& operator=(const MpdFemtoCutMonitorHandler& copy);
-  /// Destructor
-  virtual ~MpdFemtoCutMonitorHandler();
+    /// Return monitor collection that passed cuts
 
-  /// Return monitor collection that passed cuts
-  MpdFemtoCutMonitorCollection* passMonitorColl()    { return mPassColl; }
-  /// Return monitor collection that failed to pass cuts
-  MpdFemtoCutMonitorCollection* failMonitorColl()    { return mFailColl; }
-  /// Return n-th monitor that passed cut
-  MpdFemtoBaseCutMonitor* passMonitor(int n);
-  /// Return n-th monitor that failed to pass cut
-  MpdFemtoBaseCutMonitor* failMonitor(int n);
+    MpdFemtoCutMonitorCollection* passMonitorColl() {
+        return mPassColl;
+    }
+    /// Return monitor collection that failed to pass cuts
 
-  /// Add cut monitor
-  void addCutMonitor(MpdFemtoBaseCutMonitor* cutMoni1, MpdFemtoBaseCutMonitor* cutMoni2);
-  /// Add cut monitor
-  void addCutMonitor(MpdFemtoBaseCutMonitor* cutMoni);
-  /// Add cut monitor that will be written in case the cut will be passed
-  void addCutMonitorPass(MpdFemtoBaseCutMonitor* cutMoni);
-  /// Add cut monitor that will be written in case the cut will not be passed
-  void addCutMonitorFail(MpdFemtoBaseCutMonitor* cutMoni);
+    MpdFemtoCutMonitorCollection* failMonitorColl() {
+        return mFailColl;
+    }
+    /// Return n-th monitor that passed cut
+    MpdFemtoBaseCutMonitor* passMonitor(int n);
+    /// Return n-th monitor that failed to pass cut
+    MpdFemtoBaseCutMonitor* failMonitor(int n);
 
-  /// Fill cut monitor for the event
-  void fillCutMonitor(const MpdFemtoEvent* event, bool pass);
-  /// Fill cut monitor for the track
-  void fillCutMonitor(const MpdFemtoTrack* track, bool pass);
-  /// Fill cut monitor for the v0
-  void fillCutMonitor(const MpdFemtoV0* v0, bool pass);
-  /// Fill cut monitor for the kink
-  void fillCutMonitor(const MpdFemtoKink* kink, bool pass);
-  /// Fill cut monitor for the xi
-  void fillCutMonitor(const MpdFemtoXi* xi, bool pass);
-  /// Fill cut monitor for the pair
-  void fillCutMonitor(const MpdFemtoPair* pair, bool pass);
-  /// Fill cut monitor for the pair
-  void fillCutMonitor(const MpdFemtoParticleCollection* partColl);
-  /// Fill cut monitor for the event and collection
-  void fillCutMonitor(const MpdFemtoEvent* event, const MpdFemtoParticleCollection* partColl);
-  /// Fill cut monitor for two collections
-  void fillCutMonitor(const MpdFemtoParticleCollection* partColl1, const MpdFemtoParticleCollection* partColl2);
+    /// Add cut monitor
+    void addCutMonitor(MpdFemtoBaseCutMonitor* cutMoni1, MpdFemtoBaseCutMonitor* cutMoni2);
+    /// Add cut monitor
+    void addCutMonitor(MpdFemtoBaseCutMonitor* cutMoni);
+    /// Add cut monitor that will be written in case the cut will be passed
+    void addCutMonitorPass(MpdFemtoBaseCutMonitor* cutMoni);
+    /// Add cut monitor that will be written in case the cut will not be passed
+    void addCutMonitorFail(MpdFemtoBaseCutMonitor* cutMoni);
 
-  /// Call finish
-  void finish();
+    /// Fill cut monitor for the event
+    void fillCutMonitor(const MpdFemtoEvent* event, bool pass);
+    /// Fill cut monitor for the track
+    void fillCutMonitor(const MpdFemtoTrack* track, bool pass);
+    /// Fill cut monitor for the v0
+    void fillCutMonitor(const MpdFemtoV0* v0, bool pass);
+    /// Fill cut monitor for the kink
+    void fillCutMonitor(const MpdFemtoKink* kink, bool pass);
+    /// Fill cut monitor for the xi
+    void fillCutMonitor(const MpdFemtoXi* xi, bool pass);
+    /// Fill cut monitor for the pair
+    void fillCutMonitor(const MpdFemtoPair* pair, bool pass);
+    /// Fill cut monitor for the pair
+    void fillCutMonitor(const MpdFemtoParticleCollection* partColl);
+    /// Fill cut monitor for the event and collection
+    void fillCutMonitor(const MpdFemtoEvent* event, const MpdFemtoParticleCollection* partColl);
+    /// Fill cut monitor for two collections
+    void fillCutMonitor(const MpdFemtoParticleCollection* partColl1, const MpdFemtoParticleCollection* partColl2);
 
-  /// Obtain list of objects to be written as an output
-  virtual TList *getOutputList();
+    /// Call finish
+    void finish();
 
-  /// Event begin
-  virtual void eventBegin(const MpdFemtoEvent* event);
-  /// Event end
-  virtual void eventEnd(const MpdFemtoEvent* event);
+    /// Obtain list of objects to be written as an output
+    virtual TList *getOutputList();
 
- private:
+    /// Event begin
+    virtual void eventBegin(const MpdFemtoEvent* event);
+    /// Event end
+    virtual void eventEnd(const MpdFemtoEvent* event);
 
-  /// Are the collections empty?
-  bool mCollectionsEmpty;
-  /// Collection of cut monitors for passed entities
-  MpdFemtoCutMonitorCollection* mPassColl;
-  /// Collection of cut monitors for failed entities
-  MpdFemtoCutMonitorCollection* mFailColl;
+private:
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoCutMonitorHandler, 0)
-#endif
+    /// Are the collections empty?
+    bool mCollectionsEmpty;
+    /// Collection of cut monitors for passed entities
+    MpdFemtoCutMonitorCollection* mPassColl;
+    /// Collection of cut monitors for failed entities
+    MpdFemtoCutMonitorCollection* mFailColl;
+
+    ClassDef(MpdFemtoCutMonitorHandler, 0)
 };
 
 #endif // #define MpdFemtoCutMonitorHandler_h

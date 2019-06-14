@@ -16,10 +16,7 @@
 // ROOT headers
 #include "TMath.h"
 
-#ifdef __ROOT__
-
 ClassImp(MpdFemtoTrackCutMonitor)
-#endif
 
 //_________________
 MpdFemtoTrackCutMonitor::MpdFemtoTrackCutMonitor(const char* name,

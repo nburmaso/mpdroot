@@ -5,42 +5,44 @@
 // MpdFemtoMaker headers
 #include "MpdFemtoBaseModelFreezeOutGenerator.h"
 
-#ifdef __ROOT__
-ClassImp(MpdFemtoBaseModelFreezeOutGenerator);
-#endif
-
 //_________________
-MpdFemtoBaseModelFreezeOutGenerator::MpdFemtoBaseModelFreezeOutGenerator(): mRandom(0) {
-  /* emtpy */
+
+MpdFemtoBaseModelFreezeOutGenerator::MpdFemtoBaseModelFreezeOutGenerator() : mRandom(0) {
+    /* emtpy */
 }
 
 //_________________
-MpdFemtoBaseModelFreezeOutGenerator::MpdFemtoBaseModelFreezeOutGenerator(const MpdFemtoBaseModelFreezeOutGenerator &/* aModel */):
-  mRandom(0) {
-  /* empty */
+
+MpdFemtoBaseModelFreezeOutGenerator::MpdFemtoBaseModelFreezeOutGenerator(const MpdFemtoBaseModelFreezeOutGenerator &/* aModel */) :
+mRandom(0) {
+    /* empty */
 }
 
 //_________________
+
 MpdFemtoBaseModelFreezeOutGenerator& MpdFemtoBaseModelFreezeOutGenerator::operator=(const MpdFemtoBaseModelFreezeOutGenerator& aGen) {
-  // Assignment operator
-  if (this != &aGen) {
-    if ( aGen.mRandom ) {
-      mRandom = new TRandom3( *aGen.mRandom );
+    // Assignment operator
+    if (this != &aGen) {
+        if (aGen.mRandom) {
+            mRandom = new TRandom3(*aGen.mRandom);
+        } else {
+            mRandom = 0;
+        }
     }
-    else {
-      mRandom=0;
-    }
-  }
 
-  return *this;
+    return *this;
 }
 
 //_________________
+
 MpdFemtoBaseModelFreezeOutGenerator::~MpdFemtoBaseModelFreezeOutGenerator() {
-  if (mRandom) delete mRandom;
+    if (mRandom) delete mRandom;
 }
 
 //_________________
+
 MpdFemtoBaseModelFreezeOutGenerator* MpdFemtoBaseModelFreezeOutGenerator::clone() const {
-  return nullptr;
+    return nullptr;
 }
+
+ClassImp(MpdFemtoBaseModelFreezeOutGenerator);

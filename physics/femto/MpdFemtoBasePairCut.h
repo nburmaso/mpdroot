@@ -25,59 +25,85 @@ class MpdFemtoBaseAnalysis;
 #include "TObjString.h"
 
 //_________________
+
 class MpdFemtoBasePairCut : public MpdFemtoCutMonitorHandler {
+public:
+    /// Default constructor
+    MpdFemtoBasePairCut();
+    /// Copy constructor
+    MpdFemtoBasePairCut(const MpdFemtoBasePairCut& c);
+    /// Assignment operator
+    MpdFemtoBasePairCut& operator=(const MpdFemtoBasePairCut& c);
+    /// Default destructor
 
- public:
-  /// Default constructor
-  MpdFemtoBasePairCut();
-  /// Copy constructor
-  MpdFemtoBasePairCut(const MpdFemtoBasePairCut& c);
-  /// Assignment operator
-  MpdFemtoBasePairCut& operator=(const MpdFemtoBasePairCut& c);
-  /// Default destructor
-  virtual ~MpdFemtoBasePairCut()                    { /* no-op */ }
+    virtual ~MpdFemtoBasePairCut() {
+        /* no-op */
+    }
 
-  /// Returns true in pair passed the cut and false if not
-  virtual bool pass(const MpdFemtoPair* pair) = 0;
+    /// Returns true in pair passed the cut and false if not
+    virtual bool pass(const MpdFemtoPair* pair) = 0;
 
-  /// User-written method to return string describing cuts
-  virtual MpdFemtoString report() = 0;
-  /// Returns a TList with settings
-  virtual TList *listSettings() = 0;
+    /// User-written method to return string describing cuts
+    virtual MpdFemtoString report() = 0;
+    /// Returns a TList with settings
+    virtual TList *listSettings() = 0;
 
-  /// Declare event start
-  virtual void eventBegin(const MpdFemtoEvent*) { /* no-op */ }
-  /// Declare event end
-  virtual void eventEnd(const MpdFemtoEvent*)   { /* no-op */ }
-  /// Clone pair cut
-  virtual MpdFemtoBasePairCut* clone() { return nullptr; }
+    /// Declare event start
 
-  /// The following allows "back-pointing" from the CorrFctn
-  /// to the "parent" Analysis
-  friend class MpdFemtoBaseAnalysis;
-  /// Return pointer to the analysis
-  MpdFemtoBaseAnalysis* hbtAnalysis()           { return mBaseAnalysis; }
-  /// Set analysis
-  void setAnalysis(MpdFemtoBaseAnalysis* ana)   { mBaseAnalysis = ana; }
+    virtual void eventBegin(const MpdFemtoEvent*) {
+        /* no-op */
+    }
+    /// Declare event end
 
- protected:
-  /// Pointer to the base analysis
-  MpdFemtoBaseAnalysis* mBaseAnalysis;   //!<!
+    virtual void eventEnd(const MpdFemtoEvent*) {
+        /* no-op */
+    }
+    /// Clone pair cut
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoBasePairCut, 0)
-#endif
+    virtual MpdFemtoBasePairCut* clone() {
+        return nullptr;
+    }
+
+    /// The following allows "back-pointing" from the CorrFctn
+    /// to the "parent" Analysis
+    friend class MpdFemtoBaseAnalysis;
+    /// Return pointer to the analysis
+
+    MpdFemtoBaseAnalysis* hbtAnalysis() {
+        return mBaseAnalysis;
+    }
+    /// Set analysis
+
+    void setAnalysis(MpdFemtoBaseAnalysis* ana) {
+        mBaseAnalysis = ana;
+    }
+
+protected:
+    /// Pointer to the base analysis
+    MpdFemtoBaseAnalysis* mBaseAnalysis; //!<!
+
+    ClassDef(MpdFemtoBasePairCut, 0)
 };
 
 //_________________
-inline MpdFemtoBasePairCut::MpdFemtoBasePairCut() : MpdFemtoCutMonitorHandler(), mBaseAnalysis() { /* empty */ }
+
+inline MpdFemtoBasePairCut::MpdFemtoBasePairCut() : MpdFemtoCutMonitorHandler(), mBaseAnalysis() {
+    /* empty */
+}
 
 //_________________
-inline MpdFemtoBasePairCut::MpdFemtoBasePairCut(const MpdFemtoBasePairCut& /* c */) : MpdFemtoCutMonitorHandler(), mBaseAnalysis(nullptr)
-{ /* empty */ }
+
+inline MpdFemtoBasePairCut::MpdFemtoBasePairCut(const MpdFemtoBasePairCut& /* c */) : MpdFemtoCutMonitorHandler(), mBaseAnalysis(nullptr) {
+    /* empty */
+}
 
 //_________________
-inline MpdFemtoBasePairCut& MpdFemtoBasePairCut::operator=(const MpdFemtoBasePairCut& c)
-{ if ( this != &c ) { mBaseAnalysis = c.mBaseAnalysis; } return *this; }
+
+inline MpdFemtoBasePairCut& MpdFemtoBasePairCut::operator=(const MpdFemtoBasePairCut& c) {
+    if (this != &c) {
+        mBaseAnalysis = c.mBaseAnalysis;
+    }
+    return *this;
+}
 
 #endif // #define MpdFemtoBasePairCut_h

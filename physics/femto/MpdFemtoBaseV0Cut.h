@@ -17,40 +17,54 @@
 #include "MpdFemtoBaseParticleCut.h"
 
 //_________________
+
 class MpdFemtoBaseV0Cut : public MpdFemtoBaseParticleCut {
+public:
+    /// Default constructor
 
- public:
-  /// Default constructor
-  MpdFemtoBaseV0Cut() { /* empty */ }
-  /// Copy constructor
-  MpdFemtoBaseV0Cut(const MpdFemtoBaseV0Cut& copy);
-  /// Assignment operator
-  MpdFemtoBaseV0Cut& operator=(const MpdFemtoBaseV0Cut& c);
-  /// Default destructor
-  virtual ~MpdFemtoBaseV0Cut() {/* empty */}
+    MpdFemtoBaseV0Cut() {
+        /* empty */
+    }
+    /// Copy constructor
+    MpdFemtoBaseV0Cut(const MpdFemtoBaseV0Cut& copy);
+    /// Assignment operator
+    MpdFemtoBaseV0Cut& operator=(const MpdFemtoBaseV0Cut& c);
+    /// Default destructor
 
-  /// Returns true if cut has been passed and false if not
-  virtual bool pass(const MpdFemtoV0* ) = 0;
+    virtual ~MpdFemtoBaseV0Cut() {
+        /* empty */
+    }
 
-  /// Return V0 type
-  virtual MpdFemtoParticleType type() { return hbtV0; }
-  /// Clone V0 cut
-  virtual MpdFemtoBaseV0Cut* clone() { return nullptr; }
+    /// Returns true if cut has been passed and false if not
+    virtual bool pass(const MpdFemtoV0*) = 0;
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoBaseV0Cut, 0)
-#endif
+    /// Return V0 type
+
+    virtual MpdFemtoParticleType type() {
+        return hbtV0;
+    }
+    /// Clone V0 cut
+
+    virtual MpdFemtoBaseV0Cut* clone() {
+        return nullptr;
+    }
+
+    ClassDef(MpdFemtoBaseV0Cut, 0)
 };
 
 //_________________
-inline MpdFemtoBaseV0Cut::MpdFemtoBaseV0Cut(const MpdFemtoBaseV0Cut& c) : MpdFemtoBaseParticleCut(c) { /* empty */ }
+
+inline MpdFemtoBaseV0Cut::MpdFemtoBaseV0Cut(const MpdFemtoBaseV0Cut& c) : MpdFemtoBaseParticleCut(c) {
+    /* empty */
+}
 
 //_________________
+
 inline MpdFemtoBaseV0Cut& MpdFemtoBaseV0Cut::operator=(const MpdFemtoBaseV0Cut& c) {
-  if( this != &c ) {
-    MpdFemtoBaseParticleCut::operator=(c);
-  }
-  return *this;
+    if (this != &c) {
+        MpdFemtoBaseParticleCut::operator=(c);
+    }
+    return *this;
 }
 
 #endif // #define MpdFemtoV0Cut_h

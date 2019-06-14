@@ -17,41 +17,55 @@
 #include "MpdFemtoBaseParticleCut.h"
 
 //_________________
+
 class MpdFemtoBaseXiCut : public MpdFemtoBaseParticleCut {
+public:
+    /// Default constructor
 
- public:
-  /// Default constructor
-  MpdFemtoBaseXiCut() { /* empty */}
-  /// Copy constructor
-  MpdFemtoBaseXiCut(const MpdFemtoBaseXiCut& copy);
-  /// Assignment operator
-  MpdFemtoBaseXiCut& operator=(const MpdFemtoBaseXiCut& copy);
-  /// Default destructor
-  virtual ~MpdFemtoBaseXiCut() { /* empty */ }
+    MpdFemtoBaseXiCut() {
+        /* empty */
+    }
+    /// Copy constructor
+    MpdFemtoBaseXiCut(const MpdFemtoBaseXiCut& copy);
+    /// Assignment operator
+    MpdFemtoBaseXiCut& operator=(const MpdFemtoBaseXiCut& copy);
+    /// Default destructor
 
-  /// Returns true if cut has been passed and false if not
-  virtual bool pass(const MpdFemtoXi* ) = 0;
+    virtual ~MpdFemtoBaseXiCut() {
+        /* empty */
+    }
 
-  /// Return Xi type
-  virtual MpdFemtoParticleType type() { return hbtXi; }
+    /// Returns true if cut has been passed and false if not
+    virtual bool pass(const MpdFemtoXi*) = 0;
 
-  /// Clone Xi cut
-  virtual MpdFemtoBaseXiCut* clone() { return nullptr; }
+    /// Return Xi type
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoBaseXiCut, 0)
-#endif
+    virtual MpdFemtoParticleType type() {
+        return hbtXi;
+    }
+
+    /// Clone Xi cut
+
+    virtual MpdFemtoBaseXiCut* clone() {
+        return nullptr;
+    }
+
+    ClassDef(MpdFemtoBaseXiCut, 0)
 };
 
 //_________________
-inline MpdFemtoBaseXiCut::MpdFemtoBaseXiCut(const MpdFemtoBaseXiCut& c) : MpdFemtoBaseParticleCut(c) { /* no-op */ }
+
+inline MpdFemtoBaseXiCut::MpdFemtoBaseXiCut(const MpdFemtoBaseXiCut& c) : MpdFemtoBaseParticleCut(c) {
+    /* no-op */
+}
 
 //_________________
+
 inline MpdFemtoBaseXiCut& MpdFemtoBaseXiCut::operator=(const MpdFemtoBaseXiCut& c) {
-  if (this != &c ) {
-    MpdFemtoBaseParticleCut::operator=(c);
-  }
-  return *this;
+    if (this != &c) {
+        MpdFemtoBaseParticleCut::operator=(c);
+    }
+    return *this;
 }
 
 #endif // #define MpdFemtoXiCut_h

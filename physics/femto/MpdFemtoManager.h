@@ -40,62 +40,81 @@
 #include "MpdFemtoEvent.h"
 
 //_________________
-class MpdFemtoManager{
 
- public:
-  /// Default constructor
-  MpdFemtoManager();
-  /// Copy constructor
-  MpdFemtoManager(const MpdFemtoManager& copy);
-  /// Copy constructor
-  MpdFemtoManager& operator=(const MpdFemtoManager& man);
-  /// Default destructor
-  virtual ~MpdFemtoManager();
+class MpdFemtoManager {
+public:
+    /// Default constructor
+    MpdFemtoManager();
+    /// Copy constructor
+    MpdFemtoManager(const MpdFemtoManager& copy);
+    /// Copy constructor
+    MpdFemtoManager& operator=(const MpdFemtoManager& man);
+    /// Default destructor
+    virtual ~MpdFemtoManager();
 
-  /// Return pointer to the analysis collection
-  MpdFemtoAnalysisCollection *analysisCollection()     { return mAnalysisCollection; }
-  /// Access to the n-th analysis within Collection
-  MpdFemtoBaseAnalysis *analysis(int n);
-  /// Add analysis
-  void addAnalysis(MpdFemtoBaseAnalysis *analysis)     { mAnalysisCollection->push_back(analysis); }
+    /// Return pointer to the analysis collection
 
-  /// Return pointer to the Collection of event writers
-  MpdFemtoEventWriterCollection* eventWriterCollection()  { return mEventWriterCollection; }
-  /// Access to n-th EventWriter within Collection
-  MpdFemtoBaseEventWriter *eventWriter(int n);
-  /// Add event writer
-  void setEventWriter(MpdFemtoBaseEventWriter *writer) { addEventWriter( writer ); }
-  /// Add event writer
-  void addEventWriter(MpdFemtoBaseEventWriter* writer) { mEventWriterCollection->push_back(writer); }
+    MpdFemtoAnalysisCollection *analysisCollection() {
+        return mAnalysisCollection;
+    }
+    /// Access to the n-th analysis within Collection
+    MpdFemtoBaseAnalysis *analysis(int n);
+    /// Add analysis
 
-  /// Return event reader
-  MpdFemtoBaseEventReader* eventReader()   { return mEventReader; }
-  /// Add EventReader
-  void setEventReader(MpdFemtoBaseEventReader* reader) { mEventReader = reader; }
+    void addAnalysis(MpdFemtoBaseAnalysis *analysis) {
+        mAnalysisCollection->push_back(analysis);
+    }
 
-  /// Calls `init()` on all owned EventWriters
-  /// Returns 0 for success, 1 for failure.
-  int init();
-  /// A "0" return value means success - otherwise quit
-  int processEvent();
-  /// Calls `Finish()` on the EventReader, EventWriters, and the Analyses.
-  void finish();
+    /// Return pointer to the Collection of event writers
 
-  /// Construct report
-  MpdFemtoString report();
+    MpdFemtoEventWriterCollection* eventWriterCollection() {
+        return mEventWriterCollection;
+    }
+    /// Access to n-th EventWriter within Collection
+    MpdFemtoBaseEventWriter *eventWriter(int n);
+    /// Add event writer
 
- private:
+    void setEventWriter(MpdFemtoBaseEventWriter *writer) {
+        addEventWriter(writer);
+    }
+    /// Add event writer
 
-  /// Pointer to a collection of analyses
-  MpdFemtoAnalysisCollection *mAnalysisCollection;
-  /// Pointer to event reader
-  MpdFemtoBaseEventReader *mEventReader;
-  /// Pointer to a collection of event writers
-  MpdFemtoEventWriterCollection *mEventWriterCollection;
+    void addEventWriter(MpdFemtoBaseEventWriter* writer) {
+        mEventWriterCollection->push_back(writer);
+    }
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoManager, 0)
-#endif
+    /// Return event reader
+
+    MpdFemtoBaseEventReader* eventReader() {
+        return mEventReader;
+    }
+    /// Add EventReader
+
+    void setEventReader(MpdFemtoBaseEventReader* reader) {
+        mEventReader = reader;
+    }
+
+    /// Calls `init()` on all owned EventWriters
+    /// Returns 0 for success, 1 for failure.
+    int init();
+    /// A "0" return value means success - otherwise quit
+    int processEvent();
+    /// Calls `Finish()` on the EventReader, EventWriters, and the Analyses.
+    void finish();
+
+    /// Construct report
+    MpdFemtoString report();
+
+private:
+
+    /// Pointer to a collection of analyses
+    MpdFemtoAnalysisCollection *mAnalysisCollection;
+    /// Pointer to event reader
+    MpdFemtoBaseEventReader *mEventReader;
+    /// Pointer to a collection of event writers
+    MpdFemtoEventWriterCollection *mEventWriterCollection;
+
+    ClassDef(MpdFemtoManager, 0)
 };
 
 #endif // MpdFemtoManager_h

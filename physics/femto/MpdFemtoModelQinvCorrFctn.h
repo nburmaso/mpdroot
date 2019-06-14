@@ -19,65 +19,66 @@ class MpdFemtoModelManager;
 class TH1D;
 
 //_________________
-class MpdFemtoModelQinvCorrFctn: public MpdFemtoBaseCorrFctn {
 
- public:
-  /// Default constructor
-  MpdFemtoModelQinvCorrFctn();
-  /// Parametrized constructor
-  MpdFemtoModelQinvCorrFctn(const char *title, const Int_t& nbins,
-                         const Double_t& qInvLow, const Double_t& qInvHi);
-  /// Copy constructor
-  MpdFemtoModelQinvCorrFctn(const MpdFemtoModelQinvCorrFctn& corrFctn);
-  /// Assignment operator
-  MpdFemtoModelQinvCorrFctn& operator=(const MpdFemtoModelQinvCorrFctn& corrFctn);
-  /// Destructor
-  virtual ~MpdFemtoModelQinvCorrFctn();
+class MpdFemtoModelQinvCorrFctn : public MpdFemtoBaseCorrFctn {
+public:
+    /// Default constructor
+    MpdFemtoModelQinvCorrFctn();
+    /// Parametrized constructor
+    MpdFemtoModelQinvCorrFctn(const char *title, const Int_t& nbins,
+            const Double_t& qInvLow, const Double_t& qInvHi);
+    /// Copy constructor
+    MpdFemtoModelQinvCorrFctn(const MpdFemtoModelQinvCorrFctn& corrFctn);
+    /// Assignment operator
+    MpdFemtoModelQinvCorrFctn& operator=(const MpdFemtoModelQinvCorrFctn& corrFctn);
+    /// Destructor
+    virtual ~MpdFemtoModelQinvCorrFctn();
 
-  /// Method that allows front-loading model manager
-  virtual void connectToManager(MpdFemtoModelManager *manager);
+    /// Method that allows front-loading model manager
+    virtual void connectToManager(MpdFemtoModelManager *manager);
 
-  /// Make report
-  virtual MpdFemtoString report();
+    /// Make report
+    virtual MpdFemtoString report();
 
-  /// Add real pair
-  virtual void addRealPair(MpdFemtoPair* pair);
-  /// Add mixed pair
-  virtual void addMixedPair(MpdFemtoPair* pair);
+    /// Add real pair
+    virtual void addRealPair(MpdFemtoPair* pair);
+    /// Add mixed pair
+    virtual void addMixedPair(MpdFemtoPair* pair);
 
-  /// Begin event
-  virtual void eventBegin(const MpdFemtoEvent* event);
-  /// Event end
-  virtual void eventEnd(const MpdFemtoEvent* event);
-  /// Finish
-  virtual void finish();
+    /// Begin event
+    virtual void eventBegin(const MpdFemtoEvent* event);
+    /// Event end
+    virtual void eventEnd(const MpdFemtoEvent* event);
+    /// Finish
+    virtual void finish();
 
-  /// Write histograms
-  virtual void writeOutHistos();
+    /// Write histograms
+    virtual void writeOutHistos();
 
-  /// Return output list
-  virtual TList* getOutputList();
-  /// Clone correlation function
-  virtual MpdFemtoModelQinvCorrFctn* clone() const { return new MpdFemtoModelQinvCorrFctn(*this); }
+    /// Return output list
+    virtual TList* getOutputList();
+    /// Clone correlation function
 
- protected:
+    virtual MpdFemtoModelQinvCorrFctn* clone() const {
+        return new MpdFemtoModelQinvCorrFctn(*this);
+    }
 
-  /// Pointer to the model manager that performs femtoscopic
-  /// weight calculation
-  MpdFemtoModelManager *mManager;
+protected:
 
-  /// Numerator made with pairs from the same event with femtoscopic weight
-  TH1D *mNumeratorWeighted;
-  /// Numerator made with pairs from the same event without weights
-  TH1D *mNumerator;
-  /// Denominator made with mixed pairs with femtoscopic weight
-  TH1D *mDenominatorWeighted;
-  /// Denominator made with mixed pairs without weights
-  TH1D *mDenominator;
+    /// Pointer to the model manager that performs femtoscopic
+    /// weight calculation
+    MpdFemtoModelManager *mManager;
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoModelQinvCorrFctn, 1);
-#endif
+    /// Numerator made with pairs from the same event with femtoscopic weight
+    TH1D *mNumeratorWeighted;
+    /// Numerator made with pairs from the same event without weights
+    TH1D *mNumerator;
+    /// Denominator made with mixed pairs with femtoscopic weight
+    TH1D *mDenominatorWeighted;
+    /// Denominator made with mixed pairs without weights
+    TH1D *mDenominator;
+
+    ClassDef(MpdFemtoModelQinvCorrFctn, 1);
 };
 
 #endif // MpdFemtoModelQinvCorrFctn_h

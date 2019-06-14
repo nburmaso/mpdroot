@@ -17,42 +17,56 @@
 #include "MpdFemtoTrack.h"
 
 //_________________
+
 class MpdFemtoBaseTrackCut : public MpdFemtoBaseParticleCut {
+public:
+    /// Default constructor
+    MpdFemtoBaseTrackCut();
+    /// Copy constructor
+    MpdFemtoBaseTrackCut(const MpdFemtoBaseTrackCut& copy);
+    /// Assignment operator
+    MpdFemtoBaseTrackCut& operator=(const MpdFemtoBaseTrackCut& copy);
+    /// Default destructor
 
- public:
-  /// Default constructor
-  MpdFemtoBaseTrackCut();
-  /// Copy constructor
-  MpdFemtoBaseTrackCut(const MpdFemtoBaseTrackCut& copy);
-  /// Assignment operator
-  MpdFemtoBaseTrackCut& operator=(const MpdFemtoBaseTrackCut& copy);
-  /// Default destructor
-  virtual ~MpdFemtoBaseTrackCut()             {/* no-op */}
+    virtual ~MpdFemtoBaseTrackCut() {
+        /* no-op */
+    }
 
-  /// Returns true if passed the track cut and false if not
-  virtual bool pass(const MpdFemtoTrack* track) = 0;
-  /// Return track type
-  virtual MpdFemtoParticleType type() { return hbtTrack; }
-  /// Clone track cut
-  virtual MpdFemtoBaseTrackCut* clone() { return nullptr; }
+    /// Returns true if passed the track cut and false if not
+    virtual bool pass(const MpdFemtoTrack* track) = 0;
+    /// Return track type
 
-#ifdef __ROOT__
-  ClassDef(MpdFemtoBaseTrackCut, 0)
-#endif
+    virtual MpdFemtoParticleType type() {
+        return hbtTrack;
+    }
+    /// Clone track cut
+
+    virtual MpdFemtoBaseTrackCut* clone() {
+        return nullptr;
+    }
+
+    ClassDef(MpdFemtoBaseTrackCut, 0)
 };
 
 //_________________
-inline MpdFemtoBaseTrackCut::MpdFemtoBaseTrackCut() : MpdFemtoBaseParticleCut() { /* empty */ }
+
+inline MpdFemtoBaseTrackCut::MpdFemtoBaseTrackCut() : MpdFemtoBaseParticleCut() {
+    /* empty */
+}
 
 //_________________
-inline MpdFemtoBaseTrackCut::MpdFemtoBaseTrackCut(const MpdFemtoBaseTrackCut& c) : MpdFemtoBaseParticleCut(c) { /* empty */ }
+
+inline MpdFemtoBaseTrackCut::MpdFemtoBaseTrackCut(const MpdFemtoBaseTrackCut& c) : MpdFemtoBaseParticleCut(c) {
+    /* empty */
+}
 
 //_________________
+
 inline MpdFemtoBaseTrackCut& MpdFemtoBaseTrackCut::operator=(const MpdFemtoBaseTrackCut& c) {
-  if (this != &c ) {
-    MpdFemtoBaseParticleCut::operator=(c);
-  }
-  return *this;
+    if (this != &c) {
+        MpdFemtoBaseParticleCut::operator=(c);
+    }
+    return *this;
 }
 
 #endif // #define MpdFemtoTrackCut_h

@@ -13,9 +13,7 @@
 // ROOT headers
 #include "TMath.h"
 
-#ifdef __ROOT__
 ClassImp(MpdFemtoParticle)
-#endif
 
 float MpdFemtoParticle::mPrimPimPar0 = 9.05632e-01;
 float MpdFemtoParticle::mPrimPimPar1 = -2.26737e-01;
@@ -63,12 +61,14 @@ mTpcTrackExitPointX(0),
 mTpcTrackExitPointY(0),
 mTpcTrackExitPointZ(0),
 mNominalPosSampleX{}, mNominalPosSampleY{}, mNominalPosSampleZ{}
+
 ,
 mTpcV0NegPosSampleX(nullptr),
 mTpcV0NegPosSampleY(nullptr),
 mTpcV0NegPosSampleZ(nullptr),
 mZ {
 }, mU{}, mSect{}
+
 ,
 mV0NegZ(nullptr),
 mV0NegU(nullptr),
@@ -76,6 +76,7 @@ mV0NegSect(nullptr),
 mHiddenInfo(nullptr),
 mPurity {
 }
+
 ,
 mPrimaryVertexX(-999),
 mPrimaryVertexY(-999),
@@ -558,12 +559,14 @@ mTpcTrackExitPointZ(0),
 mNominalPosSampleX{},
 mNominalPosSampleY{},
 mNominalPosSampleZ{}
+
 ,
 mTpcV0NegPosSampleX(nullptr),
 mTpcV0NegPosSampleY(nullptr),
 mTpcV0NegPosSampleZ(nullptr),
 mZ {
 }, mU{}, mSect{}
+
 ,
 mV0NegZ(nullptr), mV0NegU(nullptr), mV0NegSect(nullptr),
 mHiddenInfo(nullptr),
@@ -636,14 +639,17 @@ mEnergy(TMath::Sqrt(hbtV0->ptot2V0() + mass*mass)),
 mTpcTrackEntrancePointX(0), mTpcTrackEntrancePointY(0), mTpcTrackEntrancePointZ(0),
 mTpcTrackExitPointX(0), mTpcTrackExitPointY(0), mTpcTrackExitPointZ(0),
 mNominalPosSampleX{}, mNominalPosSampleY{}, mNominalPosSampleZ{}
+
 ,
 mTpcV0NegPosSampleX(nullptr), mTpcV0NegPosSampleY(nullptr), mTpcV0NegPosSampleZ(nullptr),
 mZ {
 }, mU{}, mSect{}
+
 , mV0NegZ(nullptr), mV0NegU(nullptr), mV0NegSect(nullptr),
 mHiddenInfo(nullptr),
 mPurity {
 }
+
 ,
 mPrimaryVertexX(hbtV0->primaryVertex().X()),
 mPrimaryVertexY(hbtV0->primaryVertex().Y()),
@@ -731,17 +737,20 @@ mTpcTrackExitPointZ(0),
 mNominalPosSampleX{},
 mNominalPosSampleY{},
 mNominalPosSampleZ{}
+
 ,
 mTpcV0NegPosSampleX(nullptr),
 mTpcV0NegPosSampleY(nullptr),
 mTpcV0NegPosSampleZ(nullptr),
 mZ {
 }, mU{}, mSect{}
+
 ,
 mV0NegZ(nullptr), mV0NegU(nullptr), mV0NegSect(nullptr),
 mHiddenInfo(nullptr),
 mPurity {
 }
+
 ,
 mPrimaryVertexX(hbtKink->primaryVertex().X()),
 mPrimaryVertexY(hbtKink->primaryVertex().Y()),
@@ -784,17 +793,20 @@ mTpcTrackExitPointZ(0),
 mNominalPosSampleX{},
 mNominalPosSampleY{},
 mNominalPosSampleZ{}
+
 ,
 mTpcV0NegPosSampleX(nullptr),
 mTpcV0NegPosSampleY(nullptr),
 mTpcV0NegPosSampleZ(nullptr),
 mZ {
 }, mU{}, mSect{}
+
 ,
 mV0NegZ(nullptr), mV0NegU(nullptr), mV0NegSect(nullptr),
 mHiddenInfo(nullptr),
 mPurity {
 }
+
 ,
 mPrimaryVertexX(hbtXi->bachelor()->primaryVertex().X()),
 mPrimaryVertexY(hbtXi->bachelor()->primaryVertex().Y()),
