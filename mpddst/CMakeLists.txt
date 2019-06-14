@@ -1,6 +1,8 @@
 # Create a library called "libMpdDst" which includes the source files given in the array.
 # The extension is already found. Any number of sources could be listed here.
 
+add_subdirectory(mcDst)
+
 set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
  ${CMAKE_SOURCE_DIR}/mcstack
