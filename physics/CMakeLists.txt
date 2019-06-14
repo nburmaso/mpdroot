@@ -1,3 +1,4 @@
+add_subdirectory(femto/fsiTools)
 add_subdirectory(femto)
 
 # Create a library called "MpdPhysics" which includes the source files given in the array.
