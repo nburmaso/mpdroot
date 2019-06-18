@@ -53,7 +53,8 @@ void mpdloadlibs()
 
   // MPD Physics
   gSystem->Load("libMpdPhysics.so");    // common
-  gSystem->Load("libMpdFemto.so");      // femtoscopy
+  gSystem->Load("libMpdFemtoBase.so");      // femtoscopy
+  gSystem->Load("libMpdFemtoUser.so");      // femtoscopy
 }
 
 // check whether file exists
