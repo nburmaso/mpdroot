@@ -13,6 +13,7 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/lhetrack
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/physics/femto 
+ ${CMAKE_SOURCE_DIR}/physics/femto/base 
  ${CMAKE_SOURCE_DIR}/mpddst/mcDst 
 )
 
@@ -35,38 +36,6 @@ link_directories(${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-TpcLocalTransform.cxx
-MpdFemtoXi.cxx
-MpdFemtoVertexMultAnalysis.cxx
-MpdFemtoVertexAnalysis.cxx
-MpdFemtoV0.cxx
-MpdFemtoTriplet.cxx
-MpdFemtoTrack.cxx
-MpdFemtoReactionPlaneAnalysis.cxx
-MpdFemtoPicoEvent.cxx
-MpdFemtoPicoEventCollectionVectorHideAway.cxx
-MpdFemtoPhysicalHelix.cxx
-MpdFemtoParticle.cxx
-MpdFemtoPair.cxx
-MpdFemtoMultiTrackCut.cxx
-MpdFemtoModelWeightGeneratorLednicky.cxx
-MpdFemtoModelManager.cxx
-MpdFemtoModelHiddenInfo.cxx
-MpdFemtoModelGausLCMSFreezeOutGenerator.cxx
-MpdFemtoManager.cxx
-MpdFemtoMaker.cxx
-MpdFemtoLikeSignAnalysis.cxx
-MpdFemtoKink.cxx
-MpdFemtoHelix.cxx
-MpdFemtoEvent.cxx
-MpdFemtoCutMonitorHandler.cxx
-MpdFemtoBaseModelWeightGenerator.cxx
-MpdFemtoBaseModelFreezeOutGenerator.cxx
-MpdFemtoBaseEventReader.cxx
-MpdFemtoBaseCutMonitor.cxx
-MpdFemtoBaseCorrFctn.cxx
-MpdFemtoAnalysis.cxx
-
 MpdFemtoSmearPair.cxx
 MpdFemtoQinvCorrFctnKt.cxx
 MpdFemtoModelQinvCorrFctn.cxx
@@ -86,7 +55,7 @@ MpdFemtoTrackCutMonitor.cxx
 
 Set(HEADERS)
 Set(LINKDEF LinkDef.h)
-Set(LIBRARY_NAME MpdFemto)
+Set(LIBRARY_NAME MpdFemtoUser)
 Set(DEPENDENCIES Core Base Physics MpdBase MpdFsiTools MpdMcDst)
 
 GENERATE_LIBRARY()
