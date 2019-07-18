@@ -15,26 +15,28 @@ void eventdisplay(const char* sim_file = "$VMCWORKDIR/macro/mpd/evetest.root", c
     FairRunAna* fRun = new FairRunAna();
 
     // check file existence with MC data and detector geometry
-    if (!CheckFileExist(sim_file))
+    TString strSimFile(sim_file);
+    if (!CheckFileExist(strSimFile))
     {
         cout<<endl<<"ERROR: Simulation file with detector geometry wasn't found!"<<endl;
         return;
     }
 
     // set source of events to display and addtiional parameters
-    FairSource* fFileSource = new FairFileSource(sim_file);
+    FairSource* fFileSource = new FairFileSource(strSimFile);
 
     // set parameter file with MC data and detector geometry
     FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
     FairParRootFileIo* parIo1 = new FairParRootFileIo();
-    parIo1->open(sim_file);
+    parIo1->open(strSimFile);
     rtdb->setFirstInput(parIo1);
     rtdb->setOutput(parIo1);
     rtdb->saveOutput();
 
     // add file with reconstructed data as a friend
-    if (CheckFileExist(reco_file))
-        ((FairFileSource*)fFileSource)->AddFriend(reco_file);
+    TString strDstFile(reco_file);
+    if (CheckFileExist(strDstFile))
+        ((FairFileSource*)fFileSource)->AddFriend(strDstFile);
     else
         cout<<endl<<"Warning: File with reconstructed data wasn't found!"<<endl;
 
