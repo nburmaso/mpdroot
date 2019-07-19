@@ -50,11 +50,12 @@ void mpdloadlibs()
   gSystem->Load("libLHETrack");
   gSystem->Load("libMpdPid");
   gSystem->Load("libMpdDst");
+  gSystem->Load("libMpdMiniEvent");
 
   // MPD Physics
   gSystem->Load("libMpdPhysics.so");    // common
-  gSystem->Load("libMpdFemtoBase.so");      // femtoscopy
-  gSystem->Load("libMpdFemtoUser.so");      // femtoscopy
+  // gSystem->Load("libMpdFemtoBase.so");      // femtoscopy
+  // gSystem->Load("libMpdFemtoUser.so");      // femtoscopy
 }
 
 // check whether file exists
