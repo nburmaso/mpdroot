@@ -1,0 +1,46 @@
+set(INCLUDE_DIRECTORIES
+${BASE_INCLUDE_DIRECTORIES}
+${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
+)
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+ ${ROOT_INCLUDE_DIR}
+ ${GSL_INCLUDE_DIRS}
+ ${CLHEP_INCLUDE_DIR}
+ ${Boost_INCLUDE_DIRS}
+)
+
+include_directories(${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
+
+set(LINK_DIRECTORIES
+ ${ROOT_LIBRARY_DIR}
+ ${FAIRROOT_LIBRARY_DIR}
+)
+ 
+link_directories(${LINK_DIRECTORIES})
+
+# List of source files
+set(SRCS
+MpdMiniPhysicalHelix.cxx
+MpdMiniEvent.cxx
+MpdMiniDst.cxx
+MpdMiniBECalPidTraits.cxx
+MpdMiniArrays.cxx
+MpdMiniTrack.cxx
+MpdMiniTrackCovMatrix.cxx
+MpdMiniMcTrack.cxx
+MpdMiniMcEvent.cxx
+MpdMiniHelix.cxx
+MpdMiniDstReader.cxx
+MpdMiniBTofPidTraits.cxx
+MpdMiniBTofHit.cxx
+MpdMiniBECalHit.cxx
+)
+
+Set(HEADERS)
+Set(LINKDEF LinkDef.h)
+Set(LIBRARY_NAME MpdMiniEvent)
+Set(DEPENDENCIES Core Base)
+
+GENERATE_LIBRARY()
