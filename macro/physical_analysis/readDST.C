@@ -1,61 +1,62 @@
 /* Macro reads DST file produced by macro reco.C */
 
-void readDST()
-{
- TStopwatch timer;
- timer.Start();
- 
-  /* Load basic libraries */
-  gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-  //  mpdloadlibs(kTRUE,kFALSE); // only reco libs
-  mpdloadlibs(kTRUE,kTRUE); // all libs
+#include <Rtypes.h>
+#include <TChain.h>
+#include <TClonesArray.h>
+#include <TStopwatch.h>
+
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "macro/mpd/mpdloadlibs.C"
+
+void readDST(TString in = "") {
+    if (in.IsNull()) {
+        cout << "Please, provide an input DST-file!" << endl;
+        return;
+    }
+          
+    TStopwatch timer;
+    timer.Start();
+
+    TChain *dstTree = new TChain("cbmsim");
+    dstTree->Add(in.Data());
+
+    // Activate branches
+    MpdEvent *event = nullptr;
+    dstTree->SetBranchAddress("MPDEvent.", &event);
+    TClonesArray *fMCTracks = nullptr;
+    dstTree->SetBranchAddress("MCTrack", &fMCTracks);
+
+    Int_t events = dstTree->GetEntries();
+    cout << " Number of events in DST file = " << events << endl;
+
+    for (Int_t i = 0; i < events; i++) {
+        dstTree->GetEntry(i);
+
+        Int_t Ntracks = event->GetGlobalTracks()->GetEntriesFast();
+
+        cout << " Number of tracks = " << Ntracks << endl;
+        for (Int_t iTrack = 0; iTrack < Ntracks; iTrack++) {
+            MpdTrack* track = (MpdTrack*) event->GetGlobalTracks()->UncheckedAt(iTrack);
             
-  TFile fileDST("mpddst.root");
-    
-  TChain *dstTree = new TChain("cbmsim");
-  dstTree->Add("mpddst.root");
+            //track->Dump();
+            /*cout << "Track id = " << pDSTtrack->GetID()
+             << "  Pt = "    << pDSTtrack->GetPt()
+             << "  Theta = " << pDSTtrack->GetTheta()
+             << "  Phi = "   << pDSTtrack->GetPhi()
+             << "  Px = "  << pDSTtrack->GetPx()
+             << "  Py = "  << pDSTtrack->GetPy()
+             << "  Pz = "  << pDSTtrack->GetPz()
+             << "  Eta = "  << pDSTtrack->GetEta()
+             << endl;
+             */
+            /* See mpddata/MpdTrack.h for more methods */
 
-  // Activate branches
-  MpdEvent *event;
-  dstTree->SetBranchAddress("MPDEvent.", &event);
-  TClonesArray *fMCTracks;
-  dstTree->SetBranchAddress("MCTrack", &fMCTracks);
+        } // track loop
+    } // event loop
 
-  Int_t events = dstTree->GetEntries();
-  cout << " Number of events in DST file = " << events << endl;
+    timer.Print();
 
-  MpdTrack *pDSTtrack;    TClonesArray *mpdTracks;
-  for (Int_t i = 0; i < events; i++){
-      dstTree->GetEntry(i);
-      //event->Get....
-
-      mpdTracks = event->GetGlobalTracks();
-      Int_t fNtracks = mpdTracks->GetEntriesFast();
-
-      cout << " Number of tracks = " << fNtracks << endl;
-      for (Int_t DSTtrackIndex = 0; DSTtrackIndex < fNtracks; DSTtrackIndex++){
-          pDSTtrack = (MpdTrack*) mpdTracks->UncheckedAt(DSTtrackIndex);
-          //pDSTtrack->Get...
-      
-          //track->Dump();
-          /*cout << "Track id = " << pDSTtrack->GetID()
-           << "  Pt = "    << pDSTtrack->GetPt()
-           << "  Theta = " << pDSTtrack->GetTheta()
-           << "  Phi = "   << pDSTtrack->GetPhi()
-           << "  Px = "  << pDSTtrack->GetPx()
-           << "  Py = "  << pDSTtrack->GetPy()
-           << "  Pz = "  << pDSTtrack->GetPz()
-           << "  Eta = "  << pDSTtrack->GetEta()
-           << endl;
-          */
-          /* See mpddata/MpdTrack.h for more methods */
-      
-      } // track loop
-  } // event loop
-     
-  timer.Print();
-
-  cout << " Test passed" << endl;
-  cout << " All ok " << endl;
-  exit(0);
+    cout << " Test passed" << endl;
+    cout << " All ok " << endl;
+    exit(0);
 }
