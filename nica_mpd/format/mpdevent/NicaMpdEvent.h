@@ -21,16 +21,16 @@ class NicaMpdEvent : public NicaExpEvent{
 	};
 	kTrackType fMode;
 protected:
-	virtual void ShallowCopyTracks(NicaEvent *event);
 	virtual void ShallowCopyEvent(NicaEvent *event);
-	void CreateSource();
 	NicaMpdEvent(TString trackname);
 public:
 	NicaMpdEvent();
 	NicaMpdEvent(const 	NicaMpdEvent &other);
+	void CreateSource();
 	void Update();
 	void OnlyPrimary();
 	void OnlyGlobal();
+	virtual Bool_t ExistInTree()const;
 	virtual TString GetFormatName()const;
 	virtual ~NicaMpdEvent();
 	ClassDef(NicaMpdEvent,1)

@@ -21,7 +21,6 @@ friend class NicaMpdDstKalmanEventInterface;
 	kTrackType fMode;
 	MpdEvent *fEvent;
 protected:
-	virtual void FastCopy(NicaEventInterface *s);
 	virtual void ConnectToTree();
 	void Register(Bool_t write);
 public:
@@ -32,7 +31,6 @@ public:
 	virtual void Compress(Int_t *map, Int_t map_size);
 	virtual void CopyAndCompress(NicaEventInterface *s, Int_t *map, Int_t map_size);
 	virtual void FillTrackInterface(NicaTrackInterface *track, Int_t index);
-	virtual Bool_t ExistInTree()const;
 	virtual Int_t GetTotalTrackNo() const;
 	virtual TObject *GetRawEventPointer()const {return fEvent;};
 	virtual NicaTrackInterface *GetTrackInterface()const;

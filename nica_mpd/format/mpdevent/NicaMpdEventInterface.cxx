@@ -146,24 +146,12 @@ void NicaMpdEventInterface::SetRunInfoId(Int_t i) {
 	fEvent->SetRunInfoRunId(i);
 }
 
-void NicaMpdEventInterface::FastCopy(NicaEventInterface* s) {
-	fEvent = ((NicaMpdEventInterface*)s)->fEvent;
-}
-
 void NicaMpdEventInterface::Copy(NicaEventInterface* s) {
 	*fEvent = *((NicaMpdEventInterface*)s)->fEvent;
 }
 
 void NicaMpdEventInterface::SetMagneticField(TVector3 mag) const {
 	fEvent->SetRunInfoMagneticFieldZ(mag.Z());
-}
-
-Bool_t NicaMpdEventInterface::ExistInTree() const {
-	FairRootManager *manager = FairRootManager::Instance();
-	if(manager->CheckBranch("MPDEvent.")){
-		return kTRUE;
-	}
-	return kFALSE;
 }
 
 Int_t NicaMpdEventInterface::GetTotalTrackNo() const {

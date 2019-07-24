@@ -10,6 +10,7 @@
 #include "NicaMpdEvent.h"
 #include "NicaMpdTrack.h"
 #include "NicaMpdEventInterface.h"
+#include "FairRootManager.h"
 
 NicaMpdEvent::NicaMpdEvent(const NicaMpdEvent& other) :NicaExpEvent(other){
 	if(other.fSource) CreateSource();
@@ -96,18 +97,6 @@ TString NicaMpdEvent::GetFormatName() const{
 	}
 }
 
-void NicaMpdEvent::ShallowCopyTracks(NicaEvent* event) {
-	fTracks->Clear();
-	fTotalTracksNo = event->GetTotalTrackNo();
-	fTracks->ExpandCreateFast(fTotalTracksNo);
-	NicaMpdEvent *Event = (NicaMpdEvent*)event;
-	for(int i=0;i<fTotalTracksNo;i++){
-		NicaMpdTrack *from = (NicaMpdTrack*)Event->fTracks->UncheckedAt(i);
-		NicaMpdTrack *to = (NicaMpdTrack*)fTracks->UncheckedAt(i);
-		*to = *from;
-	}
-}
-
 void NicaMpdEvent::ShallowCopyEvent(NicaEvent* event) {
 	NicaExpEvent::ShallowCopyEvent(event);
 }
@@ -124,6 +113,13 @@ void NicaMpdEvent::OnlyGlobal() {
 	if(fSource){
 		((NicaMpdEventInterface*)fSource)->OnlyGlobal();
 	}
+}
+Bool_t NicaMpdEvent::ExistInTree() const {
+	FairRootManager *manager = FairRootManager::Instance();
+	if(manager->CheckBranch("MPDEvent.")){
+		return kTRUE;
+	}
+	return kFALSE;
 }
 
 NicaMpdEvent::~NicaMpdEvent() {
