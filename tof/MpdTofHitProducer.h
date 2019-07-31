@@ -21,12 +21,13 @@ class TH2D;
 //------------------------------------------------------------------------------------------------------------------------
 class MpdTofHitProducer : public MpdTofHitProducerIdeal 
 {
-        Double_t 			fTimeSigma;	// Uncertainties of time, gaus sigma [ns];  default: 0.100
-   	Double_t			fErrX, fErrZ; 	// Uncertainties of coordinates, gaus sigma [cm]; default: dZ = 1./sqrt(12.), dX = 0.5        
-        TRandom2 			*pRandom;            
-						
-	Bool_t 				HitExist(Double_t val); 
-	Bool_t 				DoubleHitExist(Double_t val);
+        Double_t 			fTimeSigma = 0.080; // Uncertainties of time, gaus sigma [ns]
+   	Double_t			fErrX = 0.5, fErrZ = 1./sqrt(12.); // Uncertainties of coordinates, gaus sigma [cm]        
+        TRandom2 			*pRandom = nullptr;            
+					
+	// value - distance to the strip edge [cm], gap - 1,3 = outer strip gap, 2 = middle strip gap	
+	Bool_t 				HitExist(Double_t value, Int_t gap); 
+	Bool_t 				CrossHitExist(Double_t value, Int_t gap);
 				
 public:
 	MpdTofHitProducer(const char *name = "TOF HitProducer", Bool_t useMCdata = true, Int_t verbose = 1, Bool_t DoTest = false, const char *flnm = "QA.MpdTofHitProducer.root");

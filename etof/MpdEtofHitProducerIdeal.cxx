@@ -22,6 +22,7 @@
 #include "MpdEtofHitProducerIdeal.h"
 
 ClassImp(MpdEtofHitProducerIdeal)
+using namespace std;
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofHitProducerIdeal::MpdEtofHitProducerIdeal(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, Bool_t merge, const char *flnm) 
  : MpdTofHitProducerIdeal(name, useMCdata, verbose, test, merge, flnm, true) 
@@ -36,7 +37,7 @@ MpdEtofHitProducerIdeal::~MpdEtofHitProducerIdeal()
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus	MpdEtofHitProducerIdeal::Init() 
 {
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofHitProducerIdeal::Init] Begin initialization.");
+/*	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofHitProducerIdeal::Init] Begin initialization.");
 
 	if(fUseMCData)
 	{
@@ -56,13 +57,13 @@ assert(aExpDigits);
         FairRootManager::Instance()->Register("ETOFHit", "ETof", aTofHits, kTRUE);
 
         FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofHitProducerIdeal::Init] Initialization finished succesfully.");
-
+*/
 return kSUCCESS;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 		MpdEtofHitProducerIdeal::Exec(Option_t* opt) 
 {
-
+/*
 	static const TVector3 XYZ_err(0., 0., 0.); // FIXME:
 
 	aTofHits->Clear();
@@ -98,12 +99,13 @@ void 		MpdEtofHitProducerIdeal::Exec(Option_t* opt)
 		nFinally = aTofHits->GetEntriesFast();
 	
         cout<<" -I- [MpdEtofHitProducerIdeal::Exec] single hits= "<<nSingleHits<<", final hits= "<<nFinally<<endl;
+*/
 }
 //------------------------------------------------------------------------------------------------------------------------
-void 			MpdEtofHitProducerIdeal::Finish()
+/*void 			MpdEtofHitProducerIdeal::Finish()
 {
 	if(pHitProducerQA) pHitProducerQA->Finish(); 
-}
+}*/
 //------------------------------------------------------------------------------------------------------------------------
 
 

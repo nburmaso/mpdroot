@@ -29,9 +29,9 @@ using namespace std;
 ClassImp(MpdTofHitProducer)
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducer::MpdTofHitProducer(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, const char *flnm)
-  : MpdTofHitProducerIdeal(name, useMCdata, verbose, test, true, flnm, false), fTimeSigma(0.100), fErrZ(1./sqrt(12.)), fErrX(0.5),  pRandom(new TRandom2)
+  : MpdTofHitProducerIdeal(name, useMCdata, verbose, test, true, flnm, false)
 {
-
+	pRandom = new TRandom2;
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducer::~MpdTofHitProducer()
@@ -49,45 +49,42 @@ void		MpdTofHitProducer::AddParameters(TString& buf)const
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus 	MpdTofHitProducer::Init()
 {
-	InitStatus status = Initialize();
+	InitStatus status = MpdTofHitProducerIdeal::Init();
 
-	MpdTofGeoUtils::Instance()->ParseTGeoManager(	fUseMCData, 
-							pHitProducerQA ? pHitProducerQA->GetStripLocationHisto() : nullptr, 
-							true); // forced
+	MpdTofGeoUtils::Instance()->ParseTGeoManager(pQA, true);//, "geometryTree.txt"); // forced
 							
-	MpdTofGeoUtils::Instance()->FindNeighborStrips(	0.8,	// 0.8 [cm] <--- thresh. distance between neighbor strips,  (see h1TestDistance histo)
-							pHitProducerQA ? pHitProducerQA->GetDistanceHisto() : nullptr, 
-							pHitProducerQA ? pHitProducerQA->GetNeighborPairHisto(): nullptr, 
+	MpdTofGeoUtils::Instance()->FindNeighborStrips(0.8, pQA, // 0.8 [cm] <--- thresh. distance between neighbor strips			
 							true); // forced
 
-        FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducer::Init] Initialization finished succesfully.");
+	LOG(DEBUG)<<"[MpdTofHitProducer::Init] Initialization finished succesfully.";
 
 return kSUCCESS;
 }
 //------------------------------------------------------------------------------------------------------------------------
-Bool_t 	MpdTofHitProducer::HitExist(Double_t val) // val - distance to the pad edge [cm]
+Bool_t 	MpdTofHitProducer::HitExist(Double_t value, Int_t gap) // value - distance to the strip edge [cm]
 {
-  const static Double_t slope = (0.98 - 0.95)/0.2;
-  Double_t efficiency = (val > 0.2) ? 0.98 : ( 0.95 + slope*val);
+	constexpr Double_t slope = (0.98 - 0.95)/0.2;
+	Double_t efficiency = (value > 0.2) ? 0.98 : ( 0.95 + slope*value);
 	
   //-------------------------------------
   // 99% ---------
   //              \
-    //               \
-    //                \
-    // 95%             \ 
-    //  <-----------|--|
-    //            0.2  0.
-    //-------------------------------------
-	
-    if(pRandom->Rndm() < efficiency) return true;
-    return false;	
+  //               \
+  //                \
+  // 95%             \ 
+  //  <-----------|--|
+  //            0.2  0. value
+  //-------------------------------------
+	if(gap == 1 || gap == 3) efficiency /= 2.; // reduce efficiency on outer strip gap
+
+	if(pRandom->Rndm() < efficiency) return true;
+return false;	
 }
 //------------------------------------------------------------------------------------------------------------------------
-Bool_t 	MpdTofHitProducer::DoubleHitExist(Double_t val) // val - distance to the pad edge  [cm]
+Bool_t 	MpdTofHitProducer::CrossHitExist(Double_t value, Int_t gap) // value - distance to the strip edge  [cm]
 {
-  const static Double_t slope = (0.3 - 0.0)/0.5;
-  Double_t efficiency = (val > 0.5) ? 0. : (0.3 - slope*val);
+	constexpr Double_t slope = (0.3 - 0.0)/0.5;
+	Double_t efficiency = (value > 0.5) ? 0. : (0.3 - slope*value);
 	
   //-------------------------------------
   // 30%               /
@@ -95,14 +92,16 @@ Bool_t 	MpdTofHitProducer::DoubleHitExist(Double_t val) // val - distance to the
   //                 / 
   //                /
   // 0%            /  
-  //  <-----------|----|
-  //            0.5    0.
+  //  <-----------|----| 
+  //            0.5    0. value
   //-------------------------------------
 	
-  if(efficiency == 0.) return false;
-	
-  if(pRandom->Rndm() < efficiency) return HitExist(val);
-  return false;	
+	if(efficiency == 0.) return false;
+
+	if(gap == 1 || gap == 3) efficiency /= 2.; // reduce efficiency on outer strip gap	
+
+	if(pRandom->Rndm() < efficiency) return true;
+return false;	
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 			MpdTofHitProducer::Exec(Option_t *option)
@@ -110,67 +109,64 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 	static const TVector3 XYZ_err(fErrX, 0., fErrZ); // error for perpendicular Y axis strips
 
 	aTofHits->Clear();
-	
-	Int_t 		UID, trackID;	
-	TVector3 	pos, XYZ_smeared, errRotated; 	
-    	int		nSingleHits = 0, nDoubleHits = 0;
+
+	TVector3 	mcPosition, smearedPosition, errRotated; 	
+    	int		nSingleHits = 0, nCrossHits = 0;
 	
 	if(fUseMCData)
 	{	
 		for(Int_t pointIndex = 0, nTofPoint = aMcPoints->GetEntriesFast(); pointIndex < nTofPoint; pointIndex++ )  // cycle by TOF points
 		{
-			MpdTofPoint *pPoint = (MpdTofPoint*) aMcPoints->UncheckedAt(pointIndex);
+			auto pPoint = (MpdTofPoint*) aMcPoints->UncheckedAt(pointIndex);
 		
 			if(fVerbose > 2) pPoint->Print(""); 		
   
-			trackID = pPoint->GetTrackID();	
-			UID	= pPoint->GetDetectorID();
+			Int_t tid = pPoint->GetTrackID();	
+			Int_t suid = pPoint->GetDetectorID();
+			Int_t gap = pPoint->GetGap();
+
 			Double_t time = pRandom->Gaus(pPoint->GetTime(), fTimeSigma); // default 100 ps		
-			pPoint->Position(pos);
-	
-			const LStrip *pStrip = MpdTofGeoUtils::Instance()->FindStrip(UID);
+			pPoint->Position(mcPosition);
+
+			const LStrip *pStrip = MpdTofGeoUtils::Instance()->FindStrip(suid);
 			double perpPhi = pStrip->perp.Phi(); // [rad]
 		
-			TVector3 posRotated(pos);
+			TVector3 posRotated(mcPosition);
 			posRotated.RotateZ(-perpPhi); // rotate to perpendicular Y axis LRS
 		
-			XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z()); // smearing along x axis
-			XYZ_smeared.RotateZ(perpPhi); // rotate to real strip orientation
+			smearedPosition.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z()); // smearing along x axis
+			smearedPosition.RotateZ(perpPhi); // rotate to real strip orientation
 
 			errRotated = XYZ_err;
 			errRotated.RotateZ(perpPhi); // rotate to real strip orientation
 
 			LStrip::Side_t side;
-			Double_t distance = pStrip->MinDistanceToEdge(&pos, side); // [cm]
+			Double_t distance = pStrip->MinDistanceToEdge(&mcPosition, side); // [cm]
 
-			bool passed;
-			if(passed = HitExist(distance)) // simulate hit efficiency 
+			bool stripFired;
+			if(stripFired = HitExist(distance, gap))  // simulate hit efficiency
 			{
-			 	AddHit(UID, XYZ_smeared, errRotated, pointIndex, trackID, time, MpdTofUtils::IsSingle); 	
-			 	nSingleHits++;
-			 	
-			 	if(pHitProducerQA) pHitProducerQA->FillSingleHitPosition(pos, XYZ_smeared);			 	
+			 	AddHit(MpdTofPoint::ClearGap(suid), smearedPosition, errRotated, pointIndex, tid, time, MpdTofUtils::IsSingle); 	
+			 	nSingleHits++;		 	
 			} 
 		
-			if(pHitProducerQA) pHitProducerQA->GetSingleHitEfficiency()->Fill(passed, distance);
-        		
-        		if(passed = DoubleHitExist(distance)) // simulate cross hit
+			if(pQA) pQA->FillHitEfficiency(stripFired, distance, gap, mcPosition, smearedPosition);
+	
+	     		if(stripFired = CrossHitExist(distance, gap)) // simulate cross hit
         		{
-        			Int_t CrossUID = (side == LStrip::kRight) ? pStrip->neighboring[LStrip::kRight] : pStrip->neighboring[LStrip::kLeft];
+        			Int_t crossSuid = (side == LStrip::kRight) ? pStrip->neighboring[LStrip::kRight] : pStrip->neighboring[LStrip::kLeft];
+  
+  				if(LStrip::kInvalid  == crossSuid) continue; // edge strip on detector
   			
-  				if(LStrip::kInvalid  == CrossUID) continue; // last strip on module
-  			
-  				pStrip = MpdTofGeoUtils::Instance()->FindStrip(CrossUID);
-        			XYZ_smeared.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
-        			XYZ_smeared.RotateZ(perpPhi);
+  				pStrip = MpdTofGeoUtils::Instance()->FindStrip(crossSuid);
+        			smearedPosition.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
+        			smearedPosition.RotateZ(perpPhi);
         			
-        			AddHit(CrossUID, XYZ_smeared, errRotated, pointIndex, trackID, time, MpdTofUtils::IsDouble); 
-        			nDoubleHits++;
-        			
-        			if(pHitProducerQA) pHitProducerQA->FillDoubleHitPosition(pos, XYZ_smeared);        			
+        			AddHit(MpdTofPoint::ClearGap(crossSuid), smearedPosition, errRotated, pointIndex, tid, time, MpdTofUtils::IsDouble); 
+        			nCrossHits++;			
         		}
-        	
-        		if(pHitProducerQA) pHitProducerQA->GetDoubleHitEfficiency()->Fill(passed, distance);
+
+        		if(pQA) pQA->FillCrossHitEfficiency(stripFired, distance, gap, mcPosition, smearedPosition);
 
 		}	// cycle by the TOF points
 	
@@ -184,14 +180,20 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 	
 	MergeHitsOnStrip(); // save only the fastest hit in the strip
 
-	int nFinally = CompressHits(); // remove blank slotes
+	int Nhits = CompressHits(); // remove blank slotes
 
-        cout<<" -I- [MpdTofHitProducer::Exec] single hits= "<<nSingleHits<<", double hits= "<<nDoubleHits<<", final hits= "<<nFinally<<endl;
+	if(fUseMCData && pQA)
+	{
+		pQA->FillNPointsHits(aMcPoints->GetEntriesFast(), Nhits);
+		pQA->FillHitDistance(aTofHits);
+	}
+
+	LOG(DEBUG1)<<"[MpdTofHitProducer::Exec] single hits= "<<nSingleHits<<", cross hits= "<<nCrossHits<<", final hits= "<<Nhits;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 			MpdTofHitProducer::Finish()
 {
-	if(pHitProducerQA) pHitProducerQA->Finish(); 
+	if(pQA) pQA->Finish(); 
 }
 //--------------------------------------------------------------------------------------------------------------------------------------
 void 		MpdTofHitProducer::SetSeed(UInt_t seed)

@@ -26,7 +26,7 @@
 #include "MpdEtof.h"
 
 ClassImp(MpdEtof)
-
+using namespace std;
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtof::MpdEtof(const char* name, Bool_t active)
  : FairDetector(name, active),  nan(std::numeric_limits<double>::quiet_NaN())
@@ -68,7 +68,7 @@ Bool_t  MpdEtof::ProcessHits(FairVolume* vol)
 		gMC->CurrentVolOffID(2, box);
 		gMC->CurrentVolOffID(3, sector);
 		
-		fVolumeID = MpdTofPoint::GetVolumeUID(sector, box, detector, strip);							
+		fVolumeID = MpdTofPoint::GetSuid(sector, box, detector, strip);							
 
 		AddPoint(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss);
 

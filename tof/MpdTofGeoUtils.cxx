@@ -1,35 +1,37 @@
 //------------------------------------------------------------------------------------------------------------------------
 #include <assert.h>
 #include <iostream>
+#include <fstream>
 
 #include <TGeoManager.h>
-#include "TClonesArray.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TGeoMatrix.h"
-#include "TGeoBBox.h"
-#include "TGeoNode.h"
+#include <TRandom2.h>
+#include <TRotation.h>
+#include <TClonesArray.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TMath.h>
+#include <TGeoMatrix.h>
+#include <TGeoBBox.h>
+#include <TGeoNode.h>
 
 #include "FairRootManager.h"
 #include "FairLogger.h"
 
+#include "MpdTof.h"
+#include "MpdTofHitProducerQA.h"
 #include "MpdTofPoint.h"
 #include "MpdTofGeoUtils.h"
 
+using namespace std;
+
 MpdTofGeoUtils*	MpdTofGeoUtils::instance = nullptr;
 //------------------------------------------------------------------------------------------------------------------------
-MpdTofGeoUtils::MpdTofGeoUtils()
-{
-
-}
-//------------------------------------------------------------------------------------------------------------------------
-void		MpdTofGeoUtils::FindNeighborStrips(Double_t thresh, TH1D* h1, TH2D* h2, bool forced)
+void		MpdTofGeoUtils::FindNeighborStrips(Double_t thresh, MpdTofHitProducerQA *pQA, bool forced)
 {
 	static bool found = false;	
 	if( !forced &&  found) return; // neighbor strips already found and filled
-	
-	size_t NR = 0, NL= 0;
-	
+
+	size_t NR = 0, NL= 0;	
 	for(auto& it1 : mStrips) // cycle1 by strips
 	{
 		LStrip *strip1 = &(it1.second);
@@ -38,81 +40,80 @@ void		MpdTofGeoUtils::FindNeighborStrips(Double_t thresh, TH1D* h1, TH2D* h2, bo
 		{
 			const LStrip *strip2 = &(it2.second);
 
-			if(strip1 == strip2) continue; // skip cross-reference
+			if(strip1 == strip2) continue; // skip calculate yourself
 	
 			// CATION: Ckeck  only left and right sides(one row strips NOW) 
 			double distance = strip1->Distance(LStrip::kRight, *strip2); 
-			if(h1)  h1->Fill(distance);		
-			if(distance < thresh) 
+
+			if(pQA)  pQA->FillDistanceToStrip(distance);
+			if(distance < thresh && MpdTofPoint::IsSameGap(strip1->volumeUID, strip2->volumeUID)) 
 			{
 			 	strip1->neighboring[LStrip::kRight] = strip2->volumeUID; NR++;
-			 	if(h2) h2->Fill(strip1->stripID, strip2->stripID);
+			 	if(pQA) pQA->FillNeighborPairs(strip2->stripID, strip1->stripID);
 			}
 			
 			distance = strip1->Distance(LStrip::kLeft, *strip2); 
-			if(h1)  h1->Fill(distance);
-			if(distance < thresh) 
+
+			if(pQA)  pQA->FillDistanceToStrip(distance* -1.);
+			if(distance < thresh && MpdTofPoint::IsSameGap(strip1->volumeUID, strip2->volumeUID)) 
 			{
 				strip1->neighboring[LStrip::kLeft] = strip2->volumeUID; NL++;
-				if(h2) h2->Fill( strip2->stripID, strip1->stripID);	
+				if(pQA) pQA->FillNeighborPairs(strip2->stripID, strip1->stripID);	
 			}			
 
-		}// cycle2 by strips	
+		} // cycle2 by strips	
 		
-	}// cycle1 by strips
+	} // cycle1 by strips
 	
 	found = true;
 	
-	cout<<" [MpdTofGeoUtils::FindNeighborStrips] Neighbor strips: left = "<<NL<<", right = "<<NR<<endl;
+	LOG(DEBUG1)<<"[MpdTofGeoUtils::FindNeighborStrips] Neighbor strips: left = "<<NL<<", right = "<<NR<<".";
 }
 //------------------------------------------------------------------------------------------------------------------------	
-void		MpdTofGeoUtils::ParseTGeoManager(bool useMCinput, TH2D* h2, bool forced)
+void		MpdTofGeoUtils::ParseTGeoManager(MpdTofHitProducerQA *pQA, bool forced, const char* flnm)
 {
-static const double degree180 = 3.14159265359; // 180 degree to rad
-
+	constexpr double degree180 = TMath::Pi();
 assert(gGeoManager);
 
 	if( !forced &&  !mStrips.empty()) return; // already parsed and filled
 
 	mStrips.clear();
 
-	TString pathTOF = "/cave_1/tof1_0", stripName = "/tof1StripActiveGasV_1";
+	ofstream ofs;
+	if(flnm) ofs.open(flnm);
+
+	const TString pathTOF = "/cave_1/tof1_0";
 	gGeoManager->cd(pathTOF);
-	
-	TGeoNode *sectorNode, *boxNode, *detectorNode, *stripBoxNode, *stripNode;
-	Int_t volumeUID, sectorID, boxID, detectorID, stripID; // strip[1,...,24], detector [1,...,6], box [1,...,2], sector [1,...,24]
 
 	Double_t *X0Y0Z0 = new Double_t[3]; X0Y0Z0[0] = X0Y0Z0[1] = X0Y0Z0[2] = 0.; // center of sensetive detector
 	Double_t  *local = new Double_t[3], master[3],  dX, dY, dZ;
-	
+	int nSectors = 0, nDetectors = 0, nStrips = 0;
+
   	TObjArray *array = gGeoManager->GetCurrentVolume()->GetNodes();
-  	auto  it1 = array->MakeIterator(); int nSectors = 0, nBoxs = 0, nDetectors = 0, nStrips = 0;	
+  	auto  it1 = array->MakeIterator(); 	
   	
-  	vector<intervalType> vDetectorsZ, vDetectorsPhi;
-   	vector<intervalType> vStripsZ, vStripsPhi; 	
+  	vector<Tinterval> vDetectorsZ, vDetectorsPhi;
+   	vector<Tinterval> vStripsZ, vStripsPhi; 	
   	
-  	while( (sectorNode = (TGeoNode*) it1->Next()) )			// SECTORS vSector_#, vZBox_#, DetectorBoxV_# +, StripBoxV_#, StripActiveGasV_# +
+  	while( TGeoNode *sectorNode = (TGeoNode*) it1->Next() )			// SECTORS vSector_#, DetectorBoxV_# +, StripBoxV_#, StripActiveGasV_# +
     	{
-    		TString PATH1 = pathTOF + "/" + sectorNode->GetName(); sectorID = sectorNode->GetNumber(); nSectors++;
-		///cout<<"\n SECTOR: "<<sectorNode->GetName()<<", copy# "<<sectorID<<" path= "<<PATH1.Data();
-    	
-    	    	auto it2 = sectorNode->GetNodes()->MakeIterator(); 		
-      		while( (boxNode = (TGeoNode*) it2->Next()) )		// BOXES
-		{
-	 		TString boxName = boxNode->GetName();
-	 		if(!boxName.Contains("Box")) continue;
-	 		
-	 		TString PATH2 = PATH1 + "/" + boxName; boxID = boxNode->GetNumber(); nBoxs++;
-	  		///cout<<"\n\t BOX: "<<boxName.Data()<<", copy# "<<boxID<<" path= "<<PATH2.Data();
-	  		
-	  		auto it3 = boxNode->GetDaughter(0)->GetNodes()->MakeIterator();
-	  		while( (detectorNode = (TGeoNode*) it3->Next()) )	// DETECTORS
-	    		{
+    		TString PATH1 = pathTOF + "/" + sectorNode->GetName(); 
+		Int_t sectorID = sectorNode->GetNumber();  // sector [1,...,14]
+		nSectors++;
+
+		if(ofs.is_open()) ofs<<"\n SECTOR: "<<sectorNode->GetName()<<", copy# "<<sectorID<<" path= "<<PATH1.Data();
+	
+	  	auto it3 = sectorNode->GetNodes()->MakeIterator();
+	  	while( TGeoNode *detectorNode = (TGeoNode*) it3->Next() )	// DETECTORS
+	    	{
 	    			TString detName = detectorNode->GetName();
-	    			if(!detName.Contains("Detector")) continue;
-	    			
-	    			TString PATH3 = PATH2  + "/vSectorAir_1/" + detName; detectorID = detectorNode->GetNumber(); nDetectors++;
-				///cout<<"\n\t\t DETECTOR: "<<detName.Data()<<", copy# "<<detectorID<<" path= "<<PATH3.Data();   
+	    			if(!detName.Contains("DetectorBox")) continue;
+
+	    			TString PATH3 = PATH1  + "/" + detName; 
+				Int_t detectorID = detectorNode->GetNumber(); // detector [1,...,20]
+				nDetectors++;
+
+				if(ofs.is_open()) ofs<<"\n\t\t DETECTOR: "<<detName.Data()<<", copy# "<<detectorID<<" path= "<<PATH3.Data();   
 				
 				gGeoManager->cd(PATH3);	
 				
@@ -122,52 +123,49 @@ assert(gGeoManager);
 				TGeoBBox *box = (TGeoBBox*) gGeoManager->GetCurrentNode()->GetVolume()->GetShape(); 		
 				dX = box->GetDX(); dY = box->GetDY(); dZ = box->GetDZ();	
 				
-				TVector3 A,B,C,D; 
+				TVector3 A,B,C,D; // detector edges
 				auto Z_range = make_pair(1.e+10, -1.e+10), Phi_range(Z_range);
 			
-				local[0] = -dX;	local[1] = -dY +1.3; local[2] = +dZ;
+				local[0] = -dX;	local[1] = -dY +1.3-0.12; local[2] = +dZ;
 				localToMaster(matrix, local, A, Z_range, Phi_range);
 
-				local[0] = +dX;	local[1] = -dY +1.3; local[2] = +dZ;
+				local[0] = +dX;	local[1] = -dY +1.3-0.12; local[2] = +dZ;
 				localToMaster(matrix, local, B, Z_range, Phi_range);	
 
-				local[0] = +dX;	local[1] = -dY +1.3; local[2] = -dZ;
+				local[0] = +dX;	local[1] = -dY +1.3-0.12; local[2] = -dZ;
 				localToMaster(matrix, local, C, Z_range, Phi_range);	
 
-				local[0] = -dX;	local[1] = -dY +1.3; local[2] = -dZ;
+				local[0] = -dX;	local[1] = -dY +1.3-0.12; local[2] = -dZ;
 				localToMaster(matrix, local, D, Z_range, Phi_range);					
-					
-				if(h2)
-				{
-					h2->Fill(A.Z(), A.Phi());
-					h2->Fill(B.Z(), B.Phi());	
-					h2->Fill(C.Z(), C.Phi());
-					h2->Fill(D.Z(), D.Phi());
-				}
+				
+				if(pQA) pQA->FillDetectorsMap(A, B, C, D);
 							
 				// Add Detector location interval to intervalTree
-				volumeUID = MpdTofPoint::GetVolumeUID(sectorID, boxID, detectorID, 0); // volumeUID for 0th strip of the selected detector
-				LRectangle * det = new LRectangle(volumeUID, A, B, C, D);
+				Int_t duid = MpdTofPoint::ClearGap(MpdTofPoint::GetSuid(sectorID, detectorID, 0)); // suid for 0th strip of the selected detector, gap reset to 0
+				LRectangle * det = new LRectangle(duid, A, B, C, D);
 				det->InitCenterPerp();
 				
-				vDetectorsZ.push_back(intervalType(Z_range.first, Z_range.second, det));
+				vDetectorsZ.push_back(Tinterval(Z_range.first, Z_range.second, det));
 				
 				if(Phi_range.second - Phi_range.first > degree180) // segment overlap the boundary [-180.,+180[
 				{
-					vDetectorsPhi.push_back(intervalType(-degree180,  Phi_range.first, det));
-				 	vDetectorsPhi.push_back(intervalType(Phi_range.second,  degree180, det));
+					vDetectorsPhi.push_back(Tinterval(-degree180,  Phi_range.first, det));
+				 	vDetectorsPhi.push_back(Tinterval(Phi_range.second,  degree180, det));
 				 	cout<<"\n OVERLAPED   phimin="<<Phi_range.first<<", phimax="<<Phi_range.second;			
 				}
-				else vDetectorsPhi.push_back(intervalType(Phi_range.first, Phi_range.second, det));	
+				else vDetectorsPhi.push_back(Tinterval(Phi_range.first, Phi_range.second, det));	
 								
 				auto it4 = detectorNode->GetNodes()->MakeIterator();
-	  			while( (stripBoxNode = (TGeoNode*) it4->Next()) )	// STRIPS
+	  			while( TGeoNode *stripBoxNode = (TGeoNode*) it4->Next() )	// STRIPS
 	    			{
 	    				TString stripBoxName = stripBoxNode->GetName();
-	    				if(!stripBoxName.Contains("Strip")) continue;
+	    				if(!stripBoxName.Contains("StripActiveGas")) continue;
 	    				
-	    				TString PATH4 = PATH3  + "/" + stripBoxName; stripID = stripBoxNode->GetNumber(); nStrips++;
-					///cout<<"\n\t\t\t STRIP: "<<stripBoxName.Data()<<", copy# "<<stripID<<" path= "<<PATH4.Data();   
+	    				TString PATH4 = PATH3  + "/" + stripBoxName; 
+					Int_t stripID = stripBoxNode->GetNumber(); // strip[1,...,72]
+					nStrips++;
+
+					if(ofs.is_open()) ofs<<"\n\t\t\t STRIP: "<<stripBoxName.Data()<<", copy# "<<stripID<<" path= "<<PATH4.Data();   
 					
 					gGeoManager->cd(PATH4);				// cd to strip sensitive gas node
 					
@@ -177,68 +175,72 @@ assert(gGeoManager);
 					TGeoBBox *box4 = (TGeoBBox*) gGeoManager->GetCurrentNode()->GetVolume()->GetShape(); 		
 					dX = box4->GetDX(); dY = box4->GetDY(); dZ = box4->GetDZ();				
 					
-					volumeUID = MpdTofPoint::GetVolumeUID(sectorID, boxID, detectorID, stripID);
-					///cout<<"\n uid="<<volumeUID<<", center= "<<master[0]<<", "<<master[1]<<", "<<master[2]<<", dXYZ= "<<dX<<", "<<dY<<", "<<dZ;	
-					///cout<<"\n sectorID= "<<sectorID<<", boxID= "<<boxID<<", detectorID= "<<detectorID<<", stripID= "<<stripID;
+					Int_t suid = MpdTofPoint::GetSuid(sectorID, detectorID, stripID);
+
+					if(ofs.is_open())
+					{ 
+						MpdTofPoint::PrintSuid(suid, "\n\t\t\t\t Add strip:", ofs); 
+						ofs<<" center= "<<master[0]<<", "<<master[1]<<", "<<master[2]<<", dXYZ= "<<dX<<", "<<dY<<", "<<dZ;
+					}	
 														
-					LStrip stripData(volumeUID, sectorID, boxID, detectorID, stripID);
-					stripData.center.SetXYZ(master[0], master[1], master[2]);
+					LStrip strip(suid, sectorID, detectorID, stripID);
+					strip.center.SetXYZ(master[0], master[1], master[2]);
 
 					auto sZ_range = make_pair(1.e+10, -1.e+10), sPhi_range(sZ_range);
+//
+//   ^ +Z   
+//   |     A             right side               B
+//   |       |----------------------------------|
+//   |       |-------------strip----------------|
+//   |     D             left side                C
+//   |-------------------------------------------------> +X
+//   | -Z
 					
 					// edges on the front plate of the strips. perp along Y.
 					local[0] = -dX;	local[1] = -dY; local[2] = +dZ;
-					localToMaster(matrix4, local, stripData.A, sZ_range, sPhi_range);
+					localToMaster(matrix4, local, strip.A, sZ_range, sPhi_range);
 
 					local[0] = +dX;	local[1] = -dY; local[2] = +dZ;
-					localToMaster(matrix4, local, stripData.B, sZ_range, sPhi_range);	
+					localToMaster(matrix4, local, strip.B, sZ_range, sPhi_range);	
 					
 					local[0] = +dX;	local[1] = -dY; local[2] = -dZ;
-					localToMaster(matrix4, local, stripData.C, sZ_range, sPhi_range);				
+					localToMaster(matrix4, local, strip.C, sZ_range, sPhi_range);				
 									
 					local[0] = -dX;	local[1] = -dY; local[2] = -dZ;
-					localToMaster(matrix4, local, stripData.D, sZ_range, sPhi_range);
+					localToMaster(matrix4, local, strip.D, sZ_range, sPhi_range);
 					
-					stripData.InitCenterPerp();
+					strip.InitCenterPerp();
 					
-					if(h2)
-					{
-						h2->Fill(stripData.A.Z(), stripData.A.Phi());
-						h2->Fill(stripData.B.Z(), stripData.B.Phi());	
-						h2->Fill(stripData.C.Z(), stripData.C.Phi());
-						h2->Fill(stripData.D.Z(), stripData.D.Phi());
-					}
-					auto pStrip = new LStrip(stripData);
+					if(pQA) pQA->FillStripsMap(strip.A, strip.B, strip.C, strip.D);
+
+					auto pStrip = new LStrip(strip);
 					
-					vStripsZ.push_back(intervalType(sZ_range.first, sZ_range.second, pStrip));
+					vStripsZ.push_back(Tinterval(sZ_range.first, sZ_range.second, pStrip));
 				
 					if(sPhi_range.second - sPhi_range.first > degree180) // segment overlap the boundary [-180.,+180[
 					{
-						vStripsPhi.push_back(intervalType(-degree180, sPhi_range.first, pStrip));
-				 		vStripsPhi.push_back(intervalType(sPhi_range.second,  degree180, pStrip));
-				 		cout<<"\n OVERLAPED strip  phimin="<<sPhi_range.first<<", phimax="<<sPhi_range.second;			
+						vStripsPhi.push_back(Tinterval(-degree180, sPhi_range.first, pStrip));
+				 		vStripsPhi.push_back(Tinterval(sPhi_range.second,  degree180, pStrip));
+				 		if(ofs.is_open()) ofs<<"\n OVERLAPED strip  phimin="<<sPhi_range.first<<", phimax="<<sPhi_range.second;			
 					}
-					else vStripsPhi.push_back(intervalType(sPhi_range.first, sPhi_range.second, pStrip));
-									
-///stripData.Dump("\n strip:");		
-					bool IsUniqueUID = mStrips.insert(make_pair(volumeUID, stripData)).second;
-assert(IsUniqueUID);			
-											
+					else vStripsPhi.push_back(Tinterval(sPhi_range.first, sPhi_range.second, pStrip));								
+///strip.Dump("\n strip:");		
+					bool IsUniqueUID = mStrips.insert(make_pair(suid, strip)).second;
+assert(IsUniqueUID);										
 	    			} // STRIPS
 	    				
-	    		} // DETECTORS  		
-	  		
-	  	} // BOXES 	
-	  	
+	    		} // DETECTORS	  	
     	} // SECTORS
 
-    	mStripsZ = intervalTreeType(vStripsZ); 
-    	mStripsPhi = intervalTreeType(vStripsPhi);
+    	mStripsZ = TintervalTree(vStripsZ); 
+    	mStripsPhi = TintervalTree(vStripsPhi);
     	
-      	mDetectorsZ = intervalTreeType(vDetectorsZ); 
-    	mDetectorsPhi = intervalTreeType(vDetectorsPhi);  	
+      	mDetectorsZ = TintervalTree(vDetectorsZ); 
+    	mDetectorsPhi = TintervalTree(vDetectorsPhi);  	
     	
-    	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTof::ParseTGeoManager] Sectors= %d, boxes= %d, detectors= %d, strips= %d. ", nSectors, nBoxs, nDetectors, nStrips);
+	if(ofs.is_open()) ofs.close();
+
+	LOG(DEBUG1)<<"[MpdTof::ParseTGeoManager] Sectors="<<nSectors<<", detectors="<<nDetectors<<", strips="<<nStrips<<".";
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 	MpdTofGeoUtils::localToMaster(const TGeoMatrix *matrix, Double_t* local, TVector3& position, pair<double, double>& Z, pair<double,double>& Phi)const
@@ -254,31 +256,22 @@ void 	MpdTofGeoUtils::localToMaster(const TGeoMatrix *matrix, Double_t* local, T
 	Phi.second = std::max(position.Phi(), Phi.second);
 }
 //------------------------------------------------------------------------------------------------------------------------
-const LStrip*		MpdTofGeoUtils::FindStrip(Int_t UID) 
+const LStrip*		MpdTofGeoUtils::FindStrip(Int_t suid) const
 {
-	auto cit = mStrips.find(UID);
-assert(cit != mStrips.end());
+	auto cit = mStrips.find(suid);
+assert(!(cit == mStrips.end() && MpdTofPoint::PrintSuid(suid, "\n [MpdTofGeoUtils::FindStrip] : unknown suid. ", cerr)));
+
 return &(cit->second);
 }
 //------------------------------------------------------------------------------------------------------------------------
-bool			MpdTofGeoUtils::GetStripListForDetector(Int_t detUID, MStripCIT& first, MStripCIT& last)
-{
-	first = mStrips.find(detUID | 1);  // first strip for detector
-	last  = mStrips.find(detUID | 24); // last strip for detector	
-	
-return ((first != mStrips.end()) && (last != mStrips.end()));
-}
-//------------------------------------------------------------------------------------------------------------------------
-bool			MpdTofGeoUtils::IsPointInsideStrips(const TVector3& position, vector<intervalType>& intersect)
+bool			MpdTofGeoUtils::IsPointInsideStrips(const TVector3& position, vector<Tinterval>& intersect, double Zerror, double PhiError)
 {
 	const double Z = position.Z();
 	const double Phi = position.Phi();	
 	
-	vector<intervalType> 	insideZ, insidePhi;		
-	mStripsZ.findOverlapping(Z, Z, insideZ); 	
-	mStripsPhi.findOverlapping(Phi, Phi, insidePhi);
-
-//cout<<"\n  IsPointInsideStrips Z= "<<position.Z()<<", phi="<<position.Phi()<<"  sizeZ="<<insideZ.size()<<" sizePhi="<<insidePhi.size();
+	vector<Tinterval> 	insideZ, insidePhi;
+	mStripsZ.findOverlapping(Z - Zerror, Z + Zerror, insideZ); 	
+	mStripsPhi.findOverlapping(Phi - PhiError, Phi + PhiError, insidePhi);
 	
 	if(!insideZ.empty() && !insidePhi.empty()) // have overlaped segments both Z and Phi 
 	{
@@ -287,13 +280,31 @@ bool			MpdTofGeoUtils::IsPointInsideStrips(const TVector3& position, vector<inte
 		// calc. intersection
 		sort(insideZ.begin(), insideZ.end(), IntervalValueSorter<LRectangle*>());
     		sort(insidePhi.begin(), insidePhi.end(), IntervalValueSorter<LRectangle*>());  
-	 	set_intersection(insideZ.begin(), insideZ.end(), insidePhi.begin(), insidePhi.end(), std::back_inserter(intersect), IntervalValueSorter<LRectangle*>()); 
- 	 		
-//cout<<"\n  intersect size="<<intersect.size();	 
-//cout<<"\n  insideZ ==== ";	
-//for(int i=0;i<	insideZ.size(); i++) cout<<"  "<<insideZ[i];
-//cout<<"\n  insidePhi ==== ";
-//for(int i=0;i<	insidePhi.size(); i++) cout<<"  "<<insidePhi[i];	
+	 	set_intersection(insideZ.begin(), insideZ.end(), insidePhi.begin(), insidePhi.end(), back_inserter(intersect), IntervalValueSorter<LRectangle*>()); 
+
+	 	return true;
+	}
+	
+return false;	
+}
+//------------------------------------------------------------------------------------------------------------------------
+bool			MpdTofGeoUtils::IsPointInsideDetectors(const TVector3& position, vector<Tinterval>& intersect, double Zerror, double PhiError)
+{
+	const double Z = position.Z();
+	const double Phi = position.Phi();	
+	
+	vector<Tinterval> 	insideZ, insidePhi;		
+	mDetectorsZ.findOverlapping(Z - Zerror, Z + Zerror, insideZ); 	
+	mDetectorsPhi.findOverlapping(Phi - PhiError, Phi + PhiError, insidePhi);
+	
+	if(!insideZ.empty() && !insidePhi.empty()) // have overlaped segments both Z and Phi 
+	{
+		intersect.clear();
+	
+		// calc. intersection
+		sort(insideZ.begin(), insideZ.end(), IntervalValueSorter<LRectangle*>());
+    		sort(insidePhi.begin(), insidePhi.end(), IntervalValueSorter<LRectangle*>());  
+	 	set_intersection(insideZ.begin(), insideZ.end(), insidePhi.begin(), insidePhi.end(), back_inserter(intersect), IntervalValueSorter<LRectangle*>()); 
 		
 	 	return true;
 	}
@@ -332,6 +343,16 @@ assert(P1 != P2);
 return   (  (*pos - P1).Cross(*pos - P2)   ).Mag() / (P2 - P1).Mag();
 }
 //------------------------------------------------------------------------------------------------------------------------
+void 		LRectangle::Rotate(const TRotation& rot)
+{
+	A *= rot;
+	B *= rot;
+	C *= rot;
+	D *= rot;
+	center *= rot;
+	perp *= rot;
+}
+//------------------------------------------------------------------------------------------------------------------------
 Double_t 	LRectangle::DistanceFromPointToLineSegment(const TVector3* pos, const TVector3& P1,const TVector3& P2)const
 {
 assert(P1 != P2);
@@ -365,29 +386,84 @@ Double_t		LRectangle::MinDistanceToEdge(const TVector3* pos, Side_t& side) const
 return left;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void 		LRectangle::Print(ostream &out, const TVector3 &point, const char* comment)const
-{
-	if(comment) out<<comment; 
-	out<<" ("<< point.X()<<","<<point.Y()<<","<<point.Z()<<") "; 
-}
-//------------------------------------------------------------------------------------------------------------------------
 void 		LRectangle::Dump(const char* comment, ostream& out) const 
 { 
 	if(comment) out<<comment; out<<" uid="<<volumeUID<<" IsInvalid="<<IsInvalid;
-	Print(out, A, " A:"); Print(out, B, " B:"); Print(out, C, " C:"); Print(out, D, " D:");
+	MpdTof::Print(A, " A:", out); MpdTof::Print(B, " B:", out); MpdTof::Print(C, " C:", out); MpdTof::Print(D, " D:", out); MpdTof::Print(perp, " perp:", out);
+}
+//------------------------------------------------------------------------------------------------------------------------
+void 		LRectangle::Test(const char* comment, ostream &out)
+{
+	if(comment) out<<comment; 
+	out<<"\n [LRectangle::Test]--------------------------->>>"; 
+	const double  epsilon = 1.E-3;
+
+	for(double xshift = -10; xshift < 10; xshift++)
+	for(double yshift = -10; yshift < 10; yshift++)
+	{
+		LRectangle A(1, TVector3(0,0,0), TVector3(0,10,0), TVector3(10,10,0), TVector3(10,0,0)); A.InitCenterPerp(); // 10x10
+		LRectangle B(2, TVector3(0,0,1), TVector3(0,5,1), TVector3(5,5,1), TVector3(5,0,1)); B.InitCenterPerp(); // 5x5
+
+		B.Shift({xshift, yshift, 0.});
+
+		double square = B.GetIntersectionSquare(A);// smaller intersect biger
+		out<<"\n shift: ("<<xshift<<","<<yshift<<") square="<<square;
+
+		// Randomize rectangle orientation
+		TRotation rot; TVector3 axis, shift;
+		for(auto i=0;i<100;i++)
+		{
+			axis.SetXYZ(gRandom->Uniform(), gRandom->Uniform(), gRandom->Uniform());
+			shift.SetXYZ(gRandom->Uniform(-10,10), gRandom->Uniform(-10,10), gRandom->Uniform(-10,10));
+			rot.Rotate(gRandom->Uniform(-10.,10.), axis); // random rotate around axis
+
+			A.Rotate(rot);
+			B.Rotate(rot);
+			A.Shift(shift);
+			B.Shift(shift);
+
+			double newsquare = B.GetIntersectionSquare(A);
+			if(fabs(newsquare - square) > 1.) out<<"\n\tperp.: theta="<<A.perp.Theta()*TMath::RadToDeg()<<" phi="<<A.perp.Phi()*TMath::RadToDeg()<<", int. square="<<newsquare;
+		}
+	}
+}
+//------------------------------------------------------------------------------------------------------------------------
+Double_t	LRectangle::GetIntersectionSquare(const LRectangle& v1)const
+{
+	LRectangle v(v1); 
+	if(!IsSamePlane(v1).first)
+	{
+		v = ProjectionToPlane(v1);
+	}
+
+	if(!IsSamePlane(v).first) return 0.;
+
+	TVector3 p, AB = B - A, AD = D - A;
+	const size_t Nprobes = 10000; 
+	size_t  Ncounter = 0;
+
+	for(size_t i=0;i<Nprobes;i++)
+	{
+		p = A + AB * gRandom->Uniform() + AD * gRandom->Uniform();
+		if(v.IsPointInside(p)) Ncounter++;
+	}
+
+	if(Ncounter == 0) return 0.;	
+
+return Square()*Ncounter/((double)Nprobes);
 }
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
 LStrip::LStrip() 
-: LRectangle(), sectorID(kInvalid), boxID(kInvalid),  detectorID(kInvalid), stripID(kInvalid) 
+: LRectangle(), sectorID(kInvalid),  detectorID(kInvalid), stripID(kInvalid) 
 { 
 	neighboring[kRight] = kInvalid; 
 	neighboring[kLeft] = kInvalid; 
 }
 //------------------------------------------------------------------------------------------------------------------------
-LStrip::LStrip(Int_t uid, Int_t sector, Int_t box, Int_t detector, Int_t strip) 
- : LRectangle(), sectorID(sector), boxID(box),  detectorID(detector), stripID(strip) 
+LStrip::LStrip(Int_t uid, Int_t sector, Int_t detector, Int_t strip) 
+ : LRectangle(), sectorID(sector), detectorID(detector), stripID(strip) 
 { 
 	volumeUID = uid;
 	neighboring[kRight] = kInvalid; 
@@ -397,36 +473,36 @@ LStrip::LStrip(Int_t uid, Int_t sector, Int_t box, Int_t detector, Int_t strip)
 void		LStrip::Dump(const char* comment, ostream& out) const 
 { 	
 	if(comment) out<<comment; 
-	out<<"  ids: "<<sectorID<<", "<<boxID<<", "<<detectorID<<", "<<stripID; 
+	out<<"  ids: "<<sectorID<<", "<<detectorID<<", "<<stripID; 
 	
 	LRectangle::Dump(nullptr, out);
 }
 //------------------------------------------------------------------------------------------------------------------------	
-Double_t 	LStrip::Distance(Side_t side, const LStrip& strip) 
+Double_t 	LStrip::Distance(Side_t side, const LStrip& strip) const
 {
-	Double_t value, min1 = 1.e+10, min2 = 1.e+10; // big value
+	Double_t value, min1 =  1.e+10, min2 = 1.e+10; // big value
+
+	if((*this) == strip) 		return min1; // same strip, return big value
+	if(!IsSameDetector(strip)) 	return min1; // different detector, return big value
 	
-	if((*this) == strip) 		return min1+min2; // same strip
-	if(!IsSameDetector(strip)) 	return min1+min2; // different modules
-		
-	TVector3 *p1, *p2;
+	const TVector3 *p1, *p2;
 	switch(side)
 	{
 		case kRight: 	p1 = &A; p2 = &B; break;	
 		case kLeft: 	p1 = &C; p2 = &D; break;				
 	};
 
-	value 	= fabs((*p1 - strip.A).Mag());	min1 = std::min(value, min1); 
-	value 	= fabs((*p1 - strip.B).Mag());	min1 = std::min(value, min1);	
-	value 	= fabs((*p1 - strip.C).Mag());	min1 = std::min(value, min1);		
-	value 	= fabs((*p1 - strip.D).Mag());	min1 = std::min(value, min1); 
+	value 	= (*p1 - strip.A).Mag();	min1 = std::min(value, min1); 
+	value 	= (*p1 - strip.B).Mag();	min1 = std::min(value, min1);	
+	value 	= (*p1 - strip.C).Mag();	min1 = std::min(value, min1);		
+	value 	= (*p1 - strip.D).Mag();	min1 = std::min(value, min1); 
 	
-	value 	= fabs((*p2 - strip.A).Mag());	min2 = std::min(value, min2);		 
-	value 	= fabs((*p2 - strip.B).Mag());	min2 = std::min(value, min2);
-	value 	= fabs((*p2 - strip.C).Mag());	min2 = std::min(value, min2);	
-	value 	= fabs((*p2 - strip.D).Mag());	min2 = std::min(value, min2);
-	
-return min1 + min2;
+	value 	= (*p2 - strip.A).Mag();	min2 = std::min(value, min2);		 
+	value 	= (*p2 - strip.B).Mag();	min2 = std::min(value, min2);
+	value 	= (*p2 - strip.C).Mag();	min2 = std::min(value, min2);	
+	value 	= (*p2 - strip.D).Mag();	min2 = std::min(value, min2);
+ 
+return std::min(min1, min2);
 }	
 //------------------------------------------------------------------------------------------------------------------------
 

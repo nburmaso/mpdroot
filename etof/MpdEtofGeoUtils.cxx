@@ -15,7 +15,7 @@
 
 #include "MpdTofPoint.h"
 #include "MpdEtofGeoUtils.h"
-
+using namespace std;
 MpdEtofGeoUtils*	MpdEtofGeoUtils::instance = nullptr;
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofGeoUtils::MpdEtofGeoUtils()
@@ -23,19 +23,19 @@ MpdEtofGeoUtils::MpdEtofGeoUtils()
 
 }
 //------------------------------------------------------------------------------------------------------------------------
-void		MpdEtofGeoUtils::FindNeighborStrips(Double_t thresh, TH1D *h1, TH2D *h2, bool forced)
+void		MpdEtofGeoUtils::FindNeighborStrips(Double_t thresh, bool forced)
 { 
-	static bool founded = false;	
+/*	static bool founded = false;	
 	if( !forced &&  founded) return; // neighbor strips already founded and filled
 
 	size_t NR = 0, NL= 0;
 	const LStrip *strip2; double  distance;
 	
-	for(MStripIT it1 = mStrips.begin(), itEnd1 = mStrips.end(); it1 != itEnd1 ; it1++) // cycle1 by strips
+	for(auto it1 = mStrips.begin(), itEnd1 = mStrips.end(); it1 != itEnd1 ; it1++) // cycle1 by strips
 	{
 		LStrip *strip1 = &(it1->second);
 		
-		for(MStripCIT it2 = mStrips.begin(), itEnd2 = mStrips.end(); it2 != itEnd2 ; it2++) // cycle2 by strips
+		for(auto it2 = mStrips.begin(), itEnd2 = mStrips.end(); it2 != itEnd2 ; it2++) // cycle2 by strips
 		{
 			strip2 = &(it2->second);
 	
@@ -62,16 +62,17 @@ void		MpdEtofGeoUtils::FindNeighborStrips(Double_t thresh, TH1D *h1, TH2D *h2, b
 	
 	founded = true;
 	
-	cout<<" [MpdEtofGeoUtils::FindNeighborStrips] Neighbor strips: left = "<<NL<<", right = "<<NR<<endl;		
+	cout<<" [MpdEtofGeoUtils::FindNeighborStrips] Neighbor strips: left = "<<NL<<", right = "<<NR<<endl;
+*/	
 }
 //------------------------------------------------------------------------------------------------------------------------
-void			MpdEtofGeoUtils::ParseTGeoManager(bool useMCinput, TH2D *h2, bool forced)
+void			MpdEtofGeoUtils::ParseTGeoManager(bool forced)
 {
 assert(gGeoManager);
 static const double degree180 = 3.14159265359; // 180 degree to rad
 
 	if( !forced &&  !mStrips.empty()) return; // already parsed and filled
-
+/*
 	mStrips.clear();
 
 	int nBoxes = 0, nStrips = 0, nGases = 0;	
@@ -122,7 +123,7 @@ static const double degree180 = 3.14159265359; // 180 degree to rad
 					TGeoBBox *box = (TGeoBBox*) gGeoManager->GetCurrentNode()->GetVolume()->GetShape(); 		
 					dX = box->GetDX(); dY = box->GetDY(); dZ = box->GetDZ();
 					
-					volumeUID = MpdTofPoint::GetVolumeUID(sectorID, boxID, 1, stripID); // FIXME: now ONE detector per box(detector=1)
+					volumeUID = MpdTofPoint::GetSuid(sectorID, boxID, 1, stripID); // FIXME: now ONE detector per box(detector=1)
 					///cout<<"\n uid="<<volumeUID<<", center= "<<master[0]<<", "<<master[1]<<", "<<master[2]<<", dXYZ= "<<dX<<", "<<dY<<", "<<dZ;
 					
 					LStrip stripData(volumeUID, sectorID, boxID, 1, stripID);
@@ -189,11 +190,12 @@ assert(IsUniqueUID);
 	} 
     	  	
     	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofGeoUtils::ParseTGeoManager] Regions= %d, modules= %d, strips= %d. ", 2, nBoxes, nStrips);
-}   	
+*/
+}	
 //------------------------------------------------------------------------------------------------------------------------
 const LStrip*		MpdEtofGeoUtils::FindStrip(Int_t UID) 
 {
-	MStripCIT cit = mStrips.find(UID);
+	auto cit = mStrips.find(UID);
 assert(cit != mStrips.end());
 return &(cit->second);
 }

@@ -43,7 +43,7 @@ public:
 
 	InitStatus		Init();
 	void			Exec(Option_t * option);
-	void			Finish();
+//	void			Finish();
 
 	void			SetTimeResolution(Double_t sigma){ fTimeSigma = sigma; };	
 	void			SetAlongStripzResolution(Double_t err){ fErrPhi = err;};

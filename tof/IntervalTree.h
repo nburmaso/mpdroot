@@ -222,13 +222,13 @@ typedef IntervalTree<T,K> intervalTree;
 		if(right && stop >= center)	right->findContained(start, stop, contained);
 	}
 	//------------------------------------------------------------------------------------------------------------------------	
-	void 	dump(const char* comment = nullptr,  ostream& out = std::cout, int treeLevel = 0) const
+	void 	dump(const char* comment = nullptr,  std::ostream& out = std::cout, int treeLevel = 0) const
 	{
 		treeLevel++;
 		
 		if(comment) out<<comment;  
 		out<<" left= "<<left<<" right= "<<right<<"  size= "<<intervals.size();
-		for(typename intervalVector::const_iterator it = intervals.begin(), itEnd = intervals.end(); it != itEnd; it++)	out<<endl<<(*it);
+		for(typename intervalVector::const_iterator it = intervals.begin(), itEnd = intervals.end(); it != itEnd; it++)	out<<std::endl<<(*it);
 		
 		if(left != nullptr)
 		{
@@ -243,13 +243,13 @@ typedef IntervalTree<T,K> intervalTree;
 		}				
 	}
 	//------------------------------------------------------------------------------------------------------------------------
-	static void 	dumpIntervals(const intervalVector* pVector, const char* comment = nullptr,  ostream& out = std::cout) 
+	static void 	dumpIntervals(const intervalVector* pVector, const char* comment = nullptr,  std::ostream& out = std::cout) 
 	{
 		assert(pVector != nullptr);
 		
 		if(comment) out<<comment;  
 		out<<"  size= "<<pVector->size();
-		for(typename intervalVector::const_iterator it = pVector->begin(), itEnd = pVector->end(); it != itEnd; it++)	out<<endl<<(*it);
+		for(typename intervalVector::const_iterator it = pVector->begin(), itEnd = pVector->end(); it != itEnd; it++)	out<<std::endl<<(*it);
 	}
 	//------------------------------------------------------------------------------------------------------------------------
 };

@@ -73,13 +73,9 @@ assert(aExpDigits);
         aTofHits = new TClonesArray("MpdTofHit");
         FairRootManager::Instance()->Register("ETOFHit", "ETof", aTofHits, kTRUE);
 
-	MpdEtofGeoUtils::Instance()->ParseTGeoManager(	fUseMCData, 
-							pHitProducerQA ? pHitProducerQA->GetStripLocationHisto() : nullptr, 
-							true); // forced
+	MpdEtofGeoUtils::Instance()->ParseTGeoManager(true); // forced
 							
-	MpdEtofGeoUtils::Instance()->FindNeighborStrips(	0.8,	// 0.8 [cm] <--- thresh. distance between neighbor strips,  (see h1TestDistance histo)
-							pHitProducerQA ? pHitProducerQA->GetDistanceHisto() : nullptr, 
-							pHitProducerQA ? pHitProducerQA->GetNeighborPairHisto(): nullptr, 
+	MpdEtofGeoUtils::Instance()->FindNeighborStrips(0.8,  // 0.8 [cm] <--- thresh. distance between neighbor strips			
 							true); // forced
 
         FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducer::Init] Initialization finished succesfully.");
@@ -89,7 +85,7 @@ return kSUCCESS;
 //------------------------------------------------------------------------------------------------------------------------
 Bool_t 	MpdEtofHitProducer::HitExist(Double_t val) // val - rasstojanie do kraja pad
 {
-  const static Double_t slope = (0.98 - 0.95)/0.2;
+  constexpr Double_t slope = (0.98 - 0.95)/0.2;
   Double_t efficiency = (val > 0.2) ? 0.98 : ( 0.95 + slope*val);
 	
   //-------------------------------------
@@ -108,7 +104,7 @@ Bool_t 	MpdEtofHitProducer::HitExist(Double_t val) // val - rasstojanie do kraja
 //------------------------------------------------------------------------------------------------------------------------
 Bool_t 	MpdEtofHitProducer::DoubleHitExist(Double_t val) // val - rasstojanie do kraja pad
 {
-  const static Double_t slope = (0.3 - 0.0)/0.5;
+  constexpr Double_t slope = (0.3 - 0.0)/0.5;
   Double_t efficiency = (val > 0.5) ? 0. : (0.3 - slope*val);
 	
   //-------------------------------------
@@ -129,7 +125,7 @@ Bool_t 	MpdEtofHitProducer::DoubleHitExist(Double_t val) // val - rasstojanie do
 //------------------------------------------------------------------------------------------------------------------------
 void 		MpdEtofHitProducer::Exec(Option_t *option)
 {
-	static const TVector3 XYZ_err(0.1, 0.1, 0.1); // FIXME: dummy now,  MUST BE ROTATED!!!!
+/*	static const TVector3 XYZ_err(0.1, 0.1, 0.1); // FIXME: dummy now,  MUST BE ROTATED!!!!
 	
 	aTofHits->Clear();
 
@@ -173,7 +169,7 @@ void 		MpdEtofHitProducer::Exec(Option_t *option)
 			 	if(pHitProducerQA) pHitProducerQA->FillSingleHitPosition(pos, XYZ_smeared);		 	
 			}		
 		
-			if(pHitProducerQA) pHitProducerQA->GetSingleHitEfficiency()->Fill(passed, distance);
+			if(pQA) pQA->GetSingleHitEfficiency()->Fill(passed, distance);
         	
         		if(passed = DoubleHitExist(distance)) // check cross hit
         		{
@@ -192,7 +188,7 @@ void 		MpdEtofHitProducer::Exec(Option_t *option)
         			if(pHitProducerQA) pHitProducerQA->FillDoubleHitPosition(pos, XYZ_smeared);  
         		}
         	
-        		if(pHitProducerQA) pHitProducerQA->GetDoubleHitEfficiency()->Fill(passed, distance);
+        		if(pQA) pQA->GetDoubleHitEfficiency()->Fill(passed, distance);
         		
         	}	// cycle by the TOF points		
 	}	
@@ -208,12 +204,13 @@ void 		MpdEtofHitProducer::Exec(Option_t *option)
 	int nFinally = CompressHits(); // remove blank slotes
 
         cout<<" -I- [MpdEtofHitProducer::Exec] single hits= "<<nSingleHits<<", double hits= "<<nDoubleHits<<", final hits= "<<nFinally<<endl;	
+*/
 }
 //------------------------------------------------------------------------------------------------------------------------
-void 		MpdEtofHitProducer::Finish()
+/*void 		MpdEtofHitProducer::Finish()
 {
-	if(pHitProducerQA) pHitProducerQA->Finish(); 
-}
+	if(pQA) pQA->Finish(); 
+}*/
 //------------------------------------------------------------------------------------------------------------------------
 void 		MpdEtofHitProducer::SetSeed(UInt_t seed)
 {

@@ -22,7 +22,7 @@
 //------------------------------------------------------------------------------------------------------------------------
 class MpdEctKalmanTrack;
 class TClonesArray; 
-class LMatchingFilter;
+//class LMatchingFilter;
 class MpdTofMatchingQA;
 class MpdKalmanFilter;
 //------------------------------------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ private:
         	
 	MpdKalmanFilter 	*pKF; 		//!	
        	MpdTofMatchingQA	*pMatchingQA; 	//! 	
-	LMatchingFilter		*pMF; 		//!
+//	LMatchingFilter		*pMF; 		//!
 	
 	bool			EstTrackOnPlane(const MpdEctKalmanTrack *tr, Double_t Z, TVector3& pos, Double_t& length,  TVector3& Mom, Int_t& charge)const;
 

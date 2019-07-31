@@ -14,19 +14,19 @@
 
 #include "MpdTofHitProducerIdeal.h"
 
+using namespace std;
+
 ClassImp(MpdTofHitProducerIdeal)
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducerIdeal::MpdTofHitProducerIdeal(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, Bool_t merge, const char *flnm, bool IsEndcap) 
- : FairTask(name, verbose), fDoTest(test), fDoMergeHits(merge),  fUseMCData(useMCdata), fOnlyPrimary(false),
-   aMcPoints(nullptr), aMcTracks(nullptr), aExpDigits(nullptr), aTofHits(nullptr)
+ : FairTask(name, verbose), fDoTest(test), fDoMergeHits(merge),  fUseMCData(useMCdata)
 { 
-        pHitProducerQA = fDoTest ? new MpdTofHitProducerQA(flnm, IsEndcap) : nullptr;
-
+        pQA = fDoTest ? new MpdTofHitProducerQA(flnm, IsEndcap) : nullptr;
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofHitProducerIdeal::~MpdTofHitProducerIdeal() 
 { 
-	delete pHitProducerQA;
+	delete pQA;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void		MpdTofHitProducerIdeal::AddParameters(TString& buf)const
@@ -38,20 +38,8 @@ void		MpdTofHitProducerIdeal::AddParameters(TString& buf)const
 	buf += ", fOnlyPrimary="; 	buf += fOnlyPrimary;
 }
 //------------------------------------------------------------------------------------------------------------------------
-InitStatus	MpdTofHitProducerIdeal::Initialize()
+InitStatus	MpdTofHitProducerIdeal::Init() 
 {
-	TString className(ClassName());
-	TString functionName("[");functionName += className; functionName +="::Initialize]";
-
-	TString buf(functionName);  buf += " Begin initialization."; AddParameters(buf);
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, buf.Data());
-
-    	if(fOnlyPrimary)
-	{
-		buf = functionName;  buf += " Only primary particles are processed!!!.";
-		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, buf.Data());	
-	}
-
 	if(fUseMCData)
 	{
     		aMcPoints = (TClonesArray*) FairRootManager::Instance()->GetObject("TOFPoint");
@@ -69,21 +57,14 @@ assert(aExpDigits);
         aTofHits = new TClonesArray("MpdTofHit");
         FairRootManager::Instance()->Register("TOFHit", "Tof", aTofHits, kTRUE);
 
+	LOG(DEBUG)<<"[MpdTofHitProducerIdeal::Init] Initialization finished succesfully.";
+
 return kSUCCESS;
-}
-//------------------------------------------------------------------------------------------------------------------------
-InitStatus	MpdTofHitProducerIdeal::Init() 
-{
-	InitStatus status = Initialize();
-
-        FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducerIdeal::Init] Initialization finished succesfully.");
-
-return status;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 		MpdTofHitProducerIdeal::Exec(Option_t* opt) 
 {
-	static const TVector3 XYZ_err(0., 0., 0.); // FIXME:
+	static const TVector3 XYZ_err(0., 0., 0.); 
 
 	aTofHits->Clear();
 
@@ -97,7 +78,7 @@ void 		MpdTofHitProducerIdeal::Exec(Option_t* opt)
 			MpdTofPoint *pPoint = (MpdTofPoint*) aMcPoints->UncheckedAt(pointIndex);		
 			pPoint->Position(pos);
 		
-			AddHit(pPoint->GetDetectorID(), pos, XYZ_err, pointIndex, pPoint->GetTrackID(), pPoint->GetTime(), MpdTofUtils::IsSingle);	
+			AddHit(MpdTofPoint::ClearGap(pPoint->GetDetectorID()), pos, XYZ_err, pointIndex, pPoint->GetTrackID(), pPoint->GetTime(), MpdTofUtils::IsSingle);	
 			nSingleHits++;
 		}
 	}
@@ -114,43 +95,37 @@ void 		MpdTofHitProducerIdeal::Exec(Option_t* opt)
 		MergeHitsOnStrip(); 		// save only the fastest hit in the strip
 		nFinally = CompressHits(); 	// remove blank slotes
 	} 
-	else 
-		nFinally = aTofHits->GetEntriesFast();
-	
-        cout<<" -I- [MpdTofHitProducerIdeal::Exec] single hits= "<<nSingleHits<<", final hits= "<<nFinally<<endl;
+	else	nFinally = aTofHits->GetEntriesFast();
+
+	LOG(DEBUG1)<<"[MpdTofHitProducerIdeal::Exec] single hits= "<<nSingleHits<<", final hits= "<<nFinally;
 }
 //------------------------------------------------------------------------------------------------------------------------
 void 			MpdTofHitProducerIdeal::Finish()
 {
-	if(pHitProducerQA) pHitProducerQA->Finish(); 
+	if(pQA) pQA->Finish(); 
 }
 //------------------------------------------------------------------------------------------------------------------------
-Int_t 			MpdTofHitProducerIdeal::MergeHitsOnStrip(void)
+size_t 			MpdTofHitProducerIdeal::MergeHitsOnStrip(void)
 {
-typedef map<Int_t, MpdTofHit*> hitsMapType;
-	hitsMapType 		fHits; // pair<detectorUID, MpdTofHit*> fastest hits map
-	hitsMapType::iterator 	it;	
-	Int_t mergedNmb = 0;   
+	size_t 			mergedNmb = 0;
+	map<Int_t, MpdTofHit*> 	mHits; // pair<suid, MpdTofHit*> fastest hits map
+	multiset<Int_t>		msUIDs; // suid for Hits	
+	MpdTofHit 		*fastHit, *slowHit;
 
-typedef multiset<Int_t> msUIDsType; // detectorUID for Hits
-	msUIDsType	UIDs;
-	
-	MpdTofHit *fastHit, *slowHit;
 	for(Int_t hitIndex = 0, nHits = aTofHits->GetEntriesFast(); hitIndex < nHits; hitIndex++ ) // cycle by hits
 	{	
-		MpdTofHit *pHit = (MpdTofHit*) aTofHits->UncheckedAt(hitIndex); 		
-assert(nullptr != pHit);
+		auto pHit = (MpdTofHit*) aTofHits->UncheckedAt(hitIndex); 		
+assert(nullptr != pHit);		
+		Int_t suid = pHit->GetDetectorID();
 		
-		Int_t UID = pHit->GetDetectorID();
+		if(fDoTest) msUIDs.insert(suid);
 		
-		if(fDoTest) UIDs.insert(UID);
-		
-		it = fHits.find(UID);
-		if(it != fHits.end()) // hit for this detectorUID already exist
+		auto it = mHits.find(suid);
+		if(it != mHits.end()) 					// hit for this suid already exist
 		{
 			mergedNmb++; 
 			
-			if(pHit->GetTime() < it->second->GetTime()) //  faster hit  found
+			if(pHit->GetTime() < it->second->GetTime()) 	//  faster hit found
 			{
 				fastHit = pHit;
 				slowHit = it->second;
@@ -164,38 +139,37 @@ assert(nullptr != pHit);
 			fastHit->AddLinks(slowHit->GetLinks());		// copy links
 			aTofHits->Remove(slowHit); 			// remove old hit   --> make blank slote !!
 			fastHit->AddFlag(MpdTofUtils::HaveTail);					
-			it->second = fastHit;				// change pair value to current UID
+			it->second = fastHit;				// change pair value to current suid
 				
-			if(pHitProducerQA) pHitProducerQA->GetMergedTimesHisto()->Fill(fastHit->GetTime(), slowHit->GetTime());						 
+			if(pQA) pQA->FillMergedTimes(fastHit->GetTime(), slowHit->GetTime());						 
 		}
-		else fHits.insert(make_pair(UID, pHit)); 				// insert new detectorUID pair
+		else mHits.insert(make_pair(suid, pHit)); 		// insert new suid pair
 		
 	} // cycle by hits
 	
-	if(pHitProducerQA)
+	if(pQA)
 	{ 
-		for(msUIDsType::const_iterator iter = UIDs.begin(), itEnd = UIDs.end(); iter != itEnd;  iter = UIDs.upper_bound(*iter))	// cycle by detector UIDs list
-			 pHitProducerQA->GetOccupancyHisto()->Fill(UIDs.count(*iter));
+		for(auto it = msUIDs.begin(), itEnd = msUIDs.end(); it != itEnd;  it = msUIDs.upper_bound(*it))	pQA->FillOccupancy(msUIDs.count(*it));
 	}
 	
 return 	mergedNmb;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void 			MpdTofHitProducerIdeal::AddHit(Int_t detUID, const TVector3 &posHit, const TVector3 &posHitErr, Int_t expDigitIndex, Double_t time, Int_t flag)
+void 			MpdTofHitProducerIdeal::AddHit(Int_t suid, const TVector3 &posHit, const TVector3 &posHitErr, Int_t expDigitIndex, Double_t time, Int_t flag)
 {
-	MpdTofHit *pHit	= new  ((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofHit(detUID, posHit, posHitErr, expDigitIndex, time, flag);
+	MpdTofHit *pHit	= new  ((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofHit(suid, posHit, posHitErr, expDigitIndex, time, flag);
 	
 	pHit->AddLink(FairLink(MpdTofUtils::expDigitIndex, expDigitIndex));
-	pHit->AddLink(FairLink(MpdTofUtils::volumeUID, detUID));	
+	pHit->AddLink(FairLink(MpdTofUtils::volumeUID, suid));	
 }
 //------------------------------------------------------------------------------------------------------------------------
-void 			MpdTofHitProducerIdeal::AddHit(Int_t detUID, const TVector3 &posHit, const TVector3 &posHitErr, Int_t mcPointIndex, Int_t mcTrackIndex, Double_t time, Int_t flag)
+void 			MpdTofHitProducerIdeal::AddHit(Int_t suid, const TVector3 &posHit, const TVector3 &posHitErr, Int_t mcPointIndex, Int_t mcTrackIndex, Double_t time, Int_t flag)
 {
-	MpdTofHit *pHit	= new  ((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofHit(detUID, posHit, posHitErr, mcPointIndex, time, flag);
+	MpdTofHit *pHit	= new  ((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofHit(suid, posHit, posHitErr, mcPointIndex, time, flag);
 	
 	pHit->AddLink(FairLink(MpdTofUtils::mcPointIndex, mcPointIndex));
 	pHit->AddLink(FairLink(MpdTofUtils::mcTrackIndex, mcTrackIndex));
-	pHit->AddLink(FairLink(MpdTofUtils::volumeUID, detUID));	
+	pHit->AddLink(FairLink(MpdTofUtils::volumeUID, suid));	
 }
 //------------------------------------------------------------------------------------------------------------------------
 Int_t 			MpdTofHitProducerIdeal::CompressHits() 
@@ -214,13 +188,13 @@ void			MpdTofHitProducerIdeal::Dump(const char* title, ostream& out) const
       	while( (pHit = (MpdTofHit*) iter->Next()) )   						
 	{
 		pHit->Position(hitPos);
-		out<<"\n    hit detUID = "<<pHit->GetDetectorID()<<", hit pos("<<hitPos.X()<<","<<hitPos.Y()<<","<<hitPos.Z()<<"), flag ="<<pHit->GetFlag();
+		out<<"\n    hit suid = "<<pHit->GetDetectorID()<<", hit pos("<<hitPos.X()<<","<<hitPos.Y()<<","<<hitPos.Z()<<"), flag ="<<pHit->GetFlag();
 		
 		if(aMcPoints)
 		{
 			point = (MpdTofPoint*) aMcPoints->UncheckedAt(pHit->GetRefIndex());
 			point->Position(pointPos);
-			out<<"\n point detUID = "<<point->GetDetectorID()<<", point pos("<<pointPos.X()<<","<<pointPos.Y()<<","<<pointPos.Z()<<"), dev="<<(hitPos-pointPos).Mag();
+			out<<"\n point suid = "<<point->GetDetectorID()<<", point pos("<<pointPos.X()<<","<<pointPos.Y()<<","<<pointPos.Z()<<"), dev="<<(hitPos-pointPos).Mag();
 		}
 	}
 	

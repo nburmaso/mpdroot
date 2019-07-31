@@ -14,58 +14,48 @@
 class MpdTofHit;
 class MpdTofMatchingData : public TObject 
 {
-        Int_t 		fKFTrackIndex;		//  KF Track index( branchname: "TpcKalmanTrack", classname: "MpdTpcKalmanTrack")
-        Int_t 		fTofHitIndex;		// if > 0 TofHit index( branchname: "TOFHit", classname: "MpdTofHit"), else srtipUID for matching with blank strip
+        Int_t 		fKFTrackIndex = -1;	//  KF Track index( branchname: "TpcKalmanTrack", classname: "MpdTpcKalmanTrack")
+        Int_t 		fTofHitIndex = -1;	// if > 0 TofHit index( branchname: "TOFHit", classname: "MpdTofHit")
 
-        Double_t 	fLength;		// Track length [cm], 	{KFTrack refit}
-        Int_t      	fNmbTrHits;		// number of track hits	{KFTrack refit}          
         Double_t    	fBeta;          	// calc. 
         Double_t 	fMass2;			// calc., [GeV^2]
-        Double_t 	fWeight;		// matching weight [0., 1.]        
-        
-        // copy data
-        Double_t	fMom[3];		// Momentum [GeV/c]	{KFTrack copy}
-        Double_t 	fXYZ[3];	      	// Position of hit [cm] {TofHit copy}
-        Double_t	fTime;              	// Time since event start [ns]	{TofHit copy}
-   	Int_t 		fPDGcode;		// for MC data only {TofPoint copy}
-              	
- 	// CAUTION: transparent data, MUST be used only at run-time, for debug purpose     
-	Float_t		fDelta1, fDelta2; 	//! delta(hitPosition, extrapolated kalman track interception position), [cm]  {KFTrack refit}
-        Float_t		fEstPointR[3];		//! Estimated impact point on cylinder(x,y,z), [cm] {KFTrack refit}
-        Float_t		fEstPointP[3];		//! Estimated impact point on pad plate(x,y,z), [cm] {KFTrack refit}	
-        Float_t		fStripPerp[3];	      	//! perpendicular to strip plate           
-      	Int_t      	fFlag;			//! copy of MpdTofHit::fFlag instance.
-        Int_t      	fDetectorUID;     	//! copy of FairHit::fDetectorID instance.    
-        Int_t 		fCharge;		//! return by MpdTpcKalmanTrack::Charge(), {KFTrack refit}	
-        	
+        Double_t 	fWeight = 0.;		// matching weight  
+        Double_t 	fNormWeight = 0.;	// normalized matching weight [0., 1.]  
+        Double_t 	fLength;		// Track length [cm], 	{KFTrack refit}
+        Int_t      	fNmbTrHits = 0;		// number of track hits	{KFTrack refit}    
+        TVector3	fMomentum;		// Momentum [GeV/c]	{KFTrack copy}   
+   
 public: 
+	// CAUTION: transparent data, MUST be used only at run-time, for debug purpose
+        Double_t	fTime;              	//! Time since event start [ns]	{TofHit copy} 
+       	Int_t      	fFlag = 0;		//! copy of MpdTofHit::fFlag instance.   
+        TVector3	fEstPoint;		//! extrapolated point on pad plate(x,y,z), [cm] {KFTrack refit}
+       	TVector3	fHitPosition;	      	//! Position of hit [cm] {TofHit copy}  
+	bool		fIsTrueMatching = false;//!	
+	bool		fHadTofSignal = false;	//!
+	bool		fBestParameter = false;	//!
+       	
         MpdTofMatchingData();
-        MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Double_t weight = 0.);        
-  	MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, const TVector3& pointP, 
-  				const TVector3& Momentum, Int_t charge, Double_t delta1, Double_t delta2, Double_t weight = 0.);	
-  	MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Int_t nTrHits, const MpdTofHit* hit, Int_t pid, Int_t flag, Double_t length, const TVector3& pointR, const TVector3& pointP, 
-			const TVector3& perp,  const TVector3& Momentum, Int_t charge, Double_t delta1,  Double_t delta2, Double_t weight = 0.);							
-				
+        MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Double_t weight, const  MpdTofHit*,  Double_t length, Int_t nTrHits, const TVector3& Momentum, const TVector3& estPoint);        
+					
 	bool operator==(const MpdTofMatchingData& rhs){ return ( this->fKFTrackIndex == rhs.fKFTrackIndex &&  this->fTofHitIndex == rhs.fTofHitIndex ); }
 				
-	virtual void 	Print(void)const;
-	
+	void 			Print(const char* comment = nullptr, std::ostream& os = std::cout)const;
 	Int_t			GetKFTrackIndex(void)const{ return fKFTrackIndex;};	
-	Int_t			GetTofHitIndex(void)const{ return fTofHitIndex;}; // return tof hit index if return value >= 0, else return stripUID
-
-	Double_t		GetTrackLength(void)const{ return fLength;};	
+	Int_t			GetTofHitIndex(void)const{ return fTofHitIndex;};
+	Double_t		GetTrackLength(void)const{ return fLength;};	 
 	Int_t			GetNmbTrHits(void)const{ return fNmbTrHits;};	
     	Double_t        	GetBeta(void) const { return fBeta;};  
 	Double_t		GetMass2(void)const{ return fMass2;};	
-	TVector3		GetMomentum(void)const {return TVector3(fMom);};
-	Double_t		GetWeight(void)const{ return fWeight;};		
-	
-	// CAUTION: getters for transparent(NOT serialized) data
-	Float_t			GetDelta(void)const{ return sqrt(fDelta1*fDelta1 + fDelta2*fDelta2);};
-	Float_t			GetDelta1(void)const{ return fDelta1;};
-	Float_t			GetDelta2(void)const{ return fDelta2;};	
+	TVector3		GetMomentum(void)const {return fMomentum;};
+	Double_t		GetWeight(void)const{ return fWeight;};	
+	Double_t		GetNormWeight(void)const{ return fNormWeight;};	
+	void			SetNormWeight(Double_t v){fNormWeight = v;};
 
-ClassDef(MpdTofMatchingData, 5)
+	// CAUTION: getters for transparent(NOT serialized) data
+	Double_t		GetDelta(void)const{ return  (fEstPoint - fHitPosition).Mag();};
+
+ClassDef(MpdTofMatchingData, 7)
 };
 //------------------------------------------------------------------------------------------------------------------------
 

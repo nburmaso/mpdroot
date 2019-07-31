@@ -3,7 +3,7 @@
 #define __MPD_TOF_H 1
 
 //------------------------------------------------------------------------------------------------------------------------
-/// \class MpdTof, LRectangle, LStrip
+/// \class MpdTof, version = 8 (14 sectors, 20 detectors, 72 strips)
 /// 
 /// \brief 
 /// \author Sergei Lobastov (LHE, JINR, Dubna)
@@ -31,9 +31,8 @@ class MpdTof : public FairDetector
   	Double_t	fLength;            //!  length
   	Double_t	fELoss;             //!  energy loss
 
-  	Int_t 		fPosIndex;		//!
-  	TClonesArray	*aTofHits;		//! Hit collection
-  	const double	nan;			//!
+  	Int_t 		fPosIndex = 0;		//!
+  	TClonesArray	*aTofHits = nullptr;	//! Hit collection
 
 	void		ConstructAsciiGeometry();
   	MpdTofPoint* 	AddPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss); 
@@ -42,7 +41,6 @@ class MpdTof : public FairDetector
 public:
   	MpdTof(const char* name = "TOF", Bool_t active = kTRUE);
 	virtual ~MpdTof();
-
 
         virtual Bool_t  	ProcessHits(FairVolume* vol = nullptr);
   	virtual void 		EndOfEvent();
@@ -54,17 +52,11 @@ public:
  	virtual void 		ConstructGeometry();
 	virtual Bool_t 		CheckIfSensitive(std::string name);
 
-ClassDef(MpdTof,3) 
-};
+	static void		Dump(TClonesArray *aHits, TClonesArray *aPoints, TClonesArray *aTracks, const char* comment = nullptr, std::ostream& os = std::cout);
+	static void 		Print(const TVector3&, const char* comment = nullptr, std::ostream& os = std::cout);
+	static void		GetDelta(const TVector3& mcPos, const TVector3& estPos, double& dev,  double& devZ, double& devR, double& devPhi);
 
-//------------------------------------------------------------------------------------------------------------------------
-inline void MpdTof::ResetParameters() 
-{
-	fTrackID = fVolumeID = 0;
-	fPos.SetXYZM(nan, nan, nan, nan);
-	fMom.SetXYZM(nan, nan, nan, nan);
-	fTime = fLength = fELoss = nan;
-	fPosIndex = 0;
+ClassDef(MpdTof,3) 
 };
 //------------------------------------------------------------------------------------------------------------------------
 #endif

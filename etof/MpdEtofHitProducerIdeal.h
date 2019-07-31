@@ -24,7 +24,7 @@ public:
 
 	virtual InitStatus	Init();
 	virtual void		Exec(Option_t * option);
-	virtual void		Finish();	
+//	virtual void		Finish();	
 
 ClassDef(MpdEtofHitProducerIdeal,3);
 };

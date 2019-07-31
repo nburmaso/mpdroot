@@ -27,12 +27,13 @@
 #include "MpdTofGeoUtils.h"
 #include "MpdEtofGeoUtils.h"
 #include "MpdEtof.h"
-#include "LMatchingFilter.h"
+//#include "LMatchingFilter.h"
+#include "MpdTofMatchingQA.h"
 
 #include "MpdEtofMatching.h"
 
 using namespace std;
-
+/*
 struct less_by_pointer 
 {
     inline bool operator() (const intervalType& struct1, const intervalType& struct2)
@@ -40,7 +41,7 @@ struct less_by_pointer
         return (struct1.value < struct2.value);
     }
 };
-	
+*/	
 ClassImp(MpdEtofMatching)
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofMatching::MpdEtofMatching(const char *name, Int_t verbose, Bool_t test, const char *flnm)
@@ -50,12 +51,12 @@ MpdEtofMatching::MpdEtofMatching(const char *name, Int_t verbose, Bool_t test, c
 {
 	pMatchingQA = fDoTest ? new MpdTofMatchingQA(flnm, true) : nullptr;
 
-	pMF = new LMatchingFilter(pMatchingQA, fVerbose);
+	//pMF = new LMatchingFilter(pMatchingQA, fVerbose);
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofMatching::~MpdEtofMatching()
 {
-    delete pMF;
+//    delete pMF;
     delete pRandom;
     delete pMatchingQA;
     if (aTofMatchings != nullptr)
@@ -84,10 +85,10 @@ InitStatus	  MpdEtofMatching::Init()
   	aTofMatchings = new TClonesArray("MpdTofMatchingData");
   	FairRootManager::Instance()->Register("ETOFMatching", "ETof", aTofMatchings, kTRUE);
 
-	pMF->SetContainer(aTofMatchings);
+///	pMF->SetContainer(aTofMatchings);
 
-	MpdEtofGeoUtils::Instance()->ParseTGeoManager(fUseMCData, nullptr, false); 
-	MpdEtofGeoUtils::Instance()->FindNeighborStrips(0.8, nullptr, nullptr, false);// 0.8 [cm] <--- thresh. distance between neighbor strips,  (see h1TestDistance histo)
+//	MpdEtofGeoUtils::Instance()->ParseTGeoManager(fUseMCData, nullptr, false); 
+//	MpdEtofGeoUtils::Instance()->FindNeighborStrips(0.8, nullptr, nullptr, false);// 0.8 [cm] <--- thresh. distance between neighbor strips,  (see h1TestDistance histo)
 
 	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofMatching::Init] Initialization finished succesfully.");
 
@@ -97,7 +98,7 @@ return kSUCCESS;
 void 		MpdEtofMatching::Exec(Option_t *option)
 {
     fDoMCTest = fUseMCData && fDoTest;
-		
+/*		
 	// Reset event
         aTofMatchings->Clear();
 	pMF->Reset();
@@ -257,6 +258,7 @@ assert(nEntries	== MatchingOK);
 		cout<<"\n -I- [MpdEtofMatching::Exec] MatchingOK = "<<MatchingOK;
 		if(MatchingOK != 0) cout<<" ("<<chi2/MatchingOK<<")";	
 	}
+*/
 }
 //------------------------------------------------------------------------------------------------------------------------
 void		MpdEtofMatching::Finish()

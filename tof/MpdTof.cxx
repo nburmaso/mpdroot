@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <algorithm>
-#include <limits>
+#include <cmath>
 
 #include <TClonesArray.h>
 #include <TVirtualMC.h>
@@ -25,33 +25,45 @@
 #include "FairRuntimeDb.h"
 #include "FairRunAna.h"
 #include "FairVolume.h"
+#include "FairMCTrack.h"
 
 #include "MpdTofGeo.h"
 #include "MpdTofGeoPar.h"
 #include "MpdTofPoint.h"
+#include "MpdTofHit.h"
 
 #include "MpdTof.h"
+using namespace std;
 
 ClassImp(MpdTof)
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
 MpdTof::MpdTof(const char* name, Bool_t active)
- : FairDetector(name, active), nan(std::numeric_limits<double>::quiet_NaN())
+ : FairDetector(name, active)
 {  
 	aTofHits = new TClonesArray("MpdTofPoint");
-	fPosIndex = 0;
 	fVerboseLevel = 1;
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTof::~MpdTof() 
 {
-	if(aTofHits){ aTofHits->Delete(); delete aTofHits; }
+	aTofHits->Delete(); 
+	delete aTofHits;
+}
+//------------------------------------------------------------------------------------------------------------------------
+void	MpdTof::ResetParameters() 
+{
+	fTrackID = fVolumeID = 0;
+	fPos.SetXYZM(NAN, NAN, NAN, NAN);
+	fMom = fPos;
+	fTime = fLength = fELoss = NAN;
+	fPosIndex = 0;
 }
 //------------------------------------------------------------------------------------------------------------------------
 Bool_t  MpdTof::ProcessHits(FairVolume* vol)
 {
-	Int_t  strip, detector, box, sector; 
+	Int_t  sector, detector, strip; 
 
 	// Set parameters at entrance of volume. Reset ELoss.
 	if(gMC->IsTrackEntering()) 
@@ -71,12 +83,10 @@ Bool_t  MpdTof::ProcessHits(FairVolume* vol)
 	{	
 		fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
 		
-		gMC->CurrentVolOffID(0, strip);
-		gMC->CurrentVolOffID(1, detector);
-		box = 1;//gMC->CurrentVolOffID(3, box);
-		gMC->CurrentVolOffID(4, sector);		
-					
-		fVolumeID = MpdTofPoint::GetVolumeUID(sector, box, detector, strip);
+		gMC->CurrentVolOffID(0, strip);		// [1,72]
+		gMC->CurrentVolOffID(1, detector);	// [1,20]
+		gMC->CurrentVolOffID(2, sector);	// [1,14]			
+		fVolumeID = MpdTofPoint::GetSuid(sector, detector, strip);
 
 		AddPoint(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss);
 
@@ -88,14 +98,18 @@ Bool_t  MpdTof::ProcessHits(FairVolume* vol)
 return kTRUE;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdTof::EndOfEvent() 
+void 		MpdTof::EndOfEvent() 
 {
 	if(fVerboseLevel) Print();
+
   	aTofHits->Delete();
   	fPosIndex = 0;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdTof::Register(){ FairRootManager::Instance()->Register("TOFPoint", "Tof", aTofHits, kTRUE); }
+void 		MpdTof::Register()
+{
+	FairRootManager::Instance()->Register("TOFPoint", "Tof", aTofHits, kTRUE); 
+}
 //------------------------------------------------------------------------------------------------------------------------
 TClonesArray* MpdTof::GetCollection(Int_t iColl) const 
 {
@@ -104,7 +118,7 @@ TClonesArray* MpdTof::GetCollection(Int_t iColl) const
 return nullptr;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdTof::Print() const 
+void 		MpdTof::Print() const 
 {
 	Int_t nHits = aTofHits->GetEntriesFast();
 	cout << "-I- MpdTof: " << nHits << " points registered in this event." << endl;
@@ -113,9 +127,100 @@ void MpdTof::Print() const
     		for(Int_t i=0; i<nHits; i++) (*aTofHits)[i]->Print();
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdTof::Reset(){ aTofHits->Delete(); ResetParameters(); }
+void 		MpdTof::Dump(TClonesArray *aPoints, TClonesArray *aHits, TClonesArray *aTracks, const char* comment, ostream& os)
+{
+	if(comment != nullptr) os<<comment;
+
+	// Fill & sort MpdTofPoint&MpdTofHit by mctid key.
+	Int_t nHits = aHits->GetEntriesFast();
+	Int_t nPoints = aPoints->GetEntriesFast();
+	Int_t nTracks = aTracks->GetEntriesFast();
+
+	multimap<Int_t, Int_t> mmPoints, mmHits, mmTracks; // < mctid, poinIndex or hitIndex>  < mctid parent, mctid> 
+	set<Int_t> sMcIndex;
+
+	vector<Int_t> vec;
+	for(Int_t index=0; index < nHits; index++)
+	{
+		auto *pHit = (MpdTofHit*) aHits->At(index);
+		vec.clear();
+		pHit->getLinks(MpdTofUtils::mcTrackIndex, vec); 
+
+		for(auto it=vec.begin(), itEnd = vec.end(); it != itEnd; it++)
+		{
+			Int_t mctid = *it;
+			mmHits.insert({mctid, index});	
+			sMcIndex.insert(mctid);
+		}
+	}
+	for(Int_t index=0; index < nPoints; index++)
+	{
+		auto *pPoint = (MpdTofPoint*) aPoints->At(index);
+		Int_t mctid = pPoint->GetTrackID();
+		mmPoints.insert({mctid, index});
+		sMcIndex.insert(mctid);
+	}
+	for(Int_t index=0; index < nTracks; index++)
+	{
+		auto pMCtrack = (FairMCTrack*) aTracks->UncheckedAt(index);
+		auto ptid = pMCtrack->GetMotherId();
+		mmTracks.insert({ptid, index});		
+	}
+
+	// Print to ostream os.
+	os<<"\n[MpdTof::Dump] points: "<<nPoints<<", hits: "<<nHits<<" --------------------------------------------------------->>>";
+	for(auto mctid : sMcIndex)
+	{
+		os<<"\ntid="<<mctid<<" points: ("<<mmPoints.count(mctid)<<") ";
+		
+		auto range  = mmPoints.equal_range(mctid);				
+		for(auto it = range.first; it != range.second; ++it) os<<" pid="<<it->second;
+
+		os<<" hits: ("<<mmHits.count(mctid)<<") ";
+
+		auto range2  = mmHits.equal_range(mctid);				
+		for(auto it = range2.first; it != range2.second; ++it)
+		{
+			auto hid = it->second;
+			auto pHit = (MpdTofHit*) aHits->At(hid);
+			Int_t suid = pHit->GetDetectorID();
+
+			Int_t sector, detector, gap, strip;
+			MpdTofPoint::ParseSuid(suid, sector, detector, gap, strip);
+
+			os<<" hid="<<hid<<"["<<suid<<"]{"<<sector<<","<<detector<<","<<gap<<","<<strip<<"}"; 
+		}
+	}
+	os<<"\nTrack tree ---------------------------------------------------------------------------------------------------------";
+	for(Int_t index=0; index < nTracks; index++)
+	{
+		if(mmTracks.find(index) != mmTracks.end()) continue; // pass only ended track line
+
+		os<<"\n tid="<<index;
+
+		auto pMCtrack = (FairMCTrack*) aTracks->At(index);
+		do
+		{
+			Int_t ptid = pMCtrack->GetMotherId();
+			if(ptid != -1)
+			{
+				os<<"<tid="<<ptid;
+				pMCtrack = (FairMCTrack*) aTracks->At(ptid);
+			}
+			else pMCtrack = nullptr;
+		}
+		while(pMCtrack);
+	}
+	os<<"\n[MpdTof::Dump] --------------------------------------------------------------------------------------------------<<<";
+}
 //------------------------------------------------------------------------------------------------------------------------
-void MpdTof::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset)
+void 		MpdTof::Reset()
+{
+	aTofHits->Delete(); 
+	ResetParameters(); 
+}
+//------------------------------------------------------------------------------------------------------------------------
+void 		MpdTof::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset)
 {
 	Int_t nEntries = cl1->GetEntriesFast();
 	cout << "-I- MpdTof: " << nEntries << " entries to add." << endl;
@@ -134,23 +239,23 @@ void MpdTof::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset)
 	cout << "-I- MpdTof: " << cl2->GetEntriesFast() << " merged entries."  << endl;
 }
 //--------------------------------------------------------------------------------------------------------------------------------------
-void 			MpdTof::ConstructGeometry() 
+void 		MpdTof::ConstructGeometry() 
 {
 	TString fileName = GetGeometryFileName();
 	if(fileName.EndsWith(".root")) 
 	{
-		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "Constructing TOF geometry from ROOT file %s", fileName.Data());
+		LOG(DEBUG)<<"Constructing TOF geometry from ROOT file"<<fileName.Data()<<FairLogger::endl;
 		ConstructRootGeometry();
 	}
 	else if ( fileName.EndsWith(".geo") ) 
 	{
-		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "Constructing TOF geometry from ASCII file %s", fileName.Data());
+		LOG(DEBUG)<<"Constructing TOF geometry from ASCII file"<<fileName.Data()<<FairLogger::endl;
 		ConstructAsciiGeometry();
 	}
-	else	FairLogger::GetLogger()->Fatal(MESSAGE_ORIGIN, "Geometry format of TOF file %S not supported.", fileName.Data());    
+	else	LOG(FATAL)<<"Geometry format of TOF file "<<fileName.Data()<<" not supported."<<FairLogger::endl; 
 }
 //------------------------------------------------------------------------------------------------------------------------
-void 	MpdTof::ConstructAsciiGeometry() 
+void 		MpdTof::ConstructAsciiGeometry() 
 {
         FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
         FairGeoInterface* geoFace = geoLoad->getGeoInterface();
@@ -191,13 +296,26 @@ MpdTofPoint* 		MpdTof::AddPoint(Int_t trackID, Int_t detID, TVector3 pos, TVecto
 	return new((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofPoint(trackID, detID, pos, mom, time, length, eLoss);
 }
 //--------------------------------------------------------------------------------------------------------------------------------------
-Bool_t 			MpdTof::CheckIfSensitive(std::string name)
+Bool_t 			MpdTof::CheckIfSensitive(string name)
 {
-  TString tsname = name;
-  if (tsname.Contains("Active")) return kTRUE;
+	TString tsname = name;
+	if(tsname.Contains("Active")) return kTRUE;
   
 return kFALSE;
 }
 //------------------------------------------------------------------------------------------------------------------------
-
-
+void 			MpdTof::Print(const TVector3& v, const char* comment, ostream& os)
+{
+	if(comment != nullptr) os<<comment;
+	os<<"("<<v.X()<<","<<v.Y()<<","<<v.Z()<<"; "<<v.Perp()<<","<<v.Mag()<<")";
+}
+//------------------------------------------------------------------------------------------------------------------------
+void			MpdTof::GetDelta(const TVector3& mcPos, const TVector3& estPos, double& dev,  double& devZ, double& devR, double& devPhi)
+{
+	dev = (mcPos - estPos).Mag();
+	devZ = mcPos.Z() - estPos.Z();
+	devR = mcPos.Perp() - estPos.Perp();					
+	devPhi = sqrt(dev*dev - devZ*devZ - devR*devR);
+	devPhi = (mcPos.Phi() > estPos.Phi()) ? devPhi : -1.* devPhi;
+}
+//------------------------------------------------------------------------------------------------------------------------
