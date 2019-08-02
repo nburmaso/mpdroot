@@ -554,7 +554,7 @@ void 		MpdTofMatching::Exec(Option_t *option)
 //fWeights->Print("BEFORE", aTPCkfTracks, aTofHits, &mmT2H);
 	
 //	fWeights->Boost1thRankCand(1000.);
-//	fWeights->Normalize(); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,
+//	fWeights->Normalize(); 
 ///fWeights->Print("AfterNormalize", aTPCkfTracks, aTofHits, &mmT2H);
 
 	fWeights->Process(mPt, aTPCkfTracks);
@@ -568,7 +568,7 @@ void 		MpdTofMatching::Exec(Option_t *option)
 
 //pQA->tidsTofTouch.Print("\n tidsTofTouch ------------------------>>>");
 				
-	Report(2, cerr);//(fVerbose);
+	Report(fVerbose);
 	
 	if(pTimer) pTimer->Stop();
 }
@@ -592,9 +592,6 @@ void		MpdTofMatching::Report(Int_t verbose, ostream& os)const
 		{
 			os<<"\n Cand.: tofTracks = ("<<((double) cand.first)/fNTofTracksRun*100.<<"%), TrueMatch = ("<<((double) cand.second)/fNTofTracksRun*100.<<"%)";
 			os<<"; Found: TrueMatch = ("<<((double) found.first)/fNTofTracksRun*100.<<"%), MisMatch = ("<<((double) found.second)/fNTofTracksRun*100.<<"%)";
-
-os<<"\n Found: TrueMatch = "<< found.first<<" of "<<fNTofTracksRun;
-
 		}
 	}
 
@@ -609,9 +606,6 @@ void		MpdTofMatching::FillWeights(const TmPt& mPt, const TmmD2H& mmD2H, const Tm
 {
 	const double Zerror = 10.; // 10. [cm] // FIXME:  should be dependent on the parameters of the KFtrack
 	const double PhiError = 0.1;// 0.1 // [rads] // FIXME:  should be dependent on the parameters of the KFtrack
-	
-fThreshZ = 5.; 
-fThreshPhi = 5.;
 
 //if(pQA) pQA->tidsTofTouch.Reset();
 

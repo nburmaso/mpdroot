@@ -162,7 +162,7 @@ class MpdTofMatching : public FairTask
    
         Bool_t			fDoTest, fIsMcRun = false, fDoMCtest;
         const Double_t		fTofBarrelRadius = 152.; // [cm]
- 	Double_t 		fThreshZ = 1.5, fThreshPhi = 15.; // [cm]
+ 	Double_t 		fThreshZ = 5., fThreshPhi = 5.; // [cm]
 	size_t			fNTofTracksEvent = 0, fNTofTracksRun = 0; // number of Tof touched kf tracks per event & run
 
 	// refit kalman track before propagation
