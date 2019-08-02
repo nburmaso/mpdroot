@@ -388,7 +388,7 @@ void	LWeightMatrix::Process(TmPt tids, const TClonesArray *aKfTracks)
 					bestHitId = hitIndex[i];
 				}
 			}
-			else assert(false == "ERROR: MpdTofMatchingData candidate MUST exist.");
+			else assert(false);// == "ERROR: MpdTofMatchingData candidate MUST exist."
 		}
 
 		if( bestHitId != -1) // accepted candidate
