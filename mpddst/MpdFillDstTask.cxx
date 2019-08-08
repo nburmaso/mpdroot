@@ -485,33 +485,29 @@ void MpdFillDstTask::FillTrackDCA(MpdTrack* track, TVector3 *recoVertex, TVector
 }
 
 void MpdFillDstTask::FillTrackPID(MpdTrack* track) {
-	TVector3 mom(track->GetPx(),track->GetPy(),track->GetPz());
-	Double_t p = mom.Mag();
-	Double_t dedx = track->GetdEdXTPC();
-	Double_t dedx_el = fPID->GetDedxElParam(p);
-	Double_t dedx_pi = fPID->GetDedxPiParam(p);
-	Double_t dedx_ka = fPID->GetDedxKaParam(p);
-	Double_t dedx_pr = fPID->GetDedxPrParam(p);
-	Double_t sigma_el = fPID->GetDedxWidthValue(p, 4)*dedx_el;
-	Double_t sigma_pi = fPID->GetDedxWidthValue(p, 1)*dedx_pi;
-	Double_t sigma_ka = fPID->GetDedxWidthValue(p, 2)*dedx_ka;
-	Double_t sigma_pr = fPID->GetDedxWidthValue(p, 3)*dedx_pr;
-	sigma_el = (dedx-dedx_el)/(sigma_el);
-	sigma_pi = (dedx-dedx_pi)/(sigma_pi);
-	sigma_ka = (dedx-dedx_ka)/(sigma_ka);
-	sigma_pr = (dedx-dedx_pr)/(sigma_pr);
-	if(TMath::IsNaN(sigma_el))
-		sigma_el = -1E+2;
-	if(TMath::IsNaN(sigma_pi))
-		sigma_pi = -1E+2;
-	if(TMath::IsNaN(sigma_ka))
-		sigma_ka = -1E+2;
-	if(TMath::IsNaN(sigma_pr))
-		sigma_pr = -1E+2;
-	track->SetNSigmaElectron(sigma_el);
-	track->SetNSigmaKaon(sigma_ka);
-	track->SetNSigmaPion(sigma_pi);
-	track->SetNSigmaProton(sigma_pr);
+    TVector3 mom(track->GetPx(), track->GetPy(), track->GetPz());
+    Double_t p = mom.Mag();
+    Double_t dedx = track->GetdEdXTPC();
+    Double_t dedx_el = fPID->GetDedxElParam(p);
+    Double_t dedx_pi = fPID->GetDedxPiParam(p);
+    Double_t dedx_ka = fPID->GetDedxKaParam(p);
+    Double_t dedx_pr = fPID->GetDedxPrParam(p);
+    Double_t sigma_el = fPID->GetDedxWidthValue(p, 4) * dedx_el;
+    Double_t sigma_pi = fPID->GetDedxWidthValue(p, 1) * dedx_pi;
+    Double_t sigma_ka = fPID->GetDedxWidthValue(p, 2) * dedx_ka;
+    Double_t sigma_pr = fPID->GetDedxWidthValue(p, 3) * dedx_pr;
+
+    if (sigma_el > FLT_EPSILON) 
+        track->SetNSigmaElectron((dedx - dedx_el) / sigma_el);
+
+    if (sigma_pi > FLT_EPSILON)
+        track->SetNSigmaPion((dedx - dedx_pi) / sigma_pi);
+    
+    if (sigma_ka > FLT_EPSILON)
+        track->SetNSigmaKaon((dedx - dedx_ka) / sigma_ka);
+   
+    if (sigma_pr > FLT_EPSILON)
+       track->SetNSigmaProton((dedx - dedx_pr) / sigma_pr);
 }
 
 // -------------------------------------------------------------------
