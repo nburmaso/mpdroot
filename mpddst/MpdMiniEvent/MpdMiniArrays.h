@@ -3,7 +3,7 @@
  * \brief Stores mini arrays
  *
  * MpdMiniArrays is a pure C++ class that holds names of the mini arrays,
- * names of TBrances and TClones arrays. 
+ * names of TBranches and TClones arrays. 
  *
  * The currently implemented objects:
  * Event          - Event
@@ -30,9 +30,11 @@ class MpdMiniArrays {
  public:
   /// Default constructor
   MpdMiniArrays();
+  
+  virtual ~MpdMiniArrays();
 
   /// Should be changed to constexpr once ROOT 6 is available at STAR
-  enum { NAllMiniArrays = 9};
+  enum {NAllMiniArrays = 9};
 
   /// Names of the TBranches in the TTree/File
   static const char* miniArrayNames[NAllMiniArrays];
