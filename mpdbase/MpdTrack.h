@@ -38,10 +38,10 @@ class MpdTrack : public TObject {
     Float_t   fdEdXTPC;  // [tof]
     Int_t     fTofHitIndex;  // [tof] 
     Int_t     fTofFlag;  // [tof] it is set if tof identification exists
-    Int_t     fNSigmaElectron;  //   
-    Int_t     fNSigmaPion;  //   
-    Int_t     fNSigmaKaon;  //   
-    Int_t     fNSigmaProton;  //   
+    Float_t   fNSigmaElectron;  //   
+    Float_t   fNSigmaPion;  //   
+    Float_t   fNSigmaKaon;  //   
+    Float_t   fNSigmaProton;  //   
     Float_t   fChi2;  // Track Chi2
     Float_t   fPt;  // Signed Transverce momentum  
     Float_t   fTheta;  // Theta angle (from beam line)  
@@ -90,10 +90,10 @@ class MpdTrack : public TObject {
     void SetdEdXTPC(Float_t n) {fdEdXTPC=n;}  
     void SetTofHitIndex(Int_t n) {fTofHitIndex=n;}  
     void SetTofFlag(Int_t n) {fTofFlag = fTofFlag | n;} 
-    void SetNSigmaElectron( Int_t n ) {fNSigmaElectron=n;}
-    void SetNSigmaPion( Int_t n ) {fNSigmaPion=n;}
-    void SetNSigmaKaon( Int_t n ) {fNSigmaKaon=n;}
-    void SetNSigmaProton( Int_t n ) {fNSigmaProton=n;}
+    void SetNSigmaElectron( Float_t n ) {fNSigmaElectron=n;}
+    void SetNSigmaPion( Float_t n ) {fNSigmaPion=n;}
+    void SetNSigmaKaon( Float_t n ) {fNSigmaKaon=n;}
+    void SetNSigmaProton( Float_t n ) {fNSigmaProton=n;}
     void SetChi2( Float_t n ) {fChi2=n;}
     void SetPt( Float_t n ) {fPt=n;}
     void SetTheta( Float_t n ) {fTheta=n;}
@@ -143,10 +143,10 @@ class MpdTrack : public TObject {
     Float_t   GetdEdXTPC() const{return fdEdXTPC;}
     Int_t     GetTofHitIndex() const{return fTofHitIndex;};
     Int_t     GetTofFlag() const{return fTofFlag;}
-    Int_t     GetNSigmaElectron() const{return fNSigmaElectron;}
-    Int_t     GetNSigmaPion() const{return fNSigmaPion;}
-    Int_t     GetNSigmaKaon() const{return fNSigmaKaon;}
-    Int_t     GetNSigmaProton() const{return fNSigmaProton;}
+    Float_t   GetNSigmaElectron() const{return fNSigmaElectron;}
+    Float_t   GetNSigmaPion() const{return fNSigmaPion;}
+    Float_t   GetNSigmaKaon() const{return fNSigmaKaon;}
+    Float_t   GetNSigmaProton() const{return fNSigmaProton;}
     Float_t   GetChi2() {return fChi2;}
     Float_t   GetPt() const{return fPt;}
     Float_t   GetTheta() const{return fTheta;}
