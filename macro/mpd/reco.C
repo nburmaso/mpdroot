@@ -1,3 +1,4 @@
+#include <Rtypes.h>
 #if !defined(__CINT__) && !defined(__CLING__)
 // ROOT includes
 #include "TString.h"
@@ -178,7 +179,14 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     MpdFillDstTask* fillDST = new MpdFillDstTask("MpdDst task");
     fRun->AddTask(fillDST);
-
+    
+    MpdMiniDstFillTask* miniDst = new MpdMiniDstFillTask("miniDST.root");
+    //miniDst->isUseTpc(kFALSE);
+    //miniDst->isUseTof(kFALSE);
+    // miniDst->isUseEcal(kTRUE);
+    miniDst->isUseMcTracks(kTRUE);
+    fRun->AddTask(miniDst);
+    
     // -----   Intialise   ----------------------------------------------------
     fRun->Init();
     if (run_type != "proof") cout<<"Field: "<<fRun->GetField()->GetBz(0., 0., 0.)<<endl;
