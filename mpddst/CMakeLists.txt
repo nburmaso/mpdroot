@@ -16,6 +16,7 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/lhetrack
  ${CMAKE_SOURCE_DIR}/mpdpid
  ${CMAKE_SOURCE_DIR}/mpddst
+ ${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -35,12 +36,13 @@ link_directories(${LINK_DIRECTORIES})
 # List of source files
 set(SRCS
  MpdFillDstTask.cxx
+ MpdMiniDstFillTask.cxx
  MpdDstCompressTask.cxx
 )
 
 Set(HEADERS)
 Set(LINKDEF MpdDstLinkDef.h)
 Set(LIBRARY_NAME MpdDst)
-Set(DEPENDENCIES Core Base MpdBase MpdPid)
+Set(DEPENDENCIES Core Base MpdBase MpdPid MpdMiniEvent)
 
 GENERATE_LIBRARY()
