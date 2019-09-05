@@ -25,7 +25,7 @@ protected:
 	void Register(Bool_t write);
 public:
 	NicaMpdEventInterface();
-	virtual void Copy(NicaEventInterface *s);
+	virtual void CopyData(NicaEventInterface *s);
 	void OnlyPrimary(){fMode = kPrimaryTracks;};
 	void OnlyGlobal(){fMode = kGlobalTracks;};
 	virtual void Compress(Int_t *map, Int_t map_size);

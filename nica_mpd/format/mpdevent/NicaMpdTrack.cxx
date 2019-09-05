@@ -10,7 +10,7 @@
 #include "NicaDetectorID.h"
 #include <iostream>
 #include <Rtypes.h>
-NicaMpdTrack::NicaMpdTrack() :NicaExpTrack(),
+NicaMpdTrack::NicaMpdTrack() :NicaExpTrackHelix(),
 fHitsMap(0),
 fSharedHitsMap(0)
 {
@@ -62,10 +62,10 @@ void NicaMpdTrack::CopyData(NicaTrack* other) {
 	*fToFTrack = *track->fToFTrack;
 	fHitsMap = track->fHitsMap;
 	fSharedHitsMap = track->fSharedHitsMap;
-	NicaExpTrack::CopyData(track);
+	NicaExpTrackHelix::CopyData(track);
 }
 
-NicaMpdTrack::NicaMpdTrack(const NicaMpdTrack& other) :NicaExpTrack(other){
+NicaMpdTrack::NicaMpdTrack(const NicaMpdTrack& other) :NicaExpTrackHelix(other){
 	fFirstPoint = new TVector3(*other.fFirstPoint);
 	fLastPoint  = new TVector3(*other.fLastPoint);
 	fTpcTrack = new NicaTpcTrack(*other.fTpcTrack);
@@ -76,7 +76,7 @@ NicaMpdTrack::NicaMpdTrack(const NicaMpdTrack& other) :NicaExpTrack(other){
 
 NicaMpdTrack& NicaMpdTrack::operator =(const NicaMpdTrack& other) {
 	if(this==&other) return *this;
-	NicaExpTrack::operator=(other);
+	NicaExpTrackHelix::operator=(other);
 	*fFirstPoint = *other.fFirstPoint;
 	*fLastPoint  = *other.fLastPoint;
 	*fTpcTrack = *other.fTpcTrack;

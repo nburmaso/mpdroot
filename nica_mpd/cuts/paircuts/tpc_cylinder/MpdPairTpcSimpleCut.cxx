@@ -8,7 +8,7 @@
  */
 #include "MpdPairTpcSimpleCut.h"
 
-TVector3 MpdPairTpcSimpleCut::PosNominal(NicaExpTrack* track, Double_t R) const {
+TVector3 MpdPairTpcSimpleCut::PosNominal(NicaExpTrackHelix* track, Double_t R) const {
 	NicaHelix *helix = track->GetHelix();
 	Double_t s1, s2;
 	NicaEvent *ev = track->GetEvent();
@@ -28,7 +28,7 @@ TVector3 MpdPairTpcSimpleCut::PosNominal(NicaExpTrack* track, Double_t R) const 
 	return p;
 }
 
-TVector3 MpdPairTpcSimpleCut::PosReal(NicaExpTrack* track, Double_t R) const {
+TVector3 MpdPairTpcSimpleCut::PosReal(NicaExpTrackHelix* track, Double_t R) const {
 	NicaHelix *helix = track->GetHelix();
 	Double_t s1, s2;
 	NicaEvent *ev = track->GetEvent();
