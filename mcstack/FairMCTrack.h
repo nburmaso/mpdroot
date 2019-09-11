@@ -87,7 +87,7 @@ class FairMCTrack : public TObject
 
 
   /** Accessors to the number of MCPoints in the detectors **/
-  Int_t GetNPoints(DetectorId detId)  const;
+  Int_t GetNPoints(DetectorIdMPD detId)  const;
 
 
   /**  Modifiers  **/

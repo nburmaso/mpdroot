@@ -145,7 +145,7 @@ Double_t FairMCTrack::GetRapidity() const {
 
 
 // -----   Public method GetNPoints   --------------------------------------
-Int_t FairMCTrack::GetNPoints(DetectorId detId) const {
+Int_t FairMCTrack::GetNPoints(DetectorIdMPD detId) const {
 
   //kSTS, kTPC, kTOF, kETOF, kFD, kECT, kECAL, kNDET, kCPC, kBBC, kZDC, kFSA, kBMD
 

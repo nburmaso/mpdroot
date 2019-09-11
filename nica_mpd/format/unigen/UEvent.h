@@ -8,6 +8,7 @@
 
 #include "TObject.h"
 #include "TLorentzVector.h"
+#include "TNamed.h"
 
 class TString;
 class TClonesArray;

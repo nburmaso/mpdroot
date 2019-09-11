@@ -73,8 +73,10 @@ SGeoBody createCone(TGeoTranslation startPoint, TGeoTranslation vectorToEnd, dou
         addVectorToElement(outBody, 0, startPoint);
         addVectorToElement(outBody, 3, vectorToEnd);
     } else {
-        startPoint = (rStart > rEnd) ? startPoint : startPoint + vectorToEnd; //WARNING
-        vectorToEnd = (rStart > rEnd) ? vectorToEnd : vectorToEnd.Inverse(); //WARNING
+        if(rStart <= rEnd) 
+		startPoint = startPoint + vectorToEnd;
+        if(rStart <= rEnd) 
+		vectorToEnd = vectorToEnd.Inverse(); 
         double rMax = (rStart > rEnd) ? rStart : rEnd;
         double rMin = (rStart > rEnd) ? rEnd : rStart;
         outBody.type = 7;
