@@ -387,7 +387,7 @@ void FairStack::Print(Int_t iVerbose) const {
 
 
 // -----   Public method AddPoint (for current track)   --------------------
-void FairStack::AddPoint(DetectorId detId) {
+void FairStack::AddPoint(DetectorIdMPD detId) {
   Int_t iDet = detId;
   pair<Int_t, Int_t> a(fCurrentTrack, iDet);
   if ( fPointsMap.find(a) == fPointsMap.end() ) fPointsMap[a] = 1;
@@ -398,7 +398,7 @@ void FairStack::AddPoint(DetectorId detId) {
 
 
 // -----   Public method AddPoint (for arbitrary track)  -------------------
-void FairStack::AddPoint(DetectorId detId, Int_t iTrack) {
+void FairStack::AddPoint(DetectorIdMPD detId, Int_t iTrack) {
   if ( iTrack < 0 ) return;
   Int_t iDet = detId;
   pair<Int_t, Int_t> a(iTrack, iDet);

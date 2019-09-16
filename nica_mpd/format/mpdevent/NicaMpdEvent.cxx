@@ -12,7 +12,7 @@
 #include "NicaMpdEventInterface.h"
 #include "FairRootManager.h"
 
-NicaMpdEvent::NicaMpdEvent(const NicaMpdEvent& other) :NicaExpEvent(other){
+NicaMpdEvent::NicaMpdEvent(const NicaMpdEvent& other) :NicaExpEventHelix(other){
 	if(other.fSource) CreateSource();
 	fMode = other.fMode;
 }
@@ -98,7 +98,7 @@ TString NicaMpdEvent::GetFormatName() const{
 }
 
 void NicaMpdEvent::ShallowCopyEvent(NicaEvent* event) {
-	NicaExpEvent::ShallowCopyEvent(event);
+	NicaExpEventHelix::ShallowCopyEvent(event);
 }
 
 void NicaMpdEvent::OnlyPrimary() {
@@ -125,12 +125,12 @@ Bool_t NicaMpdEvent::ExistInTree() const {
 NicaMpdEvent::~NicaMpdEvent() {
 }
 
-NicaMpdEvent::NicaMpdEvent() :NicaExpEvent("NicaMpdTrack"){
+NicaMpdEvent::NicaMpdEvent() :NicaExpEventHelix("NicaMpdTrack"){
 	fSource = new NicaMpdEventInterface();
 	fMode = kAllTracks;
 }
 
-NicaMpdEvent::NicaMpdEvent(TString trackname) :NicaExpEvent(trackname){
+NicaMpdEvent::NicaMpdEvent(TString trackname) :NicaExpEventHelix(trackname){
 	fSource = new NicaMpdEventInterface();
 	fMode = kAllTracks;
 }

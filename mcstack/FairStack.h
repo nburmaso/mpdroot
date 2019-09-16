@@ -178,14 +178,14 @@ class FairStack : public FairGenericStack
   /** Increment number of points for the current track in a given detector
    *@param iDet  Detector unique identifier
    **/
-  void AddPoint(DetectorId iDet);
+  void AddPoint(DetectorIdMPD iDet);
 
 
   /** Increment number of points for an arbitrary track in a given detector
    *@param iDet    Detector unique identifier
    *@param iTrack  Track number
    **/
-  void AddPoint(DetectorId iDet, Int_t iTrack);
+  void AddPoint(DetectorIdMPD iDet, Int_t iTrack);
 
 
   /** Accessors **/

@@ -24,6 +24,26 @@
 #pragma link C++ class NicaMpdDstMCEvent+;
 #pragma link C++ class NicaMpdDstMCEventTpcPads+;
 
+#pragma link C++ class NicaFairEvent+;
+#pragma link C++ class NicaFairEventInterface+;
+#pragma link C++ class NicaFairExtendedEvent+;
+#pragma link C++ class NicaFairExtendedEventInterface+;
+#pragma link C++ class NicaFairTrack+;
+#pragma link C++ class NicaFairExtendedTrack+;
+#pragma link C++ class NicaFairExtendedTrackInterface+;
+#pragma link C++ class NicaFairTrackInterface+;
+#pragma link C++ class NicaGeneratorWriteFairMC+;
+#pragma link C++ class NicaGeneratorWriteFairMCFreez+;
+
+#pragma link C++ class NicaGeneratorReadUnigen+;
+#pragma link C++ class NicaGeneratorWriteUnigen+;
+#pragma link C++ class NicaUnigenEvent+;
+#pragma link C++ class NicaUnigenEventInterface+;
+#pragma link C++ class NicaUnigenSource+;
+#pragma link C++ class NicaUnigenTrack+;
+#pragma link C++ class NicaUnigenTrackInterface+;
+#pragma link C++ class UEvent+;
+#pragma link C++ class UParticle+;
 
 
 #endif /* INTERFACES_MPDROOT_NICAMPDINTERFACELINKDEF_H_ */

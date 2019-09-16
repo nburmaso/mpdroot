@@ -146,7 +146,7 @@ void NicaMpdEventInterface::SetRunInfoId(Int_t i) {
 	fEvent->SetRunInfoRunId(i);
 }
 
-void NicaMpdEventInterface::Copy(NicaEventInterface* s) {
+void NicaMpdEventInterface::CopyData(NicaEventInterface* s) {
 	*fEvent = *((NicaMpdEventInterface*)s)->fEvent;
 }
 

@@ -15,8 +15,8 @@
 
 class MpdPairTpcSimpleCut : public MpdCylinderTpcPairCut{
 protected:
-	TVector3 PosNominal(NicaExpTrack *track, Double_t R)const;
-	TVector3 PosReal(NicaExpTrack *track, Double_t R)const;
+	TVector3 PosNominal(NicaExpTrackHelix *track, Double_t R)const;
+	TVector3 PosReal(NicaExpTrackHelix *track, Double_t R)const;
 public:
 	MpdPairTpcSimpleCut(Int_t size=1);
 	virtual ~MpdPairTpcSimpleCut();

@@ -2,7 +2,7 @@
  #    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    #
  #                                                                              #
  #              This software is distributed under the terms of the             # 
- #         GNU Lesser General Public Licence version 3 (LGPL) version 3,        #  
+ #              GNU Lesser General Public Licence (LGPL) version 3,             #  
  #                  copied verbatim in the file "LICENSE"                       #
  ################################################################################
 # - Try to find CLHEP
@@ -24,7 +24,6 @@ MESSAGE(STATUS "Looking for CLHEP...")
 
 # If we find the new clhep-config executable use it, otherwise search in the path
 Find_Program(CLHEP_CONFIG_EXE NAMES clhep-config PATHS
-  $ENV{CLHEP_ROOT}/bin
   ${SIMPATH}/cern/clhep/bin
   ${SIMPATH}/cern/clhep/
   ${SIMPATH}/bin
@@ -46,7 +45,6 @@ If(CLHEP_CONFIG_EXE)
        # If it's a library path, add it to the list
        string (REGEX REPLACE "^-L" "" token ${token})
        string (REGEX REPLACE "//" "/" token ${token})
-       string (REGEX REPLACE "\"" "" token ${token})
        list (APPEND _directory_list ${token})
     EndIf (token MATCHES "-L([^\" ]+|\"[^\"]+\")")
   EndForEach (token ${_all_tokens})
@@ -57,7 +55,6 @@ If(CLHEP_CONFIG_EXE)
   ForEach (token ${_all_tokens})
     String (REGEX REPLACE "^-I" "" token ${token})
     String (REGEX REPLACE "//" "/" token ${token})
-    String (REGEX REPLACE "\"" "" token ${token})
     If (EXISTS ${token})
       List (APPEND _incs_found ${token})
     EndIf (EXISTS ${token})

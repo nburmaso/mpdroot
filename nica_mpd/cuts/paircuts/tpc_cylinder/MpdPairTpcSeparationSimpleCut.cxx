@@ -33,8 +33,8 @@ MpdPairTpcSeparationSimpleCut::~MpdPairTpcSeparationSimpleCut() {
 }
 
 Bool_t MpdPairTpcSeparationSimpleCut::Pass(NicaTwoTrack* pair) {
-	NicaExpTrack *track1 = (NicaExpTrack*)pair->GetTrack1();
-	NicaExpTrack *track2 = (NicaExpTrack*)pair->GetTrack2();
+	NicaExpTrackHelix *track1 = (NicaExpTrackHelix*)pair->GetTrack1();
+	NicaExpTrackHelix *track2 = (NicaExpTrackHelix*)pair->GetTrack2();
 	TVector3 pos1 =PosNominal(track1, fRMin);
 	TVector3 pos2 =PosNominal(track2, fRMin);
 	pos1-=pos2;
@@ -96,8 +96,8 @@ MpdPairTcpSeparationSimpleNegCut::MpdPairTcpSeparationSimpleNegCut() {
 }
 
 Bool_t MpdPairTcpSeparationSimpleNegCut::Pass(NicaTwoTrack* pair) {
-	NicaExpTrack *track1 = (NicaExpTrack*)pair->GetTrack1();
-	NicaExpTrack *track2 = (NicaExpTrack*)pair->GetTrack2();
+	NicaExpTrackHelix *track1 = (NicaExpTrackHelix*)pair->GetTrack1();
+	NicaExpTrackHelix *track2 = (NicaExpTrackHelix*)pair->GetTrack2();
 	TVector3 pos1 =PosNominal(track1, fRMin);
 	TVector3 pos2 =PosNominal(track2, fRMin);
 	pos1-=pos2;
