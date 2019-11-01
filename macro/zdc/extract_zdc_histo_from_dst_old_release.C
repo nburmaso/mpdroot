@@ -14,7 +14,7 @@ void extract_zdc_histo_from_dst (const char *filename="dst_auau.root")
   TH2F*  h_zdc_1_orig=(TH2F*)f->Get("HistZdc1En");
   TH2F*  h_zdc_2_orig=(TH2F*)f->Get("HistZdc2En");
 
-  TChain chain ("mpdsim");
+  TChain chain ("cbmsim");
   chain.Add(filename);
   TChain *t=&chain;  
   Int_t n_events = t->GetEntries();

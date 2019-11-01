@@ -9,7 +9,7 @@ MpdCalculator::MpdCalculator(TString inFileName , TString outFileName, TString d
 	this->inFileName = inFileName;
 	this->outFileName = outFileName;
 
-	inChain = new TChain("mpdsim_reduced");
+	inChain = new TChain("cbmsim_reduced");
 	inChain->Add(inFileName.Data());
 
 	outFile = new TFile(outFileName.Data(), "RECREATE");

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Class reducedTreeCreator converts cbmsim trees into standard TTree cbmsim_reduced									//
-// 	cbmsim_reduced works ~1000 times faster than cmbsim and contains all needed information for the analysis		//
+//Class reducedTreeCreator converts mpdsim trees into standard TTree mpdsim_reduced									//
+// 	mpdsim_reduced works ~1000 times faster than cmbsim and contains all needed information for the analysis		//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //USAGE:																											//
 //root -l rootlogon.C																								//
@@ -11,8 +11,8 @@
 //	rtc.CreateReducedTree()																							//
 //ARGUMENTS:																										//
 // inFileHistName - input standard root file with TH1* histograms of multiplicity (output get_multiplicity(...))	//
-// inFileTreeName - input cbmsim tree with corrected dca values (output restore_dca(...))							//
-// outFileName    - output standard root file with TTree cbmsim_reduced for the further analysis					//
+// inFileTreeName - input mpdsim tree with corrected dca values (output restore_dca(...))							//
+// outFileName    - output standard root file with TTree mpdsim_reduced for the further analysis					//
 // dcaFileName - Second iteration of the dca fitting containing sigma_pt_fit TF1* functions (output MakeFitDCA(...))//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -173,10 +173,10 @@ reducedTreeCreator::reducedTreeCreator(TString inFileHistName, TString inFileTre
 	FormKinematicBins(bins);
 
 	inFile = new TFile(inFileTreeName.Data(),"READ");
-	inTree = (TTree*) inFile->Get("cbmsim");
+	inTree = (TTree*) inFile->Get("mpdsim");
 
 	outFile = new TFile(outFileName.Data(),"RECREATE");
-	outTree = new TTree("cbmsim_reduced","cbmsim_reduced");
+	outTree = new TTree("mpdsim_reduced","mpdsim_reduced");
 	
 	inFileHist = new TFile(inFileHistName.Data(),"READ");
 	dcaFile = new TFile(dcaFileName.Data(),"READ");

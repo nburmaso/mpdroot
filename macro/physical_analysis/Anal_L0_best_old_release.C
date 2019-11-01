@@ -117,13 +117,13 @@ void AnalL0(Int_t n1 = 0, Int_t n2 = 0, Int_t firstFile = 1)
 {   
   //gROOT->ProcessLine(".x ~/mpd/Chain.C(1,\"./mc_1.root\")");
   Chain(1,"./mc_1.root");
-  TChain *simMC = (TChain*) gROOT->FindObject("mpdsim");
-  simMC->SetName("mpdsim1");
+  TChain *simMC = (TChain*) gROOT->FindObject("cbmsim");
+  simMC->SetName("cbmsim1");
   TString fileName = "./MPD-DST/dst-2018-01-18-a4bd06e-LAQGSM-1G3Mlem/AuAuss11_5mb5_mer.r12.mpddst-";
   fileName += firstFile;
   fileName += ".root";
   Chain(10,fileName);
-  TChain *simITS = (TChain*) gROOT->FindObject("mpdsim");
+  TChain *simITS = (TChain*) gROOT->FindObject("cbmsim");
   
   TFile fileITS(simITS->GetListOfFiles()->First()->GetTitle());
   TFile fileMC(simMC->GetListOfFiles()->First()->GetTitle());
@@ -1022,7 +1022,7 @@ TChain* Chain(Int_t nFiles, TString firstFile)
   cout << prefix << endl;
   cout << suffix << endl;
 
-  TChain *chain = new TChain("mpdsim");
+  TChain *chain = new TChain("cbmsim");
   TString fileName;
   nFiles += numb0;
   for (Int_t i = numb0; i < nFiles; ++i) {

@@ -60,7 +60,7 @@
 
 
 
-  TTree *t=file->Get("cbmsim") ;
+  TTree *t=file->Get("mpdsim") ;
    
   TClonesArray *fT = new TClonesArray("TGeoTrack");
 

@@ -127,7 +127,7 @@ void anaDST(TString inDir = "/opt/exp_soft/mpd/data4mpd/dst/09GeV/",TString inFi
    hkRapMC->GetYaxis()->SetTitleOffset(1.2);
    hkRapMC->GetXaxis()->SetTitle("#eta");
 
-  TTree *simTree = (TTree*) fileDST.Get("mpdsim");
+  TTree *simTree = (TTree*) fileDST.Get("cbmsim");
 
   TClonesArray *mpdEvents = (TClonesArray*) fileDST.FindObjectAny("MpdEvent");
   simTree->SetBranchAddress("MpdEvent", &mpdEvents);

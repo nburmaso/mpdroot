@@ -30,7 +30,7 @@
   //c1->SetFillColor(10);
 
   geoMan->SetVisLevel(4);
-  geoMan->GetVolume("cpc01l")->Draw("same");
+  geoMan->GetMasterVolume()->Draw("same");
   
 
   TView* view = c1->GetView();
@@ -60,7 +60,7 @@
 
 
 
-  TTree *t=file->Get("mpdsim") ;
+  TTree *t=file->Get("cbmsim") ;
    
   TClonesArray *fT = new TClonesArray("TGeoTrack");
 

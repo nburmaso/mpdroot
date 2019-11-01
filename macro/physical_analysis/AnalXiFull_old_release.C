@@ -617,17 +617,17 @@ void AnalOm(Int_t n1 = 0, Int_t n2 = 0)
 
   //gROOT->ProcessLine(".x ./Chain.C(100,\"./urqmd_7gev_its_1.root\")");
   gROOT->ProcessLine(".x ./Chain.C(100,\"./mc_1.root\")");
-  TChain *simMC = (TChain*) gROOT->FindObject("mpdsim");
-  simMC->SetName("mpdsim1");
+  TChain *simMC = (TChain*) gROOT->FindObject("cbmsim");
+  simMC->SetName("cbmsim1");
   //cout << simMC->GetEntries() << endl;
   //gROOT->ProcessLine(".x ./Chain.C(100,\"./urqmd_7gev_its_1.reco.root\")");
   gROOT->ProcessLine(".x ./Chain.C(100,\"./reco_1.root\")");
-  TChain *simITS = (TChain*) gROOT->FindObject("mpdsim");
+  TChain *simITS = (TChain*) gROOT->FindObject("cbmsim");
   //simITS->ls();
   //cout << simITS->GetEntries() << endl;
 
-  //TTree *simITS = (TTree*) fileITS.Get("mpdsim");
-  //TTree *simMC = (TTree*) fileMC.Get("mpdsim");
+  //TTree *simITS = (TTree*) fileITS.Get("cbmsim");
+  //TTree *simMC = (TTree*) fileMC.Get("cbmsim");
 
   TFile fileITS(simITS->GetListOfFiles()->First()->GetTitle());
   TFile fileMC(simMC->GetListOfFiles()->First()->GetTitle());

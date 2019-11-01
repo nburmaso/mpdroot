@@ -24,7 +24,7 @@ void RadLenAna(TString infile1 = "RadLenSim.root") {
     mpdloadlibs(kTRUE, kTRUE); // all libs
 
 
-    TChain *tree = new TChain("mpdsim");
+    TChain *tree = new TChain("cbmsim");
     tree->Add(infile1);
 
     // Activate branches

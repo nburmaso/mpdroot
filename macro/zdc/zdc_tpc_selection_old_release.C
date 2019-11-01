@@ -20,7 +20,7 @@ void zdc_tpc_selection (const char *filename1="evetest.root",
   if (output_filename) {
     TFile *fo=new TFile (output_filename,"UPDATE"); 
 
-    TChain chain ("mpdsim");
+    TChain chain ("cbmsim");
     chain.Add(filename1);
     TChain *t=&chain;  
     n_events = t->GetEntries();  

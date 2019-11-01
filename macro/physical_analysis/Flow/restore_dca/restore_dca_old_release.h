@@ -6,7 +6,7 @@
 
 #include <TString.h>
 
-const TString DCA_INPUT_TREE_NAME = "mpdsim";
+const TString DCA_INPUT_TREE_NAME = "cbmsim";
 const TString MPD_KALMAN_TRACKS_BRANCH_NAME = "TpcKalmanTrack";
 const TString MC_TRACK_BRANCH_NAME = "MCTrack";
 const TString MPD_EVENT_TRACKS_BRANCH_NAME = "MPDEvent.";
@@ -34,8 +34,8 @@ void fill_zeroes(TClonesArray *MpdGlobalTracks);
 //  restore_dca("inFileName","outFileName")
 //
 //ARGUMENTS:
-// inFileName - input mpdsim tree with uncorrect dca values
-// outFileName - output mpdsim tree with correct dca values. Everything else is the same as it was in inFileName
+// inFileName - input cbmsim tree with uncorrect dca values
+// outFileName - output cbmsim tree with correct dca values. Everything else is the same as it was in inFileName
 //
 void restore_dca(const TString &inFileName, const TString &outFileName);
 

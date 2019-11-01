@@ -19,7 +19,7 @@ void EmcDataAnalysis(Int_t opt = 1) {
     gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
     mpdloadlibs(kTRUE, kTRUE); // all libs
 
-    TChain *dstTree = new TChain("mpdsim");
+    TChain *dstTree = new TChain("cbmsim");
     dstTree->Add("$VMCWORKDIR/macro/mpd/mpddst.root");
 
     // Activate branches

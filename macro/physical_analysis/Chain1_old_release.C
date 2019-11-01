@@ -24,7 +24,7 @@ TChain* Chain(Int_t nFiles, TString firstFile)
   cout << prefix << endl;
   cout << suffix << endl;
 
-  TChain *chain = new TChain("mpdsim");
+  TChain *chain = new TChain("cbmsim");
   TString fileName;
   nFiles += numb0;
   for (Int_t i = numb0; i < nFiles; ++i) {

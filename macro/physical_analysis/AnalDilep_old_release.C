@@ -56,7 +56,7 @@ Int_t ReadBkg(Int_t iseed)
   TH1D *h = (TH1D*) fileBkg.Get("hElSel");
   hBkgMult = (TH1D*) h->Clone("hBkgMult");
   hBkgMult->SetDirectory(0);
-  TTree *simBkg = (TTree*) fileBkg.Get("mpdsim");
+  TTree *simBkg = (TTree*) fileBkg.Get("cbmsim");
   TClonesArray *bkgTracks = (TClonesArray*) fileBkg.FindObjectAny("TpcKalmanTrack");
   simBkg->SetBranchAddress("TpcKalmanTrack",&bkgTracks);
 
@@ -205,7 +205,7 @@ void AnalDilep(Int_t n1 = 0, Int_t n2 = 0, Int_t iDataSet = 1)
   else if (iDataSet == 2) gROOT->ProcessLine("simTPC=Chain(100,\"/scr/u/zinchenk/dst/dstAuAu_25gev_ee_central_101.root\")");
   else if (iDataSet == 3) gROOT->ProcessLine("simTPC=Chain(100,\"/opt/exp_soft/mpd/zinchenk/reco/dstAuAu_25gev_ee_central_201.root\")");
   else gROOT->ProcessLine("simTPC=Chain(100,\"/opt/exp_soft/mpd/zinchenk/reco/dstAuAu_25gev_ee_central_301.root\")");
-  TChain *simTPC = (TChain*) gROOT->FindObject("mpdsim");
+  TChain *simTPC = (TChain*) gROOT->FindObject("cbmsim");
   TChain *simMC = simTPC;
 
   //TClonesArray *tpcTracks = (TClonesArray*) fileTPC.FindObjectAny("TpcKalmanTrack");

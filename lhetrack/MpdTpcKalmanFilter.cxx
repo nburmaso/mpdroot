@@ -154,7 +154,7 @@ InitStatus MpdTpcKalmanFilter::Init() {
   Register();
 
   // Get event number offset
-  TFile* f = new TFile(FairRootManager::Instance()->GetInFile()->GetName(),"READ"); // EL 
+/*  TFile* f = new TFile(FairRootManager::Instance()->GetInFile()->GetName(),"READ"); // EL 
 #ifdef XROOTD 
   if (!f->IsOpen()) f = new TXNetFile(FairRootManager::Instance()->GetInFile()->GetName(),"READ"); 
 #endif 
@@ -167,7 +167,7 @@ InitStatus MpdTpcKalmanFilter::Init() {
   f->Close(); 
   delete f; 
   fNofEvents += event;
-
+*/
   /*TH1F *hZ = */new TH1F ("hZ","Z of vertex",150,-75,75);
   /*TH1F *hPt = */new TH1F ("hPt","Pt of cand.",100,0,50);
   /*TH1F *hChi2 = */new TH1F ("hChi2","Chi2 of track",100,0,50);

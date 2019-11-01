@@ -50,7 +50,7 @@ void v2std(int eBeam=9, TString inFilesChain="mpddst.root")
   const Float_t Cut_Eta   = 1.; // pseudo rapidity
   const Float_t Cut_Prob  = 0.8; // probability
   
-  TChain *DSTTree = new TChain("mpdsim");
+  TChain *DSTTree = new TChain("cbmsim");
   DSTTree->Add(inFilesChain.Data());
 
   TString outFileName = "v2std-";

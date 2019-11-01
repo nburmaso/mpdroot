@@ -8,7 +8,7 @@ void restore_pid(TString inFileName, TString outFileName, Double_t energy=11.)
   TString Generator = "URQMD", Tracking = "CF";
   
   TFile * inFile = new TFile(inFileName.Data(),"read");
-  TTree * inTree = (TTree*) inFile->Get("mpdsim_reduced");
+  TTree * inTree = (TTree*) inFile->Get("cbmsim_reduced");
   
   Long64_t nentries = inTree->GetEntries();
 
