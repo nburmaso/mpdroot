@@ -9,9 +9,11 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/emc
  ${CMAKE_SOURCE_DIR}/emc/hitmaker
  ${CMAKE_SOURCE_DIR}/emc/clustering
+ ${CMAKE_SOURCE_DIR}/emc/emcKI
  ${CMAKE_SOURCE_DIR}/tpc
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/lhetrack
+ ${CMAKE_SOURCE_DIR}/mpdbase
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -60,6 +62,17 @@ clustering/EmcCluster.cxx
 clustering/EmcClusterCollection.cxx
 clustering/EmcClusterInfo.cxx
 clustering/EmcCLinfo.cxx
+
+emcKI/MpdEmcClusterizerKI.cxx
+emcKI/MpdEmcClusterKI.cxx
+emcKI/MpdEmcDigitizerKI.cxx
+emcKI/MpdEmcDigitKI.cxx
+emcKI/MpdEmcGeoUtils.cxx
+emcKI/MpdEmcKI.cxx
+emcKI/MpdEmcMatchingKI.cxx
+emcKI/MpdEmcPointKI.cxx
+emcKI/MpdEmcSimParams.cxx
+emcKI/MpdEmcTrackExtrap.cxx
 )
 
 Set(HEADERS)
