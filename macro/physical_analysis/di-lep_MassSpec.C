@@ -41,8 +41,8 @@ void ana_dilep_plusplus
   }
 
 
-  TChain* dstTree = new TChain("cbmsim");
-  cout << endl << endl << "Chain \"cbmsim\":" << endl;
+  TChain* dstTree = new TChain("mpdsim");
+  cout << endl << endl << "Chain \"mpdsim\":" << endl;
   for (i=istart; i<=TMath::Max(istart,iend); i++)
   { sprintf(file_+k,"%d.root",i);
     if (dstTree->Add(file_)) cout << "	added ";
@@ -53,7 +53,7 @@ void ana_dilep_plusplus
   { cout << endl << "No input!" << endl << endl;
     return 0;
   }
-  //TTree *dstTree = dynamic_cast<TTree*>(fileDST.Get("cbmsim"));
+  //TTree *dstTree = dynamic_cast<TTree*>(fileDST.Get("mpdsim"));
 
 
   // Okay, now we have our chain. Let's look into it:

@@ -24,8 +24,8 @@ MpdPairTpcEntrySimpleCut::~MpdPairTpcEntrySimpleCut() {
 }
 
 Bool_t MpdPairTpcEntrySimpleCut::Pass(NicaTwoTrack* pair) {
-	NicaExpTrack *track1 = (NicaExpTrack*)pair->GetTrack1();
-	NicaExpTrack *track2 = (NicaExpTrack*)pair->GetTrack2();
+	NicaExpTrackHelix *track1 = (NicaExpTrackHelix*)pair->GetTrack1();
+	NicaExpTrackHelix *track2 = (NicaExpTrackHelix*)pair->GetTrack2();
 	TVector3 pos1 =PosNominal(track1, fRmin);
 	TVector3 pos2 =PosNominal(track2, fRmin);
 	pos1-=pos2;

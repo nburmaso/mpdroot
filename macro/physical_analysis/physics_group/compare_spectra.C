@@ -306,7 +306,7 @@ void compare_spectra(TString inFile = "dst_auau_09gev_0_3fm_0.root")
    heProb2->GetYaxis()->SetTitleOffset(1.2);
    heProb2->GetXaxis()->SetTitle("Probability (TOF)");
 
-  TTree *simTree = (TTree*) fileDST.Get("cbmsim");
+  TTree *simTree = (TTree*) fileDST.Get("mpdsim");
 
   //  TClonesArray *mpdEvents = (TClonesArray*) fileDST.FindObjectAny("MPDEvent.");
   MpdEvent *event;

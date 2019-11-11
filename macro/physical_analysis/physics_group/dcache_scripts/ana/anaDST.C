@@ -139,7 +139,7 @@ void anaDST(TString inFile = "dst_auau_04gev_0_3fm_0.root")
    hkEtaMC->GetYaxis()->SetTitleOffset(1.2);
    hkEtaMC->GetXaxis()->SetTitle("#eta");
 
-  TTree *simTree = (TTree*) fileDST.Get("cbmsim");
+  TTree *simTree = (TTree*) fileDST.Get("mpdsim");
 
   //  TClonesArray *mpdEvents = (TClonesArray*) fileDST.FindObjectAny("MPDEvent.");
   MpdEvent *event;

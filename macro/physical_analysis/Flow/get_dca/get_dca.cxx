@@ -45,7 +45,7 @@ void get_dca(TString inFileName , TString outFileName)
 	}
 	
 	TFile *inFile = new TFile(inFileName.Data(),"READ");
-	TTree *inTree = (TTree*) inFile->Get("cbmsim");
+	TTree *inTree = (TTree*) inFile->Get("mpdsim");
 	
 	TFile  *outFile = new TFile(outFileName.Data(),"RECREATE");
 	

@@ -46,6 +46,7 @@ class MpdGetNumEvents
     static Int_t GetNumPHSDEvents(const char* filename);
     static Int_t GetNumQGSMEvents(const char* fileName);
     static Int_t GetNumURQMDEvents(const char* fileName);
+    static Int_t GetNumDCMSMMEvents(const char* fileName);
 
     ClassDef(MpdGetNumEvents, 1);
 };

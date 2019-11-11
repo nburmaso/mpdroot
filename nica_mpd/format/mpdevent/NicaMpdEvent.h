@@ -13,7 +13,7 @@
 #include "NicaExpEvent.h"
 #include "MpdEvent.h"
 #include "NicaMpdTrack.h"
-class NicaMpdEvent : public NicaExpEvent{
+class NicaMpdEvent : public NicaExpEventHelix{
 	enum kTrackType{
 		kAllTracks,
 		kPrimaryTracks,

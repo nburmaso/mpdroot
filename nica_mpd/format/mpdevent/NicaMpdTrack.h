@@ -15,7 +15,7 @@
 #include "NicaExpTrack.h"
 
 
-class NicaMpdTrack : public NicaExpTrack{
+class NicaMpdTrack : public NicaExpTrackHelix{
 	TVector3 *fFirstPoint, *fLastPoint;
 	NicaTpcTrack *fTpcTrack;
 	NicaToFTrack *fToFTrack;

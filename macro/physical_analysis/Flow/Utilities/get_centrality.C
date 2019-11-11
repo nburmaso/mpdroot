@@ -92,8 +92,8 @@ CentralityCalc::CentralityCalc(TString inFileHistName, TString inFileTreeName, T
 	TFile *inFileTree = new TFile(inFileTreeName.Data());
 	TFile *outFile = new TFile(outFileName.Data(),"RECREATE");
 	
-	TTree *inTree = (TTree*)inFileTree->Get("cbmsim_reduced");
-	TTree *outTree = new TTree("cbmsim_reduced","cbmsim_reduced");
+	TTree *inTree = (TTree*)inFileTree->Get("mpdsim_reduced");
+	TTree *outTree = new TTree("mpdsim_reduced","mpdsim_reduced");
 	
 	for (int i = 0; i <= NmultiplicityBins; ++i) multiplicity_bins[i] = 1;
 	
