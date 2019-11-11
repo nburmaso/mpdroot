@@ -17,7 +17,7 @@ void readDST(TString in = "") {
     TStopwatch timer;
     timer.Start();
 
-    TChain *dstTree = new TChain("cbmsim");
+    TChain *dstTree = new TChain("mpdsim");
     dstTree->Add(in.Data());
 
     // Activate branches

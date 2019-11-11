@@ -35,7 +35,7 @@ void get_multiplicity(TString inFileName , TString outFileName , TString dcaFile
 
 	
 	TFile *inFile = new TFile(inFileName.Data(),"READ");
-	TTree *inTree = (TTree*) inFile->Get("cbmsim");
+	TTree *inTree = (TTree*) inFile->Get("mpdsim");
 	
 	TFile  *outFile = new TFile(outFileName.Data(),"RECREATE");
 

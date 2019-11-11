@@ -149,29 +149,21 @@ void MpdCpc::ConstructGeometry()
 	TString fileName = GetGeometryFileName();
 
 	if ( fileName.EndsWith(".root") ) {
-		gLogger->Info(MESSAGE_ORIGIN,
-			"Constructing CPC geometry from ROOT file %s",
-			fileName.Data());
+		LOG(INFO) << "Constructing CPC geometry from ROOT file " << fileName.Data() << endl;
 		ConstructRootGeometry();
 	}
 	else if ( fileName.EndsWith(".geo") ) {
-		gLogger->Info(MESSAGE_ORIGIN,
-			"Constructing CPC geometry from ASCII file %s",
-			fileName.Data());
+		LOG(INFO) << "Constructing CPC geometry from ASCII file " << fileName.Data() << endl;
 		ConstructAsciiGeometry();
 	}
 	/*else if ( fileName.EndsWith(".gdml") )
 	{
-		gLogger->Info(MESSAGE_ORIGIN,
-			"Constructing CPC geometry from GDML file %s",
-			fileName.Data());
+		LOG(INFO) << "Constructing CPC geometry from GDML file " << fileName.Data() << endl;
 		ConstructGDMLGeometry();
 	}*/
 	else
 	{
-		gLogger->Fatal(MESSAGE_ORIGIN,
-			"Geometry format of CPC file %s not supported.",
-		fileName.Data());
+		LOG(FATAL) << "Geometry format of CPC file " << fileName.Data() << " not supported." << endl;
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------

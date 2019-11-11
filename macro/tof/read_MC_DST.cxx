@@ -220,11 +220,11 @@ void doTest(void)
 	// -----------------------------------------------------------------------------------------------
 	TString OutFlnm = "result.root"; 
 		
-	TChain *treeMC = new TChain("cbmsim");
+	TChain *treeMC = new TChain("mpdsim");
 	treeMC->Add("evetest.root");
 //	treeMC->Add("evetest_1.root");  
 
- 	TChain *treeDST = new TChain("cbmsim");
+ 	TChain *treeDST = new TChain("mpdsim");
 	treeDST->Add("mpddst.root");
  
 	Int_t nDSTentries = treeDST->GetEntries(); Int_t nMCentries = treeMC->GetEntries();
