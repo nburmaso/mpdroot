@@ -44,7 +44,7 @@ using namespace std;
 
 MpdFillDstTask::MpdFillDstTask(const char *name, const char *title)
 : FairTask(name),fEvent(NULL),
-  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL),fTpcHits(NULL),
+  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL), fGenTracks(nullptr), fTpcHits(NULL),
   fMCEventHeader(NULL),fTofMatching(NULL),fEtofMatching(NULL),
   fVertex(NULL),fZdcSkeletonesSaved(kFALSE),
   fHistZdc1En(NULL),fHistZdc2En(NULL),
@@ -71,6 +71,7 @@ InitStatus MpdFillDstTask::Init() {
     fKFTracks = (TClonesArray *) manager->GetObject("TpcKalmanTrack");
     fKFEctTracks = (TClonesArray *) manager->GetObject("EctTrack");
     fMCTracks = (TClonesArray *) manager->GetObject("MCTrack");
+    fGenTracks = (TClonesArray *) manager->GetObject("GenTracks");
     fTpcHits = (TClonesArray*) manager->GetObject("TpcRecPoint");
     fMCEventHeader = (FairMCEventHeader*) manager->GetObject("MCEventHeader.");
     fTofMatching = (TClonesArray *) manager->GetObject("TOFMatching");
@@ -97,6 +98,7 @@ InitStatus MpdFillDstTask::Init() {
 
     FairRootManager::Instance()->Register("MCEventHeader.", "MC", fMCEventHeader, kTRUE);
     FairRootManager::Instance()->Register("MCTrack", "MC", fMCTracks, kTRUE);
+    FairRootManager::Instance()->Register("GenTracks", "MC", fGenTracks, kTRUE);
     //FairRootManager::Instance()->Register("MpdEvent","MpdEvents", fEvents, kTRUE);
     FairRootManager::Instance()->Register("MPDEvent.", "MpdEvent", fEvent, kTRUE);
     // FairRootManager::Instance()->Register("EZdc1","EZdc1", fELossZdc1Histo, kTRUE);

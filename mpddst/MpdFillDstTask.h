@@ -21,6 +21,7 @@ private:
     MpdEvent* fEvent;
     TClonesArray *fKFTracks, *fKFEctTracks; // array of kalman filter tracks
     TClonesArray *fMCTracks;                // array of MC events to write
+    TClonesArray *fGenTracks;                // array of MC events to write
     TClonesArray *fTpcHits; //map with TPC hits
     FairMCEventHeader *fMCEventHeader;      // MC event header
     TClonesArray *fTofMatching, *fEtofMatching; // tof information
