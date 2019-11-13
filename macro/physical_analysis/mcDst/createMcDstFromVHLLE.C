@@ -63,7 +63,7 @@ void createMcDstFromVHLLE(TString in = "", TString out = "") {
     fin->SetBranchAddress("y", fY);
     fin->SetBranchAddress("z", fZ);
     fin->SetBranchAddress("t", fT);
-    fin->SetBranchAddress("px", fPx);
+    fin->SetBranchAddress("px", fPx);    
     fin->SetBranchAddress("py", fPy);
     fin->SetBranchAddress("pz", fPz);
     fin->SetBranchAddress("E", fE);
@@ -90,11 +90,11 @@ void createMcDstFromVHLLE(TString in = "", TString out = "") {
 
         fin->GetEntry(iEvent);
 
-        MpdMcEvent* event = new ((*events)[events->GetEntriesFast()]) MpdMcEvent();
+        McEvent* event = new ((*events)[events->GetEntriesFast()]) McEvent();
         event->SetEventNr(iEvent);
 
         for (Int_t iTrack = 0; iTrack < fNpart; iTrack++) {
-            MpdMcParticle* particle = new ((*particles)[particles->GetEntriesFast()]) MpdMcParticle();
+            McParticle* particle = new ((*particles)[particles->GetEntriesFast()]) McParticle();
 
             particle->SetX(fX[iTrack]);
             particle->SetY(fY[iTrack]);
