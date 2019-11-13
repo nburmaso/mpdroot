@@ -9,11 +9,11 @@
 #include "MpdMcParticle.h"
 
 //#ifdef __ROOT__
-ClassImp(MpdMcParticle);
+ClassImp(McParticle);
 //#endif
 
 //_________________
-MpdMcParticle::MpdMcParticle() : TObject(),
+McParticle::McParticle() : TObject(),
 fIndex(0), fPdg(0), fStatus(0), fParent(0), fParentDecay(0),
 fMate(0), fDecay(0), fChild{}
 
@@ -24,7 +24,7 @@ fX(0), fY(0), fZ(0), fT(0), fE(0) { // Default constructor
 
 //_________________
 
-MpdMcParticle::MpdMcParticle(const Int_t& index, const Int_t& pdg,
+McParticle::McParticle(const Int_t& index, const Int_t& pdg,
         const Int_t& status,
         const Int_t& parent, const Int_t& parentDecay,
         const Int_t& mate, const Int_t& decay,
@@ -68,7 +68,7 @@ MpdMcParticle::MpdMcParticle(const Int_t& index, const Int_t& pdg,
 
 //_________________
 
-MpdMcParticle::MpdMcParticle(const Int_t& index, const Int_t& pdg,
+McParticle::McParticle(const Int_t& index, const Int_t& pdg,
         const Int_t& status,
         const Int_t& parent, const Int_t& parentDecay,
         const Int_t& mate, const Int_t& decay,
@@ -110,7 +110,7 @@ MpdMcParticle::MpdMcParticle(const Int_t& index, const Int_t& pdg,
 
 //_________________
 
-MpdMcParticle::MpdMcParticle(const MpdMcParticle& right) : TObject() {
+McParticle::McParticle(const McParticle& right) : TObject() {
     // Copy constructor
     fIndex = right.fIndex;
     fPdg = right.fPdg;
@@ -133,7 +133,7 @@ MpdMcParticle::MpdMcParticle(const MpdMcParticle& right) : TObject() {
 
 //_________________
 
-const MpdMcParticle& MpdMcParticle::operator=(const MpdMcParticle& right) {
+const McParticle& McParticle::operator=(const McParticle& right) {
     // Assignment operator
     if (this != &right) {
         fIndex = right.fIndex;
@@ -159,7 +159,7 @@ const MpdMcParticle& MpdMcParticle::operator=(const MpdMcParticle& right) {
 
 //_________________
 
-MpdMcParticle::MpdMcParticle(const TParticle &right) {
+McParticle::McParticle(const TParticle &right) {
     // Copy constructor from the TParticle
     fIndex = 0;
     fPdg = right.GetPdgCode();
@@ -182,7 +182,7 @@ MpdMcParticle::MpdMcParticle(const TParticle &right) {
 
 //_________________
 
-const MpdMcParticle& MpdMcParticle::operator=(const TParticle &right) {
+const McParticle& McParticle::operator=(const TParticle &right) {
     // Assignment operator from the TParticle
     fIndex = 0;
     fPdg = right.GetPdgCode();
@@ -207,13 +207,13 @@ const MpdMcParticle& MpdMcParticle::operator=(const TParticle &right) {
 
 //_________________
 
-MpdMcParticle::~MpdMcParticle() { // Destructor
+McParticle::~McParticle() { // Destructor
     /* empty */
 }
 
 //_________________
 
-Bool_t MpdMcParticle::operator==(const MpdMcParticle& right) const {
+Bool_t McParticle::operator==(const McParticle& right) const {
     // If equal operator
     return (
             fIndex == right.fIndex &&
@@ -244,7 +244,7 @@ Bool_t MpdMcParticle::operator==(const MpdMcParticle& right) const {
 
 //_________________
 
-void MpdMcParticle::print() const {
+void McParticle::print() const {
     // Print the data members to the standard output
     std::cout << "------------------------------------------------" << std::endl
             << "-I-                 Particle                 -I-" << std::endl
@@ -266,7 +266,7 @@ void MpdMcParticle::print() const {
 
 //_________________
 
-void MpdMcParticle::Print(Option_t* option __attribute__ ((unused))) const {
+void McParticle::Print(Option_t* option __attribute__ ((unused))) const {
     // Print the data members to the standard output
     std::cout << "------------------------------------------------" << std::endl
             << "-I-                 Particle                 -I-" << std::endl

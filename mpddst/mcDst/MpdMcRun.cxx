@@ -12,27 +12,27 @@
 #include "MpdMcRun.h"
 
 #ifdef __ROOT__
-ClassImp(MpdMcRun);
+ClassImp(McRun);
 #endif
 
-Double_t MpdMcRun::mProtMass = 0.938272029;
-Double_t MpdMcRun::mNeutMass = 0.939565360;
-Double_t MpdMcRun::mPionMass = 0.13957018;
+Double_t McRun::mProtMass = 0.938272029;
+Double_t McRun::mNeutMass = 0.939565360;
+Double_t McRun::mPionMass = 0.13957018;
 
 //_________________
-MpdMcRun::MpdMcRun() : TNamed("run", "Run Header" ),
+McRun::McRun() : TNamed("run", "Run Header" ),
 		 fGenerator( "" ), fComment( "" ), fDecayer( "" ),
 		 fAProj( 0 ), fZProj( 0 ), fPProj( 0 ),
 		 fATarg( 0 ), fZTarg( 0 ), fPTarg( 0 ),
 		 fBMin( 0 ), fBMax( 0 ), fBWeight( 0 ),
 		 fPhiMin( 0 ), fPhiMax( 0 ), fXSection( 0 ), fNEvents( 0 ) {
   // Default constructor. Should not be used
-  std::cout << "Warning: Default constructor of MpdMcRun should not be used!"
+  std::cout << "Warning: Default constructor of McRun should not be used!"
             << std::endl;
 }
 
 //_________________
-MpdMcRun::MpdMcRun(const char* generator, const char* comment, const Int_t& aProj,
+McRun::McRun(const char* generator, const char* comment, const Int_t& aProj,
 	     const Int_t& zProj, const Double_t& pProj, const Int_t& aTarg,
 	     const Int_t& zTarg, const Double_t& pTarg, const Double_t& bMin,
 	     const Double_t& bMax, const Int_t& bWeight, const Double_t& phiMin,
@@ -61,12 +61,12 @@ MpdMcRun::MpdMcRun(const char* generator, const char* comment, const Int_t& aPro
 }
 
 //_________________
-MpdMcRun::~MpdMcRun() { // Destructor
+McRun::~McRun() { // Destructor
   /* empty */
 }
 
 //----------------
-void MpdMcRun::print() const {
+void McRun::print() const {
   // Print all data members to the standard output
   std::cout << "--------------------------------------------------" << std::endl
             << "-I-                 Run Header                 -I-" << std::endl
@@ -90,7 +90,7 @@ void MpdMcRun::print() const {
 }
 
 //_________________
-void MpdMcRun::Print( Option_t* option __attribute__((unused)) ) const {
+void McRun::Print( Option_t* option __attribute__((unused)) ) const {
   // Print all data members to the standard output
   std::cout << "--------------------------------------------------" << std::endl
             << "-I-                 Run Header                 -I-" << std::endl
@@ -114,7 +114,7 @@ void MpdMcRun::Print( Option_t* option __attribute__((unused)) ) const {
 }
 
 //_________________
-Double_t MpdMcRun::projectileEnergy() const {
+Double_t McRun::projectileEnergy() const {
   // Get the projectile energy
   Double_t eProj = 0.;
   if ( fAProj > 0 ) {         // nucleus
@@ -128,14 +128,14 @@ Double_t MpdMcRun::projectileEnergy() const {
     eProj = TMath::Sqrt( fPProj*fPProj + mPionMass*mPionMass );
   }
   else {
-    std::cout << "Warning:: MpdMcRun: Projectile mass " << fAProj
+    std::cout << "Warning:: McRun: Projectile mass " << fAProj
 	      << " not valid! " << std::endl;
   }
   return eProj;
 }
 
 //_________________
-Double_t MpdMcRun::targetEnergy() const {
+Double_t McRun::targetEnergy() const {
   // Get the target energy
   Double_t eTarg = 0.;
   if ( fATarg > 0 ) {          // nucleus
@@ -149,14 +149,14 @@ Double_t MpdMcRun::targetEnergy() const {
     eTarg = TMath::Sqrt( fPTarg*fPTarg + mPionMass*mPionMass );
   }
   else {
-    std::cout << "Warning:: MpdMcRun: Target mass " << fATarg
+    std::cout << "Warning:: McRun: Target mass " << fATarg
 	      << " not valid! " << std::endl;
   }
   return eTarg;
 }
 
 //_________________
-Double_t MpdMcRun::nnSqrtS() const {
+Double_t McRun::nnSqrtS() const {
   // Get the cm energy
   Double_t eSum = ( TMath::Sqrt( fPTarg*fPTarg + mProtMass*mProtMass ) +
 		                TMath::Sqrt( fPProj*fPProj + mNeutMass*mNeutMass ) );
@@ -166,7 +166,7 @@ Double_t MpdMcRun::nnSqrtS() const {
 }
 
 //_________________
-Double_t MpdMcRun::sqrtS() const {
+Double_t McRun::sqrtS() const {
   // Get the cm energy
   Double_t eSum = projectileEnergy() + targetEnergy();
   Double_t pSum = Double_t(fAProj) * fPProj + Double_t(fATarg) * fPTarg;
@@ -175,7 +175,7 @@ Double_t MpdMcRun::sqrtS() const {
 }
 
 //_________________
-Double_t MpdMcRun::betaCM() const {
+Double_t McRun::betaCM() const {
   // Get cm velocity
   Double_t eSum = projectileEnergy() + targetEnergy();
   Double_t pSum = Double_t(fAProj) * fPProj + Double_t(fATarg) * fPTarg;
@@ -183,7 +183,7 @@ Double_t MpdMcRun::betaCM() const {
 }
 
 //_________________
-Double_t MpdMcRun::gammaCM() const {
+Double_t McRun::gammaCM() const {
   // Get cm gamma factor
   return 1. / TMath::Sqrt( 1. - betaCM()*betaCM() );
 }

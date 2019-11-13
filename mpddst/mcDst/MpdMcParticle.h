@@ -1,12 +1,12 @@
 /**
- * \class MpdMcParticle
+ * \class McParticle
  * \brief Class that describes particle
  *
  * The class descibes particle properties such as momentum, PDG codes, etc...
  */
 
-#ifndef MpdMcParticle_h
-#define MpdMcParticle_h
+#ifndef McParticle_h
+#define McParticle_h
 
 // C++ headers
 #include <limits>
@@ -21,12 +21,12 @@
 
 //_________________
 
-class MpdMcParticle : public TObject {
+class McParticle : public TObject {
 public:
     /// Default constructor
-    MpdMcParticle();
+    McParticle();
     /// Constructor that takes parameters
-    MpdMcParticle(const Int_t& index, const Int_t& pdg, const Int_t& status,
+    McParticle(const Int_t& index, const Int_t& pdg, const Int_t& status,
             const Int_t& parent, const Int_t& parentDecay,
             const Int_t& mate, const Int_t& decay, Int_t child[2],
             const Double_t& px, const Double_t& py, const Double_t& pz,
@@ -34,22 +34,22 @@ public:
             const Double_t& x, const Double_t& y, const Double_t& z,
             const Double_t& t);
     /// Another constructor with parameters
-    MpdMcParticle(const Int_t& index, const Int_t& pdg, const Int_t& status,
+    McParticle(const Int_t& index, const Int_t& pdg, const Int_t& status,
             const Int_t& parent, const Int_t& parentDecay,
             const Int_t& mate, const Int_t& decay, Int_t child[2],
             const TLorentzVector& mom, const TLorentzVector& pos);
-    /// Copy constructor that takes MpdMcParticle
-    MpdMcParticle(const MpdMcParticle& right);
+    /// Copy constructor that takes McParticle
+    McParticle(const McParticle& right);
     /// Copy constructor that takes TParticle
-    MpdMcParticle(const TParticle& right);
+    McParticle(const TParticle& right);
     /// Destructor
-    virtual ~MpdMcParticle();
+    virtual ~McParticle();
     /// Assignement operator
-    const MpdMcParticle& operator=(const MpdMcParticle& right);
+    const McParticle& operator=(const McParticle& right);
     /// Assignement operator
-    const MpdMcParticle& operator=(const TParticle& right);
+    const McParticle& operator=(const TParticle& right);
     /// Comparison operator
-    Bool_t operator==(const MpdMcParticle& right) const;
+    Bool_t operator==(const McParticle& right) const;
     /// Print particle parameters
     virtual void print() const;
     /// Print particle parameters
@@ -629,8 +629,8 @@ private:
     Float_t fE;
 
 //#ifdef __ROOT__
-  ClassDef(MpdMcParticle, 1);
+  ClassDef(McParticle, 1);
 //#endif
 };
 
-#endif // #define MpdMcParticle_h
+#endif // #define McParticle_h

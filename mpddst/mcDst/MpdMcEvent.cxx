@@ -14,12 +14,12 @@
 #include "MpdMcEvent.h"
 
 //#ifdef __ROOT__
-ClassImp(MpdMcEvent);
+ClassImp(McEvent);
 //#endif
 
 //_________________
 
-MpdMcEvent::MpdMcEvent() : TObject(),
+McEvent::McEvent() : TObject(),
 fEventNr(0), fB(0), fPhi(0),
 fNes(0), fStepNr(0), fStepT(0), fComment(""),
 fNpart(-1), fNcoll(-1) {
@@ -28,7 +28,7 @@ fNpart(-1), fNcoll(-1) {
 }
 
 //_________________
-MpdMcEvent::MpdMcEvent(const MpdMcEvent& right) : TObject() {
+McEvent::McEvent(const McEvent& right) : TObject() {
     // Copy constructor
     fEventNr = right.fEventNr;
     fB = right.fB;
@@ -42,13 +42,13 @@ MpdMcEvent::MpdMcEvent(const MpdMcEvent& right) : TObject() {
 }
 
 //_________________
-MpdMcEvent::~MpdMcEvent() {
+McEvent::~McEvent() {
     // Default destructor
     /* empty */
 }
 
 //_________________
-void MpdMcEvent::print() const {
+void McEvent::print() const {
     // Print data members to the standard output
     std::cout << "---------------------------------------------" << std::endl
             << "-I-                 Event                 -I-" << std::endl
@@ -66,7 +66,7 @@ void MpdMcEvent::print() const {
 
 //_________________
 
-void MpdMcEvent::Print(Option_t* option __attribute__ ((unused))) const {
+void McEvent::Print(Option_t* option __attribute__ ((unused))) const {
     // Print data members to the standard output
     std::cout << "---------------------------------------------" << std::endl
             << "-I-                 Event                 -I-" << std::endl
@@ -83,7 +83,7 @@ void MpdMcEvent::Print(Option_t* option __attribute__ ((unused))) const {
 }
 
 //_________________
-void MpdMcEvent::setParameters(const Int_t& eventNr, const Double_t& b,
+void McEvent::setParameters(const Int_t& eventNr, const Double_t& b,
         const Double_t& phi, const Int_t& nes,
         const Int_t& stepNr, const Double_t& stepT,
         const char* comment) {

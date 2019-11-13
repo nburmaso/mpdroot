@@ -1,36 +1,36 @@
 /**
- *  \class MpdMcArrays
+ *  \class McArrays
  *  \brief Holds array number of arrays, their names and sizes
  *
- *  The MpdMcArrays class holds array names, number of arrays and
+ *  The McArrays class holds array names, number of arrays and
  *  array default sizes
  */
 
-#ifndef MpdMcArrays_h
-#define MpdMcArrays_h
+#ifndef McArrays_h
+#define McArrays_h
 
 //________________
-class MpdMcArrays {
+class McArrays {
  public:
   /// Default constructor
-  MpdMcArrays();
+  McArrays();
   /// Destructor
-  ~MpdMcArrays();
+  ~McArrays();
 
   /// Number of used arrays
-  enum { NAllMpdMcArrays = 2 };
+  enum { NAllMcArrays = 2 };
 
   /// Names of the TBranches in the TTree/TFile
-  static const char* mcArrayNames[NAllMpdMcArrays];
+  static const char* mcArrayNames[NAllMcArrays];
 
   /// Names of the classes, the TClonesArrays are arrays of this type
-  static const char* mcArrayTypes[NAllMpdMcArrays];
+  static const char* mcArrayTypes[NAllMcArrays];
 
   /// Maximum sizes of the TClonesArrays
-  static int mcArraySizes[NAllMpdMcArrays];
+  static int mcArraySizes[NAllMcArrays];
 
   /// Setup type indices
   enum typeIndex{ Event=0, Particle };
 };
 
-#endif // MpdMcArrays_h
+#endif // McArrays_h

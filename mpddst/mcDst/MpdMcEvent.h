@@ -1,12 +1,12 @@
 /**
- * \class MpdMcEvent
+ * \class McEvent
  * \brief Holds information about event
  *
  * The class keeps the information about generated event
  */
 
-#ifndef MpdMcEvent_h
-#define MpdMcEvent_h
+#ifndef McEvent_h
+#define McEvent_h
 
 // C++ headers
 #include <limits>
@@ -21,14 +21,14 @@ class TClonesArray;
 
 //_________________
 
-class MpdMcEvent : public TObject {
+class McEvent : public TObject {
 public:
     /// Default constructor
-    MpdMcEvent();
+    McEvent();
     /// Copy constructor
-    MpdMcEvent(const MpdMcEvent& right);
+    McEvent(const McEvent& right);
     /// Default destructor
-    virtual ~MpdMcEvent();
+    virtual ~McEvent();
     /// Print event information
     virtual void print() const;
     /// Print event information
@@ -283,7 +283,7 @@ private:
     /// Number of binary collisions (-1: not set)
     Short_t fNcoll;
 
-    ClassDef(MpdMcEvent, 1);
+    ClassDef(McEvent, 1);
 };
 
-#endif // #define MpdMcEvent_h
+#endif // #define McEvent_h
