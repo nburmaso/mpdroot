@@ -11,6 +11,8 @@ ENDIF(${req_gcc_major_vers} MATCHES "4" AND NOT ${req_gcc_minor_vers} MATCHES "0
 set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
  ${CMAKE_SOURCE_DIR}/config
+ ${CMAKE_SOURCE_DIR}/mpdbase
+ ${CMAKE_SOURCE_DIR}/mpddst/mcDst
  ${CMAKE_SOURCE_DIR}/generators
 )
 
@@ -51,6 +53,7 @@ MpdVHLLEGenerator.cxx
 MpdFreezoutGenerator.cxx
 MpdEPOSGenerator.cxx
 MpdDCMSMMGenerator.cxx
+MpdMcDstGenerator.cxx
 )
 if(PLUTO_FOUND)
 set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
@@ -59,7 +62,7 @@ EndIf(PLUTO_FOUND)
 Set(HEADERS)
 Set(LINKDEF GenLinkDef.h)
 Set(LIBRARY_NAME MpdGen)
-Set(DEPENDENCIES Base EG MathCore Physics RIO Core)
+Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst)
 
 GENERATE_LIBRARY()
 
