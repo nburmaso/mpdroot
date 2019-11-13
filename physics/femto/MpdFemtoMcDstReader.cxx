@@ -46,7 +46,7 @@ mEventsPassed(0) {
 
 //_________________
 
-MpdFemtoMcDstReader::MpdFemtoMcDstReader(MpdMcDstReader *reader, int debug) :
+MpdFemtoMcDstReader::MpdFemtoMcDstReader(McDstReader *reader, int debug) :
 MpdFemtoBaseEventReader(),
 mMcDstReader(reader),
 mMagField(-5.),
@@ -183,7 +183,7 @@ MpdFemtoEvent* MpdFemtoMcDstReader::returnHbtEvent() {
         mHbtEvent = new MpdFemtoEvent();
 
         // Retrieve Monte Carlo event
-        MpdMcEvent *mcEvent = (MpdMcEvent*) mcDst->event();
+        McEvent *mcEvent = (McEvent*) mcDst->event();
 
         mHbtEvent->setEventNumber(mcEvent->eventNr());
         mHbtEvent->setRunNumber(0);
@@ -209,7 +209,7 @@ MpdFemtoEvent* MpdFemtoMcDstReader::returnHbtEvent() {
         for (unsigned int iTrk = 0; iTrk < mcDst->numberOfParticles(); iTrk++) {
 
             // Retrieve i-th particle
-            MpdMcParticle *particle = (MpdMcParticle*) mcDst->particle(iTrk);
+            McParticle *particle = (McParticle*) mcDst->particle(iTrk);
             if (!particle) {
                 std::cout << "[WARNING] MpdFemtoEvent* MpdFemtoMcDstReader::returnHbtEvent() - Particle does not exist"
                         << std::endl;
@@ -452,7 +452,7 @@ void MpdFemtoMcDstReader::estimateEventProperties() {
     for (unsigned int iTrk = 0; iTrk < mcDst->numberOfParticles(); iTrk++) {
 
         // Retrieve i-th particle
-        MpdMcParticle *particle = (MpdMcParticle*) mcDst->particle(iTrk);
+        McParticle *particle = (McParticle*) mcDst->particle(iTrk);
         // Particle must exist
         if (!particle) continue;
 

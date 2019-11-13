@@ -46,7 +46,7 @@ public:
     /// Parametrized constructor
     /// \param mcDstReader Takes pointer to McDstReader
     /// \param debug Set debut value (see the MpdFemtoBaseEventReader class)
-    MpdFemtoMcDstReader(MpdMcDstReader* mcDstReader, int debug = 1);
+    MpdFemtoMcDstReader(McDstReader* mcDstReader, int debug = 1);
     /// Copy constructor
     MpdFemtoMcDstReader(const MpdFemtoMcDstReader& copy);
     /// Assignment operator
@@ -61,7 +61,7 @@ public:
 
     /// Set McDstReader
 
-    void setMcDstReader(MpdMcDstReader* reader) {
+    void setMcDstReader(McDstReader* reader) {
         mMcDstReader = reader;
     }
     /// Set magnetic field value in kilogauss (default is 0.5T)
@@ -116,7 +116,7 @@ private:
     void estimateEventProperties();
 
     /// Pointer to the McDstReader
-    MpdMcDstReader *mMcDstReader;
+    McDstReader *mMcDstReader;
 
     /// Magnetic field in kilogauss (default is set to 0.5 T)
     float mMagField;
