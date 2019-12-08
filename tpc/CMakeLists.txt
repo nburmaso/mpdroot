@@ -57,6 +57,7 @@ MpdTpcDigitizerAZlt.cxx
 MpdTpcClusterFinderAZ.cxx
 MpdTPCpid.cxx
 MpdTpcClusterFinderMlem.cxx
+MpdTpcEDepParams.cxx
 )
 
 Set(HEADERS)

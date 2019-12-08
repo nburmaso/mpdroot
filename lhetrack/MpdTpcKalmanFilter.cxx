@@ -2149,7 +2149,8 @@ Bool_t MpdTpcKalmanFilter::SameOrigin(TpcPoint *hit, Int_t idKF, Int_t *mcTracks
 }
 
 //__________________________________________________________________________
-Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t charge, Bool_t skip, Int_t iDir, Bool_t exclude)
+Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t charge, Bool_t skip, Int_t iDir, Bool_t exclude, 
+				 std::map<Int_t,TMatrixD> *params)
 {
   /// Refit track in TPC using track hits (toward beam line) for some
   /// particle mass and charge hypothesis 
@@ -2225,6 +2226,7 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
     track->SetWeight(weight);
     track->SetParamNew(param);
     //cout << i << " " << dChi2 << " " << 1./track->GetParamNew(4) << endl;
+    if (params) params->insert (pair<Int_t,TMatrixD>(hit->GetLayer(),param));
   }
   if (exclude) track->GetHits()->Compress();
   if (iDir < 0 || skip) return kTRUE; // going outward or do not go to the beam line

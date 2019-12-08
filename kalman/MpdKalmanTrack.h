@@ -37,6 +37,7 @@ class MpdKalmanTrack : public TObject
   TString GetNode() const { return fNode; } ///< node path
   TString GetNodeNew() const { return fNodeNew; } ///< node path
   Double_t GetPartID() const { return fPartID; } ///< get particle ID
+  Double_t GetDedx(Double_t coef = 5.206e-10) const { return fPartID * coef; } ///< get particle ID (De/dx converted from ADC counts to GeV)
   Double_t GetPos() const { return fPos; } ///< Get current position 
   Double_t GetPosNew() const { return fPosNew; } ///< Get propagated position 
   Double_t GetPosAtHit() const { return fPosAtHit; } ///< Get position of outermost hit 

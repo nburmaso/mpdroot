@@ -15,22 +15,18 @@
 //
 //-----------------------------------------------------------
 
-// Panda Headers ----------------------
-
 // This Class' Header ------------------
 #include "TpcDetector.h"
-
-// C/C++ Headers ----------------------
-#include <iostream>
-using namespace std;
+#include "TpcGeo.h"
+#include "TpcGeoPar.h"
+#include "TpcPoint.h"
+#include "MpdTpcEDepParams.h"
 
 // Collaborating Class Headers --------
 #include "TClonesArray.h"
 #include "FairRootManager.h"
-#include "TpcPoint.h"
 #include "TVirtualMC.h"
 #include "TLorentzVector.h"
-#include "TpcGeo.h"
 #include "FairGeoLoader.h"
 #include "FairGeoInterface.h"
 #include "FairGeoNode.h"
@@ -38,7 +34,6 @@ using namespace std;
 #include "TList.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
-#include "TpcGeoPar.h"
 #include "TObjArray.h"
 #include <TSystem.h>
 #include "FairGeoNode.h"
@@ -50,8 +45,11 @@ using namespace std;
 #include "TGDMLParse.h"
 #include "FairGeoMedia.h"
 
-// Class Member definitions -----------
+// C/C++ Headers ----------------------
+#include <iostream>
+using namespace std;
 
+// Class Member definitions -----------
 
 TpcDetector::TpcDetector(const char * Name, Bool_t Active)
   : FairDetector(Name, Active)
@@ -103,10 +101,10 @@ void TpcDetector::Register() {
 
 }
 
-Bool_t
-TpcDetector::ProcessHits( FairVolume *v)
+Bool_t TpcDetector::ProcessHits( FairVolume *v)
 {
-  // create Hit for every MC step
+  // Create Hit for every MC step
+
   Double_t time   = gMC->TrackTime() * 1.0e09;
   Double_t length = gMC->TrackLength();
   TLorentzVector pos;
@@ -120,7 +118,21 @@ TpcDetector::ProcessHits( FairVolume *v)
   Int_t volumeID = v->getMCid();
 
   if (eLoss > 0) { //AZ
-    TpcPoint* p=AddHit(trackID, volumeID, pos.Vect(), mom.Vect(), time, length, eLoss);
+    //AZ - dE/dx simulation from the new prescription
+    //cout << " xxxxxxxxxxxxx " << gMC->TrackMass() << endl;
+    Double_t betgam = mom.Vect().Mag() / gMC->TrackMass();
+    //cout << betgam << " " << mom.Beta() * mom.Gamma() << endl;
+    if (betgam > 0.01) {
+      betgam = TMath::Log10(betgam);
+      MpdTpcEDepParams *deParams = MpdTpcEDepParams::Instance();
+      if (betgam >= deParams->GetMinLimit() && betgam < deParams->GetMaxLimit()) {
+	// New value
+	eLoss = deParams->GetEloss (betgam, gMC->TrackStep());
+	//cout << " xxxxxx " << gMC->Edep() << " " << eLoss << endl;
+      } 
+    }
+    //AZ
+    TpcPoint* p = AddHit(trackID, volumeID, pos.Vect(), mom.Vect(), time, length, eLoss);
     p->SetStep(gMC->TrackStep());
 
     ((FairStack*)gMC->GetStack())->AddPoint(kTPC);

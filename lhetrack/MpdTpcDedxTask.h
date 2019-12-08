@@ -41,6 +41,7 @@ class MpdTpcDedxTask :public FairTask
 
   TClonesArray *fTracks;    // TPC tracks
   TClonesArray *fMCTracks;  // MC tracks
+  TClonesArray *fHits0;     // TPC hits (from hit producer)
   TClonesArray *fHits;      // TPC hits (rec. points)
 
  private:
