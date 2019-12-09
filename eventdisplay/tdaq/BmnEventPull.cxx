@@ -125,7 +125,7 @@ class BmnPullSampling : public PullSampling
         rawDataDecoder = new BmnRawDataDecoder(directory_name+current_file, 0, iRunPeriod);
         cout<<"Raw file "<<directory_name+current_file<<" is used now."<<endl;
         // set mapping for decoder
-        Bool_t setup[9]; //array of flags to determine BM@N setup
+        Bool_t setup[11]; //array of flags to determine BM@N setup
         //Just put "0" to exclude detector from decoding
         setup[0] = 1; // TRIGGERS
         setup[1] = 1; // MWPC
@@ -135,19 +135,23 @@ class BmnPullSampling : public PullSampling
         setup[5] = 1; // TOF-700
         setup[6] = 1; // DCH
         setup[7] = 1; // ZDC
-        setup[8] = 1; // ECAL
+        setup[8] = 0; // ECAL
+        setup[9] = 0; // LAND
+        setup[10] = 0; // CSC
         rawDataDecoder->SetDetectorSetup(setup);
-        rawDataDecoder->SetTrigMapping("Trig_map_Run6.txt");
+        BmnSetup stp = kBMNSETUP;
+        TString PeriodSetupExt = Form("%d%s.txt", iRunPeriod, ((stp == kBMNSETUP) ? "" : "_SRC"));
+        rawDataDecoder->SetTrigPlaceMapping(TString("Trig_PlaceMap_Run") + PeriodSetupExt); 
+        rawDataDecoder->SetTrigChannelMapping(TString("Trig_map_Run") + PeriodSetupExt);
         rawDataDecoder->SetSiliconMapping("SILICON_map_run6.txt");
-        rawDataDecoder->SetTrigINLFile("TRIG_INL.txt");
         // in case comment out the line decoder->SetTof400Mapping("...")
         // the maps of TOF400 will be readed from DB (only for JINR network)
         rawDataDecoder->SetTof400Mapping("TOF400_PlaceMap_RUN6.txt", "TOF400_StripMap_RUN6.txt");
         rawDataDecoder->SetTof700Mapping("TOF700_map_period_6.txt");
         rawDataDecoder->SetZDCMapping("ZDC_map_period_5.txt");
         rawDataDecoder->SetZDCCalibration("zdc_muon_calibration.txt");
-        rawDataDecoder->SetECALMapping("ECAL_map_period_5.txt");
-        rawDataDecoder->SetECALCalibration("");
+        //rawDataDecoder->SetECALMapping("ECAL_map_period_5.txt");
+        //rawDataDecoder->SetECALCalibration("");
         rawDataDecoder->SetMwpcMapping("MWPC_mapping_period_5.txt");
 
         rawDataDecoder->SetEvForPedestals(150);
