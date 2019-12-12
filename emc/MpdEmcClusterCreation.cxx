@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////
 //							      //
 //  MpdEmcClusterCreation				      //
-//  EMC clsuters in MpdEmcCluster, v01  		      //
-//  Author List : Martemianov M., ITEP, 2017		      //	
+//  EMC clsuters in MpdEmcCluster, v02  		      //
+//  Author List : Martemianov M., 2019		              //	
 //  							      //	
 //////////////////////////////////////////////////////////////// 
 
@@ -21,7 +21,7 @@
 #include "TGeoManager.h"
 
 namespace EMC {
-    UInt_t nRows = 336; // number of rows (xy - plane)
+    UInt_t nRows = 300; // number of rows (xy - plane)
     UInt_t nMods = 128; // number of modules in row
     Float_t Distance3DCut = 20.0; // cm
     Float_t HitThreshold = 5.0; // MeV
@@ -85,6 +85,7 @@ InitStatus MpdEmcClusterCreation::Init() {
     fClusterArray = new TClonesArray("MpdEmcCluster", 100);
     ioman->Register("MpdEmcCluster", "EMC", fClusterArray, kTRUE);
     ioman->Register("MCTrack","EMC",fMcTrackArray, kTRUE);
+////    ioman->Register("MpdEmcHit","EMC",fHitArray, kTRUE);
 
     cout << "-I- MpdEmcClusterCreation: Intialization successfull" << endl;
 

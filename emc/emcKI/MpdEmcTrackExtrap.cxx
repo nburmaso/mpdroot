@@ -9,7 +9,7 @@ MpdEmcTrackExtrap::MpdEmcTrackExtrap(int trckInd, double xTop, double yTop, doub
 
 double MpdEmcTrackExtrap::Distance(MpdEmcClusterKI* clu) const
 {
-  double dx = fX1 - clu->GetX(), dy = fY1 - clu->GetY(), dz = fZ1 - clu->GetZ();
+  double dx = fX2 - clu->GetX(), dy = fY2 - clu->GetY(), dz = fZ2 - clu->GetZ();
   return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
@@ -34,3 +34,4 @@ void MpdEmcTrackExtrap::DistanceLongPerp(MpdEmcClusterKI* clu, double& dLong, do
 }
 
 ClassImp(MpdEmcTrackExtrap)
+

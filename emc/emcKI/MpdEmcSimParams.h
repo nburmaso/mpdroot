@@ -105,7 +105,7 @@ class MpdEmcSimParams : public TObject
 
   // Clusterization
   bool   fMultiSectorClusters = true; // allow clusters with digits in different sectors
-  double fLogWeight = 3.;              // cutoff used in log. weight calculation
+  double fLogWeight = 3.1;              // cutoff used in log. weight calculation
   double fDigitMinEnergy = 0.0015;      // Minimal energy of digits to be used in cluster (GeV)
   double fClusteringThreshold = 0.010; // Minimal energy of digit to start clustering (GeV)
   double fLocalMaximumCut = 0.0015;     // minimal height of local maximum over neighbours
