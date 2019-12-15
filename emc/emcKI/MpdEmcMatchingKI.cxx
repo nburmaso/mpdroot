@@ -172,17 +172,9 @@ void MpdEmcMatchingKI::ExtrapolateTracks()
     double surfY = r * TMath::Sin(phi);
     double surfZ = z;
 
-    // Extrapolate further to the depth of electron shower by small steps
-
-    double pt = tr->Pt();
-    double depth = 0.387 / TMath::Exp(TMath::Log(pt * pt + 0.382 * 0.382) * 0.737) + 0.210;
-    // new radius according to insidence angle
-    double dphiTr = tr1.GetParam(2) - phi;
-
-    double dr1 = TMath::Tan(dphiTr);
-    double dr2 = z / r;
-    double dr = depth / TMath::Sqrt(1 + dr1 * dr1 + dr2 * dr2);
-    hEnd.SetPos(r + dr);
+    // Extrapolate further to the reconstruction radius of clusters
+    double rClu = MpdEmcGeoUtils::GetInstance()->Rperp(z) ;
+    hEnd.SetPos(rClu);
     bool iok = pKF->PropagateToHit(&tr1, &hEnd, kTRUE);
     double depthX, depthY, depthZ;
     if (iok) {
@@ -262,3 +254,4 @@ void MpdEmcMatchingKI::MakeMatchToTracks()
 }
 
 ClassImp(MpdEmcMatchingKI)
+

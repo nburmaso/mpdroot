@@ -173,8 +173,12 @@ Bool_t MpdEmcKI::ProcessHits(FairVolume* vol)
     fGeom = MpdEmcGeoUtils::GetInstance();
   }
 
-  Int_t chamberH;
-  gMC->CurrentVolOffID(5,
+//printf("GEANT path: <%s>\n",gMC->CurrentVolPath()) ;
+
+
+  Int_t chamberH, chamber, sector, crate, module, boxA, boxB, dummyA, dummyB ;
+  char dummyC1,dummyC2;
+/*  gMC->CurrentVolOffID(5,
                        chamberH); // 5: number of geom. levels between emc1_cl_sc* and sector: get the sector number ;
   Int_t chamber;
   gMC->CurrentVolOffID(4, chamber); // 4: number of geom. levels between emc1_cl_sc* and sector: get the sector number ;
@@ -184,24 +188,17 @@ Bool_t MpdEmcKI::ProcessHits(FairVolume* vol)
   gMC->CurrentVolOffID(2, crate); // 2: Crate in sector: number of geom levels between emc1_cl_sc get the crate number
   Int_t box;
   gMC->CurrentVolOffID(1, box); // 1: Tower in crate: number of geom levels between emc1_cl_sc and box
-
-  //Sector numbering: 0,1,2(small sector2),3,4,5,6(small sector2) 7 //TODO! check this convenction in case of modofication of geometry
-
-  if (strstr(gMC->CurrentVolPath(), "emc1Sector2")) { // this is sector 2, numbered 0,1
-    sector = 2+4*sector;
-  }
-  else{
-    if(sector>4){
-      sector+=2 ;
-    }
-    else{
-      if(sector>1){
-        sector+=1 ;
-      }
-    }
+*/
+  //Example path: </cave_1/emcChamber_0/emcChH_1/emcSector_20/emcCrate_1/emcModule6_0/emc_box50_99/emc_cl_sc81_161>
+  // /cave_1/emcChamber_0/emcChH_1/emcSector_0/emcCrate_5/emcModule6_0/emc_box53_105/emc_cl_pl1_0
+  int nRead= sscanf(gMC->CurrentVolPath(),"/cave_1/emcChamber_%d/emcChH_%d/emcSector_%d/emcCrate_%d/emcModule%d_0/emc_box%d_%d/emc_cl_%c%c%d_%d",
+         &chamberH,&chamber,&sector,&crate,&module,&boxA,&boxB, &dummyC1,&dummyC2,&dummyA, &dummyB) ;
+  if(nRead!=11){
+    LOG(FATAL)<<"Can not parse Geant path:" << gMC->CurrentVolPath() << " nRead = " << nRead<<endl ;
+    return false ;
   }
 
-  Int_t detID = fGeom->GeantToDetId(chamberH, chamber, sector, crate, box);
+  Int_t detID = fGeom->GeantToDetId(chamberH, chamber, sector, crate, module, boxA, boxB);
 
   if (superParent == fCurentSuperParent && detID == fCurrentCellID && fCurrentHit) {
     // continue with current hit
@@ -325,12 +322,13 @@ void MpdEmcKI::ConstructGeometry()
     LOG(FATAL) << "Geometry format of EMC file " << fileName.Data() << " not supported.";
   }
   // Extract inner and outer radii of ECAL from current geometry
-  TGeoVolume* v = gGeoManager->GetVolume("emc1Chamber1");
+//TODO!!!!!!!!!
+/*  TGeoVolume* v = gGeoManager->GetVolume("emc1Chamber1");
   TGeoTube* sh = dynamic_cast<TGeoTube*>(v->GetShape());
   //    double towerHalfSizeZ = sh->GetDz() ;
   fEcalRmin = sh->GetRmin();
   fEcalRmax = sh->GetRmax();
-}
+*/}
 
 void MpdEmcKI::ConstructAsciiGeometry()
 {

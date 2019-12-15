@@ -79,7 +79,7 @@ private:
 
 // Second method variables
      UInt_t rowFrame; // row window to search cluster candidates
-     UInt_t modFrame; // module (z) window to search cluster candidates 
+     UInt_t modFrame; // tower (z) window to search cluster candidates 
 
      MpdEmcGeoParams* fGeoPar;
 
