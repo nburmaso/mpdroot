@@ -53,7 +53,6 @@ MpdVHLLEGenerator.cxx
 MpdFreezoutGenerator.cxx
 MpdEPOSGenerator.cxx
 MpdDCMSMMGenerator.cxx
-MpdMcDstGenerator.cxx
 )
 if(PLUTO_FOUND)
 set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
