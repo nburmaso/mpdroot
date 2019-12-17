@@ -98,7 +98,8 @@ InitStatus MpdFillDstTask::Init() {
 
     FairRootManager::Instance()->Register("MCEventHeader.", "MC", fMCEventHeader, kTRUE);
     FairRootManager::Instance()->Register("MCTrack", "MC", fMCTracks, kTRUE);
-    FairRootManager::Instance()->Register("GenTracks", "MC", fGenTracks, kTRUE);
+    if (fGenTracks)
+        FairRootManager::Instance()->Register("GenTracks", "MC", fGenTracks, kTRUE);
     //FairRootManager::Instance()->Register("MpdEvent","MpdEvents", fEvents, kTRUE);
     FairRootManager::Instance()->Register("MPDEvent.", "MpdEvent", fEvent, kTRUE);
     // FairRootManager::Instance()->Register("EZdc1","EZdc1", fELossZdc1Histo, kTRUE);
