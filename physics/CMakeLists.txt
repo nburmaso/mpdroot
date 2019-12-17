@@ -1,6 +1,6 @@
 add_subdirectory(femto/fsiTools)
-add_subdirectory(femto/base)
-add_subdirectory(femto)
+add_subdirectory(femto/MpdFemtoMaker)
+add_subdirectory(femto/MpdFemtoMakerUser)
 
 # Create a library called "MpdPhysics" which includes the source files given in the array.
 # The extension is already found. Any number of sources could be listed here.
