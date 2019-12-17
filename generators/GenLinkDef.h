@@ -31,6 +31,7 @@
 #pragma link C++ class MpdEPOSGenerator+;
 #pragma link C++ class MpdDCMSMMGenerator+;
 #pragma link C++ class MpdPHQMDGenerator+;
+#pragma link C++ class MpdMcDstGenerator+;
 
 #pragma link C++ class map<TString, FairIon*>;
 
