@@ -1,9 +1,8 @@
-Source code in the $VMCWORKDIR/physics/femto/base directory is not supposed 
-to be edited by users. It establishes a frame of the femto package. 
-User classes to be added to the project should be located in 
-$VMCWORKDIR/physics/femto.
+Source codes in the $VMCWORKDIR/physics/femto/MpdFemtoMaker and $VMCWORKDIR/physics/femto/fsiTools directories 
+are not supposed to be edited by users. They establish a frame of the femto package. 
+User classes to be added to the project are located in  the $VMCWORKDIR/physics/MpdFemtoMakerUser directory.
 
-In case of questions to clarify, please, 
-contact maintainers / developers of the package:
+If any question occurred, please, 
+contact the maintainers / developers of the package:
 *** nigmatkulov@gmail.com (Grigory Nigmatkulov, MEPhI, Moscow)
 *** pavel.batyuk@jinr.ru (Pavel Batyuk, JINR, Dubna)
