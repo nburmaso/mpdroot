@@ -180,11 +180,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     MpdFillDstTask* fillDST = new MpdFillDstTask("MpdDst task");
     fRun->AddTask(fillDST);
     
-    MpdMiniDstFillTask* miniDst = new MpdMiniDstFillTask("miniDST.root");
-    //miniDst->isUseTpc(kFALSE);
-    //miniDst->isUseTof(kFALSE);
-    // miniDst->isUseEcal(kTRUE);
-    miniDst->isUseMcTracks(kTRUE);
+    MpdMiniDstFillTask* miniDst = new MpdMiniDstFillTask(outFile);
     fRun->AddTask(miniDst);
     
     // -----   Intialise   ----------------------------------------------------
