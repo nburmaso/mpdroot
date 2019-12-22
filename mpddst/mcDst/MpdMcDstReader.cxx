@@ -10,20 +10,18 @@
 #include <assert.h>
 
 // McDst headers
-#include "MpdMcDst.h"
+//#include "McDst.h"
 #include "MpdMcDstReader.h"
-#include "MpdMcEvent.h"
-#include "MpdMcParticle.h"
-#include "MpdMcRun.h"
-#include "MpdMcArrays.h"
+//#include "McEvent.h"
+//#include "McParticle.h"
+//#include "McRun.h"
+//#include "McArrays.cxx"
 
 // ROOT headers
 #include "TRegexp.h"
 
-ClassImp(MpdMcDstReader)
-
 //_________________
-MpdMcDstReader::MpdMcDstReader(const Char_t* inFileName) :
+McDstReader::McDstReader(const Char_t* inFileName) :
   mMcDst(new MpdMcDst()), mMcRun(nullptr), mChain(nullptr), mTree(nullptr),
   mEventCounter(0), mMcArrays{}, mStatusArrays{} {
   // Constructor
@@ -34,7 +32,7 @@ MpdMcDstReader::MpdMcDstReader(const Char_t* inFileName) :
 }
 
 //_________________
-MpdMcDstReader::~MpdMcDstReader() {
+McDstReader::~McDstReader() {
   // Destructor
   if(mChain) {
     delete mChain;
@@ -45,15 +43,15 @@ MpdMcDstReader::~MpdMcDstReader() {
 }
 
 //_________________
-void MpdMcDstReader::clearArrays() {
+void McDstReader::clearArrays() {
   // Clear arrays
-  for(Int_t iArr=0; iArr<MpdMcArrays::NAllMpdMcArrays; iArr++) {
+  for(Int_t iArr=0; iArr<McArrays::NAllMcArrays; iArr++) {
     mMcArrays[iArr]->Clear();
   }
 }
 
 //_________________
-void MpdMcDstReader::setStatus(const Char_t *branchNameRegex, Int_t enable) {
+void McDstReader::setStatus(const Char_t *branchNameRegex, Int_t enable) {
   // Set branch status
   if(strncmp(branchNameRegex, "Mc", 2) == 0) {
     // Ignore first "Mc"
@@ -61,11 +59,11 @@ void MpdMcDstReader::setStatus(const Char_t *branchNameRegex, Int_t enable) {
   }
 
   TRegexp re(branchNameRegex, 1);
-  for(Int_t iArr=0; iArr<MpdMcArrays::NAllMpdMcArrays; iArr++) {
+  for(Int_t iArr=0; iArr<McArrays::NAllMcArrays; iArr++) {
     Ssiz_t len;
-    if(re.Index(MpdMcArrays::mcArrayNames[iArr], &len) < 0) continue;
-    std::cout << "[WARNING] MpdMcDstReader::SetStatus " << enable
-	      << " to " << MpdMcArrays::mcArrayNames[iArr] << std::endl;
+    if(re.Index(McArrays::mcArrayNames[iArr], &len) < 0) continue;
+    std::cout << "[WARNING] McDstReader::SetStatus " << enable
+	      << " to " << McArrays::mcArrayNames[iArr] << std::endl;
     mStatusArrays[iArr] = enable;
   }
 
@@ -73,14 +71,14 @@ void MpdMcDstReader::setStatus(const Char_t *branchNameRegex, Int_t enable) {
 }
 
 //_________________
-void MpdMcDstReader::setBranchAddresses(TChain *chain) {
+void McDstReader::setBranchAddresses(TChain *chain) {
   // Set addresses of branches listed in mcArrays
   if (!chain) return;
   chain->SetBranchStatus("*", 0);
   TString ts;
-  for (Int_t i = 0; i < MpdMcArrays::NAllMpdMcArrays; ++i) {
+  for (Int_t i = 0; i < McArrays::NAllMcArrays; ++i) {
     if (mStatusArrays[i] == 0) continue;
-    char const* bname = MpdMcArrays::mcArrayNames[i];
+    char const* bname = McArrays::mcArrayNames[i];
     TBranch* tb = chain->GetBranch(bname);
     if (!tb) {
       std::cout << "[WARNING] setBranchAddress: Branch name " << bname
@@ -97,23 +95,23 @@ void MpdMcDstReader::setBranchAddresses(TChain *chain) {
 }
 
 //_________________
-void MpdMcDstReader::streamerOff() {
-  MpdMcEvent::Class()->IgnoreTObjectStreamer();
-  MpdMcParticle::Class()->IgnoreTObjectStreamer();
+void McDstReader::streamerOff() {
+  McEvent::Class()->IgnoreTObjectStreamer();
+  McParticle::Class()->IgnoreTObjectStreamer();
 }
 
 //_________________
-void MpdMcDstReader::createArrays() {
+void McDstReader::createArrays() {
   // Create arrays
-  for(Int_t iArr=0; iArr<MpdMcArrays::NAllMpdMcArrays; iArr++) {
-    mMcArrays[iArr] = new TClonesArray(MpdMcArrays::mcArrayTypes[iArr],
-				       MpdMcArrays::mcArraySizes[iArr]);
+  for(Int_t iArr=0; iArr<McArrays::NAllMcArrays; iArr++) {
+    mMcArrays[iArr] = new TClonesArray(McArrays::mcArrayTypes[iArr],
+				       McArrays::mcArraySizes[iArr]);
   }
   mMcDst->set(mMcArrays);
 }
 
 //_________________
-void MpdMcDstReader::Finish() {
+void McDstReader::Finish() {
   // Finish and clean everything
   if(mChain) {
     delete mChain;
@@ -122,7 +120,7 @@ void MpdMcDstReader::Finish() {
 }
 
 //_________________
-void MpdMcDstReader::Init() {
+void McDstReader::Init() {
   // McDst initialization
   if(!mChain) {
     mChain = new TChain("McDst");
@@ -170,12 +168,12 @@ void MpdMcDstReader::Init() {
     mChain->SetCacheSize(50e6);
     mChain->AddBranchToCache("*");
     mMcDst->set(mMcArrays);
-    mMcRun = (MpdMcRun*)mChain->GetFile()->Get("run");
+    mMcRun = (McRun*)mChain->GetFile()->Get("run");
   }
 }
 
 //_________________
-Bool_t MpdMcDstReader::loadEntry(Long64_t iEntry __attribute__((unused))) {
+Bool_t McDstReader::loadEntry(Long64_t iEntry __attribute__((unused))) {
   // Read McDst entry
   Int_t mStatusRead = true; // true - okay, false - nothing to read
 
@@ -205,3 +203,4 @@ Bool_t MpdMcDstReader::loadEntry(Long64_t iEntry __attribute__((unused))) {
   }
   return mStatusRead;
 }
+ClassImp(McDstReader);

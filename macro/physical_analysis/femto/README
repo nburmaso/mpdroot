@@ -1,0 +1,71 @@
+MpdFemto package: general description and some useful tips on how to ...
+
+1. General info
+This release is considered as the first stable one to be used for production.
+It includes almost all suggestions proposed by the maintainer.
+The package can operate in two modes. The first one allows one to work with any Monte-Carlo input written in the corresponding format (see below).
+The second one assumes its use when doing femtoscopy with dst. Right now it does not work, since the first step of the package checking use is Monte-Carlo.
+The package program codes are located in the physics/femto directory. They are separated by three directories. Source codes in the MpdFemtoMaker and fsiTools directories 
+are not supposed to be edited by users. They establish a frame of the femto package. 
+User classes to be added to the project should be located in the MpdFemtoMakerUser directory.
+
+2. Data formats we use
+Input for the package must be prepared in the McDst-format (if working with Monte-Carlo) or the MpdMiniDst-format when processing dst-files with reconstructed data.
+All necessary program codes to be used for it are implemented in the MpdRoot software. To get more information on it, please look at 
+the mpddst/mcDst and mpddst/MpdMiniEvent directories. The codes for all the formats we use are in the most recent actual state being updated to the latest versions available.
+A small routine that does convertion from the vHLLE+UrQMD model to the format is called createMcDstFromVHLLE.C("input", "output") in the  macro/physical_analysis/mcDst directory.
+
+3. Data storage to be used for production
+Right now we have mcDst-data for the UrQMD and vHLLE+UrQMD simulations already performed at the NICA energies.
+The data can be found at the HYBRILIT / GOVORUN supercomputer in the following directories:
+
+UrQMD:
+/zfs/store7.hydra.local/gnigmat/mcDst/urqmd
+The directory contains README with a brief explanation on datasets there.
+
+vHLLE+UrQMD: 
+/zfs/store7.hydra.local/pbatyuk/mcDst/vHLLE_UrQMD/AuAu
+Each directory has an internal structure like 07.7GeV-00.0_03.3fm/hydro-XPT/
+Going inside one can see files like AuAu_ecm7.7GeV_hydroON_EoSXPT_0.0-3.3fm_1000ev_644.Hydro.mcDst.root 
+and AuAu_ecm7.7GeV_hydroON_EoSXPT_0.0-3.3fm_1000ev_644.HydroCascade.mcDst.root
+Hydro and HydroCascade are used to dub two types of input, e.g. after hydroevaolution and cascade, respectively.
+All the datasets are produced from the original ones put in the /zfs/store6.hydra.local/mpddata/data/models/vHLLE_UrQMD/AuAu directory at the HYBRILIT / GOVORUN supercomputer.
+
+4. Macroses to be used for work
+The macro/physical_analysis/femto contains two macroses to be used as a "pattern" to start work with the package.
+A very base example is hbtMcDst.C
+
+It demonstrates how to activate a McDst-format reader, initialize a femto analysis, a manager related to the analysis and other technical things to be done for succerssful 
+subsequent execution. 
+Shown also how to define three types of cuts (event, track and pair) and apply them to the analysis.
+Important point: when working with mcDst where no impact parameter written, do not forget to redefine limit ranges of impact parameter in order to avoid event skip by deault.
+It can be done as follows:   
+// A very important point when working with mcDst input got from vHLLE+UrQMD with no impact parameter written to the tree (-1 by default)
+eventCut->setImpactParameter(-1.1, -0.9);
+
+The macro performs two types of analysis (1D and 3D). A brief remark on parameters to be passed to the user constructors and their ordering is also done in the macro.
+// Create 1D correlation function integrated over kT
+/// Ordered list of parameters to be passed to the constructor ...
+/// \param title  Name of the histogram
+/// \param nBins  Number of bins
+/// \param  qInvLow   Minimum value of the qInv
+/// \param  qInvHi    Minimum value of the qInv
+
+// Create 3D correlation function integrated with kT binning 
+/// Ordered list of parameters to be passed to the constructor ... 
+/// \param title  Name of the histogram
+/// \param nBins  Number of bins (will be used for out, side and long projections)
+/// \param qLo    Minimum value of the q
+/// \param qHi    Maximum value of the q
+/// \param ktBins Number of kT bins used in the analysis
+/// \param ktLo   Minimum value of kT
+/// \param ktHi   Maximum value of kT
+
+As a result, weighted 1D and 3D correlation functions are written to the output ROOT tree with histograms.
+
+The second macro in the directory hbtMcDstAdvanced.C looks similar to those one we have already discussed. It allows one to extend analysis selecting different multiplicity 
+bins previously defined. Also a formalism how to work with the cut types available is demonstrated in a deeper manner.
+
+P. B.
+pavel.batyuk@jinr.ru
+

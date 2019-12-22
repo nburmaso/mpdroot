@@ -38,7 +38,7 @@ class MpdEmcGeoUtils : public TObject
   int AreNeighboursVertex(int detId1, int detId2) const;
 
   int GeantToDetId(int chamberH, int chamber, int sector, int crate,
-                   int box) const; // Convert Geant volume indexes to abs ID of a channel
+                   int module, int boxA, int boxB) const; // Convert Geant volume indexes to abs ID of a channel
   void DetIdToRelIndex(int detId, int& chamber, int& sector, int& iphi,
                        int& iz) const; // Convert detId to iphi,iz indexes within one sector
 
@@ -52,23 +52,26 @@ class MpdEmcGeoUtils : public TObject
   int  MaxPhiSector(int sector) const; // number of crates (phi raws) in sector
   bool IsPreviousSector(int sector1, int sector2)const; // check if sector 2 goes before sector1
 
+  double Rperp(double z) ; //Radius in xy plane of the surface where clusters are reconstructed 
+
 
  private:
   static MpdEmcGeoUtils* sGeom; // Pointer to the unique instance of the singleton
 
-  int fNTowsersPerCrate;    // Number of towsers per crate
-  int fNCratesPerSector1;   // Number of crates per large sector
+  int fNTowsersPerModule;   //Number of towers per module 
+  int fNTowersPerCrate;    // Number of towsers per crate
+  int fNTowersPerSector;   // Number of towsers per sector
+  int fNCratesPerSector;    // Number of crates per sector
   int fNCratesPerSector2;   // Number of crates per small sector
-  int fNSectors1PerChamber; // Number of large Sectors per Chamber
-  int fNSectors2PerChamber; // Number of small Sectors per Chamber
+  int fNSectorsPerChamber;  // Number of Sectors per Chamber
   int fNChambers;           // Number of chambers
   int fNTowersPerChamber;   // number of tower per chamber
 
   float fEcalRmin; // Minimal radius of ECAL
   float fEcalRmax; // Maximal radius of ECAL
   float fEcalZmax; // Maximal lenght of ECAL in z direction
-  int   fFirstCellInSector[8] ; // First cell ID per sector
 
   ClassDef(MpdEmcGeoUtils, 1)
 };
 #endif
+

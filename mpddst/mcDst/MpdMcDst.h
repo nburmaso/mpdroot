@@ -6,18 +6,18 @@
  * methods to the branches
  */
 
-#ifndef MpdMcDst_h
-#define MpdMcDst_h
+#ifndef McDst_h
+#define McDst_h
 
 // ROOT headers
-#include "TClonesArray.h"
+#include <TClonesArray.h>
 
 // McDst headers
 #include "MpdMcArrays.h"
 
 // Forward declarations
-class MpdMcEvent;
-class MpdMcParticle;
+class McEvent;
+class McParticle;
 
 //________________
 class MpdMcDst {
@@ -35,11 +35,11 @@ class MpdMcDst {
   /// Return pointer to the i-th TClonesArray
   static TClonesArray* mcArray(Int_t type) { return mcArrays[type]; }
   /// Return pointer to the McEvent information
-  static MpdMcEvent* event() { return (MpdMcEvent*)mcArrays[MpdMcArrays::Event]->UncheckedAt(0); }
+  static McEvent* event() { return (McEvent*)mcArrays[McArrays::Event]->UncheckedAt(0); }
   /// Return pointer to the i-th particle
-  static MpdMcParticle* particle(Int_t i) { return (MpdMcParticle*)mcArrays[MpdMcArrays::Particle]->UncheckedAt(i); }
+  static McParticle* particle(Int_t i) { return (McParticle*)mcArrays[McArrays::Particle]->UncheckedAt(i); }
   /// Return number of particles in the current events
-  static UInt_t numberOfParticles() { return mcArrays[MpdMcArrays::Particle]->GetEntries(); }
+  static UInt_t numberOfParticles() { return mcArrays[McArrays::Particle]->GetEntries(); }
 
   /// Print information
   static void print();

@@ -8,11 +8,10 @@
 // McDst headers
 #include "MpdMcEvent.h"
 #include "MpdMcParticle.h"
-#include "MpdMcDst.h"       // MUST be the last one
+#include "MpdMcDst.h"       // MUST be the last one 
 
-#ifdef __ROOT__
-ClassImp(McDst)
-#endif
+//#ifdef __ROOT__
+//#endif
 
 TClonesArray** MpdMcDst::mcArrays = nullptr;
 
@@ -65,3 +64,5 @@ void MpdMcDst::printParticles() {
 
   std::cout << std::endl;
 }
+
+ClassImp(MpdMcDst)

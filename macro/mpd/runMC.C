@@ -36,7 +36,7 @@ R__ADD_INCLUDE_PATH($VMCWORKDIR)
 #include "macro/mpd/mpdloadlibs.C"
 #include "macro/mpd/geometry_stage1.C"
 //#include "macro/mpd/geometry_v2.C"
-
+        
 #define HADGEN  // Choose generator: URQMD VHLLE FLUID PART ION BOX HSD LAQGSM HADGEN
 #define GEANT3  // Choose: GEANT3 GEANT4
 
@@ -80,7 +80,14 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     // Use user defined decays https://fairroot.gsi.de/?q=node/57
     fRun->SetUserDecay(kTRUE);
+    
+#ifdef MCDST // McDst generator
+    if (!CheckFileExist(inFile)) return;
 
+    MpdMcDstGenerator* mcDstGen = new MpdMcDstGenerator(inFile);
+    primGen->AddGenerator(mcDstGen);
+
+#else    
 #ifdef URQMD // <---- Urqmd  Generator
     if (!CheckFileExist(inFile)) return;
 
@@ -179,9 +186,10 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 #endif
 #endif
 #endif 
+#endif 
 
     fRun->SetOutputFile(outFile.Data());
-
+    
     // Magnetic Field Map - for proper use in the analysis MultiField is necessary here
     MpdMultiField* fField = new MpdMultiField();
 

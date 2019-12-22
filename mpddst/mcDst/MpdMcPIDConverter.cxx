@@ -9,15 +9,15 @@
 #include <fstream>
 
 #ifdef __ROOT__
-ClassImp(MpdMcPIDConverter);
+ClassImp(McPIDConverter);
 #endif
 
-MpdMcPIDConverter* MpdMcPIDConverter::fgInstance = nullptr;
+McPIDConverter* McPIDConverter::fgInstance = nullptr;
 
 //_________________
-MpdMcPIDConverter::MpdMcPIDConverter() : TNamed("PIDConverter", "Any-to-PDG particle-ID converter") {
+McPIDConverter::McPIDConverter() : TNamed("PIDConverter", "Any-to-PDG particle-ID converter") {
   if (fgInstance) {
-    Warning("MpdMcPIDConverter", "object already instantiated");
+    Warning("McPIDConverter", "object already instantiated");
   }
   else {
     fgInstance = this;
@@ -26,7 +26,7 @@ MpdMcPIDConverter::MpdMcPIDConverter() : TNamed("PIDConverter", "Any-to-PDG part
 }
 
 //_________________
-Int_t MpdMcPIDConverter::pdgCode(const Int_t& pid, const EConvention& pidType) {
+Int_t McPIDConverter::pdgCode(const Int_t& pid, const EConvention& pidType) {
   // If convension is PDG then do nothing and return the code
   if (pidType == ePDG) {
     return pid;
@@ -62,17 +62,17 @@ Int_t MpdMcPIDConverter::pdgCode(const Int_t& pid, const EConvention& pidType) {
 }
 
 //_________________
-MpdMcPIDConverter* MpdMcPIDConverter::Instance() {
-  return (fgInstance) ? fgInstance : new MpdMcPIDConverter();
+McPIDConverter* McPIDConverter::Instance() {
+  return (fgInstance) ? fgInstance : new McPIDConverter();
 }
 
 //_________________
-MpdMcPIDConverter* MpdMcPIDConverter::instance() {
-  return (fgInstance) ? fgInstance : new MpdMcPIDConverter();
+McPIDConverter* McPIDConverter::instance() {
+  return (fgInstance) ? fgInstance : new McPIDConverter();
 }
 
 //_________________
-void MpdMcPIDConverter::loadConversionTable(const EConvention& pidType) {
+void McPIDConverter::loadConversionTable(const EConvention& pidType) {
   std::string dataFileName = "/input/";
   switch (pidType) {
   case (ePluto):
