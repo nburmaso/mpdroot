@@ -48,7 +48,7 @@ class MpdMiniTrack : public TObject {
   Int_t   id() const              { return fId; }
   /// Return chi2 of the track
   Float_t chi2() const            { return fChi2 / 1000.f; }
-  /// Return momentum (GeV/c) of the primary track. Return (0,0,0) if not primary track
+  /// Return momentum (GeV/c) of the primary track. Return (-100.,-100., -100.) if not primary track
   TVector3 pMom() const           { return TVector3(fPMomentumX, fPMomentumY, fPMomentumZ); }
   /// Return momentum (GeV/c) of the global tracks at the point of DCA to the primary vertex
   TVector3 gMom() const           { return TVector3(fGMomentumX, fGMomentumY, fGMomentumZ); }

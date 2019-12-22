@@ -77,11 +77,11 @@ class MpdMiniMcTrack : public TObject {
   /// Set four-momentum (px, py, pz, E)
   void set4momentum(TLorentzVector mom)
   { setPx(mom.Px()); setPy(mom.Py()); setPz(mom.Pz()); setE(mom.E()); }
-  /// Set freeze-out x (fm)
+  /// Set start x 
   void setX(Double_t x)                                     { fX = (Float_t)x; }
-  /// Set freeze-out y (fm)
+  /// Set start y
   void setY(Double_t y)                                     { fY = (Float_t)y; }
-  /// Set freeze-out z (fm)
+  /// Set start z 
   void setZ(Double_t z)                                     { fZ = (Float_t)z; }
   /// Set freeze-out t (fm/c)
   void setT(Double_t t)                                     { fT = (Float_t)t; }
