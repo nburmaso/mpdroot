@@ -22,6 +22,8 @@
 #include <MpdVertex.h>
 #include <MpdTrack.h>
 #include <MpdTpcKalmanTrack.h>
+#include <MpdKalmanFilter.h>
+#include <MpdKalmanGeoScheme.h>
 #include <MpdTofHit.h>
 #include <MpdTofMatchingData.h>
 #include <MpdMiniDst.h>
@@ -123,6 +125,13 @@ private:
 
     /// Fill BTOF information
     void fillBTofHits();
+    
+    /// Compute matrices of derivatives
+    void ComputeAandB(TMatrixD&, const MpdKalmanTrack*, const MpdKalmanTrack&,
+		    TMatrixD&, TMatrixD&, TMatrixD&); 
+    
+    /// Adjust track parameters
+    void Proxim(const MpdKalmanTrack&, MpdKalmanTrack&);
 
     ClassDef(MpdMiniDstFillTask, 1)
 };
