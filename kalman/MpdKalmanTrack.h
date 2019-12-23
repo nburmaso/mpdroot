@@ -37,6 +37,7 @@ class MpdKalmanTrack : public TObject
   TString GetNode() const { return fNode; } ///< node path
   TString GetNodeNew() const { return fNodeNew; } ///< node path
   Double_t GetPartID() const { return fPartID; } ///< get particle ID
+  Double_t GetDedx(Double_t coef = 5.206e-10) const { return fPartID * coef; } ///< get particle ID (De/dx converted from ADC counts to GeV)
   Double_t GetPos() const { return fPos; } ///< Get current position 
   Double_t GetPosNew() const { return fPosNew; } ///< Get propagated position 
   Double_t GetPosAtHit() const { return fPosAtHit; } ///< Get position of outermost hit 
@@ -93,7 +94,7 @@ class MpdKalmanTrack : public TObject
   Double_t Pt() const { return TMath::Abs(GetParam(4)) > 0.01 ? 1. / TMath::Abs(GetParam(4)) : 100. ; }
   Double_t Phi() const { return GetParam(2); }
   Double_t Theta() const { return TMath::PiOver2() - GetParam(3); }
-  Double_t Momentum() const { return TMath::Abs(Pt()) / TMath::Cos(GetParam(3)); }
+  Double_t Momentum() const { return TMath::Abs(Pt() / TMath::Cos(GetParam(3))); }
   Int_t Charge() const { return TMath::Nint(TMath::Sign(1., -GetParam(4))); }
   TVector3 Momentum3() const { return TVector3(Pt()*TMath::Cos(Phi()), Pt()*TMath::Sin(Phi()), Momentum()*TMath::Cos(Theta())); }
   Double_t DCA() const; ///< signed DCA

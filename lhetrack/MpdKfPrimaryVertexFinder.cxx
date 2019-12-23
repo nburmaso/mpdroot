@@ -88,6 +88,7 @@ InitStatus MpdKfPrimaryVertexFinder::Init()
   if (fConstrFlag) FairRootManager::Instance()->Register("PrimTracks", "ConstrTrs", fVertTracks, kTRUE);
 
   fNPass = 3;
+  return kSUCCESS;
 }
 
 //__________________________________________________________________________

@@ -160,7 +160,11 @@ void MpdEmcDigitizerKI::Exec(Option_t* opt)
       if (fSimParams->ApplyDigitization()) {
         energy = DigitizeEnergy(energy);
       }
+
+      //Convert energy from GeV to ADC units - as in real data
+      energy/=fSimParams->ADCwidth();//V
       digit->SetE(energy);
+
       if (fSimParams->ApplyTimeResolution()) {
         digit->SetTime(TimeResolution(digit->GetTime(), energy));
       }
@@ -170,6 +174,7 @@ void MpdEmcDigitizerKI::Exec(Option_t* opt)
         double energy = SimulateNoiseEnergy();
         double time = SimulateNoiseTime();
         if (energy > fSimParams->ZSthreshold()) {
+          energy/=fSimParams->ADCwidth();
           new ((*fDigitsArray)[fNDigits++])
             MpdEmcDigitKI(cellId, energy, time, -1); // current sellId, energy, random time, no primary
         }

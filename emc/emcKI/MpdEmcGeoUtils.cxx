@@ -229,6 +229,13 @@ void MpdEmcGeoUtils::DetIdToRelIndex(int detId, int& chamber, int& sector, int& 
   iz = detId / 2;
   iphi = detId % 2 + 2 * crate;   
 }
+void MpdEmcGeoUtils::DetIdToGlobalIphiIz(int detId, int& iphi, int& iz) const
+{
+  int chamber,sect ;
+  DetIdToRelIndex(detId,chamber,sect,iphi,iz) ;
+  iphi=fNCratesPerSector*2*sect+iphi;
+  iz  =chamber*fNTowersPerCrate/2+iz ;
+}
 void MpdEmcGeoUtils::DetIdToGlobalPosition(int detId, double& x, double& y, double& z) const
 {
   // calculates senter of front surfase of tower with index detId
@@ -267,7 +274,7 @@ void MpdEmcGeoUtils::DetIdToGlobalPosition(int detId, double& x, double& y, doub
     }
 
 towerHalfSizeZ*=0.2; //V
-
+    
     double local[3] = { 0 }, global[3] = { 0 };
     if (chamber == 0) { // Why this is different in Chamber0 and Chamber1? Reflection?
       local[2] = -towerHalfSizeZ;

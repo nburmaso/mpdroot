@@ -41,6 +41,7 @@ class MpdEmcGeoUtils : public TObject
                    int module, int boxA, int boxB) const; // Convert Geant volume indexes to abs ID of a channel
   void DetIdToRelIndex(int detId, int& chamber, int& sector, int& iphi,
                        int& iz) const; // Convert detId to iphi,iz indexes within one sector
+  void DetIdToGlobalIphiIz(int detId, int& iphi, int& iz) const; // Convert detId to iphi=0...299,iz=0...127 indexes global 
 
   int GetTotalNCells() const { return fNTowersPerChamber * fNChambers; }
 
@@ -74,4 +75,3 @@ class MpdEmcGeoUtils : public TObject
   ClassDef(MpdEmcGeoUtils, 1)
 };
 #endif
-

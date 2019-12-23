@@ -11,6 +11,7 @@
 #include "MpdEmcDigitKI.h"
 #include "MpdEmcGeoUtils.h"
 #include "MpdEmcSimParams.h"
+#include "MpdEmcCalibParams.h"
 
 #include "TClonesArray.h"
 #include "TMath.h"
@@ -25,7 +26,8 @@ MpdEmcClusterizerKI::MpdEmcClusterizerKI()
     fDigitsArray(nullptr),
     fClustersArray(nullptr),
     fSimParams(nullptr),
-    fGeom(nullptr)
+    fGeom(nullptr),
+    fCalibData(nullptr)
 {
 }
 //__________________________________________________________________________
@@ -38,6 +40,18 @@ InitStatus MpdEmcClusterizerKI::Init()
     LOG(ERROR) << "RootManager not instantiated!";
     return kERROR;
   }
+
+  //Temporary solution: get calibration from file TODO!!!!
+  if(!fCalibData){
+
+    TString CalFile = "$VMCWORKDIR/input/MpdEmcCalib.root";
+
+    TFile * f = new TFile(CalFile) ;
+
+    fCalibData =(MpdEmcCalibParams*)f->Get("CalibrationDef") ;
+    cout<<"ECAL: Read out EMC calib data"<<endl;
+  }
+
 
   // Get input collection
   fDigitsArray = (TClonesArray*)ioman->GetObject("EmcDigit");
@@ -91,10 +105,15 @@ void MpdEmcClusterizerKI::PrepareDigits()
   // Remove digits below clustering threshold
   int n = fDigitsArray->GetEntriesFast();
   for (int i = 0; i < n; i++) {
-    const MpdEmcDigitKI* digit = static_cast<MpdEmcDigitKI*>(fDigitsArray->UncheckedAt(i));
+    MpdEmcDigitKI* digit = static_cast<MpdEmcDigitKI*>(fDigitsArray->UncheckedAt(i));
     if (!digit) { // already removed e.g. by bad map selection
       continue;
     }
+    //Calibrate energy
+    digit->SetE(digit->GetE()*fCalibData->GetGain(digit->GetDetId()));//V
+
+    //Calibrate Time TODO!!!
+
     if (digit->GetE() < fSimParams->DigitMinEnergy()) {
       fDigitsArray->RemoveAt(i);
     }

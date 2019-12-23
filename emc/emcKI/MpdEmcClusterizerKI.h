@@ -18,6 +18,7 @@ class TObjArray;
 class MpdEmcSimParams;
 class MpdEmcGeoUtils;
 class MpdEmcClusterKI;
+class MpdEmcCalibParams;
 
 class MpdEmcClusterizerKI : public FairTask
 {
@@ -52,6 +53,7 @@ class MpdEmcClusterizerKI : public FairTask
   TObjArray* fClustersArray;   //! output clusters array
   MpdEmcSimParams* fSimParams; //! Configuration parameters
   MpdEmcGeoUtils* fGeom;       //! Geometry class
+  MpdEmcCalibParams * fCalibData;  //! Calibration parameters
   ClassDef(MpdEmcClusterizerKI, 1)
 };
 
