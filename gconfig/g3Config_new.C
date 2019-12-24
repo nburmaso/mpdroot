@@ -19,7 +19,7 @@ void Config()
              << endl;
   }
   // create Fair Specific Stack
-  FairStack *st = new FairStack();
+  MpdStack *st = new MpdStack();
   st->SetMinPoints(0);
   geant3->SetStack( st ) ;
 

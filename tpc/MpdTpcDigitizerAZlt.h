@@ -19,7 +19,7 @@
 #include "MpdTpcDigitizerTask.h"
 #include "MpdTpcDigitizerQAHistograms.h"
 #include "FairTask.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairField.h"
 
 class TpcGas;

@@ -41,7 +41,7 @@ using namespace std;
 #include "FairGeoNode.h"
 #include "FairGeoVolume.h"
 #include "FairVolume.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 
 #include "TGeoManager.h"
 #include "TGDMLParse.h"
@@ -134,7 +134,7 @@ Bool_t BmdDetector::ProcessHits( FairVolume *v)
        
         BmdPoint* p=AddHit(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss);
         p->SetStep(gMC->TrackStep());
-        ((FairStack*)gMC->GetStack())->AddPoint(kBMD);
+        ((MpdStack*)gMC->GetStack())->AddPoint(kBMD);
         ResetParameters();
 
   }

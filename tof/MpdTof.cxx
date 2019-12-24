@@ -21,11 +21,11 @@
 #include "FairGeoNode.h"
 #include "FairGeoRootBuilder.h"
 #include "FairRootManager.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "FairRuntimeDb.h"
 #include "FairRunAna.h"
 #include "FairVolume.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 
 #include "MpdTofGeo.h"
 #include "MpdTofGeoPar.h"
@@ -90,7 +90,7 @@ Bool_t  MpdTof::ProcessHits(FairVolume* vol)
 
 		AddPoint(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss);
 
-		((FairStack*)gMC->GetStack())->AddPoint(kTOF);
+		((MpdStack*)gMC->GetStack())->AddPoint(kTOF);
 
     		ResetParameters();
   	}
@@ -162,7 +162,7 @@ void 		MpdTof::Dump(TClonesArray *aPoints, TClonesArray *aHits, TClonesArray *aT
 	}
 	for(Int_t index=0; index < nTracks; index++)
 	{
-		auto pMCtrack = (FairMCTrack*) aTracks->UncheckedAt(index);
+		auto pMCtrack = (MpdMCTrack*) aTracks->UncheckedAt(index);
 		auto ptid = pMCtrack->GetMotherId();
 		mmTracks.insert({ptid, index});		
 	}
@@ -198,14 +198,14 @@ void 		MpdTof::Dump(TClonesArray *aPoints, TClonesArray *aHits, TClonesArray *aT
 
 		os<<"\n tid="<<index;
 
-		auto pMCtrack = (FairMCTrack*) aTracks->At(index);
+		auto pMCtrack = (MpdMCTrack*) aTracks->At(index);
 		do
 		{
 			Int_t ptid = pMCtrack->GetMotherId();
 			if(ptid != -1)
 			{
 				os<<"<tid="<<ptid;
-				pMCtrack = (FairMCTrack*) aTracks->At(ptid);
+				pMCtrack = (MpdMCTrack*) aTracks->At(ptid);
 			}
 			else pMCtrack = nullptr;
 		}

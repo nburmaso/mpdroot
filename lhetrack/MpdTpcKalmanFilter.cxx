@@ -24,7 +24,7 @@
 #include "FairEventHeader.h"
 #include "FairField.h"
 #include "FairMCEventHeader.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
@@ -615,10 +615,10 @@ void MpdTpcKalmanFilter::AddHits(Int_t indx0)
 
     Int_t nWrong = 0, motherID = track->GetTrackID();
     // Get track mother ID
-    FairMCTrack *mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(motherID);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() >= 0) {
       motherID = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
     }
 
     TObjArray *hits = track->GetHits();
@@ -629,10 +629,10 @@ void MpdTpcKalmanFilter::AddHits(Int_t indx0)
       Int_t motherID1 = p->GetTrackID();
       //AZ 19-07-15 if (!fUseMCHit) motherID1 = p->GetRefIndex();
       // Get point mother ID
-      mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(motherID1);
+      mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(motherID1);
       while (mctrack->GetMotherId() >= 0) {
         motherID1 = mctrack->GetMotherId();
-        mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
+        mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
       }
       if (motherID1 != motherID) nWrong++;
       hits->AddAt(newHit, j); // replace content - 13.10.2015
@@ -2115,7 +2115,7 @@ Int_t MpdTpcKalmanFilter::GetParticleId(Int_t id)
   /// Particle ID: 
   /// !!! based on MC information at the moment !!!
 
-  FairMCTrack* mcTr = (FairMCTrack*) fMCtracks->UncheckedAt(id);
+  MpdMCTrack* mcTr = (MpdMCTrack*) fMCtracks->UncheckedAt(id);
   Int_t pdg = mcTr->GetPdgCode();
   if (TMath::Abs(pdg) == 11) return 1;
   return 0;
@@ -2131,18 +2131,18 @@ Bool_t MpdTpcKalmanFilter::SameOrigin(TpcPoint *hit, Int_t idKF, Int_t *mcTracks
   if (mcTracks[hit->GetTrackID()] <= 0 && mcTracks[idKF] <= 0) return kFALSE; // both hits are from primaries
   else if (mcTracks[hit->GetTrackID()] > 0) {
     // Check mother
-    FairMCTrack *track = (FairMCTrack*) fMCtracks->UncheckedAt(hit->GetTrackID());
+    MpdMCTrack *track = (MpdMCTrack*) fMCtracks->UncheckedAt(hit->GetTrackID());
     while (track->GetMotherId() > 0) {
       //cout << " Wrongs1: " << track->GetMotherId() << endl;
       if (track->GetMotherId() == idKF) return kTRUE;
-      track = (FairMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
+      track = (MpdMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
     }
   } else {
-    FairMCTrack *track = (FairMCTrack*) fMCtracks->UncheckedAt(idKF);
+    MpdMCTrack *track = (MpdMCTrack*) fMCtracks->UncheckedAt(idKF);
     while (track->GetMotherId() > 0) {
       //cout << " Wrongs2: " << track->GetMotherId() << endl;
       if (track->GetMotherId() == hit->GetTrackID()) return kTRUE;
-      track = (FairMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
+      track = (MpdMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
     }
   }
   return kFALSE;

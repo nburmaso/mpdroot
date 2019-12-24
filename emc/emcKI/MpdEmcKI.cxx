@@ -19,7 +19,7 @@
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "FairVolume.h"
 #include "MpdDetectorList.h"
 
@@ -99,7 +99,7 @@ Bool_t MpdEmcKI::ProcessHits(FairVolume* vol)
   // 3. Collect all energy depositions in sc* by all secondaries from particle first entered ECAL
 
   // Check if this is first entered ECAL particle ("SuperParent")
-  FairStack* stack = static_cast<FairStack*>(gMC->GetStack());
+  MpdStack* stack = static_cast<MpdStack*>(gMC->GetStack());
   const Int_t partID = stack->GetCurrentTrackNumber();
   Int_t superParent = -1;
   Bool_t isNewPartile = false;     // Create Hit even if zero energy deposition

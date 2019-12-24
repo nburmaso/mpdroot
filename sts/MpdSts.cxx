@@ -15,7 +15,7 @@
 #include "FairGeoNode.h"
 #include "FairGeoRootBuilder.h"
 #include "FairRootManager.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "FairRuntimeDb.h"
 #include "TObjArray.h"
 #include "FairRun.h"
@@ -125,7 +125,7 @@ Bool_t  MpdSts::ProcessHits(FairVolume* vol)
     //	   		TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, fELoss);
     AddHit(fTrackID, fVolumeID, vposIn, vmomIn, vposOut, fTime, fLength, fELoss);
     
-    ((FairStack*)gMC->GetStack())->AddPoint(kSTS);
+    ((MpdStack*)gMC->GetStack())->AddPoint(kSTS);
 
     ResetParameters();
   }

@@ -16,7 +16,7 @@
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
 #include "FairGeoRootBuilder.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "MpdStrawendcapGeo.h"
 #include "FairRootManager.h"
 #include "MpdStrawendcap.h"
@@ -237,7 +237,7 @@ Bool_t MpdStrawendcap::ProcessHits(FairVolume* vol) {
                  fTime, (fLength+gMC->TrackLength())/2, fELoss, fIsPrimary, fCharge, fPdgId, trackPosition);
         p->SetPhi(phi); //AZ
 
-        ((FairStack*)gMC->GetStack())->AddPoint(kECT);
+        ((MpdStack*)gMC->GetStack())->AddPoint(kECT);
         //ResetParameters();
     }
 

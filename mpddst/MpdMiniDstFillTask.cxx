@@ -158,7 +158,7 @@ void MpdMiniDstFillTask::fillTracks() {
     miniTracksSimu->Delete();
 
     for (Int_t iSimuTrack = 0; iSimuTrack < fMCTracks->GetEntriesFast(); iSimuTrack++) {
-        FairMCTrack* mcTrack = (FairMCTrack*) fMCTracks->UncheckedAt(iSimuTrack);
+        MpdMCTrack* mcTrack = (MpdMCTrack*) fMCTracks->UncheckedAt(iSimuTrack);
 
         MpdMiniMcTrack* miniTrack = new ((*miniTracksSimu)[miniTracksSimu->GetEntriesFast()]) MpdMiniMcTrack();
         miniTrack->setId(iSimuTrack);

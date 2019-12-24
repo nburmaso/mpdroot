@@ -19,18 +19,18 @@ set(LINK_DIRECTORIES
 link_directories(${LINK_DIRECTORIES})
 
 set(SRCS
-FairStack.cxx 
-FairMCTrack.cxx
+MpdStack.cxx 
+MpdMCTrack.cxx
 )
 
 set(HEADERS
-FairStack.h 
-FairMCTrack.h
+MpdStack.h 
+MpdMCTrack.h
 MpdDetectorList.h
 )
 
-Set(LINKDEF MCStackLinkDef.h)
-Set(LIBRARY_NAME MCStack)
+Set(LINKDEF MpdMCStackLinkDef.h)
+Set(LIBRARY_NAME MpdMCStack)
 Set(DEPENDENCIES Base EG Physics Core)
 
 GENERATE_LIBRARY()

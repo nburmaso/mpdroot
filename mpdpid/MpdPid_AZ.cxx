@@ -1,5 +1,5 @@
 #include "MpdPid_AZ.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 
 MpdPid_AZ::MpdPid_AZ() : TObject(){
 
@@ -335,7 +335,7 @@ void MpdPid::CheckMethodOne(TString inname, Int_t nevents)
 	
 	MpdEvent *event = NULL;
 	MpdTrack *mpdTrack = NULL;
-	FairMCTrack *mcTrack = NULL;
+	MpdMCTrack *mcTrack = NULL;
 	TClonesArray *mpdTracks = NULL;
 	TClonesArray *mcTracks = NULL;
 	TClonesArray *kalmanTracks = NULL;
@@ -442,7 +442,7 @@ void MpdPid::CheckMethodOne(TString inname, Int_t nevents)
 			flag_array[ID] = 1;
                
             MpdTpcKalmanTrack* kftrack = (MpdTpcKalmanTrack*)kalmanTracks->UncheckedAt(j);
-            FairMCTrack* mcTrack = (FairMCTrack*) mcTracks->UncheckedAt(ID);
+            MpdMCTrack* mcTrack = (MpdMCTrack*) mcTracks->UncheckedAt(ID);
             Int_t mother = mcTrack->GetMotherId();
             Int_t tofFlag = mpdTrack->GetTofFlag(), pidFlag = 0;
             Int_t pdg = mcTrack->GetPdgCode(), pdgc = TMath::Abs(pdg);
@@ -1026,7 +1026,7 @@ void MpdPid::CheckMethodTwo(TString inname, Int_t nevents)
 	
 	MpdEvent *event = NULL;
 	MpdTrack *mpdTrack = NULL;
-	FairMCTrack *mcTrack = NULL;
+	MpdMCTrack *mcTrack = NULL;
 	TClonesArray *mpdTracks = NULL, *mcTracks = NULL, *kalmanTracks = NULL;
 	chain.LoadTree(0);
 	
@@ -1140,7 +1140,7 @@ void MpdPid::CheckMethodTwo(TString inname, Int_t nevents)
 			flag_array[ID] = 1;
                
             MpdTpcKalmanTrack* kftrack = (MpdTpcKalmanTrack*)kalmanTracks->UncheckedAt(j);
-            mcTrack = (FairMCTrack*) mcTracks->UncheckedAt(mpdTrack->GetID());
+            mcTrack = (MpdMCTrack*) mcTracks->UncheckedAt(mpdTrack->GetID());
             Int_t mother = mcTrack->GetMotherId();
             Int_t tofFlag = mpdTrack->GetTofFlag(), pidFlag = 0;
             Int_t pdg = mcTrack->GetPdgCode(), pdgc = TMath::Abs(pdg);

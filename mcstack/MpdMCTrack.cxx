@@ -2,8 +2,9 @@
 // -----                      FairMCTrack source file                  -----
 // -----                  Created 03/08/04  by V. Friese               -----
 // -----              adopted for NICA/MPD 29/03/10  (litvin)          -----
+// -----              adopted for NICA/MPD 20/12/19  (ABychkov)        -----
 // -------------------------------------------------------------------------
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 
 #include <iostream>
 
@@ -12,7 +13,7 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-FairMCTrack::FairMCTrack()// {
+MpdMCTrack::MpdMCTrack()// {
 //   fPdgCode  = fNPoints = 0;
 //   fMotherId = -1;
 //   fPx = fPy = fPz = 0.;
@@ -36,7 +37,7 @@ FairMCTrack::FairMCTrack()// {
 
 
 // -----   Standard constructor   ------------------------------------------
-FairMCTrack::FairMCTrack(Int_t pdgCode, Int_t motherId, Double_t px,
+MpdMCTrack::MpdMCTrack(Int_t pdgCode, Int_t motherId, Double_t px,
 			 Double_t py, Double_t pz, Double_t x, Double_t y,
 			 Double_t z, Double_t t, Int_t nPoints = 0) 
 : TObject() {
@@ -58,7 +59,7 @@ FairMCTrack::FairMCTrack(Int_t pdgCode, Int_t motherId, Double_t px,
 
 
 // -----   Copy constructor   ----------------------------------------------
-FairMCTrack::FairMCTrack(const FairMCTrack& track) // { 
+MpdMCTrack::MpdMCTrack(const MpdMCTrack& track) // { 
 //   *this = track;
 // }
   : TObject(track),
@@ -79,7 +80,7 @@ FairMCTrack::FairMCTrack(const FairMCTrack& track) // {
 
 
 // -----   Constructor from TParticle   ------------------------------------
-FairMCTrack::FairMCTrack(TParticle* part) 
+MpdMCTrack::MpdMCTrack(TParticle* part) 
 : TObject(){
   fPdgCode  = part->GetPdgCode();
   fMotherId = part->GetMother(0);
@@ -97,13 +98,13 @@ FairMCTrack::FairMCTrack(TParticle* part)
 
   
 // -----   Destructor   ----------------------------------------------------
-FairMCTrack::~FairMCTrack() { }
+MpdMCTrack::~MpdMCTrack() { }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Public method Print   -------------------------------------------
-void FairMCTrack::Print(Int_t trackId) const {
+void MpdMCTrack::Print(Int_t trackId) const {
   cout << "Track " << trackId << ", mother : " << fMotherId << ", Type "
        << fPdgCode << ", momentum (" << fPx << ", " << fPy << ", " << fPz
        << ") GeV" << endl;
@@ -120,7 +121,7 @@ void FairMCTrack::Print(Int_t trackId) const {
 
 
 // -----   Public method GetMass   -----------------------------------------
-Double_t FairMCTrack::GetMass() const {
+Double_t MpdMCTrack::GetMass() const {
   if ( TDatabasePDG::Instance() ) {
     TParticlePDG* particle = TDatabasePDG::Instance()->GetParticle(fPdgCode);
     if ( particle ) return particle->Mass();
@@ -134,7 +135,7 @@ Double_t FairMCTrack::GetMass() const {
 
 
 // -----   Public method GetRapidity   -------------------------------------
-Double_t FairMCTrack::GetRapidity() const {
+Double_t MpdMCTrack::GetRapidity() const {
   Double_t e = GetEnergy();
   Double_t y = 0.5 * TMath::Log( (e+fPz) / (e-fPz) );
   return y;
@@ -145,7 +146,7 @@ Double_t FairMCTrack::GetRapidity() const {
 
 
 // -----   Public method GetNPoints   --------------------------------------
-Int_t FairMCTrack::GetNPoints(DetectorIdMPD detId) const {
+Int_t MpdMCTrack::GetNPoints(DetectorIdMPD detId) const {
 
   //kSTS, kTPC, kTOF, kETOF, kFD, kECT, kECAL, kNDET, kCPC, kBBC, kZDC, kFSA, kBMD
 
@@ -162,7 +163,7 @@ Int_t FairMCTrack::GetNPoints(DetectorIdMPD detId) const {
 
 
 // -----   Public method SetNPoints   --------------------------------------
-void FairMCTrack::SetNPoints(Int_t iDet, Int_t nPoints) {
+void MpdMCTrack::SetNPoints(Int_t iDet, Int_t nPoints) {
 
   //kSTS, kTPC, kTOF, kETOF, kFD, kECT, kECAL, kNDET, kCPC, kBBC, kZDC, kFSA, kBMD
 
@@ -188,4 +189,4 @@ void FairMCTrack::SetNPoints(Int_t iDet, Int_t nPoints) {
 
 
 
-ClassImp(FairMCTrack)
+ClassImp(MpdMCTrack)

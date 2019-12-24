@@ -16,7 +16,7 @@
 #include "MpdEmcHit.h"
 #include "MpdEmcCluster.h"
 #include "MpdEmcClusterCreation.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 
 #include "TGeoManager.h"
 

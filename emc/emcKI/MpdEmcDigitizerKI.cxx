@@ -9,7 +9,7 @@
 //--------------------------------------------------------------------
 
 #include "MpdEmcDigitizerKI.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "MpdEmcDigitKI.h"
 #include "MpdEmcGeoUtils.h"
 #include "MpdEmcPointKI.h"

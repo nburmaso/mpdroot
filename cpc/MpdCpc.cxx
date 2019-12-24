@@ -9,14 +9,14 @@
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TVirtualMC.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
 #include "FairGeoRootBuilder.h"
 #include "FairRootManager.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "FairRuntimeDb.h"
 #include "TObjArray.h"
 #include "FairRun.h"
@@ -89,7 +89,7 @@ Bool_t  MpdCpc::ProcessHits(FairVolume* vol)
 		AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
 	   		TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, fELoss);
 
-		((FairStack*)gMC->GetStack())->AddPoint(kCPC);
+		((MpdStack*)gMC->GetStack())->AddPoint(kCPC);
 
     		ResetParameters();
   	}

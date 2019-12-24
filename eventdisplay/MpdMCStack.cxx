@@ -7,7 +7,7 @@
 #ifdef BMNROOT
 #include "CbmMCTrack.h"
 #else
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #endif
 #include "FairRootManager.h"
 #include "FairLogger.h"
@@ -97,7 +97,7 @@ void MpdMCStack::Exec(Option_t* /*option*/)
 #ifdef BMNROOT
         CbmMCTrack* tr = (CbmMCTrack*) fTrackList->At(i);
 #else
-        FairMCTrack* tr = (FairMCTrack*) fTrackList->At(i);
+        MpdMCTrack* tr = (MpdMCTrack*) fTrackList->At(i);
 #endif
 
         TVector3 Ptot;

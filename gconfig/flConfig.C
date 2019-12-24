@@ -7,7 +7,7 @@ void Config()
 
     cout << "GConfig: Fluka has been created." << endl;
   
-    FairStack *st = new FairStack();
+    MpdStack *st = new MpdStack();
     st->SetMinPoints(0);
     gMC->SetStack( st ) ;
     gMC->SetProcess("CKOV",1);

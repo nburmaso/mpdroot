@@ -15,7 +15,7 @@
 
 #include "MpdFieldCreator.h"
 #include "MpdMapPar.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
@@ -306,7 +306,7 @@ void MpdFillDstTask::CleanMC() {
     cout << "-I- [MpdFillDstTask::Exec] Cleaning from outer decays..." << flush;
 
     Int_t nMC = fMCTracks->GetEntriesFast(), motherId;
-    FairMCTrack *track;
+    MpdMCTrack *track;
 
     //reading outer radius of TOF
     FairRunAna::Instance()->GetRuntimeDb()->getContainer("FairBaseParSet");
@@ -318,7 +318,7 @@ void MpdFillDstTask::CleanMC() {
     vector<int> removedMother;
     Int_t i, j;
     for (i = 0; i < nMC; i++) {
-        track = (FairMCTrack*) fMCTracks->UncheckedAt(i);
+        track = (MpdMCTrack*) fMCTracks->UncheckedAt(i);
 
         //filling hostograms
         motherId = track->GetMotherId();

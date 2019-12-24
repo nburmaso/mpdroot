@@ -13,7 +13,7 @@
 #include <TRandom2.h>
 #include <TClonesArray.h>
 
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairLogger.h"
 
 #include "MpdTofUtils.h"

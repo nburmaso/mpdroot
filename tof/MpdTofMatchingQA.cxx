@@ -7,7 +7,7 @@
 #include <TClonesArray.h>
 
 #include "FairLogger.h" 
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "MpdTpcKalmanTrack.h"
 #include "MpdTof.h"
 #include "MpdTofMatching.h"
@@ -184,7 +184,7 @@ void	MpdTofMatchingQA::FillMcPointDeviation(const TVector3& mcPosition, const TV
 void	MpdTofMatchingQA::FillNtracks(const TClonesArray *aTracks, size_t NkfTracks)
 {
 	size_t NmcTracks = 0;
-	for(Int_t i = 0, iMax = aTracks->GetEntriesFast(); i < iMax; i++) if(((FairMCTrack*) aTracks->UncheckedAt(i))->GetNPoints(kTOF)) NmcTracks++;
+	for(Int_t i = 0, iMax = aTracks->GetEntriesFast(); i < iMax; i++) if(((MpdMCTrack*) aTracks->UncheckedAt(i))->GetNPoints(kTOF)) NmcTracks++;
 		
 	hNMcKfTracks->Fill(NmcTracks, NkfTracks);
 }							
@@ -242,7 +242,7 @@ void	MpdTofMatchingQA::FillIdealMatching(const TmPt& mPt, const TmmT2H& mmT2H, c
 		size_t Nhits = mmT2H.count(mcTrackIndex); // number of hits for current tid
 		if(Nhits == 0)	continue;
 
-               	auto pMCtrack = (FairMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);
+               	auto pMCtrack = (MpdMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);
 		pMCtrack->GetMomentum(momentum);
 		double Eta = momentum.Eta(), P = momentum.Mag();
 
@@ -295,7 +295,7 @@ void	MpdTofMatchingQA::FillMatchingEfficiency(const TmPt& tids, const TClonesArr
 		Int_t KfIndex = iter.second;
 
 		Int_t mcTrackIndex = pKfTrack->GetTrackID();            
-               	auto pMCtrack = (FairMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);                                   
+               	auto pMCtrack = (MpdMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);                                   
                	bool mcTofTouch = pMCtrack->GetNPoints(fIsEndcap ? kETOF : kTOF);
 
 //if(mcTofTouch) tidsTofTouch.Insert(2, mcTrackIndex);

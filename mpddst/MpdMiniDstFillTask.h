@@ -15,7 +15,7 @@
 #include <FairRootManager.h>
 #include <FairMCEventHeader.h>
 #include <FairEventHeader.h>
-#include <FairMCTrack.h>
+#include <MpdMCTrack.h>
 
 // MpdRoot headers
 #include <MpdEvent.h>

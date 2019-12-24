@@ -2,10 +2,11 @@
 // -----                       FairStack header file                    -----
 // -----           Created 10/08/04  by D. Bertini / V. Friese         -----
 // -----              adopted for NICA/MPD 29/03/10  (litvin)          -----
+// -----              adopted for NICA/MPD 20/12/19  (ABychkov)        -----
 // -------------------------------------------------------------------------
 
 
-/** FairStack.h
+/** MpdStack.h
  *@author D.Bertini <d.bertini@gsi.de>
  *@author V.Friese <v.friese@gsi.de>
  **
@@ -28,8 +29,8 @@
  **/
 
 
-#ifndef FAIRSTACK_H
-#define FAIRSTACK_H
+#ifndef MPDSTACK_H
+#define MPDSTACK_H
 
 
 #include "MpdDetectorList.h"
@@ -41,7 +42,7 @@
 #include <map>
 #include <stack>
 
-class FairStack : public FairGenericStack
+class MpdStack : public FairGenericStack
 {
 
  public:
@@ -49,11 +50,11 @@ class FairStack : public FairGenericStack
   /** Default constructor
    *param size  Estimated track number
    **/
-  FairStack(Int_t size = 100);
+  MpdStack(Int_t size = 100);
 
 
   /** Destructor  **/
-  virtual ~FairStack();
+  virtual ~MpdStack();
 
 
   /** Add a TParticle to the stack.
@@ -247,7 +248,7 @@ class FairStack : public FairGenericStack
   void SelectTracks();
 
 
-  ClassDef(FairStack,1)
+  ClassDef(MpdStack,1)
 
       
 };

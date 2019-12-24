@@ -15,7 +15,7 @@
 
 class TClonesArray;
 class FairMCPoint;
-class FairMCTrack;
+class MpdMCTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -48,8 +48,8 @@ private:
     /* methods */
     MpdEmcHitA*  GetHit(Float_t x, Float_t y, Float_t z);
    
-    void GetNGen(FairMCTrack* track, Int_t& ng);
-    void GetVertexMother(FairMCTrack* trk, Int_t& itrk);
+    void GetNGen(MpdMCTrack* track, Int_t& ng);
+    void GetVertexMother(MpdMCTrack* trk, Int_t& itrk);
     void AddContent(MpdEmcHitA* hit, FairMCPoint* pnt);
     
     void Test();

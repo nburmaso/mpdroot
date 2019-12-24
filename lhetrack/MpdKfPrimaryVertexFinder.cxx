@@ -18,7 +18,7 @@
 #include "MpdVertex.h"
 
 #include "FairMCPoint.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include <TAxis.h>
 #include <TClonesArray.h>
@@ -283,7 +283,7 @@ void MpdKfPrimaryVertexFinder::FindVertex()
       MpdKalmanTrack *track = (MpdKalmanTrack*) fTracks->UncheckedAt(itr);
       //if (track->GetNode() != "") continue; // exclude failed tracks 
       // Select primaries
-      FairMCTrack *mcTr = (FairMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+      MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
       //if (mcTr->GetMotherId() >= 0) continue; // secondary
       Double_t th = TMath::PiOver2() - track->GetParam(3);
       //if (TMath::Abs(TMath::Log(TMath::Tan(th/2))) > 1.) continue; // eta-cut
@@ -772,7 +772,7 @@ void MpdKfPrimaryVertexFinder::Chi2Vertex()
     }
 
     // Select primaries
-    //FairMCTrack *mcTr = (FairMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+    //MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
     //if (mcTr->GetMotherId() >= 0) continue; // secondary
     Double_t th = TMath::PiOver2() - track->GetParam(3);
     //if (TMath::Abs(TMath::Log(TMath::Tan(th/2))) > 1.) continue; // eta-cut

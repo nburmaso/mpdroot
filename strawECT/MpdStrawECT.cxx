@@ -16,7 +16,7 @@
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
 #include "FairGeoRootBuilder.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "MpdStrawECTGeo.h"
 #include "FairRootManager.h"
 #include "MpdStrawECT.h"
@@ -229,7 +229,7 @@ Bool_t MpdStrawECT::ProcessHits(FairVolume* vol) {
         p->SetLayerType(layer_type);
         p->SetStraw(straw_num);
 
-        ((FairStack*)gMC->GetStack())->AddPoint(kECT);
+        ((MpdStack*)gMC->GetStack())->AddPoint(kECT);
     }
 
     return kTRUE;

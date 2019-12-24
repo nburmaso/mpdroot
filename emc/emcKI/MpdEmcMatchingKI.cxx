@@ -19,7 +19,7 @@
 #include "MpdVertex.h"
 
 #include "FairLogger.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "MpdEmcSimParams.h"

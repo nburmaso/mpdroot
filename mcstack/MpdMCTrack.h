@@ -2,13 +2,14 @@
 // -----                      FairMCTrack header file                  -----
 // -----                  Created 03/08/04  by V. Friese               -----
 // -----              adopted for NICA/MPD 29/03/10  (litvin)          -----
+// -----              adopted for NICA/MPD 20/12/19  (ABychkov)        -----
 // -------------------------------------------------------------------------
 
 
 /** FairMCTrack.h
  *@author V.Friese <v.friese@gsi.de>
  **
- ** Data class for storing Monte Carlo tracks processed by the FairStack.
+ ** Data class for storing Monte Carlo tracks processed by the MpdStack (FairStack).
  ** A MCTrack can be a primary track put into the simulation or a
  ** secondary one produced by the transport through decay or interaction.
  **
@@ -16,8 +17,8 @@
  **/
 
 
-#ifndef FAIRMCTRACK_H
-#define FAIRMCTRACK_H 1
+#ifndef MPDMCTRACK_H
+#define MPDMCTRACK_H 1
 
 
 #include "MpdDetectorList.h"
@@ -35,31 +36,31 @@
 #endif
 
 
-class FairMCTrack : public TObject
+class MpdMCTrack : public TObject
 {
 
  public:
 
 
   /**  Default constructor  **/
-  FairMCTrack();
+  MpdMCTrack();
 
 
   /**  Standard constructor  **/
-  FairMCTrack(Int_t pdgCode, Int_t motherID, Double_t px, Double_t py,
+  MpdMCTrack(Int_t pdgCode, Int_t motherID, Double_t px, Double_t py,
 	     Double_t pz, Double_t x, Double_t y, Double_t z, 
 	     Double_t t, Int_t nPoints);
 
   /**  Copy constructor  **/
-  FairMCTrack(const FairMCTrack& track);
+  MpdMCTrack(const MpdMCTrack& track);
 
 
   /**  Constructor from TParticle  **/
-  FairMCTrack(TParticle* particle);
+  MpdMCTrack(TParticle* particle);
 
 
   /**  Destructor  **/
-  virtual ~FairMCTrack();
+  virtual ~MpdMCTrack();
 
 
   /**  Output to screen  **/
@@ -131,7 +132,7 @@ private:
   Int_t fNPoints;
 
 
-  ClassDef(FairMCTrack,3);
+  ClassDef(MpdMCTrack,3);
 
 };
 
@@ -139,23 +140,23 @@ private:
 
 // ==========   Inline functions   ========================================
 
-inline Double_t FairMCTrack::GetEnergy() const {
+inline Double_t MpdMCTrack::GetEnergy() const {
   Double_t mass = GetMass();
   return TMath::Sqrt(mass*mass + fPx*fPx + fPy*fPy + fPz*fPz );
 }
 
 
-inline void FairMCTrack::GetMomentum(TVector3& momentum) { 
+inline void MpdMCTrack::GetMomentum(TVector3& momentum) { 
   momentum.SetXYZ(fPx,fPy,fPz); 
 }
 
 
-inline void FairMCTrack::Get4Momentum(TLorentzVector& momentum) {
+inline void MpdMCTrack::Get4Momentum(TLorentzVector& momentum) {
   momentum.SetXYZT(fPx,fPy,fPz,GetEnergy()); 
 }
 
 
-inline void FairMCTrack::GetStartVertex(TVector3& vertex) { 
+inline void MpdMCTrack::GetStartVertex(TVector3& vertex) { 
   vertex.SetXYZ(fStartX,fStartY,fStartZ); 
 }
 

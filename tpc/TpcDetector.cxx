@@ -44,7 +44,7 @@ using namespace std;
 #include "FairGeoNode.h"
 #include "FairGeoVolume.h"
 #include "FairVolume.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 
 #include "TGeoManager.h"
 #include "TGDMLParse.h"
@@ -123,7 +123,7 @@ TpcDetector::ProcessHits( FairVolume *v)
     TpcPoint* p=AddHit(trackID, volumeID, pos.Vect(), mom.Vect(), time, length, eLoss);
     p->SetStep(gMC->TrackStep());
 
-    ((FairStack*)gMC->GetStack())->AddPoint(kTPC);
+    ((MpdStack*)gMC->GetStack())->AddPoint(kTPC);
 
   }
   //  p->Print("");

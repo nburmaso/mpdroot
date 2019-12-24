@@ -5,7 +5,7 @@
 
 #include "FairRunAna.h"
 #include "TpcPoint.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairMCApplication.h"
 #include "FairRootManager.h"
 
@@ -310,7 +310,7 @@ void TpcLheHitsMaker::CheckTracks() {
   using namespace std;
 
   Int_t  parent, tr_num, tr_pdg;
-  FairMCTrack *gtrack = 0;
+  MpdMCTrack *gtrack = 0;
 
   //AZ Int_t nMCtracks = fListMCtracks->GetEntries();
   Int_t nMCtracks = fListMCtracks->GetEntriesFast();
@@ -338,7 +338,7 @@ void TpcLheHitsMaker::CheckTracks() {
       tr_pdg = 0;
       parent = 99999;
 
-      gtrack = (FairMCTrack *) fListMCtracks->At(tr_num);
+      gtrack = (MpdMCTrack *) fListMCtracks->At(tr_num);
 
       tr_pdg = gtrack->GetPdgCode();
       track->SetPid(tr_pdg);

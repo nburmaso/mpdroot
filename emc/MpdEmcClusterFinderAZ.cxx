@@ -26,7 +26,7 @@
 #include "MpdEmcPoint.h"
 #include "MpdTpcHit.h"
 
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 
 #include "TClonesArray.h"
@@ -869,14 +869,14 @@ void MpdEmcClusterFinderAZ::RedoId(map<Int_t,Float_t>& contrib)
 
   for (map<Int_t,Float_t>::iterator it = copy.begin(); it != copy.end(); ++it) {
     Int_t id = it->first, idm = -1;
-    FairMCTrack *mctr = (FairMCTrack*) fMcTrArray->UncheckedAt(id);
+    MpdMCTrack *mctr = (MpdMCTrack*) fMcTrArray->UncheckedAt(id);
     mctr->GetStartVertex(vert);
     Double_t rvert = vert.Pt();
     while (rvert > rmin && rvert < rmax) {
       // Born inside EMC - find ancestor
       idm = mctr->GetMotherId();
       if (idm < 0) break;
-      mctr = (FairMCTrack*) fMcTrArray->UncheckedAt(idm);
+      mctr = (MpdMCTrack*) fMcTrArray->UncheckedAt(idm);
       mctr->GetStartVertex(vert);
       rvert = vert.Pt();
     }

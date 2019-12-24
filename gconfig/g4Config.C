@@ -35,7 +35,7 @@ void Config()
    cout << "Geant4 has been created." << endl;
 
 /// create Fair Specific stack
-   FairStack *stack = new FairStack(1000); 
+   MpdStack *stack = new MpdStack(1000); 
    stack->StoreSecondaries(kTRUE);
  //  stack->SetMinPoints(0);
    geant4->SetStack(stack);

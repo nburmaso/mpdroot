@@ -24,7 +24,7 @@
 #include "FairGeoNode.h"
 #include "MpdZdcGeo.h"
 #include "FairGeoRootBuilder.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "MpdZdc.h"
 #include "MpdZdcPoint.h"
 
@@ -473,7 +473,7 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
 
       gMC->GetStack()->GetCurrentTrack()->SetMother(1,points);
 
-      ((FairStack*)gMC->GetStack())->AddPoint(kZDC);
+      ((MpdStack*)gMC->GetStack())->AddPoint(kZDC);
 
       //}
       //}   

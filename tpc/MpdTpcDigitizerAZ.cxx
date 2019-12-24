@@ -748,7 +748,7 @@ void MpdTpcDigitizerAZ::TpcProcessing(const TpcPoint* prePoint, const TpcPoint* 
   //        curPoint = (TpcPoint*) fMCPointArray->At(i);
 
   if (fOnlyPrimary == kTRUE) {
-    FairMCTrack* tr = (FairMCTrack*) fMCTracksArray->At(curPoint->GetTrackID());
+    MpdMCTrack* tr = (MpdMCTrack*) fMCTracksArray->At(curPoint->GetTrackID());
     if (tr->GetMotherId() != -1) return;
   }
   //check if hits are on the same track

@@ -7,8 +7,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class FairStack+;
-#pragma link C++ class FairMCTrack+;
+#pragma link C++ class MpdStack+;
+#pragma link C++ class MpdMCTrack+;
 #pragma link C++ enum DetectorIdMPD;
  
 #endif

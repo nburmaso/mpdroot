@@ -67,6 +67,6 @@ MpdTOFpid.h
 Set(LINKDEF TofLinkDef.h)
 
 Set(LIBRARY_NAME Tof)
-Set(DEPENDENCIES Core Base MCStack Kalman)
+Set(DEPENDENCIES Core Base MpdMCStack Kalman)
 
 GENERATE_LIBRARY()
