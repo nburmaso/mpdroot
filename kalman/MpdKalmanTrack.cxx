@@ -40,7 +40,8 @@ MpdKalmanTrack::MpdKalmanTrack()
     fCovar(0x0),
     fWeight(0x0),
     fWeightAtHit(0x0),
-    fHits(0x0)
+    fHits(0x0),
+    fFlag(kOk)
 {
   /// Default constructor
 }
@@ -71,7 +72,8 @@ MpdKalmanTrack::MpdKalmanTrack(Double_t pos, TVector3 &vertex)
     fWeight(new TMatrixDSym(5)),
     fWeightAtHit(new TMatrixDSym(5)),
     fVertex(vertex),
-    fHits(new TObjArray(70))
+    fHits(new TObjArray(70)),
+    fFlag(kOk)
 {
   /// Constructor from a track position and vertex
 
@@ -105,7 +107,8 @@ MpdKalmanTrack::MpdKalmanTrack (const MpdKalmanTrack& track)
     fWeightAtHit(new TMatrixDSym(*(track.fWeightAtHit))),
     fVertex(track.fVertex),
     fHits(new TObjArray(70)),
-    fStepMap(track.fStepMap)
+    fStepMap(track.fStepMap),
+    fFlag(track.fFlag)
 {
   ///copy constructor
 
@@ -155,6 +158,7 @@ MpdKalmanTrack & MpdKalmanTrack::operator=(const MpdKalmanTrack& track)
   fVertex = track.fVertex;
   fHits = new TObjArray(70);
   fStepMap = track.fStepMap;
+  fFlag = track.fFlag;
 
   if (track.fParamNew) fParamNew = new TMatrixD(*(track.fParamNew));
   else fParamNew = new TMatrixD(5,1);

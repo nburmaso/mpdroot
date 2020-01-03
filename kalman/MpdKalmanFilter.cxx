@@ -905,13 +905,15 @@ Bool_t MpdKalmanFilter::PropagateParamP(MpdKalmanTrack *track, const Double_t *p
     //} while (dist * dir * norm > 0 && TMath::Abs(dist) > fgkEpsilon);
 
   GetFromGeantParamE(track,v3new,dir);
-  if (calcLeng) track->UpdateLength(step0); // update track length              
+  if (calcLeng) track->UpdateLength(step0); // update track length
   //track->GetParamNew()->Print();
 
   // Position adjustment (until within tolerance)
   Double_t dir1 = dir;
   //dist0 = TMath::Abs(dist);
-  dist0 = dist;
+  //AZ dist0 = dist;
+  if (TMath::Abs(dist) < TMath::Abs(dist0)) dist0 = dist; //AZ
+
   while (TMath::Abs(dist) > fgkEpsilon) {
     dist = d;
     cosA = 0.;
