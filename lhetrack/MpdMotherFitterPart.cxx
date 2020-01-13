@@ -136,9 +136,15 @@ Double_t MpdMotherFitterPart::BuildMother(MpdParticle *mother, vector<MpdParticl
   TVector3 vtx;
   Double_t chi2 = MpdMotherFitterPart::Instance()->FindVertex(vDaught,vtx);
   if (chi2 < -1.0) return chi2; // failed to find decay vertex (too high chi2)
+  Int_t nDaught = vDaught.size();
+  // Check for sanity
+  for (Int_t id = 0; id < nDaught; ++id) {
+    Double_t theta = vDaught[id]->Theta();
+    if (theta < 0 || theta > TMath::Pi()) return -chi2; // weird track
+  }
+
   mother->SetChi2(chi2);
   
-  Int_t nDaught = vDaught.size();
   TVector3 mom3;
   Int_t charge = 0;
   Double_t energy = 0.0;
@@ -328,9 +334,9 @@ void MpdMotherFitterPart::EvalVertex(vector<MpdParticle*> vDaught)
 	// straight line
 	//Double_t dx = helix[j]
       pair<Double_t,Double_t> paths = helix[i]->pathLengths(*helix[j]);
-      //cout << " Intersection: " << paths.first << " " << paths.second << endl;
       p1 = helix[i]->at(paths.first);
       p2 = helix[j]->at(paths.second);
+      //cout << " Intersection: " << helix[i]->period() << " " << paths.first << " " << helix[j]->period() << " " << paths.second << " " << (p1-p2).Mag() << endl;
       sum += (p1+p2);
       ncombs += 2;
       pathMax = TMath::Max (pathMax, TMath::Abs(paths.first));

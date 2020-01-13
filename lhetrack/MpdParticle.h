@@ -60,7 +60,8 @@ class MpdParticle : public TObject
   Double_t Phi() const { return fq(0,0); } // smoothed value
   Double_t Pt() const { return fCharge == 0 ? TMath::Min (fq(2,0)*TMath::Sin(Theta()), 100.) : 
                         TMath::Min (TMath::Abs(fCharge/fq(2,0)*fieldConst), 100.); }
-  Double_t Theta() const { return fq(1,0); }
+  //Double_t Theta() const { return fq(1,0); }
+  Double_t Theta() const;
   Double_t Momentum() const { return fCharge == 0 ? fq(2,0) : Pt() / TMath::Sin(Theta()); }
   TVector3 Momentum3() const { return TVector3(Pt()*TMath::Cos(Phi()), Pt()*TMath::Sin(Phi()), 
 					       Momentum()*TMath::Cos(Theta())); }
@@ -145,5 +146,22 @@ class MpdParticle : public TObject
   ClassDef(MpdParticle,2);
 
 };
+
+//__________________________________________________________________________ 
+
+inline Double_t MpdParticle::Theta() const
+{
+  // Theta angle
+
+  if (TMath::Abs(fq(1,0)) < TMath::PiOver2()) {
+    if (TMath::Abs(fq(1,0)) > 0.001) return fq(1,0);
+    return TMath::Sign(0.001,fq(1,0));
+  } else {
+    if (TMath::Abs(fq(1,0)) < TMath::Pi()-0.001) return fq(1,0);
+    return TMath::Sign(TMath::Pi()-0.001,fq(1,0));
+  }
+}
+
+//__________________________________________________________________________ 
 
 #endif
