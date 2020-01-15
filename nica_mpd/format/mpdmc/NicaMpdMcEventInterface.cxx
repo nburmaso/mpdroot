@@ -6,38 +6,41 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
-#include "NicaFairEventInterface.h"
+#include "NicaMpdMcEventInterface.h"
+
 #include "FairRootManager.h"
-#include "NicaFairTrackInterface.h"
+#include "MpdMCTrack.h"
 
-NicaFairEventInterface::NicaFairEventInterface():fEvent(NULL),fFairTracks(NULL) {
+#include "NicaMpdMcTrackInterface.h"
+
+NicaMpdMcEventInterface::NicaMpdMcEventInterface():fEvent(NULL),fMcracks(NULL) {
 	fEvent = new FairMCEventHeader();
-	fFairTracks = new NicaTrackClones("FairMCTrack","MCTrack","MC");
+	fMcracks = new NicaTrackClones("MpdMCTrack","MCTrack","MC");
 }
 
-void NicaFairEventInterface::Clear(Option_t* opt) {
-	fFairTracks->GetArray()->Clear(opt);
+void NicaMpdMcEventInterface::Clear(Option_t* opt) {
+	fMcracks->GetArray()->Clear(opt);
 }
 
-void NicaFairEventInterface::ConnectToTree() {
+void NicaMpdMcEventInterface::ConnectToTree() {
 	FairRootManager *manager  = FairRootManager::Instance();
 	if(CanDeleteEvent()){
 		if(fEvent) delete fEvent;
-		fFairTracks->DeleteClones();
+		fMcracks->DeleteClones();
 	}
 	fEvent = (FairMCEventHeader*)manager->GetObject("MCEventHeader.");
 	if(fEvent==NULL)
 		fEvent = (FairMCEventHeader*)manager->GetObject("EventHeader.");
-	fFairTracks->GetFromTree();
+	fMcracks->GetFromTree();
 }
 
-void NicaFairEventInterface::Compress(Int_t* map, Int_t map_size) {
-	fFairTracks->Compress(map, map_size);
+void NicaMpdMcEventInterface::Compress(Int_t* map, Int_t map_size) {
+	fMcracks->Compress(map, map_size);
 }
 
-void NicaFairEventInterface::CopyData(NicaEventInterface* s) {
-	FairMCEventHeader *header = (FairMCEventHeader*)((NicaFairEventInterface*)s)->fEvent;
-	NicaTrackClones *tracks = (NicaTrackClones*)((NicaFairEventInterface*)s)->fFairTracks;
+void NicaMpdMcEventInterface::CopyData(NicaEventInterface* s) {
+	FairMCEventHeader *header = (FairMCEventHeader*)((NicaMpdMcEventInterface*)s)->fEvent;
+	NicaTrackClones *tracks = (NicaTrackClones*)((NicaMpdMcEventInterface*)s)->fMcracks;
 	fEvent->SetRunID(header->GetRunID());
 	fEvent->SetEventID(header->GetEventID());
 	fEvent->SetVertex(header->GetX(),header->GetY(),header->GetZ());
@@ -46,12 +49,12 @@ void NicaFairEventInterface::CopyData(NicaEventInterface* s) {
 	fEvent->SetRotZ(header->GetRotZ());
 	fEvent->SetB(header->GetB());
 	fEvent->SetNPrim(header->GetNPrim());
-	fFairTracks->CopyFrom<FairMCTrack>(tracks->GetArray());
+	fMcracks->CopyFrom<MpdMCTrack>(tracks->GetArray());
 }
 
-void NicaFairEventInterface::CopyAndCompress(NicaEventInterface* s, Int_t* map,
+void NicaMpdMcEventInterface::CopyAndCompress(NicaEventInterface* s, Int_t* map,
 		Int_t map_size) {
-	FairMCEventHeader *header = (FairMCEventHeader*)((NicaFairEventInterface*)s)->fEvent;
+	FairMCEventHeader *header = (FairMCEventHeader*)((NicaMpdMcEventInterface*)s)->fEvent;
 
 	fEvent->SetRunID(header->GetRunID());
 	fEvent->SetEventID(header->GetEventID());
@@ -61,39 +64,39 @@ void NicaFairEventInterface::CopyAndCompress(NicaEventInterface* s, Int_t* map,
 	fEvent->SetRotZ(header->GetRotZ());
 	fEvent->SetB(header->GetB());
 	fEvent->SetNPrim(header->GetNPrim());
-	fFairTracks->CopyCompress<FairMCTrack>(((NicaFairEventInterface*)s)->fFairTracks->GetArray(),
+	fMcracks->CopyCompress<MpdMCTrack>(((NicaMpdMcEventInterface*)s)->fMcracks->GetArray(),
 			map, map_size);
 }
 
-void NicaFairEventInterface::Register(Bool_t write) {
+void NicaMpdMcEventInterface::Register(Bool_t write) {
 	if(fEvent==NULL){
 		fEvent = new FairMCEventHeader();
-		fFairTracks = new NicaTrackClones("FairMCTrack","MCTrack","MC");
+		fMcracks = new NicaTrackClones("MpdMCTrack","MCTrack","MC");
 	}
 	FairRootManager *manager = FairRootManager::Instance();
 	TString event_name = "MCEventHeader.";
 	TString track_name = "MCTrack.";
 	manager->Register(event_name,"MCEventHeader",fEvent,write);
-	fFairTracks->Register(write);
+	fMcracks->Register(write);
 }
 
-NicaTrackInterface* NicaFairEventInterface::GetTrackInterface() const {
-	return new NicaFairTrackInterface();
+NicaTrackInterface* NicaMpdMcEventInterface::GetTrackInterface() const {
+	return new NicaMpdMcTrackInterface();
 }
 
-void NicaFairEventInterface::FillTrackInterface(NicaTrackInterface* track,
+void NicaMpdMcEventInterface::FillTrackInterface(NicaTrackInterface* track,
 		Int_t index) {
-	track->SetRawTrack(fFairTracks->UncheckedAt(index));
+	track->SetRawTrack(fMcracks->UncheckedAt(index));
 }
 
-NicaFairEventInterface::~NicaFairEventInterface() {
+NicaMpdMcEventInterface::~NicaMpdMcEventInterface() {
 	if(CanDeleteEvent()){
 		if(fEvent) delete fEvent;
-		if(fFairTracks) delete fFairTracks;
+		if(fMcracks) delete fMcracks;
 	}
 }
 
-TLorentzVector NicaFairEventInterface::GetVertex() const {
+TLorentzVector NicaMpdMcEventInterface::GetVertex() const {
 	TLorentzVector vec;
 	TVector3 vec3d;
 	fEvent->GetVertex(vec3d);

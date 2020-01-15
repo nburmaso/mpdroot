@@ -9,17 +9,17 @@
 #ifndef NICAFAIRTRACK_H_
 #define NICAFAIRTRACK_H_
 
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 
 #include "NicaMCTrack.h"
 /**
- * class used by FairEvent that holds FairMCTracks
+ * class used by FairEvent that holds MpdMCTracks
  */
-class NicaFairTrack: public NicaMCTrack {
+class NicaMpdMcTrack: public NicaMCTrack {
 public:
-	NicaFairTrack();
-	virtual ~NicaFairTrack();
-	ClassDef(NicaFairTrack,1)
+	NicaMpdMcTrack();
+	virtual ~NicaMpdMcTrack();
+	ClassDef(NicaMpdMcTrack,1)
 };
 
 #endif /* NICAFAIRTRACK_H_ */

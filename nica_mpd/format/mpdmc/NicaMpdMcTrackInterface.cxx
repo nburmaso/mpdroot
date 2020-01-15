@@ -6,14 +6,14 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
-#include "NicaFairTrackInterface.h"
+#include "NicaMpdMcTrackInterface.h"
 
-NicaFairTrackInterface::NicaFairTrackInterface() {
+NicaMpdMcTrackInterface::NicaMpdMcTrackInterface() {
 	// TODO Auto-generated constructor stub
 
 }
 
-NicaFairTrackInterface::~NicaFairTrackInterface() {
+NicaMpdMcTrackInterface::~NicaMpdMcTrackInterface() {
 	// TODO Auto-generated destructor stub
 }
 

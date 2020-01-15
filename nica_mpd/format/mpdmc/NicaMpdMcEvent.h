@@ -9,34 +9,34 @@
 #ifndef NICAFAIREVENT_H_
 #define NICAFAIREVENT_H_
 #include "FairMCEventHeader.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TRegexp.h>
 
-#include "NicaFairTrack.h"
 #include "NicaMCEvent.h"
+#include "NicaMpdMcTrack.h"
 #include "NicaTrack.h"
 /**
  * basic  class for reading FairMCEventHeader and FairMCTracks
  */
-class NicaFairEvent : public NicaMCEvent{
+class NicaMpdMcEvent : public NicaMCEvent{
 protected:
-	NicaFairEvent(TString trackname);
+	NicaMpdMcEvent(TString trackname);
 public:
 	/**
 	 * default constructor
 	 */
-	NicaFairEvent();
-	NicaFairEvent(const NicaFairEvent &other);
+	NicaMpdMcEvent();
+	NicaMpdMcEvent(const NicaMpdMcEvent &other);
 	virtual void CreateSource();
 	virtual void Update();
 	virtual void Clear(Option_t *opt);
 	virtual void Print();
 	virtual Bool_t ExistInTree()const;
 	virtual TString GetFormatName()const;
-	virtual ~NicaFairEvent();
-	ClassDef(NicaFairEvent,1)
+	virtual ~NicaMpdMcEvent();
+	ClassDef(NicaMpdMcEvent,1)
 };
 
 #endif /* NICAFAIREVENT_H_ */

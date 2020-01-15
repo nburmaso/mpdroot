@@ -6,11 +6,11 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
-#include "NicaFairTrack.h"
+#include "NicaMpdMcTrack.h"
 
-NicaFairTrack::NicaFairTrack(){
+NicaMpdMcTrack::NicaMpdMcTrack(){
 }
 
-NicaFairTrack::~NicaFairTrack() {
+NicaMpdMcTrack::~NicaMpdMcTrack() {
 }
 

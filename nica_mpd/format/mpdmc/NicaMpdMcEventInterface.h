@@ -10,29 +10,28 @@
 #define NICAFAIREVENTINTERFACE_H_
 
 #include "FairMCEventHeader.h"
-#include "FairMCTrack.h"
 #include "NicaTrack.h"
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TRegexp.h>
 #include "NicaTrackClones.h"
 
-#include "NicaFairTrack.h"
 #include "NicaMCEvent.h"
 #include "NicaMCEventInterface.h"
+#include "NicaMpdMcTrack.h"
 /**
  * interface to FairMC data event.
  */
-class NicaFairEvent;
-class NicaFairEventInterface : public NicaMCEventInterface {
-	friend class NicaFairEvent;
+class NicaMpdMcEvent;
+class NicaMpdMcEventInterface : public NicaMCEventInterface {
+	friend class NicaMpdMcEvent;
 	FairMCEventHeader *fEvent;
-	NicaTrackClones *fFairTracks;
+	NicaTrackClones *fMcracks;
 protected:
 	virtual void ConnectToTree();
 public:
-	NicaFairEventInterface();
-	virtual Int_t GetTotalTrackNo() const {return fFairTracks->GetEntriesFast();};
+	NicaMpdMcEventInterface();
+	virtual Int_t GetTotalTrackNo() const {return fMcracks->GetEntriesFast();};
 	virtual void Register(Bool_t write);
 	virtual void Clear(Option_t *opt="");
 	virtual void Compress(Int_t *map, Int_t map_size);
@@ -40,7 +39,7 @@ public:
 	virtual void CopyAndCompress(NicaEventInterface *s, Int_t *map, Int_t map_size);
 	virtual void FillTrackInterface(NicaTrackInterface *track, Int_t index);
 	virtual TObject *GetRawEventPointer()const{return fEvent;};
-	virtual TObject * GetRawTrackPointer(Int_t index)const{return fFairTracks->UncheckedAt(index);}
+	virtual TObject * GetRawTrackPointer(Int_t index)const{return fMcracks->UncheckedAt(index);}
 	virtual NicaTrackInterface *GetTrackInterface()const;
 	/** GETTERS SETTERS */
 	virtual void SetVertex(Double_t x, Double_t y, Double_t z){fEvent->SetVertex(x,y,z);};
@@ -50,8 +49,8 @@ public:
 	virtual Double_t GetPhi()const{return 0;};
 	virtual Double_t GetPhiError()const{return 0;};
 	virtual TLorentzVector GetVertex()const;
-	virtual ~NicaFairEventInterface();
-	ClassDef(NicaFairEventInterface,1)
+	virtual ~NicaMpdMcEventInterface();
+	ClassDef(NicaMpdMcEventInterface,1)
 };
 
 #endif /* NICAFAIREVENTINTERFACE_H_ */

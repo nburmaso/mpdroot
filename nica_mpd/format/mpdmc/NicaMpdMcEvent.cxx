@@ -6,30 +6,31 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
-#include "NicaFairEvent.h"
-#include "NicaFairEventInterface.h"
+#include "NicaMpdMcEvent.h"
+
 #include "FairRootManager.h"
 #include <iostream>
+#include "NicaMpdMcEventInterface.h"
 
-NicaFairEvent::NicaFairEvent(): NicaMCEvent("NicaFairTrack"){
+NicaMpdMcEvent::NicaMpdMcEvent(): NicaMCEvent("NicaMpdMcTrack"){
 }
 
-NicaFairEvent::NicaFairEvent(TString trackname): NicaMCEvent(trackname){
+NicaMpdMcEvent::NicaMpdMcEvent(TString trackname): NicaMCEvent(trackname){
 }
 
-NicaFairEvent::NicaFairEvent(const NicaFairEvent& other) :NicaMCEvent(other){
+NicaMpdMcEvent::NicaMpdMcEvent(const NicaMpdMcEvent& other) :NicaMCEvent(other){
 }
 
-void NicaFairEvent::Update() {
-	FairMCEventHeader *event = (FairMCEventHeader*)((NicaFairEventInterface*)fSource)->fEvent;
-	TClonesArray *tracks = (TClonesArray*)((NicaFairEventInterface*)fSource)->fFairTracks->GetArray();
+void NicaMpdMcEvent::Update() {
+	FairMCEventHeader *event = (FairMCEventHeader*)((NicaMpdMcEventInterface*)fSource)->fEvent;
+	TClonesArray *tracks = (TClonesArray*)((NicaMpdMcEventInterface*)fSource)->fMcracks->GetArray();
 	fB = event->GetB();
 	fVertex->SetXYZT(event->GetX(),event->GetY(),event->GetZ(),event->GetT());
 	fTracks->Clear();
 	fTotalTracksNo = tracks->GetEntriesFast();
 	fTracks->ExpandCreateFast(fTotalTracksNo);
 	for(int i=0;i<tracks->GetEntriesFast();i++){
-		FairMCTrack *track = (FairMCTrack*)tracks->UncheckedAt(i);
+		MpdMCTrack *track = (MpdMCTrack*)tracks->UncheckedAt(i);
 		NicaMCTrack *mc = (NicaMCTrack*)fTracks->UncheckedAt(i);
 		mc->GetMomentum()->SetPxPyPzE(track->GetPx(),track->GetPy(),track->GetPz(),track->GetEnergy());
 		mc->SetMotherIndex(track->GetMotherId());
@@ -46,26 +47,26 @@ void NicaFairEvent::Update() {
 	}
 }
 
-void NicaFairEvent::Clear(Option_t* opt) {
+void NicaMpdMcEvent::Clear(Option_t* opt) {
 	NicaMCEvent::Clear(opt);
 }
 
-void NicaFairEvent::Print() {
+void NicaMpdMcEvent::Print() {
 }
 
-void NicaFairEvent::CreateSource() {
+void NicaMpdMcEvent::CreateSource() {
 	std::cout<<"Create source"<<std::endl;
-	fSource = new NicaFairEventInterface();
+	fSource = new NicaMpdMcEventInterface();
 }
 
-NicaFairEvent::~NicaFairEvent() {
+NicaMpdMcEvent::~NicaMpdMcEvent() {
 }
 
-TString NicaFairEvent::GetFormatName() const{
-	return "FairMCFormat";
+TString NicaMpdMcEvent::GetFormatName() const{
+	return "NicaMpdMcEvent";
 }
 
-Bool_t NicaFairEvent::ExistInTree() const {
+Bool_t NicaMpdMcEvent::ExistInTree() const {
 	FairRootManager *manager = FairRootManager::Instance();
 	Int_t header = manager->CheckBranch("MCEventHeader.")+ manager->CheckBranch("EventHeader.");
 	if(header >1) header = 1;
