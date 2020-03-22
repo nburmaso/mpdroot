@@ -75,6 +75,8 @@ public:
 	// @value         kTRUE if volume is sensitive, else kFALSE
 	virtual Bool_t CheckIfSensitive(std::string name);
 
+  	TClonesArray* fCpcCollection;      //! Hit collection
+
   
 private:
 
@@ -88,15 +90,29 @@ private:
   	Double32_t     fELoss;             //!  energy loss
 
   	Int_t fPosIndex;                   //!
-  	TClonesArray* fCpcCollection;      //! Hit collection
+
 
 
 	// Adds a MpdCpcPoint to the HitCollection
-  	MpdCpcPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss); 
+  	MpdCpcPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss, Int_t GetCpcID, Int_t RingID, Int_t CellID); 
  
-	// Resets the private members for the track parameters
+ 	 Int_t GetVolumeID(TString volname);
+ 	 Int_t GetCpcID(TString volname);
+ 	 Int_t GetRingID(TString volname);
+ 	 Int_t GetCellID(TString volname);
+	
+// Resets the private members for the track parameters
   	void ResetParameters();
 
+
+ // TClonesArray *fCpcCollection;
+  Int_t fCpcID;          //!  number of detector 1 or 2
+  Int_t fRingID;         //!  ring id
+  Int_t fCellID;         //!  cell id in ring
+  Int_t currentTrackID; //!
+  Int_t currentEvent;   //! current event
+  Bool_t fNewTrack;
+  //  const double nan; //!
 
   ClassDef(MpdCpc,1) 
 
