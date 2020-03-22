@@ -1,4 +1,4 @@
-# Create a library called "libEventDisplay" 
+# Create a library called "libEventDisplay"
 
 Set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
@@ -7,7 +7,7 @@ Set(INCLUDE_DIRECTORIES
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
-  ${ROOT_INCLUDE_DIR} 
+  ${ROOT_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${GEANT3_INCLUDE_DIR}
   ${XML2_INCLUDE_DIR}
@@ -20,7 +20,7 @@ set(LINK_DIRECTORIES
 )
 
 set(SRCS
-MpdEventManager.cxx  
+MpdEventManager.cxx
 MpdMCTracks.cxx
 MpdMCStack.cxx
 MpdEventManagerEditor.cxx
@@ -66,12 +66,16 @@ if (MPDROOT)
     ${CMAKE_SOURCE_DIR}/lhetrack
     ${CMAKE_SOURCE_DIR}/emc
     ${CMAKE_SOURCE_DIR}/zdc
+    ${CMAKE_SOURCE_DIR}/bmd
+    ${CMAKE_SOURCE_DIR}/cpc
   )
   Set(SRCS
     ${SRCS}
     mpd/MpdGlobalTrackDraw.cxx
     mpd/MpdEmcTowerDraw.cxx
     mpd/MpdZdcTowerDraw.cxx
+    mpd/MpdCpcTowerDraw.cxx
+    mpd/MpdBmdTowerDraw.cxx
   )
 endif (MPDROOT)
 
