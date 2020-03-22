@@ -223,7 +223,7 @@ for (int k=1; k < 3; k++)
         }
       }
     }
-
+	
     if (k==1)
     {
       top2->AddNode(replica1, k, base1);

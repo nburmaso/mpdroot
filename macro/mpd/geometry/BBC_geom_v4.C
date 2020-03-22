@@ -130,7 +130,7 @@ void BBC_geom_v4()
     TGeoCombiTrans *position_of_tube2 = new TGeoCombiTrans(*position_of_tube);
     position_of_tube2->ReflectZ(true);
 
-    BBC_common_of_tubes->AddNode(BBC_common1, 1, position_of_tube);
+    BBC_common_of_tubes->AddNode(BBC_common1, 1, position_of_tube);//deactivation of one side 1-positive Z, 2 - negative Z
     BBC_common_of_tubes->AddNode(BBC_common2, 2, position_of_tube2);
 
     top->AddNode(BBC_common_of_tubes, 0);
