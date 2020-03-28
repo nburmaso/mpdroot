@@ -40,6 +40,7 @@ void NicaMpdEvent::Update() {
 			mpd_track->SetEvent(this);
 			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i);
+			mpd_track->SetID(count-1);
 		}
 		for(int i=0;i<event->GetEventInfoNofGlobalTracks();i++){
 			NicaMpdTrack *mpd_track = (NicaMpdTrack*)fTracks->ConstructedAt(count++);
@@ -47,6 +48,7 @@ void NicaMpdEvent::Update() {
 			mpd_track->SetEvent(this);
 			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i+event->GetEventInfoNofPrimaryTracks());
+			mpd_track->SetID(count-1);
 		}
 
 	}break;
@@ -59,6 +61,7 @@ void NicaMpdEvent::Update() {
 			mpd_track->SetEvent(this);
 			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i);
+			mpd_track->SetID(i);
 		}
 	}break;
 	case kGlobalTracks:{
@@ -70,6 +73,7 @@ void NicaMpdEvent::Update() {
 			mpd_track->SetEvent(this);
 			mpd_track->GetLink()->Clear();
 			mpd_track->GetLink()->SetLink(0, i);
+			mpd_track->SetID(i);
 		}
 	}break;
 	}

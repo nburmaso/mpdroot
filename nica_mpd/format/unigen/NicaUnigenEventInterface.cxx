@@ -18,8 +18,8 @@ void NicaUnigenEventInterface::Compress(Int_t* map, Int_t map_size) {
 	Int_t track_pos = 0;
 	for(int i=0;i<map_size;i++){
 		Int_t good_track = map[i];
-		for(int j=track_pos;j<good_track;track_pos++){
-			fEvent->RemoveAt(i);
+		for(int j=track_pos;j<good_track;j++){
+			fEvent->RemoveAt(j);
 		}
 		track_pos = good_track+1;
 	}

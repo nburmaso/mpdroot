@@ -42,6 +42,7 @@ void NicaMpdDstMCEvent::Update() {
 		}else{
 			track->SetImgTrack(NULL);
 		}
+		track->SetID(i);
 	}
 }
 
