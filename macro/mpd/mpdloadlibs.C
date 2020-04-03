@@ -38,6 +38,7 @@ void mpdloadlibs()
   gSystem->Load("libStrawECT");
   gSystem->Load("libStrawendcap");
   gSystem->Load("libFfd");
+  gSystem->Load("libmbb");
   //gSystem->Load("libFsa");
   //gSystem->Load("libBbc");
   //gSystem->Load("libNDet");
