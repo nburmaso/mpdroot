@@ -12,13 +12,11 @@
 #pragma link C++ class MpdFemtoBasicEventCut+;
 #pragma link C++ class MpdFemtoBasicPairCut+;
 #pragma link C++ class MpdFemtoBasicTrackCut+;
-#pragma link C++ class MpdFemtoCoulomb+;
 #pragma link C++ class MpdFemtoModelBPLCMS3DCorrFctnKt+;
+#pragma link C++ class MpdFemtoModelQinvCorrFctnKt+;
 #pragma link C++ class MpdFemtoQinvCorrFctnKt+;
 #pragma link C++ class MpdFemtoDeltaEtaDeltaPhiStarMinKt+;
-// #pragma link C++ class MpdFemtoDstReader+;
 #pragma link C++ class MpdFemtoMcDstReader+;
-// #pragma link C++ class MpdFemtoPicoDstReader+;
 #pragma link C++ class MpdFemtoReactionPlaneAnalysis+;
 #pragma link C++ class MpdFemtoVertexAnalysis+;
 #pragma link C++ class MpdFemtoVertexMultAnalysis+;
