@@ -10,11 +10,13 @@ ClassImp(MpdMiniMcTrack)
 
 //_________________
 MpdMiniMcTrack::MpdMiniMcTrack() : TObject(),
-  fId(0), fStatus(0), fPdgId(0), fParentIndex(0), fChild{},
+  fId(0), fStatus(0), fPdgId(0), /*fParentIndex(0),*/ fChild{},
   fPx(0), fPy(0), fPz(0), fEnergy(0),
   fX(0), fY(0), fZ(0), fT(0) {
   // Default constructor
-  /* empty */
+  if ( !fRecoTrackIds.empty() ) {
+    fRecoTrackIds.clear();
+  }
 }
 
 //_________________
@@ -23,7 +25,7 @@ MpdMiniMcTrack::MpdMiniMcTrack(const MpdMiniMcTrack& copy) : TObject() {
   fId = copy.fId;
   fStatus = copy.fStatus;
   fPdgId = copy.fPdgId;
-  fParentIndex = copy.fParentIndex;
+  /* fParentIndex = copy.fParentIndex; */
   fChild[0] = copy.fChild[0];
   fChild[1] = copy.fChild[1];
   fPx = copy.fPx;
@@ -34,12 +36,39 @@ MpdMiniMcTrack::MpdMiniMcTrack(const MpdMiniMcTrack& copy) : TObject() {
   fY = copy.fY;
   fZ = copy.fZ;
   fT = copy.fT;
+  fRecoTrackIds = copy.fRecoTrackIds;
 }
 
 //_________________
 MpdMiniMcTrack::~MpdMiniMcTrack() {
   // Destructor
   /* empty */
+}
+
+//________________
+void MpdMiniMcTrack::addGlobalTrackId(UShort_t id) {
+
+  if ( !fRecoTrackIds.empty() ) {
+    // Assume that the new trigger is not in the list
+    Bool_t isUsed = false;
+
+    // Loop over the trigger list
+    for(UInt_t iIter=0; iIter<fRecoTrackIds.size(); iIter++) {
+
+      // Compare triggers
+      if( fRecoTrackIds.at(iIter) == id ) {
+	       isUsed = true;
+      }
+    } //(UInt_t iIter=0; iIter<fRecoTrackIds.size(); iIter++)
+
+    // If the trigger not in the list then add it
+    if( !isUsed ) {
+      fRecoTrackIds.push_back( id );
+    }
+  }
+  else {
+    fRecoTrackIds.push_back( id );
+  }
 }
 
 //_________________

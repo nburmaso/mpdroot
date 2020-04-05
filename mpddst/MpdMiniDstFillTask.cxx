@@ -1,99 +1,157 @@
+// MiniDst files
 #include "MpdMiniDstFillTask.h"
 
 // Initialize values for static data members of MpdMiniArrays
-#include <MpdMiniArrays.cxx>
+#include "MpdMiniArrays.cxx"
+#include "MpdTpcKalmanTrack.h"
 
 MpdMiniDstFillTask::MpdMiniDstFillTask() {
-
+    // Default constructor
+    /* empty */
 }
 
 MpdMiniDstFillTask::MpdMiniDstFillTask(TString name) :
 fEvents(nullptr),
 mMiniDst(new MpdMiniDst()),
-mBField(.5), // mag. field in T
+mBField(0.5), // mag. field in T (MUST be changed to the real magnetic field
 mOutputFile(nullptr),
 mTTree(nullptr),
 mSplit(99),
 mCompression(9),
 mBufferSize(65536 * 4),
 mMiniArrays(nullptr),
-fIsUseTpc(kTRUE),
-fIsUseToF(kTRUE),
-fIsUseEcal(kFALSE),
-fIsUseMcTracks(kTRUE) {   
+fIsUseCovMatrix(kTRUE) {
+
+    // Standard constructor
     mOutputFileName = name.ReplaceAll(".root", ".MiniDst.root");
-    
+
     streamerOff();
     createArrays();
 }
 
 MpdMiniDstFillTask::~MpdMiniDstFillTask() {
+    // Destructor
     delete mMiniDst;
 }
 
 InitStatus MpdMiniDstFillTask::Init() {
+    // Output name must exist
     if (mOutputFileName.IsNull())
         return kERROR;
 
     // Creating output tree with miniDST
     mOutputFile = new TFile(mOutputFileName.Data(), "RECREATE");
+    // Inform about the creation
     LOG_INFO << " Output file: " << mOutputFileName.Data() << " created." << endm;
+    // Set compression level
     mOutputFile->SetCompressionLevel(mCompression);
     int bufsize = mBufferSize;
-    if (mSplit) bufsize /= 4;
+    if (mSplit) {
+        bufsize /= 4;
+    }
+    // Create TTree
     mTTree = new TTree("MiniDst", "MpdMiniDst", mSplit);
     mTTree->SetAutoSave(1000000);
-    for (Int_t i = 0; i < MpdMiniArrays::NAllMiniArrays; ++i) {
-        Bool_t toBeSkipped = kFALSE;
-        TString name = TString(MpdMiniArrays::miniArrayNames[i]);
-        if (name.Contains("ECal") && !fIsUseEcal)
-            toBeSkipped = kTRUE;
-        else if (name.Contains("BTof") && !fIsUseToF)
-            toBeSkipped = kTRUE;
-        else if (name.Contains("Mc") && !fIsUseMcTracks)
-            toBeSkipped = kTRUE;
-        else if (name.Contains("Track") && !fIsUseTpc)
-            toBeSkipped = kTRUE;
 
-        if (!toBeSkipped)
-            mTTree->Branch(MpdMiniArrays::miniArrayNames[i], &mMiniArrays[i], bufsize, mSplit);
+    // Create arrays
+    for (Int_t i = 0; i < MpdMiniArrays::NAllMiniArrays; ++i) {
+        mTTree->Branch(MpdMiniArrays::miniArrayNames[i], &mMiniArrays[i], bufsize, mSplit);
     }
 
+    // Initialize FairRoot manager
     FairRootManager* ioman = FairRootManager::Instance();
+    if (!ioman) {
+        std::cout << "[ERROR] MpdMiniDstFillTask::Init - Not FairRootManager instance has been found"
+                << std::endl;
+        exit(0);
+    }
+
+    // Reading all possible input branches ...
 
     // Get MC event header
     fEventHeaders = (FairMCEventHeader*) ioman->GetObject("MCEventHeader.");
+    if (!fEventHeaders) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No MCEventHeader has been found"
+                << std::endl;
+    }
 
     // Get information on event
     fEvents = (MpdEvent*) ioman->GetObject("MPDEvent.");
+    if (!fEvents) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No MpdEvent has been found"
+                << std::endl;
+    }
 
     // Get information on reconstructed vertex
     fVertices = (TClonesArray*) ioman->GetObject("Vertex");
+    if (!fVertices) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No Vertex has been found"
+                << std::endl;
+    }
 
-    // Get information on tracks in TPC (Right now we believe these tracks only!!!!)
+    // Retrieve information about tracks in TPC
     fTpcTracks = (TClonesArray*) ioman->GetObject("TpcKalmanTrack");
+    if (!fTpcTracks) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No TpcKalmanTrack has been found"
+                << std::endl;
+    }
 
-    // Get information on hits in ToF and matching with the TPC tracks
+    // Retrieve information about TOF hits
     fTofHits = (TClonesArray*) ioman->GetObject("TOFHit");
-    fTofMatching = (TClonesArray*) ioman->GetObject("TOFMatching");
+    if (!fTofHits) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No TOFHit has been found"
+                << std::endl;
+    }
 
-    // Get information on Monte Carlo tracks ...
+    // Get information about TPC tracks that match TOF
+    fTofMatching = (TClonesArray*) ioman->GetObject("TOFMatching");
+    if (!fTofMatching) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No TOFMatching has been found"
+                << std::endl;
+    }
+
+    // Retrieve MC Tracks
     fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+    if (!fMCTracks) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No MCTracks have been found"
+                << std::endl;
+    }
+
+    // Retrieve Generator (Primary) tracks ...
+    fGenTracks = (TClonesArray*) ioman->GetObject("GenTracks");
+    if (!fGenTracks) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No GenTracks have been found"
+                << std::endl;
+    }
+
+    // Retrieve information on EMC hits ...
+    fEmcHits = (TClonesArray*) ioman->GetObject("MpdEmcHit");
+    if (!fEmcHits) {
+        std::cout << "[WARNING] MpdMiniDstFillTask::Init - No EmcHits have been found"
+                << std::endl;
+    }
 
     return kSUCCESS;
 }
 
 void MpdMiniDstFillTask::Exec(Option_t* option) {
+
+    // Main magic happens here. The methods calls for branch fills
     fillEvent();
     fillTracks();
     fillBTofHits();
+    fillECalHits();
 
-    if (fVerbose != 0)
+    if (fVerbose != 0) {
         mMiniDst->printTracks();
+    }
+
+    // Fill TTree
     mTTree->Fill();
 }
 
 void MpdMiniDstFillTask::Finish() {
+    // Write data to the output file and close it
     if (mOutputFile) {
         mOutputFile->Write();
         mOutputFile->Close();
@@ -101,6 +159,7 @@ void MpdMiniDstFillTask::Finish() {
 }
 
 void MpdMiniDstFillTask::streamerOff() {
+    // Switch off streamers
     MpdMiniEvent::Class()->IgnoreTObjectStreamer();
     MpdMiniTrack::Class()->IgnoreTObjectStreamer();
     MpdMiniBTofHit::Class()->IgnoreTObjectStreamer();
@@ -113,123 +172,181 @@ void MpdMiniDstFillTask::streamerOff() {
 }
 
 void MpdMiniDstFillTask::createArrays() {
+    // Create MiniDst arrays
     mMiniArrays = new TClonesArray*[MpdMiniArrays::NAllMiniArrays];
-    for (Int_t iArr = 0; iArr < MpdMiniArrays::NAllMiniArrays; iArr++)
-        mMiniArrays[iArr] = new TClonesArray(MpdMiniArrays::miniArrayTypes[iArr], MpdMiniArrays::miniArraySizes[iArr]);
 
+    for (Int_t iArr = 0; iArr < MpdMiniArrays::NAllMiniArrays; iArr++) {
+        mMiniArrays[iArr] = new TClonesArray(MpdMiniArrays::miniArrayTypes[iArr], MpdMiniArrays::miniArraySizes[iArr]);
+    }
+
+    // Set pointers to the arrays
     mMiniDst->set(mMiniArrays);
 }
 
 void MpdMiniDstFillTask::fillEvent() {
+
+    // Fill event information
     TClonesArray* miniEventHeaders = mMiniArrays[MpdMiniArrays::Event];
     miniEventHeaders->Delete();
 
+    // Create new event information
     MpdMiniEvent* miniEvent = new ((*miniEventHeaders)[miniEventHeaders->GetEntriesFast()]) MpdMiniEvent();
+    if (!miniEvent) {
+        std::cout << "[ERROR] MpdMiniDstFillTask::fillEvent - No MiniEvent has been created"
+                << std::endl;
+        // In this case we need to quit (probably completely)
+        return;
+    }
 
+    // Retrieve information about reconstructed primary vertex
     MpdVertex* vertex = (MpdVertex*) fVertices->UncheckedAt(0);
-    // Primary vertex
-    miniEvent->setPrimaryVertexPosition(TVector3(vertex->GetX(), vertex->GetY(), vertex->GetZ()));
 
-    // Number of glob. tracks per event
+    // Primary vertex position
+    if (vertex) {
+        miniEvent->setPrimaryVertexPosition(vertex->GetX(),
+                vertex->GetY(),
+                vertex->GetZ());
+    } else {
+        // In case that vertex has not been reconstructed
+        miniEvent->setPrimaryVertexPosition(-999., -999., -999.);
+    }
+
+    // Number of global tracks in the current event
+    if (!fEvents) {
+        std::cout << "[ERROR] MpdMiniDstFillTask::fillEvent - No event information has been found"
+                << std::endl;
+        return;
+    }
+
+    // Retrieve global tracks
     TClonesArray* glTracks = (TClonesArray*) fEvents->GetGlobalTracks();
     miniEvent->setNumberOfGlobalTracks(glTracks->GetEntriesFast());
 
-    // Fill McTrack info ...
+    // Fill McEvent info
     TClonesArray* miniMcEventHeaders = mMiniArrays[MpdMiniArrays::McEvent];
     miniMcEventHeaders->Delete();
 
+    // Retrieve number of primary tracks
     Int_t nPrim = fEventHeaders->GetNPrim();
     Int_t nColl = -1;
     Double_t rp = -1;
+    // Impact parameter
     Double_t b = fEventHeaders->GetB();
+    // Run number
     UInt_t runId = fEventHeaders->GetRunID();
+    // Event number
     UInt_t eventId = fEventHeaders->GetEventID();
+    // Time
     Double_t time = fEventHeaders->GetT();
+    // Fill MC vertex
     TVector3 vtx;
     fEventHeaders->GetVertex(vtx);
 
-    new ((*miniMcEventHeaders)[miniMcEventHeaders->GetEntriesFast()])
-            MpdMiniMcEvent(runId, eventId, rp, b, nPrim, nColl, vtx, time);
+    // Create and fill MiniMcEvent
+    new ((*miniMcEventHeaders)[miniMcEventHeaders->GetEntriesFast()]) MpdMiniMcEvent(runId, eventId, rp, b, nPrim, nColl, vtx, time);
 }
 
 void MpdMiniDstFillTask::fillTracks() {
-    // Monte Carlo tracks
-    TClonesArray* miniTracksSimu = mMiniArrays[MpdMiniArrays::McTrack];
-    miniTracksSimu->Delete();
+    // Map for MC to Kalman track ids correspondence
+    std::map< Int_t, std::vector< UShort_t > > mc2reco;
 
+    // Fill McTracks if exist
     for (Int_t iSimuTrack = 0; iSimuTrack < fMCTracks->GetEntriesFast(); iSimuTrack++) {
-        MpdMCTrack* mcTrack = (MpdMCTrack*) fMCTracks->UncheckedAt(iSimuTrack);
+        std::vector< UShort_t > ids;
 
-        MpdMiniMcTrack* miniTrack = new ((*miniTracksSimu)[miniTracksSimu->GetEntriesFast()]) MpdMiniMcTrack();
-        miniTrack->setId(iSimuTrack);
-        miniTrack->setPdgId(mcTrack->GetPdgCode());
-        miniTrack->setPx(mcTrack->GetPx());
-        miniTrack->setPy(mcTrack->GetPy());
-        miniTrack->setPz(mcTrack->GetPz());
-        miniTrack->setEnergy(mcTrack->GetEnergy());
-        miniTrack->setX(mcTrack->GetStartX());
-        miniTrack->setY(mcTrack->GetStartY());
-        miniTrack->setZ(mcTrack->GetStartZ());
-        miniTrack->setT(-1.);
-        miniTrack->setParentIndex(mcTrack->GetMotherId());
+        // Retrieve MCTrack
+        MpdMCTrack* mcTrack = (MpdMCTrack*) fMCTracks->UncheckedAt(iSimuTrack);
+        // Skip non-existing tracks
+        if (!mcTrack || (mcTrack->GetMotherId() != -1))
+            continue;
+        // Fill mc2reco with empty reco ids in order to fill it in the Kalman track loop
+        mc2reco[iSimuTrack] = ids;
     }
 
-    // Reconstructed tracks
+    // Reconstructed tracks and their covariance matrices
     TClonesArray* miniTracksReco = mMiniArrays[MpdMiniArrays::Track];
     TClonesArray* miniTracksRecoCovMatrices = mMiniArrays[MpdMiniArrays::TrackCovMatrix];
+    // Create TOF-matching information
+    TClonesArray* miniToF = mMiniArrays[MpdMiniArrays::BTofPidTraits];
 
     miniTracksReco->Delete();
     miniTracksRecoCovMatrices->Delete();
+    miniToF->Delete();
 
     // Get global tracks from event
     TClonesArray* glTracks = (TClonesArray*) fEvents->GetGlobalTracks();
 
-    // Reconstructed primary vertex in event ...
+    // Reconstructed primary vertex in event
     MpdVertex* vtx = (MpdVertex*) fVertices->UncheckedAt(0);
 
-    // Indices of primary tracks in the fTpcTracks array ...
+    // Retrieve primary track indices in the fTpcTracks array that were used
+    // for the primary vertex reconstruction
     TArrayI* ind = vtx->GetIndices();
 
-    vector <Int_t> indices;
+    vector< Int_t > indices;
     for (Int_t iEle = 0; iEle < ind->GetSize(); iEle++)
         indices.push_back(ind->At(iEle));
 
+    // Fill global and primary track information
     for (Int_t iTpcKalmanTrack = 0; iTpcKalmanTrack < fTpcTracks->GetEntriesFast(); iTpcKalmanTrack++) {
+        // Retrieve i-th TpcKalmanTrack
         MpdTpcKalmanTrack* tpcTrack = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(iTpcKalmanTrack);
+        // Skip non-existing tracks
+        if (!tpcTrack)
+            continue;
 
-        // Create miniTrack for each TpcKalmanTrack ...
+        // Create miniTrack (TPC) + BTofPidTraits (TOF) + BECALPidTraits (EMC) for each TpcKalmanTrack
         MpdMiniTrack* miniTrack = new ((*miniTracksReco)[miniTracksReco->GetEntriesFast()]) MpdMiniTrack();
+        MpdMiniBTofPidTraits* bTofPidTraits = new ((*miniToF)[miniToF->GetEntriesFast()]) MpdMiniBTofPidTraits();
+
+        // Find all Kalman tracks that were reconstructed from the parent MC track
+        auto itr = mc2reco.find(tpcTrack->GetTrackID());
+        if (itr != mc2reco.end())
+            itr->second.push_back(miniTracksReco->GetEntriesFast() - 1);
+
+        // Set track parameters
         miniTrack->setId(tpcTrack->GetTrackID());
         miniTrack->setChi2(tpcTrack->GetChi2());
-        miniTrack->setNHits(tpcTrack->GetNofHits());
+        miniTrack->setNHits(tpcTrack->GetNofHits() * tpcTrack->Charge());
 
-        // Fill covariance matrix in a limited way ...
-        MpdMiniTrackCovMatrix* miniTrackCovMatrix = new ((*miniTracksRecoCovMatrices)[miniTracksRecoCovMatrices->GetEntriesFast()]) MpdMiniTrackCovMatrix();
-        miniTrackCovMatrix->setPti(1. / tpcTrack->GetParam(4));
+        //
+        // TODO check that covariance matrices have one to one correspondence
+        // to MpdMiniTracks (in a sense of the amount and order)
+        //
 
-        const Double_t* matrixElements = tpcTrack->GetCovariance()->GetMatrixArray();
-        const Int_t nElements = tpcTrack->GetCovariance()->GetNoElements();
+        // Fill track covariance matrix in case it is requested
+        if (fIsUseCovMatrix) {
+            // Fill track covariance matrix
+            MpdMiniTrackCovMatrix* miniTrackCovMatrix = new ((*miniTracksRecoCovMatrices)[miniTracksRecoCovMatrices->GetEntriesFast()]) MpdMiniTrackCovMatrix();
 
-        vector <Float_t> sigmas;
-        vector <Float_t> correlations;
+            miniTrackCovMatrix->setPti(1. / tpcTrack->GetParam(4));
 
-        Int_t shift = Int_t(TMath::Sqrt(nElements));
+            const Double_t* matrixElements = tpcTrack->GetCovariance()->GetMatrixArray();
+            const Int_t nElements = tpcTrack->GetCovariance()->GetNoElements();
 
-        for (Int_t iEle = 0; iEle < nElements; iEle++)
-            if (iEle % Int_t(TMath::Sqrt(nElements) + 1) == 0) {
-                sigmas.push_back(matrixElements[iEle]);
+            vector <Float_t> sigmas;
+            vector <Float_t> correlations;
 
-                for (Int_t jEle = 1; jEle < shift; jEle++) {
-                    correlations.push_back(matrixElements[iEle + jEle]);
+            Int_t shift = Int_t(TMath::Sqrt(nElements));
+
+            for (Int_t iEle = 0; iEle < nElements; iEle++) {
+                if (iEle % Int_t(TMath::Sqrt(nElements) + 1) == 0) {
+                    sigmas.push_back(matrixElements[iEle]);
+
+                    for (Int_t jEle = 1; jEle < shift; jEle++) {
+                        correlations.push_back(matrixElements[iEle + jEle]);
+                    }
+
+                    shift--;
                 }
-
-                shift--;
             }
 
-        miniTrackCovMatrix->setSigmas(sigmas);
-        miniTrackCovMatrix->setCorrelations(correlations);
+            miniTrackCovMatrix->setSigmas(sigmas);
+            miniTrackCovMatrix->setCorrelations(correlations);
+        }
 
-        // Let's find primary tracks from the whole sets of reconstructed tracks per current event ...
+        // Let's find primary tracks from the whole set of reconstructed
+        // tracks from the current event
         Bool_t isPrimary = kFALSE;
 
         for (auto it : indices) {
@@ -238,14 +355,13 @@ void MpdMiniDstFillTask::fillTracks() {
                 break;
             }
         }
-
-        // Primary track ...
+        
+        // If track is primary then fill primary momentum
         if (isPrimary) {
-            // Get primary tracks from event ...
+            // Get primary tracks from event
             // Done by smooth tracks from primary vertex (update momentum and track length -
             // covariance matrix is not updated !!!)
             // Got from MpdKfPrimaryVertexFinder::Smooth()
-
             MpdKalmanHit hit;
             TMatrixD c(3, 3), xk(3, 1), ck0(5, 1);
             TMatrixD a(5, 3), b(5, 3);
@@ -256,8 +372,8 @@ void MpdMiniDstFillTask::fillTracks() {
             xk(2, 0) = vert.Z();
             Double_t rad = vert.Pt();
 
-            MpdTpcKalmanTrack* track = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(iTpcKalmanTrack);
-            MpdTpcKalmanTrack* trVert = new MpdTpcKalmanTrack(*track);
+            MpdKalmanTrack* track = (MpdKalmanTrack*) fTpcTracks->UncheckedAt(iTpcKalmanTrack);
+            MpdKalmanTrack* trVert = new MpdKalmanTrack(*track);
 
             MpdKalmanTrack track1 = *track;
             track1.SetParamNew(*track1.GetParam());
@@ -279,7 +395,8 @@ void MpdMiniDstFillTask::fillTracks() {
                 }
                 MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
                 hit.SetDetectorID(geo->DetId(detName));
-                // Find distance from the current track position to the last point (plane) - 
+
+                // Find distance from the current track position to the last point (plane) -
                 // to define direction (mainly for ITS)
                 TVector3 pos = geo->GlobalPos(&hit);
                 TVector3 norm = geo->Normal(&hit);
@@ -289,11 +406,15 @@ void MpdMiniDstFillTask::fillTracks() {
                 Double_t d = -(pos * norm); // Ax+By+Cz+D=0, A=nx, B=ny, C=nz
                 TVector3 v3(v7[0], v7[1], v7[2]);
                 d += v3 * norm;
-                if (d < 0) track1.SetDirection(MpdKalmanTrack::kOutward);
-            }
+                if (d < 0) {
+                    track1.SetDirection(MpdKalmanTrack::kOutward);
+                }
+            } // else
 
             MpdKalmanFilter::Instance()->PropagateToHit(&track1, &hit, kTRUE, kTRUE);
 
+            //TMatrixD* par2 = track->GetParamNew();
+            //cout << par2 << endl;
             ComputeAandB(xk, track, track1, a, b, ck0); // compute matrices of derivatives
 
             // W = (Bt*G*B)'
@@ -312,15 +433,22 @@ void MpdMiniDstFillTask::fillTracks() {
             TMatrixD tmp23(b, TMatrixD::kTransposeMult, tmp22);
             TMatrixD qk(w, TMatrixD::kMult, tmp23);
 
-            // Update momentum and last coordinates
-            TMatrixD par = *track->GetParamNew();
+            // Update momentum and last coordinate 
+            TMatrixD* parPointer = nullptr;
+
+            if (track->GetParamNew())
+                parPointer = track->GetParamNew();
+            else
+                parPointer = &m;
+
+            TMatrixD par = *parPointer;
             for (Int_t i = 0; i < 3; ++i) par(i + 2, 0) = qk(i, 0);
             par(0, 0) = rad * vert.Phi();
             par(1, 0) = vert.Z();
             trVert->SetParam(par);
             trVert->SetPosNew(rad);
 
-            Double_t pT = 1. / trVert->GetParam(4); // Signed pT 
+            Double_t pT = 1. / trVert->GetParam(4); // Signed pT
             Double_t phi = trVert->GetParam(2);
             Double_t theta = TMath::PiOver2() - trVert->GetParam(3);
 
@@ -328,90 +456,173 @@ void MpdMiniDstFillTask::fillTracks() {
             Double_t Py = TMath::Abs(pT) * TMath::Sin(phi);
 
             Double_t Pz = -1.;
-            if (TMath::Sin(theta) != 0.)
+            if (TMath::Sin(theta) != 0.) {
                 Pz = TMath::Abs(pT) / TMath::Tan(theta);
+            }
 
             miniTrack->setPrimaryMomentum(TVector3(Px, Py, Pz));
-        }// Global track ... 
-        else
-            miniTrack->setPrimaryMomentum(TVector3(-100., -100., -100.));
+        }// if (isPrimary)
+        else {
+            miniTrack->setPrimaryMomentum(TVector3(0., 0., 0.));
+        }
 
-        // Doing a link to the corresponding glob. track to get more params not available directly by the tpcTrack ...
+        // Doing a link to the corresponding global track to get more
+        // parameters not available directly by the tpcTrack
         for (Int_t iGlobTrack = 0; iGlobTrack < glTracks->GetEntriesFast(); iGlobTrack++) {
+
+            // Retrieve global track
             MpdTrack* glTrack = (MpdTrack*) glTracks->UncheckedAt(iGlobTrack);
+            // Track must exist
+            if (!glTrack) continue;
 
-            if (tpcTrack->GetTrackID() != glTrack->GetID())
-                continue;
+            // Global track must have corresponding Kalman track
+            if (tpcTrack->GetTrackID() != glTrack->GetID()) continue;
 
-            // Set ToF hit index if matched ...
-            miniTrack->setBTofPidTraitsIndex(glTrack->GetTofHitIndex());
 
-            // Set Nsigma and dE / dx info ...
+            // Set nSigma and dE/dx info
             miniTrack->setNSigmaElectron(glTrack->GetNSigmaElectron());
             miniTrack->setNSigmaPion(glTrack->GetNSigmaPion());
             miniTrack->setNSigmaKaon(glTrack->GetNSigmaKaon());
             miniTrack->setNSigmaProton(glTrack->GetNSigmaProton());
             miniTrack->setDedx(glTrack->GetdEdXTPC());
 
-            // Setting initial approx. for momentum ...
+            // Setting global track momentum at DCA to primary vertex
             TVector3 globMom(glTrack->GetPx(), glTrack->GetPy(), glTrack->GetPz());
-
-            // Getting primary vertex  ...
-            MpdVertex* vertex = (MpdVertex*) fVertices->UncheckedAt(0);
-            TVector3 primVertex = TVector3(vertex->GetX(), vertex->GetY(), vertex->GetZ());
-
-            // Setting DCA ...
-            TVector3 globOrigin(glTrack->GetDCAX() + primVertex.X(), glTrack->GetDCAY() + primVertex.Y(), glTrack->GetDCAZ() + primVertex.Z());
-            miniTrack->setOrigin(globOrigin.x(), globOrigin.y(), globOrigin.Z());
-
-            Int_t q = glTrack->GetCharge();
-            MpdMiniPhysicalHelix* helix = new MpdMiniPhysicalHelix(globMom, globOrigin, mBField, q);
-            helix->moveOrigin(helix->pathLength(primVertex));
-
-            // Momentum at primary vertex (Do we need to do it?)
-            globMom = helix->momentum(mBField);
-
             miniTrack->setGlobalMomentum(globMom.X(), globMom.Y(), globMom.Z());
 
-            delete helix;
+            // Getting primary vertex the first primary vertex
+            MpdVertex* vertex = (MpdVertex*) fVertices->UncheckedAt(0);
+
+            // Get primary vertex position
+            TVector3 primVertex(vertex->GetX(), vertex->GetY(), vertex->GetZ());
+            TVector3 firstPoint(glTrack->GetFirstPointX(),
+                    glTrack->GetFirstPointY(),
+                    glTrack->GetFirstPointZ());
+
+            // Physical helix instantiation
+            MpdMiniPhysicalHelix helix(globMom, firstPoint,
+                    mBField * kilogauss,
+                    glTrack->GetCharge());
+            double pathLength = helix.pathLength(primVertex);
+            TVector3 dcaPosition = helix.at(pathLength);
+            miniTrack->setOrigin(dcaPosition.X(),
+                    dcaPosition.Y(),
+                    dcaPosition.Z());
+        } // for (Int_t iGlobTrack = 0; iGlobTrack < glTracks->GetEntriesFast(); iGlobTrack++)
+
+        // Loop over TOF-matching information
+        // Set BTofPidTraits for tracks having a matched hit in ToF
+        for (Int_t iMatchedTrack = 0; iMatchedTrack < fTofMatching->GetEntriesFast(); iMatchedTrack++) {
+
+            // Retrieve TOF-matching information
+            MpdTofMatchingData* dataMatch = (MpdTofMatchingData*) fTofMatching->UncheckedAt(iMatchedTrack);
+
+            // TOF matching information should exist
+            if (!dataMatch || (dataMatch->GetKFTrackIndex() != iTpcKalmanTrack))
+                continue;
+
+            bTofPidTraits->setTrackIndex(miniTracksReco->GetEntriesFast() - 1);
+            bTofPidTraits->setBeta(dataMatch->GetBeta());
+            miniTrack->setBTofPidTraitsIndex(0);
+
+            // Get a ToF hit matched to the track ...
+            MpdTofHit* tofHit = (MpdTofHit*) fTofHits->UncheckedAt(dataMatch->GetTofHitIndex());
+            bTofPidTraits->setTOF(tofHit->GetTime());
+            bTofPidTraits->setHitPositionXYZ(tofHit->GetX(), tofHit->GetY(), tofHit->GetZ());
+        } // for (Int_t iMatchedTrack = 0; iMatchedTrack < fTofMatching->GetEntriesFast(); iMatchedTrack++)
+    } // for (Int_t iTpcKalmanTrack = 0; iTpcKalmanTrack < fTpcTracks->GetEntriesFast(); iTpcKalmanTrack++) {
+
+    // Monte Carlo tracks
+    TClonesArray* miniTracksSimu = mMiniArrays[MpdMiniArrays::McTrack];
+    miniTracksSimu->Delete();
+
+    // Fill McTracks if exist
+    for (Int_t iSimuTrack = 0; iSimuTrack < fMCTracks->GetEntriesFast(); iSimuTrack++) {
+        // Retrieve MCTrack
+        MpdMCTrack* mcTrack = (MpdMCTrack*) fMCTracks->UncheckedAt(iSimuTrack);
+        // Skip non-existing tracks
+        if (!mcTrack) continue;
+
+        // One has to store only tracks from the generator level
+        // with pointers to reconstructed global (primary) tracks
+        if (mcTrack->GetMotherId() != -1) continue;
+
+        // Create new MiniMcTrack
+        MpdMiniMcTrack* miniTrack = new ((*miniTracksSimu)[miniTracksSimu->GetEntriesFast()]) MpdMiniMcTrack();
+        if (!miniTrack) {
+            std::cout << "[WARNING] MpdMiniDstFillTask::fillTracks - No miniTrack has been found"
+                    << std::endl;
+            continue;
         }
-    }
 
-    // Get ToF information ...
-    TClonesArray* miniToF = mMiniArrays[MpdMiniArrays::BTofPidTraits];
-    miniToF->Delete();
+        // Set McTrack information
+        miniTrack->setId(iSimuTrack);
+        miniTrack->setPdgId(mcTrack->GetPdgCode());
+        miniTrack->setPx(mcTrack->GetPx());
+        miniTrack->setPy(mcTrack->GetPy());
+        miniTrack->setPz(mcTrack->GetPz());
+        miniTrack->setEnergy(mcTrack->GetEnergy());
 
-    for (Int_t iMatchedTrack = 0; iMatchedTrack < fTofMatching->GetEntriesFast(); iMatchedTrack++) {
-        MpdTofMatchingData* dataMatch = (MpdTofMatchingData*) fTofMatching->UncheckedAt(iMatchedTrack);
+        miniTrack->setGlobalTrackIds(mc2reco[iSimuTrack]);
 
-        // Create pidToF for tracks having a matched hit in ToF ...
-        MpdMiniBTofPidTraits* pidToF = new ((*miniToF)[miniToF->GetEntriesFast()]) MpdMiniBTofPidTraits();
-        pidToF->setBeta(dataMatch->GetBeta());
-        pidToF->setTrackIndex(dataMatch->GetKFTrackIndex());
+        // Assume that there is no branch with GenTracks ...
+        miniTrack->setX(-1.);
+        miniTrack->setY(-1.);
+        miniTrack->setZ(-1.);
+        miniTrack->setT(-1.);
 
-        // Get a ToF hit matched to the track ...
-        MpdTofHit* tofHit = (MpdTofHit*) fTofHits->UncheckedAt(dataMatch->GetTofHitIndex());
+        if (fGenTracks)
+            for (Int_t iGenTrack = 0; iGenTrack < fGenTracks->GetEntriesFast(); iGenTrack++) {
+                MpdGenTrack* genTrack = (MpdGenTrack*) fGenTracks->UncheckedAt(iGenTrack);
+                if (genTrack->GetIsUsed())
+                    continue;
 
-        pidToF->setTOF(tofHit->GetTime());
-        pidToF->setHitPositionXYZ(tofHit->GetX(), tofHit->GetY(), tofHit->GetZ());
-    }
+                Double_t absMomDiff = TMath::Abs(genTrack->GetMomentum().Mag() - mcTrack->GetP());
+                if (absMomDiff < DBL_EPSILON) {
+                    genTrack->SetIsUsed(kTRUE);
+
+                    TLorentzVector spaceTime = genTrack->GetCoordinates();
+                    miniTrack->setX(spaceTime.X());
+                    miniTrack->setY(spaceTime.Y());
+                    miniTrack->setZ(spaceTime.Z());
+                    miniTrack->setT(spaceTime.T());
+                }
+            }
+
+    } // for (Int_t iSimuTrack = 0; iSimuTrack < fMCTracks->GetEntriesFast(); iSimuTrack++)
 }
 
+//_________________
+
 void MpdMiniDstFillTask::fillBTofHits() {
+
+    // Instantiate MpdMiniBTofHit array
     TClonesArray* miniToF = mMiniArrays[MpdMiniArrays::BTofHit];
     miniToF->Delete();
 
-    // Loop over ToF hits
+    // Loop over TOF hits
     for (Int_t iHit = 0; iHit < fTofHits->GetEntriesFast(); iHit++) {
+        fTofHits->UncheckedAt(iHit);
+
+
         MpdMiniBTofHit* tofHit = new ((*miniToF)[miniToF->GetEntriesFast()]) MpdMiniBTofHit();
-        tofHit->setId(iHit);
+        //tofHit->setId();
     }
 }
+
+//_________________
+
+void MpdMiniDstFillTask::fillECalHits() {
+    /* Currently empty */
+}
+
+//_________________
 
 void MpdMiniDstFillTask::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track,
         const MpdKalmanTrack &trackM,
         TMatrixD &a, TMatrixD &b, TMatrixD &ck0) {
-    /// Compute matrices of derivatives w.r.t. vertex coordinates and track momentum
+
+    // Compute matrices of derivatives w.r.t. vertex coordinates and track momentum
 
     Double_t vert0[3], zero[3] = {0}, *vert = xk0.GetMatrixArray();
     for (Int_t i = 0; i < 3; ++i) vert0[i] = vert[i];
@@ -422,7 +633,7 @@ void MpdMiniDstFillTask::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track
     // Propagate track to PCA w.r.t. point xk0
     MpdKalmanFilter::Instance()->FindPca(&trackk, vert0);
     //MpdKalmanFilter::Instance()->FindPca(&trackk,zero); // just for test
-    //cout << trackk.GetPosNew() << endl;
+    //std::cout << trackk.GetPosNew() << std::endl;
     trackk.SetParam(*trackk.GetParamNew());
     //trackk.GetParam()->Print();
 
@@ -436,7 +647,7 @@ void MpdMiniDstFillTask::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track
     trackk.SetNode("");
     MpdKalmanTrack track0 = trackk;
 
-    // Propagate track to chosen radius 
+    // Propagate track to chosen radius
     MpdKalmanHit hit;
     //hit.SetR(35.);
     //hit = *(MpdKalmanHitR*)track->GetTrHits()->Last();
@@ -458,7 +669,7 @@ void MpdMiniDstFillTask::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track
         }
         MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
         hit.SetDetectorID(geo->DetId(detName));
-        // Find distance from the current track position to the last point (plane) - 
+        // Find distance from the current track position to the last point (plane) -
         // to define direction (mainly for ITS)
         TVector3 pos = geo->GlobalPos(&hit);
         TVector3 norm = geo->Normal(&hit);
@@ -502,7 +713,7 @@ void MpdMiniDstFillTask::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track
         shift = TMath::Sqrt(shift);
         if (j == 4) shift *= TMath::Sign(1., -track0.GetParamNew(j)); // 1/p
         track1.SetParam(j, track0.GetParamNew(j) + shift);
-        //if (j == 2 && track1.GetParamNew(j)*TMath::Sign(1.,track1.GetParamNew(j)) > TMath::Pi()) 
+        //if (j == 2 && track1.GetParamNew(j)*TMath::Sign(1.,track1.GetParamNew(j)) > TMath::Pi())
         //track1.SetParam(j,track0.GetParamNew(j)-shift);
         if (track->GetNode() == "") {
             MpdKalmanFilter::Instance()->PropagateParamR(&track1, &hit, kFALSE);
@@ -523,9 +734,12 @@ void MpdMiniDstFillTask::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track
     ck0 -= TMatrixD(b, TMatrixD::kMult, qk0);
 }
 
+//________________
+
 void MpdMiniDstFillTask::Proxim(const MpdKalmanTrack &track0, MpdKalmanTrack &track) {
+
     if (track0.GetType() != MpdKalmanTrack::kBarrel) {
-        cout << " !!! Implemented only for kBarrel tracks !!!" << endl;
+        std::cout << " !!! Implemented only for kBarrel tracks !!!" << std::endl;
         exit(0);
     }
 

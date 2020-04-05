@@ -6,7 +6,7 @@
 #include <limits>
 
 // ROOT headers
-#include "TMath.h"
+#include "TString.h"
 
 // PicoDst headers
 #include "MpdMiniMessMgr.h"
@@ -15,27 +15,28 @@
 ClassImp(MpdMiniBECalHit)
 
 //_________________
-MpdMiniBECalHit::MpdMiniBECalHit(): TObject(), mAdc(0), mE(-9000) {
+MpdMiniBECalHit::MpdMiniBECalHit(): TObject(),
+  fSectorId(0), fRowId(0), fModuleId(0), fEnergy(0), fTime(0),
+  fTrackId(0), fFlag(0), fNumOfTracks(0),
+  fRhoCenter(0), fZCenter(0), fPhiCenter(0), fThetaCenter(0) {
   /* empty */
 }
 
 //_________________
-MpdMiniBECalHit::MpdMiniBECalHit(Int_t adc, Float_t e) : TObject() {
-
-  if (adc < 0) return;
-  mAdc  = (adc > std::numeric_limits<unsigned short>::max()) ? 
-    std::numeric_limits<unsigned short>::max() : (UShort_t)adc;
-
-  mE = ( fabs(e * 1000.) > std::numeric_limits<short>::max() ?
-	 ( (e > 0.) ? std::numeric_limits<short>::max() :
-	   std::numeric_limits<short>::min() ) :
-	 (Short_t)( TMath::Nint(e * 1000.) ) );
-}
-
-//_________________
-MpdMiniBECalHit::MpdMiniBECalHit(const MpdMiniBECalHit &hit) : TObject() {
-  mAdc = hit.mAdc;
-  mE = hit.mE;
+MpdMiniBECalHit::MpdMiniBECalHit(const MpdMiniBECalHit &hit) : TObject(),
+  fSectorId( hit.fSectorId ),
+  fRowId( hit.fRowId ),
+  fModuleId( hit.fModuleId ),
+  fEnergy( hit.fEnergy ),
+  fTime( hit.fTime ),
+  fTrackId( hit.fTrackId ),
+  fFlag( hit.fFlag ),
+  fNumOfTracks( hit.fNumOfTracks ),
+  fRhoCenter( hit.fRhoCenter ),
+  fZCenter( hit.fZCenter ),
+  fPhiCenter( hit.fPhiCenter ),
+  fThetaCenter( hit.fThetaCenter ) {
+  // Copy constructor
 }
 
 //_________________
@@ -43,36 +44,45 @@ MpdMiniBECalHit::~MpdMiniBECalHit() {
   /* empty */
 }
 
-//_________________
+//__________________
 void MpdMiniBECalHit::Print(const Char_t* option __attribute__((unused)) ) const {
-  LOG_INFO << " Adc = " << adc() << " Energy = " << energy() << endm;
+  LOG_INFO << " s/r/m " << Form( "%d/%d/%d", sector(), row(), module() )
+           << " energy/time: " << Form( "%3.2f/%6.1f", energy(),time() )
+           << " trkId/flag/ntrk: " << Form( "%d/%d/%d", trackId(), flag(), numberOfTracks() )
+           << " rho/z/phi/theta: " << Form( "%4.1f/%4.1f/%4.1f/%4.1f",
+                                            rhoCenter(), zCenter(), phiCenter(), thetaCenter() )
+           << endm;
 }
 
 //_________________
-Bool_t MpdMiniBECalHit::isBad() const {
-  if( energy()<=-2. && mAdc==0) {
-    return kTRUE;
+void MpdMiniBECalHit::setTrackId(Int_t id) {
+  fTrackId = (id > std::numeric_limits<short>::max()) ? std::numeric_limits<short>::max() 
+          : (Short_t) id;
+}
+
+//_________________
+void MpdMiniBECalHit::setFlag(Int_t flag) {
+  if ( flag > std::numeric_limits<char>::max() ) {
+    fFlag = std::numeric_limits<char>::max();
+  }
+  else if ( flag < std::numeric_limits<char>::min() ) {
+    fFlag = std::numeric_limits<char>::min();
   }
   else {
-    return kFALSE;
+    fFlag = (Char_t)flag;
   }
 }
 
 //_________________
-void MpdMiniBECalHit::setEnergy(Float_t energy) {
-  mE = ( fabs(energy * 1000) > std::numeric_limits<short>::max() ?
-	 ( (energy > 0) ? std::numeric_limits<short>::max() :
-	   std::numeric_limits<short>::min() ) :
-	 (Short_t)( TMath::Nint(energy * 1000) ) );
-}
-
-//_________________
-void MpdMiniBECalHit::setAdc(Int_t adc) {
-  if( adc<0 ) {
-    mAdc = 0;
+void MpdMiniBECalHit::setNumberOfTracks(Int_t ntrk) {
+  if ( ntrk > std::numeric_limits<unsigned char>::max() ) {
+    fNumOfTracks = std::numeric_limits<unsigned char>::max();
+  }
+  else if ( ntrk > std::numeric_limits<unsigned char>::min() ) {
+    // Next line is not a mistake. It will also indicate a bad tower.
+    fNumOfTracks = std::numeric_limits<unsigned char>::max();
   }
   else {
-    mAdc = (adc > std::numeric_limits<unsigned short>::max()) ?
-      std::numeric_limits<unsigned short>::max() : (UShort_t)adc;
+    fNumOfTracks = (UChar_t)ntrk;
   }
 }

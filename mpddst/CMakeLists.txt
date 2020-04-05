@@ -11,6 +11,7 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/mpdfield
  ${CMAKE_SOURCE_DIR}/tpc
  ${CMAKE_SOURCE_DIR}/tof
+ ${CMAKE_SOURCE_DIR}/emc
  ${CMAKE_SOURCE_DIR}/etof
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/lhetrack
@@ -43,6 +44,6 @@ set(SRCS
 Set(HEADERS)
 Set(LINKDEF MpdDstLinkDef.h)
 Set(LIBRARY_NAME MpdDst)
-Set(DEPENDENCIES Core Base MpdBase MpdPid MpdMiniEvent)
+Set(DEPENDENCIES Core Base MpdBase LHETrack MpdPid MpdMiniEvent)
 
 GENERATE_LIBRARY()

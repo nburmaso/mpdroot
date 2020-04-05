@@ -1,13 +1,9 @@
 /**
- * \class MpdMiniBToPidTraits
- * \brief Hold information about BTOF-matched tracks
+ * Hold information about BTOF-matched tracks
  *
  * The class stores information about tracks that matched
  * the Barrel Time-of-Flight detector
- *
- * \author Grigory Nigmatkulov
- * \email nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date July 11, 2019
+
  */
 
 #ifndef MpdMiniBTofPidTraits_h

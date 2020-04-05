@@ -15,6 +15,7 @@
 
 // C++ headers
 #include <limits>
+#include <vector>
 
 // ROOT headers
 #include "TObject.h"
@@ -50,10 +51,12 @@ class MpdMiniMcTrack : public TObject {
   { if ( status <= std::numeric_limits<char>::min() )      { fStatus = std::numeric_limits<char>::min(); }
     else if ( status >= std::numeric_limits<char>::max() ) { fStatus = std::numeric_limits<char>::max(); }
     else { fStatus = (Char_t)status; } }
-  /// Set parent index
+  // Set parent index
+  /*
   void setParentIndex(Int_t parent)
   { fParentIndex = ( ( parent > std::numeric_limits<unsigned short>::max() ) ?
 		     std::numeric_limits<unsigned short>::max() : (UShort_t)parent ); }
+  */
   /// Set two daughter track indices (the first and the last one)
   void setChild(Int_t child[2])                             { setFirstChild(child[0]); setLastChild(child[1]); }
   /// Set index of the first child
@@ -77,18 +80,22 @@ class MpdMiniMcTrack : public TObject {
   /// Set four-momentum (px, py, pz, E)
   void set4momentum(TLorentzVector mom)
   { setPx(mom.Px()); setPy(mom.Py()); setPz(mom.Pz()); setE(mom.E()); }
-  /// Set start x 
+  /// Set start x
   void setX(Double_t x)                                     { fX = (Float_t)x; }
   /// Set start y
   void setY(Double_t y)                                     { fY = (Float_t)y; }
-  /// Set start z 
+  /// Set start z
   void setZ(Double_t z)                                     { fZ = (Float_t)z; }
   /// Set freeze-out t (fm/c)
   void setT(Double_t t)                                     { fT = (Float_t)t; }
   /// Set four-coordinate (x, y, z, t)
   void set4coordinate(TLorentzVector vec)
   { setX(vec.X()); setY(vec.Y()); setZ(vec.Z()); setT(vec.T()); }
-  
+  /// Add index of MpdMiniTrack that was reconstructed out of current MC track
+  void addGlobalTrackId(UShort_t id);
+  /// Add indices of MpdMiniTracks that wwere reconstructed out of current MC track
+  void setGlobalTrackIds(std::vector< UShort_t > ids)      { fRecoTrackIds = ids; }
+
 
   //
   // Getters
@@ -103,8 +110,8 @@ class MpdMiniMcTrack : public TObject {
   { return TDatabasePDG::Instance()->GetParticle( fPdgId )->Charge(); }
   /// Return PDG code
   Int_t pdgId() const                         { return fPdgId; }
-  /// Return parent particle index
-  UShort_t parentIndex() const                { return fParentIndex; }
+  // Return parent particle index
+  // UShort_t parentIndex() const                { return fParentIndex; }
   /// Return the first child index
   UShort_t firstChildIndex() const            { return fChild[0]; }
   /// Return the second (last) child index
@@ -141,7 +148,10 @@ class MpdMiniMcTrack : public TObject {
   Float_t t() const                           { return fT; }
   /// Return freeze-out four-coordinate (x, y, z, t)
   TLorentzVector fourCoordinate() const       { return TLorentzVector(fX, fY, fZ, fT); }
-  
+  /// Return indices of the MpdMiniTracks that were reconstructed
+  /// from the current MC track
+  std::vector< UShort_t > recoTrackIds() const { return fRecoTrackIds; }
+
  private:
   /// Unique track ID
   UShort_t fId;
@@ -149,8 +159,8 @@ class MpdMiniMcTrack : public TObject {
   Char_t   fStatus;
   /// PDG code
   Int_t    fPdgId;
-  /// Parent index
-  UShort_t fParentIndex;
+  // Parent index
+  //UShort_t fParentIndex;
   /// The first and the second daughter particle indeces (-1 if not decayed)
   UShort_t fChild[2];
   /// Px (GeV/c)
@@ -159,7 +169,7 @@ class MpdMiniMcTrack : public TObject {
   Float_t  fPy;
   /// Pz (GeV/c)
   Float_t  fPz;
-  /// Energy from the generator(GeV/c)
+  /// Energy from the generator (GeV/c)
   Float_t  fEnergy;
   /// Freeze-out x coordinate (fm)
   Float_t  fX;
@@ -170,7 +180,12 @@ class MpdMiniMcTrack : public TObject {
   /// Freeze-out t coordinate (fm/c)
   Float_t  fT;
 
-  ClassDef(MpdMiniMcTrack, 1)
+  /// Indices of the reconstructed global tracks that were
+  /// reconstructed from the current Monte Carlo track
+  /// Empty when no tracks were reconstructed from the MC track.
+  std::vector< UShort_t > fRecoTrackIds;
+
+  ClassDef(MpdMiniMcTrack, 2)
 };
 
 #endif // #define MpdMiniMcTrack_h

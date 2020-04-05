@@ -152,7 +152,7 @@ void MpdMiniDstReader::Init() {
     Int_t nFile = 0;
     std::string file;
     while(getline(inputStream, file)) {
-      if(file.find(".miniDst.root") != std::string::npos) {
+      if(file.find(".miniDst.root") != std::string::npos || file.find(".MiniDst.root") != std::string::npos) {
         TFile* ftmp = TFile::Open(file.c_str());
         if(ftmp && !ftmp->IsZombie() && ftmp->GetNkeys()) {
           LOG_INFO << " Read in miniDst file " << file << endm;
@@ -168,7 +168,7 @@ void MpdMiniDstReader::Init() {
 
     LOG_INFO << " Total " << nFile << " files have been read in. " << endm;
   } //if(dirFile.find(".list") != std::string::npos || dirFile.find(".lis" != string::npos))
-  else if(dirFile.find(".miniDst.root") != std::string::npos) {
+  else if(dirFile.find(".miniDst.root") != std::string::npos || dirFile.find(".MiniDst.root") != std::string::npos) {
     fChain->Add(dirFile.c_str());
   }
   else {
