@@ -7,71 +7,60 @@
 
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoEvent* /* event */) {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoTrack* /* track */) {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoV0* /* v0 */) {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoXi* /* xi */) {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoKink* /* kink*/) {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoPair* /* pair */) {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoParticleCollection* /* collection */) {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoParticleCollection* /* coll1 */,
-        const MpdFemtoParticleCollection* /* coll2 */) {
-    /* empty */
+				  const MpdFemtoParticleCollection* /* coll2 */) {
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::fill(const MpdFemtoEvent* /* event */,
-        const MpdFemtoParticleCollection* /* coll */) {
-    /* empty */
+				  const MpdFemtoParticleCollection* /* coll */) {
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::finish() {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdFemtoBaseCutMonitor::init() {
-    /* empty */
+  /* empty */
 }
 
 ClassImp(MpdFemtoBaseCutMonitor)

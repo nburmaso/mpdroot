@@ -3,6 +3,10 @@
  * \brief Holds collection of particles
  *
  * Holds collection (STL list) of particles
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoParticleCollection_h

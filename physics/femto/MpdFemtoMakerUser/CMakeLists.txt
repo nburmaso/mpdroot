@@ -42,13 +42,11 @@ MpdFemtoBPLCMS3DCorrFctnKt.cxx
 MpdFemtoBasicEventCut.cxx
 MpdFemtoBasicPairCut.cxx
 MpdFemtoBasicTrackCut.cxx
-MpdFemtoCoulomb.cxx
 MpdFemtoModelBPLCMS3DCorrFctnKt.cxx
+MpdFemtoModelQinvCorrFctnKt.cxx
 MpdFemtoQinvCorrFctnKt.cxx
 MpdFemtoDeltaEtaDeltaPhiStarMinKt.cxx
-# MpdFemtoDstReader.cxx
 MpdFemtoMcDstReader.cxx
-# MpdFemtoPicoDstReader.cxx
 MpdFemtoReactionPlaneAnalysis.cxx
 MpdFemtoVertexAnalysis.cxx
 MpdFemtoVertexMultAnalysis.cxx

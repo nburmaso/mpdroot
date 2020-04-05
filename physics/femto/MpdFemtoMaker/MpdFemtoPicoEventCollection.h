@@ -4,6 +4,10 @@
  *
  * A collection of PicoEvents is what makes up the EventMixingBuffer
  * of each Analysis
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoPicoEventCollection_h

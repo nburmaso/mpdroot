@@ -3,6 +3,10 @@
  * \brief Holds collection of pair cuts
  *
  * Holds collection (STL list) of pair cuts
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoPairCutCollection_h

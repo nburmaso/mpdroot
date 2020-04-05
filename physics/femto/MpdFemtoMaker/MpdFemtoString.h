@@ -3,6 +3,10 @@
  * \brief A file that returns a string
  *
  * The MpdFemtoString header provides a typedef for the string
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoString_h

@@ -3,6 +3,10 @@
  * \brief Holds collection of event cuts
  *
  * The class holds collection (STL list) of event cuts
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoEventCutCollection_h

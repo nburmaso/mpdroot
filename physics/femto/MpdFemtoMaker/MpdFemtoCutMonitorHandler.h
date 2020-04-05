@@ -6,6 +6,10 @@
  * collections - one which stores characteristics of the entities (tracks,
  * particles, pairs, events) that pass the respective cuts and the other for
  * the ones that fail the cut.
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoCutMonitorHandler_h

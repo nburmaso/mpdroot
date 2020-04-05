@@ -3,6 +3,10 @@
  * \brief Holds collection of PicoEvents for vertex-dependent analysis
  *
  * Holds collection (STL vector) and analysis for vertex-dependent event mixing.
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoPicoEventCollectionVector_h

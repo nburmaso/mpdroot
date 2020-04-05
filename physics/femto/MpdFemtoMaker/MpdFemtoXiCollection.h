@@ -3,6 +3,10 @@
  * \brief Holds collection of Xi(s)
  *
  * Holds a collectin (STL list) of Xi(s)
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoXiCollection_h
