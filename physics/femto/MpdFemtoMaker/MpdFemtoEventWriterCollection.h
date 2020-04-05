@@ -3,6 +3,10 @@
  * \brief Holds collection of Writers
  *
  * The class keeps a collection (STL list) of event writers
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoEventWriterCollection_h

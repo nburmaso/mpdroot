@@ -3,6 +3,10 @@
  * \brief Holds collection of kinks
  *
  * Holds a collectin (STL list) of kinks
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoKinkCollection_h

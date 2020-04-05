@@ -3,6 +3,10 @@
  * \brief Holds collection of track cuts
  *
  * Holds collection (STL list) of track cuts
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoTrackCutCollection_h

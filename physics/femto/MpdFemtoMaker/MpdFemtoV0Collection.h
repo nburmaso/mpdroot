@@ -3,6 +3,10 @@
  * \brief Holds collection of V0s
  *
  * Holds a collectin (STL list) of V0s
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoV0Collection_h

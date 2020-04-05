@@ -3,6 +3,10 @@
  * \brief Holds a collection of analyses
  *
  * The class holds a collection (STL list) of analyses
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoAnalysisCollection_h

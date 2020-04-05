@@ -3,6 +3,11 @@
  * \brief The pure virtual base class for the pair cut
  *
  * All pair cuts must inherit from this one
+ *
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoBasePairCut_h

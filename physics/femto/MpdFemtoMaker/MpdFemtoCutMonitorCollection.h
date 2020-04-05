@@ -4,6 +4,10 @@
  *
  * The class keeps a collection of cut monitors stored as
  * STL vector
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoCutMonitorCollection_h

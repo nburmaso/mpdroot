@@ -4,6 +4,10 @@
  *
  * The pure virtual base class for track cuts. All track cuts must
  * inherit from this one.
+ *
+ * \author Grigory Nigmatkulov (NRNU MEPhI)
+ * \date May 18, 2019
+ * \email nigmatkulov@gmail.com
  */
 
 #ifndef MpdFemtoBaseTrackCut_h
