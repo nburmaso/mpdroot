@@ -44,6 +44,7 @@ void NicaMpdMcEvent::Update() {
 		mc->GetStartPosition()->SetXYZT(track->GetStartX(),track->GetStartY(),track->GetStartZ(),track->GetStartT());
 		mc->GetLink()->Clear();
 		mc->GetLink()->SetLink(0,i);
+		mc->SetID(i);
 	}
 }
 
