@@ -63,6 +63,9 @@ MbbDetector::MbbDetector(const char * Name, Bool_t Active)
   currentEvent   = -1;
 }
 
+MbbDetector::MbbDetector():MbbDetector("Mbebe",kFALSE){
+
+}
 
 MbbDetector::~MbbDetector()
 {
