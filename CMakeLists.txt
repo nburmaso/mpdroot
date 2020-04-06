@@ -227,6 +227,7 @@ add_subdirectory (mpdpid)
 add_subdirectory (mpddst)
 add_subdirectory (physics)
 add_subdirectory (macro)
+add_subdirectory (mcord)
 add_subdirectory (eventdisplay)
 
 
