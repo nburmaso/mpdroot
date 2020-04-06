@@ -119,10 +119,15 @@ class MpdMiniTrack : public TObject {
   /// Return if track is primary
   Bool_t isPrimary() const               { return ( pMom().Mag() > 0 ); }
 
-  /// Return index to the corresponding ECal PID trait
-  Int_t bECalPidTraitsIndex() const      { return fBECalPidTraitsIndex; }
-  /// Return index to the corresponding BTOF PID trait
-  Int_t bTofPidTraitsIndex() const       { return fBTofPidTraitsIndex; }
+  //  Not used right now since we can have just one-to-one matching 
+  //  Presense of matching can be checked by isBTofTrack() or isBECalTrack() methods
+  
+  // Int_t bECalPidTraitsIndex() const      { return fBECalPidTraitsIndex; }
+  // Int_t bTofPidTraitsIndex() const       { return fBTofPidTraitsIndex; }
+  
+  /// Return index of MpdMiniMcTrack corresponding to current miniTrack
+  // If returns -1, it means that the miniTrack does not correspond to any written primary track from generator 
+  Int_t mcTrackId() const { return fMcTrackId; }
 
   //
   // Setters
@@ -182,6 +187,9 @@ class MpdMiniTrack : public TObject {
   void setNSigmaElectron(Float_t ns);
   /// Set topology map (2 words)
   void setTopologyMap(Int_t id, UInt_t word);
+  
+  // Set link to MC-track
+  void setMcTrackIds(Int_t ids)      { fMcTrackId = ids; }
 
   /// Set index to ECal PID traits
   void setBECalPidTraitsIndex(Int_t index) { fBECalPidTraitsIndex = (Short_t)index; }
@@ -239,6 +247,9 @@ class MpdMiniTrack : public TObject {
   Short_t  fBECalPidTraitsIndex;
   /// Index of the BTOF pidTratis in the event (-1 if not matched)
   Short_t  fBTofPidTraitsIndex;
+  
+  // Index of miniMcTrack that correponds to miniTrack
+  Int_t fMcTrackId;
 
   ClassDef(MpdMiniTrack, 1)
 };

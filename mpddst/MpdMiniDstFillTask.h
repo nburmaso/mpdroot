@@ -39,7 +39,8 @@
 #include <MpdKalmanFilter.h>
 #include <MpdKalmanGeoScheme.h>
 #include <MpdTofHit.h>
-#include <MpdEmcHit.h>
+#include <MpdEmcDigitKI.h>
+#include <MpdEmcClusterKI.h>
 #include <MpdTofMatchingData.h>
 
 
@@ -101,8 +102,10 @@ class MpdMiniDstFillTask : public FairTask {
   TClonesArray* fMCTracks;
   // Pointer to GenTracks (Primaries from MC-generator)
   TClonesArray* fGenTracks;
-  // Pointer to EMC hits 
-  TClonesArray* fEmcHits;
+  // Pointer to EMC digits 
+  TClonesArray* fEmcDigits;
+  // Pointer to EMC clusters
+  TObjArray* fEmcClusters;
   
   /// A pointer to the main input/outpur miniDst structure containing all `TObjArray`s
   MpdMiniDst* mMiniDst;
@@ -145,14 +148,27 @@ class MpdMiniDstFillTask : public FairTask {
 
   /// Fill ECal information
   void fillECalHits();
-
+ 
+  /* Below is given a set of auxiliary functions */
   /// Compute matrices of derivatives
   void ComputeAandB(TMatrixD&, const MpdKalmanTrack*, const MpdKalmanTrack&,
 		    TMatrixD&, TMatrixD&, TMatrixD&);
 
   /// Adjust track parameters
   void Proxim(const MpdKalmanTrack&, MpdKalmanTrack&);
+  
+  /// Refit function for momenta
+  void RefitToVp(MpdMiniTrack*, Int_t, MpdVertex*); // A function to be used when doing refit of tracks considered as primaries to the primary vertex aimed at precising of their momenta
 
+  // Fill covariance matrix if needed
+  void fillCovMatrix(MpdTpcKalmanTrack*, MpdMiniTrackCovMatrix*); // A function used for filling of cov. track matrix
+  
+  // Tof matching 
+  void DoTofMatching(Int_t, Int_t, MpdMiniTrack*, MpdMiniBTofPidTraits*);
+  
+  // Ecal matching
+  void DoEcalMathching(Int_t, Int_t, MpdMiniTrack*, MpdMiniBECalPidTraits*);
+  
   ClassDef(MpdMiniDstFillTask, 0)
 };
 
