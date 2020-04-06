@@ -20,7 +20,9 @@ mSplit(99),
 mCompression(9),
 mBufferSize(65536 * 4),
 mMiniArrays(nullptr),
-fIsUseCovMatrix(kTRUE) {
+fIsUseCovMatrix(kTRUE),
+fEmcDigits(nullptr),
+fEmcClusters(nullptr) {
 
     // Standard constructor
     mOutputFileName = name.ReplaceAll(".root", ".MiniDst.root");
@@ -387,7 +389,7 @@ void MpdMiniDstFillTask::fillTracks() {
         // Getting tof matching information ...
         Int_t idxMini = miniTracksReco->GetEntriesFast() - 1;
         DoTofMatching(iTpcKalmanTrack, idxMini, miniTrack, bTofPidTraits);
-        
+
         // Getting ecal matching information ...
         DoEcalMathching(iTpcKalmanTrack, idxMini, miniTrack, bEmcPidTraits);
 
@@ -517,35 +519,36 @@ void MpdMiniDstFillTask::fillECalHits() {
     miniEmc->Delete();
 
     // Loop over emc clusters ...
-    for (Int_t iCluster = 0; iCluster < fEmcClusters->GetEntriesFast(); iCluster++) {
-        MpdEmcClusterKI* cluster = (MpdEmcClusterKI*) fEmcClusters->UncheckedAt(iCluster);
-        if (!cluster)
-            continue;
+    if (fEmcClusters)
+        for (Int_t iCluster = 0; iCluster < fEmcClusters->GetEntriesFast(); iCluster++) {
+            MpdEmcClusterKI* cluster = (MpdEmcClusterKI*) fEmcClusters->UncheckedAt(iCluster);
+            if (!cluster)
+                continue;
 
-        MpdMiniBECalHit* miniEcalHit = new ((*miniEmc)[miniEmc->GetEntriesFast()]) MpdMiniBECalHit();
-        
-        miniEcalHit->setEnergy(cluster->GetE());
-        miniEcalHit->setTime(cluster->GetTime());
-        miniEcalHit->setNumberOfTracks(cluster->GetNumberOfTracks());
-        miniEcalHit->SetXYZ(cluster->GetX(), cluster->GetY(), cluster->GetZ());
-        miniEcalHit->SetDPhi(cluster->GetDPhi());
-        miniEcalHit->SetDz(cluster->GetDZ());
-        
-        if (cluster->GetTrackIndex() != -1)
-            miniEcalHit->setBEcalMatchFlag(kTRUE);
+            MpdMiniBECalHit* miniEcalHit = new ((*miniEmc)[miniEmc->GetEntriesFast()]) MpdMiniBECalHit();
 
-        Int_t nDigits = cluster->GetMultiplicity();
+            miniEcalHit->setEnergy(cluster->GetE());
+            miniEcalHit->setTime(cluster->GetTime());
+            miniEcalHit->setNumberOfTracks(cluster->GetNumberOfTracks());
+            miniEcalHit->SetXYZ(cluster->GetX(), cluster->GetY(), cluster->GetZ());
+            miniEcalHit->SetDPhi(cluster->GetDPhi());
+            miniEcalHit->SetDz(cluster->GetDZ());
 
-        vector <Int_t> lightedCells;
-        for (Int_t iDigi = 0; iDigi < nDigits; iDigi++) {
-            Int_t cell = -1;
-            Float_t e = -1.;
-            cluster->GetDigitParams(iDigi, cell, e);
-            lightedCells.push_back(cell);
+            if (cluster->GetTrackIndex() != -1)
+                miniEcalHit->setBEcalMatchFlag(kTRUE);
+
+            Int_t nDigits = cluster->GetMultiplicity();
+
+            vector <Int_t> lightedCells;
+            for (Int_t iDigi = 0; iDigi < nDigits; iDigi++) {
+                Int_t cell = -1;
+                Float_t e = -1.;
+                cluster->GetDigitParams(iDigi, cell, e);
+                lightedCells.push_back(cell);
+            }
+
+            miniEcalHit->setCellIds(lightedCells);
         }
-
-        miniEcalHit->setCellIds(lightedCells);
-    }
 }
 
 void MpdMiniDstFillTask::RefitToVp(MpdMiniTrack* miniTrack, Int_t iTpcKalmanTrack, MpdVertex* vtx) {
@@ -843,17 +846,17 @@ void MpdMiniDstFillTask::DoTofMatching(Int_t kalmanIdx, Int_t miniIdx, MpdMiniTr
 }
 
 void MpdMiniDstFillTask::DoEcalMathching(Int_t kalmanIdx, Int_t miniIdx, MpdMiniTrack* track, MpdMiniBECalPidTraits* pid) {
+    if (fEmcClusters)
+        for (Int_t iCluster = 0; iCluster < fEmcClusters->GetEntriesFast(); iCluster++) {
 
-    for (Int_t iCluster = 0; iCluster < fEmcClusters->GetEntriesFast(); iCluster++) {
+            MpdEmcClusterKI* cluster = (MpdEmcClusterKI*) fEmcClusters->UncheckedAt(iCluster);
 
-        MpdEmcClusterKI* cluster = (MpdEmcClusterKI*) fEmcClusters->UncheckedAt(iCluster);
+            if (!cluster || cluster->GetTrackIndex() != kalmanIdx)
+                continue;
 
-        if (!cluster || cluster->GetTrackIndex() != kalmanIdx)
-            continue;
+            track->setBECalPidTraitsIndex(0); // It means a presense of matching with emc
+            pid->setTrackIndex(miniIdx);
 
-        track->setBECalPidTraitsIndex(0); // It means a presense of matching with emc
-        pid->setTrackIndex(miniIdx);
-
-        break;
-    }
+            break;
+        }
 }
