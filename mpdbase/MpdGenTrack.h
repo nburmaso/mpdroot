@@ -45,6 +45,14 @@ public:
     void SetPdg(Int_t pdg) {
         fPdg = pdg;  
     }
+
+    void SetIsUsed(Bool_t flag) {
+      isUsed = flag;
+    }
+
+    Bool_t GetIsUsed() {
+      return isUsed;
+    }
     
 private:
     Double_t fImp;
@@ -62,6 +70,7 @@ private:
     
     Int_t fPdg;
 
+    Bool_t isUsed;
     ClassDef(MpdGenTrack, 1);
 };
 #endif

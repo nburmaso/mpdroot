@@ -3,7 +3,7 @@
 MpdGenTrack::MpdGenTrack() :
 fImp(-1.) {
 
-    
+  isUsed = kFALSE;    
     
 }
 
