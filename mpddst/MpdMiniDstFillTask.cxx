@@ -388,8 +388,6 @@ void MpdMiniDstFillTask::fillTracks() {
         Int_t idxMini = miniTracksReco->GetEntriesFast() - 1;
         DoTofMatching(iTpcKalmanTrack, idxMini, miniTrack, bTofPidTraits);
         
-        ///cout << miniToF->GetEntriesFast() << endl;
-
         // Getting ecal matching information ...
         DoEcalMathching(iTpcKalmanTrack, idxMini, miniTrack, bEmcPidTraits);
 
