@@ -82,6 +82,14 @@ const Double_t ROC_Frame_Gap_to_End_Frame_Side = 0.25;
 const Double_t Sensitive_in_R_seg = End_Frame_in_R_seg + ROC_Frame_Gap_to_End_Frame;
 const Double_t Sensitive_out_R_seg = End_Frame_out_R_seg - ROC_Frame_Gap_to_End_Frame;
 const Double_t Pad_Plane_Pp = 0.3109;
+const Double_t Pad_Thick = 0.0109;
+const Double_t Pad_Width = 0.48;
+const std::vector<Double_t> Pad_Height = {1.18, 1.78};
+const Double_t Pad_Space_w = 0.02;
+const Double_t Pad_Space_h = 0.02;
+const Double_t Pad_Space_edge = 0.4;
+const std::vector<Int_t> NPads_in_Row_s = {20, 21, 21, 22, 23, 23, 24, 24, 25, 26, 26, 27, 28, 28, 29, 30, 30, 31, 32, 32, 33, 33, 34, 35, 35, 36, 37}; //half
+const std::vector<Int_t> NPads_in_Row_l = {38, 39, 40, 41, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62}; //half
 const Double_t Pad_Plane_G10 = 0.3;
 const Double_t ROC_Frame = 6.0;
 const Double_t ROC_Frame_wo_plane = 5.5;
@@ -190,6 +198,8 @@ void CreateEndsFrame(TGeoVolume *mother_volume, Double_t width, Double_t rmin, D
 void CreateSensitiveStructure(TGeoVolume *mother_volume, Double_t vol_width);
 void CreateSensitiveVolumes(TGeoVolume *mother_volume, Double_t vol_width);
 void CreatePadWithFrameStructure(TGeoVolume *mother_volume, Double_t vol_width);
+void CreatePadPlaneWithPads(TGeoVolume *mother_volume, Double_t R_seg_in, Double_t R_seg_out);
+void PlacePadsSub(TGeoVolume *mother_volume, TGeoVolume * pad_vol, Double_t R_in, const std::vector<Int_t> & nPadsInRow, Double_t padHeight);
 void FillFramesPoints(unique_ptr<Double_t[]> &x, unique_ptr<Double_t[]> &y);
 void PlaceElectronicsComponents(TGeoVolume * mother_vol, TGeoVolume * vol_to_place, Double_t z_offset = 0.);
 void PlaceElectronicsComponentsSub(TGeoVolume * mother_vol, TGeoVolume * vol_to_place, Int_t nxlay, Int_t nylay[], 
@@ -228,7 +238,8 @@ void create_rootgeom_TPC_v8(ElectronicsGeometryDetailLevel egdl = Low, Bool_t wr
     // ----  global geometry parameters  ---------------------------------------
     FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
     FairGeoInterface* geoFace = geoLoad->getGeoInterface();
-
+    gGeoManager = (TGeoManager*)gROOT->FindObject("FAIRGeom");
+    
     // -------   Load media from media file   ----------------------------------
     TString medFile = gPath + "/geometry/media.geo";
     geoFace->setMediaFile(medFile);
@@ -240,7 +251,6 @@ void create_rootgeom_TPC_v8(ElectronicsGeometryDetailLevel egdl = Low, Bool_t wr
     // -------------------------------------------------------------------------
 
     // --------------   Create geometry and global top volume  ------------------------
-    gGeoManager = (TGeoManager*)gROOT->FindObject("FAIRGeom");
     gGeoManager->SetName(geoDetectorName + "_geom");
     TGeoVolume* top = new TGeoVolumeAssembly("TOP");
     top->SetMedium(pMedAir);
@@ -292,7 +302,7 @@ void create_rootgeom_TPC_v8(ElectronicsGeometryDetailLevel egdl = Low, Bool_t wr
 
     gGeoManager->Test();
 
-    gGeoManager->SetMaxVisNodes(100000);
+    gGeoManager->SetMaxVisNodes(150000);
 
     TFile* geoFile = new TFile(geoFileName, "RECREATE");
     top->Write();
@@ -630,7 +640,7 @@ void CreateMembraneFrame(TGeoVolume* mother_volume, Double_t width, Double_t rmi
 {
     TString inner_holder_name = "tpc01mbinHold";
     
-    TGeoPgon *MbInHolderPgS = new TGeoPgon(inner_holder_name + "Pg", 0., 360., 12, 2);
+    TGeoPgon *MbInHolderPgS = new TGeoPgon(inner_holder_name + "Pg", -Fieldcage_shift_deg, 360., 12, 2);
     MbInHolderPgS->DefineSection(0, -Membrane_holder_thikness/2, rmin, Membrane_inner_holder_R);
     MbInHolderPgS->DefineSection(1, Membrane_holder_thikness/2, rmin, Membrane_inner_holder_R);
     
@@ -706,7 +716,7 @@ void CreateFieldCage(TGeoVolume *mother_volume, Double_t vol_width)
         out_pin_position->RotateZ(Section_step * isec - Fieldcage_shift_deg);
         TGeoCombiTrans *in_pin_position= new TGeoCombiTrans();
         in_pin_position->SetTranslation(Membrane_inner_holder_R_edge - Fieldcage_Pin_R[0] / TMath::Cos(Section_rad_step / 2.), 0, (Membrane_holder_thikness - Chamber_tpc_z_ext_parts - End_Frame_thickness) / 2);
-        in_pin_position->RotateZ(Section_step * isec);
+        in_pin_position->RotateZ(Section_step * isec - Fieldcage_shift_deg);
 
         mother_volume->AddNode(tpcOutPinV, isec+1, out_pin_position);
         mother_volume->AddNode(tpcInPinV, isec+1, in_pin_position);
@@ -719,7 +729,7 @@ void CreateFieldCage(TGeoVolume *mother_volume, Double_t vol_width)
     tpcFieldCageOutS->DefineSection(0, 0., Membrane_outer_holder_R, Membrane_outer_holder_R + Fieldcage_ribbon_thikness);
     tpcFieldCageOutS->DefineSection(1, Fieldcade_ribbon_wide, Membrane_outer_holder_R, Membrane_outer_holder_R + Fieldcage_ribbon_thikness);
 
-    TGeoPgon *tpcFieldCageInS = new TGeoPgon(FieldCageIn_name, 0., 360., 12, 2);
+    TGeoPgon *tpcFieldCageInS = new TGeoPgon(FieldCageIn_name, -Fieldcage_shift_deg, 360., 12, 2);
     tpcFieldCageInS->DefineSection(0, 0., Membrane_inner_holder_R, Membrane_inner_holder_R + Fieldcage_ribbon_thikness);
     tpcFieldCageInS->DefineSection(1, Fieldcade_ribbon_wide, Membrane_inner_holder_R, Membrane_inner_holder_R + Fieldcage_ribbon_thikness);
 
@@ -906,10 +916,12 @@ void CreatePadWithFrameStructure(TGeoVolume *mother_volume, Double_t vol_width)
     PpS->DefineSection(1, Pad_Plane_Pp/2, R_seg_in, R_seg_out);
     
     TGeoVolume *PpV = new TGeoVolume(bpPp_name, PpS);
-    PpV->SetMedium(pMedG10);
-    PpV->SetLineColor(TColor::GetColor("#ff2400"));
+    PpV->SetMedium(pMedTPCmixture);
+    PpV->SetLineColor(TColor::GetColor("#ff9494"));
     
     mother_volume->AddNode(PpV, 0, new TGeoTranslation(x_offset, 0., (-vol_width + Pad_Plane_Pp) / 2));
+    
+    CreatePadPlaneWithPads(PpV, R_seg_in, R_seg_out);
     
     TGeoPgon *InsulS = new TGeoPgon(bpG10_name, -Section_step / 2, Section_step, 1, 2);
     InsulS->DefineSection(0, -Pad_Plane_G10/2, R_seg_in, R_seg_out);
@@ -987,6 +999,63 @@ void CreatePadWithFrameStructure(TGeoVolume *mother_volume, Double_t vol_width)
     mother_volume->AddNode(tpcFrameStructureExtV, 1, fr_ext_pos_refl);
     
     CreateElectronicsModules(mother_volume);
+}
+
+void CreatePadPlaneWithPads(TGeoVolume *mother_volume, Double_t R_seg_in, Double_t R_seg_out)
+{
+    TString PpBase_name = "PpBase";
+    
+    TGeoPgon *PpS = new TGeoPgon(PpBase_name, -Section_step / 2., Section_step, 1, 2);
+    PpS->DefineSection(0, -(Pad_Plane_Pp - Pad_Thick)/2, R_seg_in, R_seg_out);
+    PpS->DefineSection(1, (Pad_Plane_Pp - Pad_Thick)/2, R_seg_in, R_seg_out);
+    
+    TGeoVolume *PpV = new TGeoVolume(PpBase_name, PpS);
+    PpV->SetMedium(pMedG10);
+    PpV->SetLineColor(TColor::GetColor("#ff2400"));
+    
+    mother_volume->AddNode(PpV, 0, new TGeoTranslation(0. , 0., Pad_Thick / 2));
+    
+    TString PadIn_name = "PadIn";
+    TString PadOut_name = "PadOut";
+    
+    TGeoBBox * PadIn = new TGeoBBox(PadIn_name, Pad_Height[0] / 2., Pad_Width / 2., Pad_Thick / 2.);
+    TGeoVolume * PadInV = new TGeoVolume(PadIn_name, PadIn);
+    PadInV->SetMedium(pMedCopper);
+    PadInV->SetLineColor(TColor::GetColor("#ffb841"));
+    
+    TGeoBBox * PadOut = new TGeoBBox(PadOut_name, Pad_Height[1] / 2., Pad_Width / 2., Pad_Thick / 2.);
+    TGeoVolume * PadOutV = new TGeoVolume(PadOut_name, PadOut);
+    PadOutV->SetMedium(pMedCopper);
+    PadOutV->SetLineColor(TColor::GetColor("#c5e384"));
+    
+    PlacePadsSub(mother_volume, PadInV, R_seg_in, NPads_in_Row_s, Pad_Height[0]);
+    PlacePadsSub(mother_volume, PadOutV, R_seg_in + NPads_in_Row_s.size() * (Pad_Height[0] + Pad_Space_h), NPads_in_Row_l, Pad_Height[1]);
+}
+
+void PlacePadsSub(TGeoVolume *mother_volume, TGeoVolume * pad_vol, Double_t R_in, const std::vector<Int_t> & nPadsInRow, Double_t padHeight)
+{
+    Double_t z_offset = (-Pad_Plane_Pp + Pad_Thick) / 2;
+    
+    for (Int_t row = 0; row < nPadsInRow.size(); ++row)
+    {
+        Int_t pad_idx = 0;
+        Double_t pad_pos = (Pad_Width + Pad_Space_w) / 2.;
+        
+        for (pad_idx = 0; pad_idx < nPadsInRow[row]; ++pad_idx)
+        {
+// 2 ways to indexing pads, 0 - default
+#if 0
+            mother_volume->AddNode(pad_vol, row * 100 + pad_idx, new TGeoTranslation(R_in + (padHeight + Pad_Space_h) * row + padHeight / 2. + Pad_Space_edge, pad_pos, z_offset));
+            mother_volume->AddNode(pad_vol, 1e4 + row * 100 + pad_idx, new TGeoTranslation(R_in + (padHeight + Pad_Space_h) * row + padHeight / 2. + Pad_Space_edge, -pad_pos, z_offset));
+#else
+            mother_volume->AddNode(pad_vol, row * 1e3 + nPadsInRow[row] + pad_idx, new TGeoTranslation(R_in + (padHeight + Pad_Space_h) * row + padHeight / 2. + Pad_Space_edge, pad_pos, z_offset));
+            mother_volume->AddNode(pad_vol, row * 1e3 + nPadsInRow[row] - 1 - pad_idx, new TGeoTranslation(R_in + (padHeight + Pad_Space_h) * row + padHeight / 2. + Pad_Space_edge, -pad_pos, z_offset));
+#endif
+            
+            pad_pos += Pad_Width + Pad_Space_w;
+        }
+        //cout << pad_idx * 2 << " pads in " << row + 1 << " row"<< endl;
+    }
 }
 
 void FillFramesPoints(unique_ptr<Double_t[]> &x, unique_ptr<Double_t[]> &y)
