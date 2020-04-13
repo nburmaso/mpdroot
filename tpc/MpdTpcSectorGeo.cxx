@@ -80,7 +80,7 @@ void MpdTpcSectorGeo::Init()
     // New sensitive volume
     //fYsec[0] = params->At(5);
     //fYsec[1] = params->At(6);
-    fYsec[0] = ((TGeoPgon*)shape)->Rmin(0);
+    fYsec[0] = ((TGeoPgon*)shape)->Rmin(0) + 0.4; //+offset between pad-plane edge and low edge of 1st row of pads
     //fYsec[2] = ((TGeoPgon*)shape)->Rmax(0);
     fPadH[0] = 1.2; // approx. pad height in inner ROC region
     fPadH[1] = 1.8; //1.2; // approx. pad height in outer ROC region
@@ -88,9 +88,9 @@ void MpdTpcSectorGeo::Init()
     fNrows[1] = 26; //33;
     Double_t dy = fPadH[0] * fNrows[0] + fPadH[1] * fNrows[1];
     fYsec[2] = fYsec[0] + dy;
-    Double_t scale = (fYsec[2] - fYsec[0]) / dy;
-    fPadH[0] *= scale;
-    fPadH[1] *= scale;
+    //Double_t scale = (fYsec[2] - fYsec[0]) / dy;
+    //fPadH[0] *= scale;
+    //fPadH[1] *= scale;
     fYsec[1] = fYsec[0] + fPadH[0] * fNrows[0];
     //fYsec[1] = fYsec[0] + 60;
     //fNrows = Int_t ((fYsec[1] - fYsec[0] + 0.1) / 1.2); // 66 lays
@@ -122,12 +122,18 @@ void MpdTpcSectorGeo::Init()
   fPadW[0] = fPadW[1] = 0.5; // pad widths
   // Numbers of pads in rows
   //Double_t tan = TMath::Tan(fDphi/2), dead = 1.35; // dead area on one side 
-  Double_t tan = TMath::Tan(fDphi/2), dead = 0.15; // dead area on one side 
+  //Double_t tan = TMath::Tan(fDphi/2), dead = 0.15; // dead area on one side 
   fNPadsInRows = new Int_t [NofRows()];
-  for (Int_t j = 0; j < fNrows[0]; ++j) 
-    fNPadsInRows[j] = Int_t ((tan * (fYsec[0] + j * fPadH[0]) - dead) / fPadW[0]); 
-  for (Int_t j = 0; j < fNrows[1]; ++j) 
-    fNPadsInRows[j+fNrows[0]] = Int_t ((tan * (fYsec[1] + j * fPadH[1]) - dead) / fPadW[1]); 
+  //for (Int_t j = 0; j < fNrows[0]; ++j) 
+  //  fNPadsInRows[j] = Int_t ((tan * (fYsec[0] + j * fPadH[0]) - dead) / fPadW[0]); 
+  //for (Int_t j = 0; j < fNrows[1]; ++j) 
+  //  fNPadsInRows[j+fNrows[0]] = Int_t ((tan * (fYsec[1] + j * fPadH[1]) - dead) / fPadW[1]);
+  //half of pads numbers in each row
+  Int_t nPiR[] = {20, 21, 21, 22, 23, 23, 24, 24, 25, 26, 26, 27, 28, 28, 29, 30, 30, 31, 32, 32, 33, 33, 34, 35, 35, 36, 37,
+                  38, 39, 40, 41, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62};
+  for (Int_t j = 0; j < NofRows(); ++j)
+    fNPadsInRows[j] = nPiR[j];
+  
 
   // Gas parameters
   std::string tpcGasFile = gSystem->Getenv("VMCWORKDIR");
