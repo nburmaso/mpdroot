@@ -101,20 +101,17 @@ MpdParticle & MpdParticle::operator=(const MpdParticle& part)
   // base class assignement
   TObject::operator=(part);
 
-  /*
-  fTrHits = new TClonesArray("MpdKalmanHit");
+  fIndx = part.fIndx; fPdg = part.fPdg; fCharge = part.fCharge;
+  fMass = part.fMass; fieldConst = part.fieldConst; fMeas = part.fMeas;
+  fq = part.fq; fx = part.fx; fJ = part.fJ; fJinv = part.fJinv;
+  fD = part.fD; fE = part.fE; fA = part.fA; fB = part.fB;
+  fC = part.fC; fG = part.fG; fW = part.fW; fChi2 = part.fChi2;
+  fChi2ver = part.fChi2ver; fFlag = part.fFlag;
 
-  Int_t nHits = track.fTrHits->GetEntriesFast();
-  for (Int_t i = 0; i < nHits; ++i) {
-    MpdKalmanHit *hit = (MpdKalmanHit*)(track.fTrHits->UncheckedAt(i));
-    new ((*fTrHits)[i]) MpdKalmanHit(*hit);
-  }
-  if (track.fHits == 0x0) {
-    for (Int_t i = 0; i < nHits; ++i) {
-      fHits->Add(fTrHits->UncheckedAt(i));
-    }
-  }
-  */
+  fXY0[0] = part.fXY0[0];
+  fXY0[1] = part.fXY0[1];
+  fDaughtersInds = part.fDaughtersInds;
+
   return *this;
 }
 

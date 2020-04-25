@@ -35,7 +35,7 @@ public:
    **@param pdgid Particle type (PDG encoding)
    **@param mult  Multiplicity (default is 1)
    **/
-  MpdHypYPtGenerator(Int_t pdgid, Int_t mult=1);
+  MpdHypYPtGenerator(Int_t pdgid, Int_t mult = 1, Double_t yield = -1.0);
 
   /** Destructor */
   virtual ~MpdHypYPtGenerator() {};
@@ -51,7 +51,7 @@ public:
 
 
   /** Initializer */
-  Bool_t  Init();    // EL
+  Bool_t  Init();
 
   /** Creates an event with given type and multiplicity.
    **@param primGen  pointer to the CbmPrimaryGenerator
@@ -68,6 +68,7 @@ private:
   Double_t fPtMax;               ///< Min value of Pt
   Double_t fPDGMass;             ///< Particle mass [GeV]
   TF1*     fDistPt;              //! Pointer to the Pt function
+  Double_t fYield;               ///< yield (particle / event)
 
 ClassDef(MpdHypYPtGenerator,1);
 };

@@ -21,6 +21,7 @@ set(INCLUDE_DIRECTORIES
 Set(SYSTEM_INCLUDE_DIRECTORIES
   ${ROOT_INCLUDE_DIR}
   ${FAIRROOT_LIBRARY_DIR}
+  ${GEANT3_INCLUDE_DIR}
 )
 
 if(PLUTO_FOUND)
@@ -57,6 +58,7 @@ MpdEPOSGenerator.cxx
 MpdDCMSMMGenerator.cxx
 MpdPHQMDGenerator.cxx
 MpdMcDstGenerator.cxx
+MpdDecayer.cxx
 )
 if(PLUTO_FOUND)
 set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
@@ -65,7 +67,7 @@ EndIf(PLUTO_FOUND)
 Set(HEADERS)
 Set(LINKDEF GenLinkDef.h)
 Set(LIBRARY_NAME MpdGen)
-Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst)
+Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst EGPythia6)
 
 GENERATE_LIBRARY()
 

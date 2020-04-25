@@ -829,6 +829,8 @@ Bool_t MpdKalmanFilter::PropagateParamP(MpdKalmanTrack *track, const Double_t *p
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
   Double_t dir = 1., norm = 1., scalar = 0., normal[3] = {0}, normLeng = 0;
 
+  if (track->Momentum() < 0.001) return kFALSE; //AZ - safety 19.04.2020
+
   for (Int_t i = 0; i < 3; ++i) {
     normal[i] = plane[i+3];
     normLeng += normal[i] * normal[i];

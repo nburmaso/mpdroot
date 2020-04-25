@@ -80,6 +80,8 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     // Use user defined decays https://fairroot.gsi.de/?q=node/57
     fRun->SetUserDecay(kTRUE);
+    // Use external decayer
+    //fRun->SetPythiaDecayer(TString("$VMCWORKDIR/gconfig/LambdaDecayConfig.C"));
     
 #ifdef MCDST // McDst generator
     if (!CheckFileExist(inFile)) return;
