@@ -11,6 +11,8 @@
 #include "TVirtualMCDecayer.h"
 #include "TString.h"
 #include "TArrayF.h"
+
+#include <set>
  
 class MpdDecayer : public TVirtualMCDecayer
 {
@@ -28,10 +30,10 @@ class MpdDecayer : public TVirtualMCDecayer
   TArrayF    fBraPart;        //! Branching ratios
   Float_t fBratio[6];
   Int_t fMode[6];
-  Int_t fkcLamb; // Pythia Lmabda compressed code
   Float_t fBranch; // branching of lambda to p + \pi-
   TClonesArray *fParticles;
   SourceFlag fSourceFlag;
+  std::set<Int_t> fMothersPdg;
   
   static MpdDecayer *fgInstance;
   
@@ -50,6 +52,7 @@ class MpdDecayer : public TVirtualMCDecayer
   virtual Int_t   ImportParticles(TClonesArray *particles);
   virtual void    SetForceDecay(Int_t type);
   virtual void    ForceDecay();
+  void AddMotherPdg(Int_t pdg);
   
   virtual Float_t GetPartialBranchingRatio(Int_t ipart);
   virtual Float_t GetLifetime(Int_t kf);

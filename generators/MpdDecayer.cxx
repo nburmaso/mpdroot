@@ -21,6 +21,7 @@
 
 using std::cout;
 using std::endl;
+using std::set;
 
 ClassImp(MpdDecayer);
  
@@ -60,9 +61,9 @@ void MpdDecayer::Init()
   
   // Get branching of Lmabda to p + \pi-
   TPythia6 *pythia = TPythia6::Instance();
-  fkcLamb = pythia->Pycomp(3122); // compressed code for Lambda
-  Int_t idcb = pythia->GetMDCY(fkcLamb,2);
-  Int_t idce = idcb + pythia->GetMDCY(fkcLamb,3);;
+  Int_t ccLamb = pythia->Pycomp(3122); // compressed code for Lambda
+  Int_t idcb = pythia->GetMDCY(ccLamb,2);
+  Int_t idce = idcb + pythia->GetMDCY(ccLamb,3);;
   //for (Int_t idc = idcb; idc < idce; ++idc) cout << pythia->GetBRAT(idc) << " ";
   //cout << endl;
   fBranch = pythia->GetBRAT(idcb);
@@ -112,13 +113,20 @@ void MpdDecayer::Decay(Int_t idpart, TLorentzVector* p)
   TParticle *part = gMC->GetStack()->GetCurrentTrack();
   //part->Print();
 
+  if (fMothersPdg.find(idpart) == fMothersPdg.end()) {
+    // Particle is not defined
+    new ((*fParticles)[0]) TParticle(*part); // store mother particle
+    fSourceFlag = kCustom;
+    return;
+  }
+
   TVector3 polar;
   part->GetPolarisation(polar);
   //polar.SetX(1.0); // just for test
   //polar.Print();
   //p->Print();
   //exit(0);
-  if (polar.X() < 0.0001 && polar.Z() < 0.0001) {
+  if (TMath::Abs(polar.X()) < 0.0001 && TMath::Abs(polar.Z()) < 0.0001) {
   //if (polar.X() < -0.0001 && polar.Z() < 0.0001) {
     // No polarisation - check this !!!
     pythia->Py1ent(0, idpart, p->Energy(), p->Theta(), p->Phi());
@@ -141,11 +149,11 @@ void MpdDecayer::Decay(Int_t idpart, TLorentzVector* p)
       Gdecay (idpart, p);
     } else {
       // Force the other channels
-     Int_t idcb = pythia->GetMDCY(fkcLamb,2);
-     pythia->SetMDME(idcb,1,0); // disable decay to p + \pi-
-     pythia->Py1ent(0, idpart, p->Energy(), p->Theta(), p->Phi());
-     pythia->GetPrimaries();
-     pythia->SetMDME(idcb,1,1); // enable decay to p + \pi-
+      Int_t idcb = pythia->GetMDCY(pythia->Pycomp(3122),2);
+      pythia->SetMDME(idcb,1,0); // disable decay to p + \pi-
+      pythia->Py1ent(0, idpart, p->Energy(), p->Theta(), p->Phi());
+      pythia->GetPrimaries();
+      pythia->SetMDME(idcb,1,1); // enable decay to p + \pi-
     }
   }
   /*
@@ -499,7 +507,7 @@ void MpdDecayer::Gdeca2(Double_t xm0, Double_t xm1, Double_t xm2, Double_t pcm[2
     
   // Sanity check - should not happen (legacy code)
   TParticle *part = gMC->GetStack()->GetCurrentTrack();
-  if (part->GetPdgCode() != 3122) { cout << " ??? Not Lambda - exit " << endl; exit(0); }
+  if (part->GetPdgCode() != 3122) { cout << " ??? Not Lambda - exit " << part->GetPdgCode() << endl; exit(0); }
 
   TLorentzVector lorV;
   part->Momentum(lorV);
@@ -584,3 +592,15 @@ void MpdDecayer::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Do
   //outfile << i << " " << costh << endl;
   //outfile.close();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// Add PDG of particle to be decayed by this package
+
+void MpdDecayer::AddMotherPdg(Int_t pdg) 
+{ 
+
+  if (fMothersPdg.find(pdg) != fMothersPdg.end()) return;
+  fMothersPdg.insert(pdg);
+  gMC->SetUserDecay(pdg);
+}
+

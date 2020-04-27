@@ -85,7 +85,7 @@ class MpdMCTrack : public TObject
   void GetMomentum(TVector3& momentum); 
   void Get4Momentum(TLorentzVector& momentum);
   void GetStartVertex(TVector3& vertex);
-
+  Double_t GetPolar(Int_t indx) { return fPolar[indx]; }
 
   /** Accessors to the number of MCPoints in the detectors **/
   Int_t GetNPoints(DetectorIdMPD detId)  const;
@@ -94,8 +94,7 @@ class MpdMCTrack : public TObject
   /**  Modifiers  **/
   void SetMotherId(Int_t id) { fMotherId = id; }
   void SetNPoints(Int_t iDet, Int_t np);
-
-
+  void SetPolar(Int_t indx, Double_t polar) { fPolar[indx] = polar; }
 
 private:
 
@@ -130,9 +129,10 @@ private:
    **  Bits 12-31 are spare for potential additional detectors.
    **/
   Int_t fNPoints;
+  /**AZ Polarization  **/
+  Double32_t fPolar[3]; 
 
-
-  ClassDef(MpdMCTrack,3);
+  ClassDef(MpdMCTrack,4);
 
 };
 

@@ -31,6 +31,7 @@ MpdMCTrack::MpdMCTrack()// {
     fStartT(0.),
     fNPoints(0)
 {
+  fPolar[0] = fPolar[1] = fPolar[2] = 0.0;
 }
 // -------------------------------------------------------------------------
 
@@ -53,6 +54,7 @@ MpdMCTrack::MpdMCTrack(Int_t pdgCode, Int_t motherId, Double_t px,
   //   if (nPoints >= 0) fNPoints = nPoints;
   //   else              fNPoints = 0;
   fNPoints = nPoints;
+  fPolar[0] = fPolar[1] = fPolar[2] = 0.0;
 }
 // -------------------------------------------------------------------------
 
@@ -74,6 +76,7 @@ MpdMCTrack::MpdMCTrack(const MpdMCTrack& track) // {
     fStartT(track.fStartT),
     fNPoints(track.fNPoints)
 {
+  for (Int_t i = 0; i < 3; ++i) fPolar[i] = track.fPolar[i];
 }
 // -------------------------------------------------------------------------
 
@@ -92,6 +95,10 @@ MpdMCTrack::MpdMCTrack(TParticle* part)
   fStartZ   = part->Vz();
   fStartT   = part->T()*1e09;
   fNPoints  = 0;
+
+  TVector3 polar3;
+  part->GetPolarisation(polar3);
+  for (Int_t i = 0; i < 3; ++i) fPolar[i] = polar3[i];
 }
 // -------------------------------------------------------------------------
 

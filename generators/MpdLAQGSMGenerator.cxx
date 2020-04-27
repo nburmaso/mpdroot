@@ -12,7 +12,9 @@
 
 #include "MpdLAQGSMGenerator.h"
 #include "MpdHypYPtGenerator.h" //AZ
+#include "MpdStack.h"
 
+#include "FairMCEventHeader.h"
 #include "FairPrimaryGenerator.h"
 #include "FairIon.h"
 #include "FairRunSim.h"
@@ -22,8 +24,8 @@
 #include "TParticlePDG.h"
 #include "TParticle.h"
 #include "TSystem.h"
-
-#include "FairMCEventHeader.h"
+#include "TParticle.h"
+#include "TVirtualMC.h"
 
 #include <iostream>
 
@@ -462,43 +464,53 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     if (fQGSM_format_ID<3)
       sscanf(ss," %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &iCode); 
     else{ 
-		if(fQGSM_format_ID==4){	      
-//		   cout << ss << endl;
-		   sscanf(ss," %d %d %d %d %d %g %g %g %g %g %g", &iCharge,&iLeptonic,&iStrange,&iBarionic, &PDG, &px, &py, &pz, &pz1, &pza1, &mass); 
-//		   printf("!!!!!!!!!!!!!!!!!!!!!reading: %d %d %d %d %d %g %g %g %g %g %g\n", iCharge,iLeptonic,iStrange,iBarionic, PDG, px, py, pz, pz1, pza1, mass); 
-		   primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
-		}
-		else
-		   sscanf(ss," %d %d %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &io1, &io2, &io3); 
-	}
-    if(fQGSM_format_ID!=4){	
-	    Int_t p_num = 21;
-	    if (fQGSM_format_ID==3)
-	      p_num=36;
-
-	    if (!fQGSM_format_ID)
-	      sscanf(&(ss[p_num]),"%g%g%g%g%g",&px,&py,&pz,&pz1,&mass);
-	    else
-	      sscanf(&(ss[p_num]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
-
-
-	    if (FindParticle (iCharge, iStrange, iLeptonic, iBarionic,  mass, PDG, ionName)) {
-
-	      if (!fPDG->GetParticle(PDG))  {
-		cout << "-W- MpdLAQGSMGenerator::ReadEvent: Cannot find " << PDG << " " 
-		     << ionName << " in database!" << endl;
-		continue;
-	      }
-			  
-	      // Give track to PrimaryGenerator
-	      if (fUseColliderSystem)
-		primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
-	      else
-		primGen->AddTrack(PDG, px, py, pz1, 0., 0., 0.);
-	   }
+      if(fQGSM_format_ID==4){	      
+	//		   cout << ss << endl;
+	sscanf(ss," %d %d %d %d %d %g %g %g %g %g %g", &iCharge,&iLeptonic,&iStrange,&iBarionic, &PDG, &px, &py, &pz, &pz1, &pza1, &mass); 
+	//		   printf("!!!!!!!!!!!!!!!!!!!!!reading: %d %d %d %d %d %g %g %g %g %g %g\n", iCharge,iLeptonic,iStrange,iBarionic, PDG, px, py, pz, pz1, pza1, mass); 
+	primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
       }
+      else
+	sscanf(ss," %d %d %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &io1, &io2, &io3); 
+    }
+    if(fQGSM_format_ID!=4){	
+      Int_t p_num = 21;
+      if (fQGSM_format_ID==3)
+	p_num=36;
+      
+      if (!fQGSM_format_ID)
+	sscanf(&(ss[p_num]),"%g%g%g%g%g",&px,&py,&pz,&pz1,&mass);
+      else
+	sscanf(&(ss[p_num]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
+      
+      
+      if (FindParticle (iCharge, iStrange, iLeptonic, iBarionic,  mass, PDG, ionName)) {
+	
+	if (!fPDG->GetParticle(PDG))  {
+	  cout << "-W- MpdLAQGSMGenerator::ReadEvent: Cannot find " << PDG << " " 
+	       << ionName << " in database!" << endl;
+	  continue;
+	}
+	
+	// Give track to PrimaryGenerator
+	if (fUseColliderSystem)
+	  primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
+	else
+	  primGen->AddTrack(PDG, px, py, pz1, 0., 0., 0.);
+	//AZ - add polarization for Lambda
+	/*
+	if (PDG == 3122) {
+	  Int_t nTr = gMC->GetStack()->GetNtrack();
+	  TParticle *part = ((MpdStack*)gMC->GetStack())->GetParticle(nTr-1);
+	  Double_t pol[3] = {-0.2};
+	  pol[1] = TMath::Sqrt (1.0 - pol[0] * pol[0]);
+	  part->SetPolarisation(pol[0], pol[1], pol[2]);
+	}
+	*/
+      }
+    }
   }
-
+  
   return kTRUE;
 }
 // ------------------------------------------------------------------------
