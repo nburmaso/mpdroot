@@ -40,7 +40,8 @@ void Config()
  //  stack->SetMinPoints(0);
    geant4->SetStack(stack);
 
-   if(FairRunSim::Instance()->IsExtDecayer()){
+   //AZ if(FairRunSim::Instance()->IsExtDecayer()){
+   if(FairRunSim::Instance()->IsExtDecayer() && !geant4->GetDecayer()){ //AZ
       TVirtualMCDecayer* decayer = TPythia6Decayer::Instance();
       geant4->SetExternalDecayer(decayer);
    }
