@@ -266,7 +266,7 @@ void MpdStack::FillTrackArray() {
 	new( (*fTracks)[fNTracks]) MpdMCTrack(GetParticle(iPart));
       fIndexMap[iPart] = fNTracks;
       // --> Set the number of points in the detectors for this track
-      for (Int_t iDet=kSTS; iDet<=kBMD; iDet++) {
+      for (Int_t iDet=kSTS; iDet<=kMCORD; iDet++) {
 	pair<Int_t, Int_t> a(iPart, iDet);
 	track->SetNPoints(iDet, fPointsMap[a]);
       }
@@ -472,7 +472,7 @@ void MpdStack::SelectTracks() {
 
     // --> Calculate number of points
     Int_t nPoints = 0, nPointsZDC = 0, nPointsNoZDC = 0;
-    for (Int_t iDet=kSTS; iDet<=kBMD; iDet++) {
+    for (Int_t iDet=kSTS; iDet<=kMCORD; iDet++) {
       pair<Int_t, Int_t> a(i, iDet);
       if ( fPointsMap.find(a) != fPointsMap.end() ) {
 	nPoints += fPointsMap[a];
