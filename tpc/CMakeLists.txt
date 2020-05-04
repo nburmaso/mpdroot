@@ -57,6 +57,9 @@ MpdTpcDigitizerAZlt.cxx
 MpdTpcClusterFinderAZ.cxx
 MpdTPCpid.cxx
 MpdTpcClusterFinderMlem.cxx
+MpdTpcAlignmentParams.cxx
+MpdTpcMisalignment.cxx
+MpdTpcAlignment.cxx
 )
 
 Set(HEADERS)

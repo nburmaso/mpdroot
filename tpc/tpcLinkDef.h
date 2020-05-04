@@ -30,6 +30,10 @@
 #pragma link C++ class MpdTpcClusterFinderAZ+;
 #pragma link C++ class MpdTPCpid+;
 #pragma link C++ class MpdTpcClusterFinderMlem+;
+#pragma link C++ class MpdTpcAlignmentParams+;
+#pragma link C++ class MpdRotation+;
+#pragma link C++ class MpdTpcMisalignment+;
+#pragma link C++ class MpdTpcAlignment+;
 
 #endif
 

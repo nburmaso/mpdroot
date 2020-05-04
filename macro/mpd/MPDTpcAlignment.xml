@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<MPDTpcAlignment>
+	<TpcSector n="0">
+		<ShiftX unit="cm">0.10995</ShiftX>
+		<ShiftY unit="cm">0.0648</ShiftY>
+		<ShiftZ unit="cm">-0.0096</ShiftZ>
+		<RotationX unit="deg">-0.04505</RotationX>
+		<RotationY unit="deg">0.0009</RotationY>
+		<RotationZ unit="deg">0.03625</RotationZ>
+	</TpcSector>
+	<TpcSector n="1">
+		<ShiftX unit="cm">0.0504</ShiftX>
+		<ShiftY unit="cm">-0.1194</ShiftY>
+		<ShiftZ unit="cm">0.01785</ShiftZ>
+		<RotationX unit="deg">0.03215</RotationX>
+		<RotationY unit="deg">-0.04435</RotationY>
+		<RotationZ unit="deg">0.0297</RotationZ>
+	</TpcSector>
+	<TpcSector n="2">
+		<ShiftX unit="cm">-0.0135</ShiftX>
+		<ShiftY unit="cm">-0.04485</ShiftY>
+		<ShiftZ unit="cm">0.0888</ShiftZ>
+		<RotationX unit="deg">0.0442</RotationX>
+		<RotationY unit="deg">-0.0354</RotationY>
+		<RotationZ unit="deg">0.03065</RotationZ>
+	</TpcSector>
+	<TpcSector n="3">
+		<ShiftX unit="cm">-0.05505</ShiftX>
+		<ShiftY unit="cm">0.01155</ShiftY>
+		<ShiftZ unit="cm">-0.10515</ShiftZ>
+		<RotationX unit="deg">0.0147</RotationX>
+		<RotationY unit="deg">-0.02405</RotationY>
+		<RotationZ unit="deg">0.02755</RotationZ>
+	</TpcSector>
+	<TpcSector n="4">
+		<ShiftX unit="cm">0.13605</ShiftX>
+		<ShiftY unit="cm">0.0168</ShiftY>
+		<ShiftZ unit="cm">-0.1335</ShiftZ>
+		<RotationX unit="deg">-0.037</RotationX>
+		<RotationY unit="deg">0.0459</RotationY>
+		<RotationZ unit="deg">0.0087</RotationZ>
+	</TpcSector>
+	<TpcSector n="5">
+		<ShiftX unit="cm">0.1455</ShiftX>
+		<ShiftY unit="cm">-0.0234</ShiftY>
+		<ShiftZ unit="cm">-0.05325</ShiftZ>
+		<RotationX unit="deg">0.00515</RotationX>
+		<RotationY unit="deg">0.0365</RotationY>
+		<RotationZ unit="deg">0.0107</RotationZ>
+	</TpcSector>
+	<TpcSector n="6">
+		<ShiftX unit="cm">-0.14655</ShiftX>
+		<ShiftY unit="cm">0.0441</ShiftY>
+		<ShiftZ unit="cm">0.00555</ShiftZ>
+		<RotationX unit="deg">-0.02805</RotationX>
+		<RotationY unit="deg">-0.0072</RotationY>
+		<RotationZ unit="deg">-0.0455</RotationZ>
+	</TpcSector>
+	<TpcSector n="7">
+		<ShiftX unit="cm">0.12255</ShiftX>
+		<ShiftY unit="cm">-0.0324</ShiftY>
+		<ShiftZ unit="cm">0.1356</ShiftZ>
+		<RotationX unit="deg">0.0327</RotationX>
+		<RotationY unit="deg">0.0416</RotationY>
+		<RotationZ unit="deg">0.01835</RotationZ>
+	</TpcSector>
+	<TpcSector n="8">
+		<ShiftX unit="cm">0.0684	</ShiftX>
+		<ShiftY unit="cm">-0.0108</ShiftY>
+		<ShiftZ unit="cm">0.0951</ShiftZ>
+		<RotationX unit="deg">-0.02945</RotationX>
+		<RotationY unit="deg">-0.00615</RotationY>
+		<RotationZ unit="deg">-0.0325</RotationZ>
+	</TpcSector>
+	<TpcSector n="9">
+		<ShiftX unit="cm">-0.1329</ShiftX>
+		<ShiftY unit="cm">0.09135</ShiftY>
+		<ShiftZ unit="cm">-0.13215</ShiftZ>
+		<RotationX unit="deg">-0.0171</RotationX>
+		<RotationY unit="deg">0.0335</RotationY>
+		<RotationZ unit="deg">0.01015</RotationZ>
+	</TpcSector>
+	<TpcSector n="10">
+		<ShiftX unit="cm">-0.13155</ShiftX>
+		<ShiftY unit="cm">0.1296</ShiftY>
+		<ShiftZ unit="cm">-0.1368</ShiftZ>
+		<RotationX unit="deg">-0.0269</RotationX>
+		<RotationY unit="deg">-0.0098</RotationY>
+		<RotationZ unit="deg">0.0323</RotationZ>
+	</TpcSector>
+	<TpcSector n="11">
+		<ShiftX unit="cm">-0.1026</ShiftX>
+		<ShiftY unit="cm">0.0339</ShiftY>
+		<ShiftZ unit="cm">0.0147</ShiftZ>
+		<RotationX unit="deg">0.0393</RotationX>
+		<RotationY unit="deg">-0.005</RotationY>
+		<RotationZ unit="deg">0.0064</RotationZ>
+	</TpcSector>
+	<TpcSector n="12">
+		<ShiftX unit="cm">0.066</ShiftX>
+		<ShiftY unit="cm">-0.1044</ShiftY>
+		<ShiftZ unit="cm">0.0684</ShiftZ>
+		<RotationX unit="deg">-0.0079</RotationX>
+		<RotationY unit="deg">0.0126</RotationY>
+		<RotationZ unit="deg">0.0259</RotationZ>
+	</TpcSector>
+	<TpcSector n="13">
+		<ShiftX unit="cm">0.1407</ShiftX>
+		<ShiftY unit="cm">0.09825</ShiftY>
+		<ShiftZ unit="cm">0.0891</ShiftZ>
+		<RotationX unit="deg">-0.01755</RotationX>
+		<RotationY unit="deg">-0.0315</RotationY>
+		<RotationZ unit="deg">0.0158</RotationZ>
+	</TpcSector>
+	<TpcSector n="14">
+		<ShiftX unit="cm">0.14535</ShiftX>
+		<ShiftY unit="cm">-0.01035</ShiftY>
+		<ShiftZ unit="cm">0.0897</ShiftZ>
+		<RotationX unit="deg">0.04785</RotationX>
+		<RotationY unit="deg">0.0342</RotationY>
+		<RotationZ unit="deg">0.04845</RotationZ>
+	</TpcSector>
+	<TpcSector n="15">
+		<ShiftX unit="cm">-0.0903</ShiftX>
+		<ShiftY unit="cm">-0.15</ShiftY>
+		<ShiftZ unit="cm">0.0969</ShiftZ>
+		<RotationX unit="deg">0.0356</RotationX>
+		<RotationY unit="deg">0.02285</RotationY>
+		<RotationZ unit="deg">-0.0095</RotationZ>
+	</TpcSector>
+	<TpcSector n="16">
+		<ShiftX unit="cm">-0.1173</ShiftX>
+		<ShiftY unit="cm">-0.1473</ShiftY>
+		<ShiftZ unit="cm">-0.06375</ShiftZ>
+		<RotationX unit="deg">-0.01315</RotationX>
+		<RotationY unit="deg">-0.02705</RotationY>
+		<RotationZ unit="deg">0.04725</RotationZ>
+	</TpcSector>
+	<TpcSector n="17">
+		<ShiftX unit="cm">0.0981</ShiftX>
+		<ShiftY unit="cm">-0.0555</ShiftY>
+		<ShiftZ unit="cm">0.0363</ShiftZ>
+		<RotationX unit="deg">0.0486</RotationX>
+		<RotationY unit="deg">0.01335</RotationY>
+		<RotationZ unit="deg">-0.041</RotationZ>
+	</TpcSector>
+	<TpcSector n="18">
+		<ShiftX unit="cm">0.05925</ShiftX>
+		<ShiftY unit="cm">-0.1065</ShiftY>
+		<ShiftZ unit="cm">0.1392</ShiftZ>
+		<RotationX unit="deg">0.04075</RotationX>
+		<RotationY unit="deg">-0.0021</RotationY>
+		<RotationZ unit="deg">0.0495</RotationZ>
+	</TpcSector>
+	<TpcSector n="19">
+		<ShiftX unit="cm">0.00675</ShiftX>
+		<ShiftY unit="cm">0.06975</ShiftY>
+		<ShiftZ unit="cm">-0.0237</ShiftZ>
+		<RotationX unit="deg">-0.0379</RotationX>
+		<RotationY unit="deg">-0.00745</RotationY>
+		<RotationZ unit="deg">-0.0146</RotationZ>
+	</TpcSector>
+	<TpcSector n="20">
+		<ShiftX unit="cm">-0.1368</ShiftX>
+		<ShiftY unit="cm">-0.13185</ShiftY>
+		<ShiftZ unit="cm">-0.14835</ShiftZ>
+		<RotationX unit="deg">-0.0034</RotationX>
+		<RotationY unit="deg">0.0366</RotationY>
+		<RotationZ unit="deg">-0.0329</RotationZ>
+	</TpcSector>
+	<TpcSector n="21">
+		<ShiftX unit="cm">-0.0597</ShiftX>
+		<ShiftY unit="cm">0.1413</ShiftY>
+		<ShiftZ unit="cm">0.0888</ShiftZ>
+		<RotationX unit="deg">-0.0004</RotationX>
+		<RotationY unit="deg">-0.0369</RotationY>
+		<RotationZ unit="deg">0.0419</RotationZ>
+	</TpcSector>
+	<TpcSector n="22">
+		<ShiftX unit="cm">0.1215</ShiftX>
+		<ShiftY unit="cm">-0.13995</ShiftY>
+		<ShiftZ unit="cm">0.0042</ShiftZ>
+		<RotationX unit="deg">-0.0447</RotationX>
+		<RotationY unit="deg">-0.0379</RotationY>
+		<RotationZ unit="deg">0.0008</RotationZ>
+	</TpcSector>
+	<TpcSector n="23">
+		<ShiftX unit="cm">0.0261</ShiftX>
+		<ShiftY unit="cm">0.0759</ShiftY>
+		<ShiftZ unit="cm">0.0246</ShiftZ>
+		<RotationX unit="deg">0.03995</RotationX>
+		<RotationY unit="deg">-0.0109</RotationY>
+		<RotationZ unit="deg">-0.0053</RotationZ>
+	</TpcSector>
+</MPDTpcAlignment>
