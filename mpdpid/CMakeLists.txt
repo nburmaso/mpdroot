@@ -33,7 +33,6 @@ link_directories(${LINK_DIRECTORIES} )
 set(SRCS
 MpdPid.cxx
 MpdPidQA.cxx
-MpdPid_AZ.cxx
 )
 
 Set(HEADERS)
