@@ -1,10 +1,11 @@
-#include "../../kalman/MpdKalmanHit.h"
-#include "../../kalman/MpdKalmanTrack.h"
-#include "../../kalman/MpdTpcKalmanTrack.h"
-#include "../../tpc/MpdTpcHit.h"
-#include "../../mpdbase/MpdEvent.h"
-#include "../../mpdbase/MpdHelix.h"
-#include "../../mpdbase/MpdTrack.h"
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "kalman/MpdKalmanHit.h"
+#include "kalman/MpdKalmanTrack.h"
+#include "kalman/MpdTpcKalmanTrack.h"
+#include "tpc/MpdTpcHit.h"
+#include "mpdbase/MpdEvent.h"
+#include "mpdbase/MpdHelix.h"
+#include "mpdbase/MpdTrack.h"
 
 double SqDev(std::vector<double> & dca)
 {
@@ -16,7 +17,7 @@ double SqDev(std::vector<double> & dca)
 	return sqrt(sqDev / (double)(dca.size() - 1));
 }
 
-void align_qa_view(std::string inFileEve = "evetest.root",std::string inFileDst = "mpddst_align.root", long long event = 0, Double_t sqDevMax = 0.2)
+void align_qa_view(std::string inFileEve = "$VMCWORKDIR/macro/mpd/evetest.root",std::string inFileDst = "mpddst_align.root", long long event = 0, Double_t sqDevMax = 0.2)
 {
 	auto C = new TCanvas();
 	C->Divide(2,2);
