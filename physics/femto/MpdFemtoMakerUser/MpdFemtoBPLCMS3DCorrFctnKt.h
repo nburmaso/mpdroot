@@ -2,11 +2,8 @@
  * \class MpdFemtoBPLCMS3DCorrFctnKt
  * \brief A class to calculate 3D correlation for pairs of identical particles.
  *
- * It also stored the weighted qinv per bin histogram for the coulomb
+ * It also stored the weighted qinv per bin denominator histogram for the coulomb
  * correction.
- * In analysis the function should be first created in a macro, then
- * added to the analysis, and at the end of the macro the procedure to
- * write out histograms should be called.
  *
  * \author Grigory Nigmatkulov (NRNU MEPhI)
  * \date May 18, 2019
@@ -116,4 +113,4 @@ class MpdFemtoBPLCMS3DCorrFctnKt : public MpdFemtoBaseCorrFctn {
   ClassDef(MpdFemtoBPLCMS3DCorrFctnKt, 1)
 };
 
-#endif
+#endif // #ifndef MpdFemtoBPLCMS3DCorrFctnKt_h
