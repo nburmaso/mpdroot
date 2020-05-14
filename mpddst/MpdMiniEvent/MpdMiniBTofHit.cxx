@@ -10,44 +10,41 @@ ClassImp(MpdMiniBTofHit)
 
 //_________________
 MpdMiniBTofHit::MpdMiniBTofHit() : TObject(),
-fDetectorID(-1), mBTofMatchFlag(kFALSE), mBTof(0.), mBTofHitPosX(-1.), mBTofHitPosY(-1.), mBTofHitPosZ(-1.) {
-    /* empty */
+  fDetectorID(-1), mBTofMatchFlag(kFALSE), mBTofHitPosX(-1.),
+  mBTofHitPosY(-1.), mBTofHitPosZ(-1.), mBTof(0.) {
+  /* empty */
 }
 
 //_________________
-
 MpdMiniBTofHit::MpdMiniBTofHit(int id) : TObject() {
-    if (id < 0) return;
-    fDetectorID = (id > std::numeric_limits<short>::max()) ? std::numeric_limits<short>::max() : (Short_t) id;
+  if (id < 0) return;
+  fDetectorID = ( (id > std::numeric_limits<short>::max()) ?
+		  std::numeric_limits<short>::max() : (Short_t) id );
 }
 
 //_________________
-
 MpdMiniBTofHit::MpdMiniBTofHit(const MpdMiniBTofHit &hit) : TObject() {
-    fDetectorID = hit.fDetectorID;
-    mBTofMatchFlag = hit.mBTofMatchFlag;
-    mBTof = hit.mBTof;
-    mBTofHitPosX = hit.mBTofHitPosX;
-    mBTofHitPosY = hit.mBTofHitPosY;
-    mBTofHitPosZ = hit.mBTofHitPosZ;
+  fDetectorID = hit.fDetectorID;
+  mBTofMatchFlag = hit.mBTofMatchFlag;
+  mBTof = hit.mBTof;
+  mBTofHitPosX = hit.mBTofHitPosX;
+  mBTofHitPosY = hit.mBTofHitPosY;
+  mBTofHitPosZ = hit.mBTofHitPosZ;
 }
 
 //_________________
-
 MpdMiniBTofHit::~MpdMiniBTofHit() {
-    /* empty */
+  /* empty */
 }
 
 //_________________
-
 void MpdMiniBTofHit::Print(const Char_t* option __attribute__ ((unused))) const {
-    LOG_INFO << " Id = " << id() << endm;
+  LOG_INFO << " Id = " << id() << endm;
 }
 
 //_________________
-
 void MpdMiniBTofHit::setId(Int_t sector, Int_t gap, Int_t detector, Int_t strip) {
-    fDetectorID = (sector << 24) + (detector << 16) + (gap << 8) + strip;
+  fDetectorID = (sector << 24) + (detector << 16) + (gap << 8) + strip;
 }
 
 //_________________

@@ -7,7 +7,7 @@
  *
  * \author Grigory Nigmatkulov (NRNU MEPhI)
  * \email nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date July 11, 2019
+ * \date May 01, 2020
  */
 
 #ifndef MpdMiniTrack_h
@@ -83,21 +83,19 @@ class MpdMiniTrack : public TObject {
   /// Return 3-vector (distance) between the DCA point and the point (gDCA - point)
   TVector3 gDCA(TVector3 pVtx) const;
   /// Return charge of the track (encoded in nHitsFit as: nHitsFit * charge)
-  Short_t charge() const                 { return (fNHits > 0) ? 1 : -1; }
+  Int_t charge() const                   { return (fNHits > 0) ? 1 : -1; }
   /// Return number of hits
   Int_t   nHits() const                  { return (fNHits > 0) ? (Int_t)fNHits : (Int_t)(-1 * fNHits); }
   /// Return number of hits possible
-  Int_t   nHitsMax() const               { return (Int_t)fNHitsMax; }
+  //Int_t   nHitsMax() const               { return (Int_t)fNHitsMax; }
   /// Return number of hits possible
-  Int_t   nHitsPoss() const              { return nHitsMax(); }
+  //Int_t   nHitsPoss() const              { return nHitsMax(); }
   /// Return number of hits used for dE/dx measurement
-  Int_t   nHitsDedx() const              { return (Int_t)fNHitsDedx; }
-  /// Return a map of hits in HFT
-  UInt_t  hftHitsMap() const             { return topologyMap(0) >> 1 & 0x7F; }
+  //Int_t   nHitsDedx() const              { return (Int_t)fNHitsDedx; }
   /// Return dE/dx (GeV/cm) of the track
   Float_t dEdx() const                   { return fDedx; }
   /// Return dE/dx error of the track
-  Float_t dEdxError() const              { return fDedxError; }
+  //Float_t dEdxError() const              { return fDedxError; }
 
   /// Return nSigma(pion)
   Float_t nSigmaPion() const             { return (Float_t)fNSigmaPion / 1000.f; }
@@ -108,8 +106,8 @@ class MpdMiniTrack : public TObject {
   /// Return nSigma(electron)
   Float_t nSigmaElectron() const         { return (Float_t)fNSigmaElectron / 1000.f; }
 
-  /// Return track topology map (return 0 in case when requested index is >1)
-  UInt_t  topologyMap(UInt_t idx) const  { return (idx>1) ? 0 : fTopologyMap[idx]; }
+  /// Return hit map
+  ULong64_t hitMap() const               { return fHitMap; }
 
   /// Return if track has TOF hit
   Bool_t isBTofTrack() const             { return (fBTofPidTraitsIndex<0) ? false : true; }
@@ -122,12 +120,13 @@ class MpdMiniTrack : public TObject {
   //  Not used right now since we can have just one-to-one matching 
   //  Presense of matching can be checked by isBTofTrack() or isBECalTrack() methods
   
-  // Int_t bECalPidTraitsIndex() const      { return fBECalPidTraitsIndex; }
-  // Int_t bTofPidTraitsIndex() const       { return fBTofPidTraitsIndex; }
+  Int_t bECalPidTraitsIndex() const      { return fBECalPidTraitsIndex; }
+  Int_t bTofPidTraitsIndex() const       { return fBTofPidTraitsIndex; }
   
   /// Return index of MpdMiniMcTrack corresponding to current miniTrack
   // If returns -1, it means that the miniTrack does not correspond to any written primary track from generator 
-  Int_t mcTrackId() const { return fMcTrackId; }
+  Int_t mcTrackIndex() const             { return (Int_t)fMcTrackId; }
+  Bool_t hasMcTrack() const              { return (fMcTrackId<0) ? false : true; }
 
   //
   // Setters
@@ -168,13 +167,13 @@ class MpdMiniTrack : public TObject {
   /// Set dE/dx of the track
   void setDedx(Float_t dEdx);
   /// Set dE/dx error of the track
-  void setDedxError(Float_t dEdxError)     { fDedxError = dEdxError; }
+  //void setDedxError(Float_t dEdxError)     { fDedxError = dEdxError; }
   /// Set nHitsFit ( charge * nHitsFit )
   void setNHits(Int_t nhits)               { fNHits = (Char_t)nhits; }
   /// Set nHitsPoss
-  void setNHitsPossible(Int_t nhits);
+  //void setNHitsPossible(Int_t nhits);
   /// Set nHitsPoss
-  void setNHitsMax(Int_t nhits);
+  //void setNHitsMax(Int_t nhits);
   /// Set nHitsDedx
   void setNHitsDedx(Int_t nhits);
   /// Set nSigma(pion)
@@ -185,11 +184,11 @@ class MpdMiniTrack : public TObject {
   void setNSigmaProton(Float_t ns);
   /// Set nSigma(electron)
   void setNSigmaElectron(Float_t ns);
-  /// Set topology map (2 words)
-  void setTopologyMap(Int_t id, UInt_t word);
+  /// Set hit map
+  void setHitMap(ULong64_t map)      { fHitMap = map; }
   
   // Set link to MC-track
-  void setMcTrackIds(Int_t ids)      { fMcTrackId = ids; }
+  void setMcTrackIndex(Int_t index);
 
   /// Set index to ECal PID traits
   void setBECalPidTraitsIndex(Int_t index) { fBECalPidTraitsIndex = (Short_t)index; }
@@ -221,17 +220,17 @@ class MpdMiniTrack : public TObject {
   /// Track origin z in cm (DCAy to the primary vertex)
   Float_t fOriginZ;
   
-  /// dE/dx in KeV/cm (dE/dx * 1e6)
+  /// dE/dx in arbitrary units
   Float16_t fDedx;
-  /// dE/dx error (in GeV/cm)
-  Float16_t fDedxError;
+  /// dE/dx error in arbitrary units
+  //Float16_t fDedxError;
   
   /// Charge * nHits
   Char_t   fNHits;
   /// Possible number of hits (in TPC)
-  UChar_t  fNHitsMax;
+  //UChar_t  fNHitsMax;
   /// Number of hits used for dE/dx estimation (in TPC)
-  UChar_t  fNHitsDedx;
+  //UChar_t  fNHitsDedx;
   /// nSigma(pion)  (encoding = nsigma * 1000)
   Short_t  fNSigmaPion;
   /// nSigma(kaon)  (encoding = nsigma * 1000)
@@ -240,8 +239,8 @@ class MpdMiniTrack : public TObject {
   Short_t  fNSigmaProton;
   /// nSigma(electron)  (encoding = nsigma * 1000)
   Short_t  fNSigmaElectron;
-  /// Toplogy Map data0 and data1. See StEvent/StTrackTopologyMap.cxx
-  UInt_t   fTopologyMap[2];
+  /// Track hit map
+  ULong64_t fHitMap;
 
   /// Index of the BEMC pidTratis in the event (-1 if not matched)
   Short_t  fBECalPidTraitsIndex;
@@ -249,9 +248,9 @@ class MpdMiniTrack : public TObject {
   Short_t  fBTofPidTraitsIndex;
   
   // Index of miniMcTrack that correponds to miniTrack
-  Int_t fMcTrackId;
+  Short_t fMcTrackId;
 
-  ClassDef(MpdMiniTrack, 1)
+  ClassDef(MpdMiniTrack, 3)
 };
 
 #endif // #define MpdMiniTrack_h

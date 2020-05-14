@@ -6,7 +6,7 @@
  *
  * \author Grigory Nigmatkulov (NRNU MEPhI)
  * \email nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date July 11, 2019
+ * \date May 01, 2020
  */
 
 #ifndef MpdMiniEvent_h
@@ -215,8 +215,6 @@ class MpdMiniEvent : public TObject {
   void setNumberOfGlobalTracks(UShort_t mult)   { fNumberOfGlobalTracks = (UShort_t)mult; }
   /// Set total number of hits in TOF trays
   void setbTofTrayMultiplicity(UShort_t mult)   { fbTofTrayMultiplicity = (UShort_t)mult; }
-  /// Set number of hits in i-th HFT layers (PXL, PXL, IST, SSD)
-  void setNHitsHFT(Int_t layer, UShort_t word);
 
   /// Set number of hits in the east FFD
   void setNFfdHitsEast(UShort_t nHits)          { fNFfdHitsEast = (UChar_t)nHits; }

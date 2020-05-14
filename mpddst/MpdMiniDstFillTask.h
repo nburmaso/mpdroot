@@ -6,8 +6,8 @@
  * and detectors and fill MpdMiniDst structure.
  *
  * \author Pavel Batyuk (JINR), Grigory Nigmatkulov (NRNU MEPhI)
- * \email pbatyuk@jinr.ru ; nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date August 10, 2019
+ * \email pavel.batyuk@jinr.ru ; nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
+ * \date May 01, 2020
  **/
 
 #ifndef MPDMINIDSTFILLTASK_H
@@ -43,7 +43,7 @@
 #include <MpdEmcClusterKI.h>
 #include <MpdTofMatchingData.h>
 
-
+// MpdMiniDst headers
 #include "MpdMiniDst.h"
 #include "MpdMiniArrays.h"
 #include "MpdMiniEvent.h"

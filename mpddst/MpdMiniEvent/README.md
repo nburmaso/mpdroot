@@ -8,9 +8,9 @@ Maintainer:   Grigory Nigmatkulov
 
 Institution:  National Research Nuclear University MEPhI
 
-Date:         July 11, 2019
+Date:         May 01, 2020
 
-E-mail:       nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
+E-mail:       nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru ; pavel.batyuk@jinr.ru
 
 ************************************************************
 

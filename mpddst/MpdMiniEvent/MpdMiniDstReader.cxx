@@ -31,8 +31,8 @@ ClassImp(MpdMiniDstReader)
 
 //_________________
 MpdMiniDstReader::MpdMiniDstReader(const Char_t* inFileName) :
-  fMiniDst(new MpdMiniDst()), fChain(NULL), fTree(NULL),
-  fEventCounter(0), fMiniArrays{}, fStatusArrays{} {
+fMiniDst(new MpdMiniDst()), fChain(nullptr), fTree(nullptr),
+fEventCounter(0), fMiniArrays{}, fStatusArrays{} {
 
   streamerOff();
   createArrays();
@@ -59,9 +59,9 @@ void MpdMiniDstReader::clearArrays() {
 
 //_________________
 void MpdMiniDstReader::SetStatus(const Char_t *branchNameRegex, Int_t enable) {
-  if(strncmp(branchNameRegex, "St", 2) == 0) {
-    // Ignore first "St"
-    branchNameRegex += 2;
+  if(strncmp(branchNameRegex, "Mpd", 3) == 0) {
+    // Ignore first "Mpd"
+    branchNameRegex += 3;
   }
 
   TRegexp re(branchNameRegex, 1);
@@ -115,7 +115,6 @@ void MpdMiniDstReader::streamerOff() {
 
 //_________________
 void MpdMiniDstReader::createArrays() {
-
   for(Int_t iArr=0; iArr<MpdMiniArrays::NAllMiniArrays; iArr++) {
     fMiniArrays[iArr] = new TClonesArray(MpdMiniArrays::miniArrayTypes[iArr],
 					 MpdMiniArrays::miniArraySizes[iArr]);
@@ -145,14 +144,15 @@ void MpdMiniDstReader::Init() {
 
     std::ifstream inputStream( dirFile.c_str() );
 
-    if(!inputStream) {
+    if( !inputStream ) {
       LOG_ERROR << "ERROR: Cannot open list file " << dirFile << endm;
     }
 
     Int_t nFile = 0;
     std::string file;
-    while(getline(inputStream, file)) {
-      if(file.find(".miniDst.root") != std::string::npos || file.find(".MiniDst.root") != std::string::npos) {
+    while( getline(inputStream, file) ) {
+      if(file.find(".miniDst.root") != std::string::npos ||
+	 file.find(".MiniDst.root") != std::string::npos) {
         TFile* ftmp = TFile::Open(file.c_str());
         if(ftmp && !ftmp->IsZombie() && ftmp->GetNkeys()) {
           LOG_INFO << " Read in miniDst file " << file << endm;
@@ -168,11 +168,13 @@ void MpdMiniDstReader::Init() {
 
     LOG_INFO << " Total " << nFile << " files have been read in. " << endm;
   } //if(dirFile.find(".list") != std::string::npos || dirFile.find(".lis" != string::npos))
-  else if(dirFile.find(".miniDst.root") != std::string::npos || dirFile.find(".MiniDst.root") != std::string::npos) {
+  else if( dirFile.find(".miniDst.root") != std::string::npos ||
+	   dirFile.find(".MiniDst.root") != std::string::npos) {
     fChain->Add(dirFile.c_str());
   }
   else {
-    LOG_WARN << " No good input file to read ... " << endm;
+    LOG_WARN << " No good input file to read ... extentions must be: "
+	     << " fname.lis(t), or fname.miniDst.root (fname.MiniDst.root)" << endm;
   }
 
   if(fChain) {

@@ -8,7 +8,7 @@
 // ROOT headers
 #include "TString.h"
 
-// PicoDst headers
+// MiniDst headers
 #include "MpdMiniMessMgr.h"
 #include "MpdMiniBECalHit.h"
 
@@ -20,12 +20,12 @@ MpdMiniBECalHit::MpdMiniBECalHit(): TObject(),
   fFlag(0), fNumOfTracks(0), fX(-1.), fY(-1.), fZ(-1.),
   fdPhi(-1.), fdZ(-1.) {
   /* empty */
-    fCellIds.resize(0);
+  fCellIds.resize(0);
 }
 
 //_________________
 MpdMiniBECalHit::MpdMiniBECalHit(const MpdMiniBECalHit &hit) : TObject(),  
-  fCellIds( hit.fCellIds),
+							       fCellIds( hit.fCellIds),
   mBEcalMatchFlag(hit.mBEcalMatchFlag),
   fEnergy( hit.fEnergy ),
   fTime( hit.fTime ), 
@@ -46,7 +46,7 @@ MpdMiniBECalHit::~MpdMiniBECalHit() {
 
 //__________________
 void MpdMiniBECalHit::Print(const Char_t* option __attribute__((unused)) ) const {
-  LOG_INFO << " cellIds.size(): " << Form( "%d", fCellIds.size())
+  LOG_INFO << " cellIds.size(): " << Form( "%lu", fCellIds.size())
            << " energy/time: " << Form( "%3.2f/%6.1f", energy(),time() ) << endm;
 }
 
@@ -65,14 +65,14 @@ void MpdMiniBECalHit::setFlag(Int_t flag) {
 
 //_________________
 void MpdMiniBECalHit::setNumberOfTracks(Int_t ntrk) {
-//  if ( ntrk > std::numeric_limits<unsigned char>::max() ) {
-//    fNumOfTracks = std::numeric_limits<unsigned char>::max();
-//  }
-//  else if ( ntrk > std::numeric_limits<unsigned char>::min() ) {
-//    // Next line is not a mistake. It will also indicate a bad tower.
-//    fNumOfTracks = std::numeric_limits<unsigned char>::max();
-//  }
-//  else {
+  if ( ntrk > std::numeric_limits<UChar_t>::max() ) {
+    fNumOfTracks = std::numeric_limits<UChar_t>::max();
+  }
+  else if ( ntrk > std::numeric_limits<UChar_t>::min() ) {
+    // Next line is not a mistake. It will also indicate a bad tower.
     fNumOfTracks = (UChar_t)ntrk;
-//  }
+  }
+  else {
+    fNumOfTracks = 0;
+  }
 }

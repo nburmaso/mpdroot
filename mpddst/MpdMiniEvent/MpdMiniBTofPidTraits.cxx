@@ -17,8 +17,7 @@ ClassImp(MpdMiniBTofPidTraits)
 
 //_________________
 MpdMiniBTofPidTraits::MpdMiniBTofPidTraits() : TObject(),
-  mTrackIndex(-1), mHitIndex(-1),
-  fMass2(0.), fLength(0.), mBTofBeta(0) {
+  mTrackIndex(-1), mHitIndex(-1), mBTofBeta(0), fLength(0.) {
   /* empty */
 }
 
@@ -27,7 +26,6 @@ MpdMiniBTofPidTraits::MpdMiniBTofPidTraits(const MpdMiniBTofPidTraits &traits) :
   mTrackIndex = traits.mTrackIndex;  
   mHitIndex = traits.mHitIndex;
   mBTofBeta = traits.mBTofBeta;
-  fMass2 = traits.fMass2;
   fLength = traits.fLength; 
 }
 
@@ -51,6 +49,6 @@ void MpdMiniBTofPidTraits::setBeta(Float_t beta) {
 //_________________
 void MpdMiniBTofPidTraits::Print(const Char_t* option __attribute__((unused)) ) const {
   LOG_INFO << " Matched track index = " << mTrackIndex << " Matched hit index = " << mHitIndex << endm;
-  LOG_INFO << " beta = " << btofBeta() << " M^2 = " << fMass2 << " Length = " << fLength << endm;
+  LOG_INFO << " beta = " << btofBeta() << " Length = " << fLength << endm;
 }
 

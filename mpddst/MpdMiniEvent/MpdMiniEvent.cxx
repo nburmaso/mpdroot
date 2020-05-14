@@ -23,12 +23,12 @@ MpdMiniEvent::MpdMiniEvent(): TObject(),
   fNBECalMatch(0), fNBTOFMatch(0), fTriggerIds(),
   fRefMultNeg(0), fRefMultPos(0),
   fRefMult2NegEast(0), fRefMult2PosEast(0), fRefMult2NegWest(0), fRefMult2PosWest(0),
-  fRefMultHalfNegEast(0), fRefMultHalfPosEast(0), fRefMultHalfNegWest(0), fRefMultHalfPosWest(0),
+  fRefMultHalfNegEast(0), fRefMultHalfPosEast(0),
+  fRefMultHalfNegWest(0), fRefMultHalfPosWest(0),
   fGRefMult(0), fNumberOfGlobalTracks(0), fbTofTrayMultiplicity(0), 
   fNFfdHitsEast(0), fNFfdHitsWest(0), fVzFfd(-999.), fNTofT0(0), 
   fFHCalX(0), fBackgroundRate(0), fFHCalEastRate(0), fFHCalWestRate(0),
   fFHCalEnergyDeposit{} {
-
   // Default constructor
   if( !fTriggerIds.empty() ) {
     fTriggerIds.clear();

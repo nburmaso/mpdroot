@@ -8,26 +8,28 @@
 //    ARRAY NAMES
 //_________________
 const char* MpdMiniArrays::miniArrayNames[NAllMiniArrays] = { "Event",
-    "Track",
-    "BTofHit",
-    "BTofPidTraits",
-    "BECalHit",
-    "BECalPidTraits",
-    "TrackCovMatrix",
-    "McEvent",
-    "McTrack"};
+							      "Track",
+							      "BTofHit",
+							      "BTofPidTraits",
+							      "BECalHit",
+							      "BECalPidTraits",
+							      "TrackCovMatrix",
+							      "McEvent",
+							      "McTrack"
+};
 
 //   ARRAY TYPES
 //_________________
 const char* MpdMiniArrays::miniArrayTypes[NAllMiniArrays] = { "MpdMiniEvent",
-    "MpdMiniTrack",
-    "MpdMiniBTofHit",
-    "MpdMiniBTofPidTraits",
-    "MpdMiniBECalHit",
-    "MpdMiniBECalPidTraits",
-    "MpdMiniTrackCovMatrix",
-    "MpdMiniMcEvent",
-    "MpdMiniMcTrack"};
+							      "MpdMiniTrack",
+							      "MpdMiniBTofHit",
+							      "MpdMiniBTofPidTraits",
+							      "MpdMiniBECalHit",
+							      "MpdMiniBECalPidTraits",
+							      "MpdMiniTrackCovMatrix",
+							      "MpdMiniMcEvent",
+							      "MpdMiniMcTrack"
+};
 
 //              ARRAY SIZES 
 // These are intial sizes. Automatically resized if too small.
@@ -35,14 +37,14 @@ const char* MpdMiniArrays::miniArrayTypes[NAllMiniArrays] = { "MpdMiniEvent",
 // only selected miniDst branches
 //_________________
 int MpdMiniArrays::miniArraySizes[NAllMiniArrays] = {1, // MpdMiniEvent
-    800,   // MpdMiniTrack
-    100,   // MpdMiniBTofHit
-    100,   // MpdMiniBTofPidTraits
-    60000, // MpdMiniBECalHit (size is not yet defined in TDR)
-    100,   // MpdMiniBECalPidTraits
-    800,   // MpdMiniTrackCovMatrix
-    1,     // MpdMiniMcEvent
-    1000   // MpdMiniMcTrack
+						     800,   // MpdMiniTrack
+						     100,   // MpdMiniBTofHit
+						     100,   // MpdMiniBTofPidTraits
+						     60000, // MpdMiniBECalHit (size is not yet defined in TDR)
+						     100,   // MpdMiniBECalPidTraits
+						     800,   // MpdMiniTrackCovMatrix
+						     1,     // MpdMiniMcEvent
+						     1000   // MpdMiniMcTrack
 };
 
 //_________________

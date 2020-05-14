@@ -4,6 +4,9 @@
  * Keep information about Barrel ElectroMagnetic Calorimeter (ECal)
  * matched tracks.
  *
+ * \author Grigory Nigmatkulov (NRNU MEPhI), Pavel Batyuk (JINR)
+ * \email nigmatkulov@gmail.com; ganigmatkulov@mephi.ru; pavel.batyuk@jinr.ru
+ * \date April 9, 2020
  **/
 
 #ifndef MpdMiniBECalPidTraits_h

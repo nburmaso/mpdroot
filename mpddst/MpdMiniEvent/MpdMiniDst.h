@@ -6,7 +6,7 @@
  *
  * \author Grigory Nigmatkulov
  * \email nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date July 11, 2019
+ * \date May 01, 2020
  */
 
 #ifndef MpdMiniDst_h
@@ -62,10 +62,10 @@ class MpdMiniDst {
   static MpdMiniTrackCovMatrix* trackCovMatrix(Int_t i) { return (MpdMiniTrackCovMatrix*)miniArrays[MpdMiniArrays::TrackCovMatrix]->UncheckedAt(i); }
   /// Return pointer to current MpdMiniMcEvent (class holding the event wise information of the orignial MC event)
   static MpdMiniMcEvent* mcEvent() { return ( (MpdMiniMcEvent*)miniArrays[MpdMiniArrays::McEvent]->UncheckedAt(0) ) ? 
-                                              (MpdMiniMcEvent*)miniArrays[MpdMiniArrays::McEvent]->UncheckedAt(0) : nullptr; }
+      (MpdMiniMcEvent*)miniArrays[MpdMiniArrays::McEvent]->UncheckedAt(0) : nullptr; }
   /// Return pointer to i-th MC track
   static MpdMiniMcTrack* mcTrack(Int_t i) { return ( (MpdMiniMcTrack*)miniArrays[MpdMiniArrays::McTrack]->UncheckedAt(i) ) ? 
-                                                     (MpdMiniMcTrack*)miniArrays[MpdMiniArrays::McTrack]->UncheckedAt(i) : nullptr; }
+      (MpdMiniMcTrack*)miniArrays[MpdMiniArrays::McTrack]->UncheckedAt(i) : nullptr; }
 
   /// Return number of tracks
   static UInt_t numberOfTracks() { return miniArrays[MpdMiniArrays::Track]->GetEntries(); }

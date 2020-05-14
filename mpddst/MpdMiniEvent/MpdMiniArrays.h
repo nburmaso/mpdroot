@@ -18,7 +18,7 @@
  *
  * \author Grigory Nigmatkulov (NRNU MEPhI)
  * \email nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date July 11, 2019
+ * \date May 01, 2020
  */
 
 #ifndef MpdMiniArrays_h
@@ -30,7 +30,8 @@ class MpdMiniArrays {
  public:
   /// Default constructor
   MpdMiniArrays();
-  
+
+  /// Destructor
   virtual ~MpdMiniArrays();
 
   /// Should be changed to constexpr once ROOT 6 is available at STAR
