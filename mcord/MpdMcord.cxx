@@ -34,6 +34,7 @@ MpdMcordGeo *MpdMcord::fgGeo = NULL;
 
 MpdMcord::MpdMcord() :MpdMcord("mcord",kTRUE) {
 }
+
 MpdMcord::MpdMcord(const char* name, Bool_t active) :
 		FairDetector(name, active),
 		fTrackID(0),fVolumeID(0),fPos(0,0,0,0),fMom(0,0,0,0),
@@ -57,7 +58,6 @@ Bool_t MpdMcord::ProcessHits(FairVolume* vol) {
 	    TVirtualMC::GetMC()->TrackPosition(fPos);
 	    TVirtualMC::GetMC()->TrackMomentum(fMom);
 	  }
-
 	  // Sum energy loss for all steps in the active volume
 	  fELoss += TVirtualMC::GetMC()->Edep();
 
@@ -108,7 +108,15 @@ void MpdMcord::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset) {
 
 void MpdMcord::ConstructGeometry() {
 	  TString fileName=GetGeometryFileName();
-	    LOG(info)<<"Constructing MCORD geometry from ASCII file "<<fileName;
+
+	if(fileName.EndsWith(".root")) 
+	{
+         LOG(info)<<"Constructing MCORD geometry from ROOT file"<<fileName.Data();
+		ConstructRootGeometry();
+		return;
+    }
+
+	    LOG(info)<<"Constructing MCORD geometry from ASCII file  "<<fileName;
 
 	    FairGeoLoader* loader=FairGeoLoader::Instance();
 	    FairGeoInterface* GeoInterface =loader->getGeoInterface();
@@ -141,6 +149,15 @@ void MpdMcord::ConstructGeometry() {
 	par->setChanged();
 	par->setInputVersion(FairRun::Instance()->GetRunId(), 1);
 	ProcessNodes(volList);
+}
+
+Bool_t MpdMcord::CheckIfSensitive(std::string name){
+    TString tsname = name;
+    if(tsname.BeginsWith("md01scintVol")){
+        return kTRUE;
+    }else{
+        return kFALSE;
+    }
 }
 
 MpdMcordPoint* MpdMcord::AddHit(Int_t trackID, Int_t detId, TVector3 pos,

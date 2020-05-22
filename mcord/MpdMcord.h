@@ -60,6 +60,8 @@ public:
 	// Constructs the STS geometry
  	virtual void ConstructGeometry();
 
+
+ 	virtual Bool_t CheckIfSensitive(std::string name);
  	MpdMcordPoint* AddHit(Int_t trackID, Int_t detId, TVector3 pos, TVector3 mom, Double_t time,
  			Double_t lenght, Double_t eloss);
 
@@ -70,3 +72,4 @@ private:
 };
 
 #endif /* MCORD_MCORD_MPDMCORD_H_ */
+
