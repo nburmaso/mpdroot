@@ -254,7 +254,6 @@ class MpdStack : public FairGenericStack
 
 
   ClassDef(MpdStack,1)
-
       
 };
 

@@ -1,4 +1,3 @@
-
 /**
  * MpdTPythia8Generator.cxx
  * *@author A.Zinchenko <Alexander.Zinchenko@jinr.ru>

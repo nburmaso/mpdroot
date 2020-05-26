@@ -35,4 +35,3 @@ Set(LIBRARY_NAME MpdMCStack)
 Set(DEPENDENCIES Base EG Physics Core MpdGen)
 
 GENERATE_LIBRARY()
-
