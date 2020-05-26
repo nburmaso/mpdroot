@@ -120,7 +120,7 @@ Bool_t MpdTPythia8Generator::ReadEvent(FairPrimaryGenerator* primGen)
 
     //if (parent == -1) continue; // do not add beam protons - 5.12.2017
     primGen->AddTrack(part->GetPdgCode(), part->Px(), part->Py(), part->Pz(), 
-		      part->Vx(), part->Vy(), part->Vz(), parent, track);
+		      part->Vx()*0.1, part->Vy()*0.1, part->Vz()*0.1, parent, track);
 		      //part->Vx(), part->Vy(), part->Vz(), -TMath::Abs(parent)-1, track); //AZ 5.12.2017
   }
 

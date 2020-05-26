@@ -3,12 +3,14 @@
 // -----             Created 10/08/04  by D. Bertini / V. Friese       -----
 // -----              adopted for NICA/MPD 29/03/10  (litvin)          -----
 // -----              adopted for NICA/MPD 20/12/19  (ABychkov)        -----
+// -----           added external decayer 30/04/20  (AZinchenko)       -----
 // -------------------------------------------------------------------------
 #include "MpdStack.h"
 
+#include "MpdDecayer.h"
+#include "MpdMCTrack.h"
 #include "FairDetector.h"
 #include "FairMCPoint.h"
-#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 
 #include "TError.h"
@@ -16,6 +18,7 @@
 #include "TParticle.h"
 #include "TRefArray.h"
 #include "TParticlePDG.h"
+#include "TVirtualMC.h"
 
 #include <list>
 #include <iostream>
@@ -23,7 +26,7 @@
 using std::cout;
 using std::endl;
 using std::pair;
-
+using std::vector;
 
 // -----   Default constructor   -------------------------------------------
 MpdStack::MpdStack(Int_t size) // {
@@ -51,6 +54,7 @@ MpdStack::MpdStack(Int_t size) // {
     fNParticles(0),
     fNTracks(0),
     fIndex(0),
+    fDecayFlag(0),
     fStoreSecondaries(kTRUE),
     fMinPoints(1),
     //fEnergyCut(0.),
@@ -62,6 +66,7 @@ MpdStack::MpdStack(Int_t size) // {
     fVzCut(311), //296 NG barrel half length, TODO does not include EndCaps
     fNoZDC(kTRUE) //NG
 {
+  fDecays = new TClonesArray("TParticle");
 }
 // -------------------------------------------------------------------------
 
@@ -76,6 +81,10 @@ MpdStack::~MpdStack() {
   if (fTracks) {
     fTracks->Delete();
     delete fTracks;
+  }
+  if (fDecays) {
+    fDecays->Delete();
+    delete fDecays;
   }
 }
 // -------------------------------------------------------------------------
@@ -113,8 +122,44 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
   // --> Set argument variable
   ntr = trackId;
 
+  //AZ
+  if (fDecayFlag && !particle->GetPDG()->Stable() && particle->GetPDG()->DecayList()) {
+    // Decay unstable particle
+    MpdDecayer::Instance()->Decay(particle);
+    Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
+    // Copy decay products to vector to avoid TClonesArray overwriting
+    // for recursive decays
+    vector<TParticle> vDecays;
+    
+    for (Int_t j = 0; j < npart; ++j) {
+      TParticle tpart = *((TParticle*) fDecays->UncheckedAt(j));
+      vDecays.push_back(tpart);
+    }
+
+    for (Int_t j = 0; j < npart; ++j) { // skip mother particle
+      if (j == 0) {
+	particle->SetStatusCode(11); // decayed particle
+	continue; // skip mother particle 
+      }
+      //TParticle *part = (TParticle*) fDecays->UncheckedAt(j);
+      TParticle *part = &vDecays[j];
+      Int_t toDo = 1;
+      if (TString(gMC->GetName()) == "TGeant4") toDo = 0;
+      //PushTrack(toBeDone, trackId, part->GetPdgCode(),
+      PushTrack(toDo, trackId, part->GetPdgCode(),
+		part->Px(), part->Py(), part->Pz(),
+		part->Energy(), part->Vx(), part->Vy(), part->Vz(),
+		time, polx, poly, polz, proc, ntr,
+		weight, is);
+    }
+    if (parentId < 0) fNPrimaries += (npart-1); // treat decay products as primaries (dirty trick)
+  } else {
   // --> Push particle on the stack if toBeDone is set
-  if (toBeDone == 1) fStack.push(particle);
+    if (toBeDone == 1) fStack.push(particle);
+  }
+
+  // --> Push particle on the stack if toBeDone is set
+  //AZ if (toBeDone == 1) fStack.push(particle);
 
 }
 
@@ -123,7 +168,7 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
 			 Double_t e, Double_t vx, Double_t vy, Double_t vz, 
 			 Double_t time, Double_t polx, Double_t poly,
 			 Double_t polz, TMCProcess proc, Int_t& ntr, 
-			  Double_t weight, Int_t is, Int_t secondMotherID) {
+			 Double_t weight, Int_t is, Int_t secondMotherID) {
 
   // --> Get TParticle array
   TClonesArray& partArray = *fParticles;
@@ -149,8 +194,44 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
   // --> Set argument variable
   ntr = trackId;
 
+  //AZ
+  if (fDecayFlag && !particle->GetPDG()->Stable() && particle->GetPDG()->DecayList()) {
+    // Decay unstable particle 
+    MpdDecayer::Instance()->Decay(particle);
+    Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
+    // Copy decay products to vector to avoid TClonesArray overwriting
+    // for recursive decays
+    vector<TParticle> vDecays;
+
+    for (Int_t j = 0; j < npart; ++j) {
+      TParticle tpart = *((TParticle*) fDecays->UncheckedAt(j));
+      vDecays.push_back(tpart);
+    }
+    
+    for (Int_t j = 0; j < npart; ++j) {
+      if (j == 0) {
+	particle->SetStatusCode(11); // decayed particle 
+	continue; // skip mother particle 
+      }
+      //TParticle *part = (TParticle*) fDecays->UncheckedAt(j);
+      TParticle *part = &vDecays[j];
+      Int_t toDo = 1;
+      if (TString(gMC->GetName()) == "TGeant4") toDo = 0;
+      //PushTrack(toBeDone, trackId, part->GetPdgCode(),
+      PushTrack(toDo, trackId, part->GetPdgCode(),
+                part->Px(), part->Py(), part->Pz(),
+		part->Energy(), part->Vx(), part->Vy(), part->Vz(),
+                time, polx, poly, polz, proc, ntr,
+                weight, is);
+    }
+    if (parentId < 0) fNPrimaries += (npart-1); // treat decay products as primaries (dirty trick)
+  } else {
+    // --> Push particle on the stack if toBeDone is set
+    if (toBeDone == 1) fStack.push(particle);
+  }
+
   // --> Push particle on the stack if toBeDone is set
-  if (toBeDone == 1) fStack.push(particle);
+  //AZ if (toBeDone == 1) fStack.push(particle);
 
 }
 // -------------------------------------------------------------------------
@@ -192,7 +273,9 @@ TParticle* MpdStack::PopPrimaryForTracking(Int_t iPrim) {
   // should be a primary (if the index is correct).
 
   // Test for index
-  if (iPrim < 0 || iPrim >= fNPrimaries) {
+  //AZ-15.05.20 if (iPrim < 0 || iPrim >= fNPrimaries) {
+  if (iPrim < 0 || iPrim >= fParticles->GetEntriesFast()) {
+    cout << fParticles->GetEntriesFast() << endl;
     cout << "-E- MpdStack: Primary index out of range! " << iPrim << endl;
     Fatal("MpdStack::PopPrimaryForTracking", "Index out of range");
   }
@@ -200,10 +283,13 @@ TParticle* MpdStack::PopPrimaryForTracking(Int_t iPrim) {
   // Return the iPrim-th TParticle from the fParticle array. This should be
   // a primary.
   TParticle* part = (TParticle*)fParticles->At(iPrim);
+  /*AZ-30.04.20
   if ( ! (part->GetMother(0) < 0) ) {
     cout << "-E- MpdStack:: Not a primary track! " << iPrim << endl;
     Fatal("MpdStack::PopPrimaryForTracking", "Not a primary track");
   }
+  */
+  if (part->GetStatusCode() == 11) return (TParticle*)NULL; //AZ-30.04.20
 
   return part;
 

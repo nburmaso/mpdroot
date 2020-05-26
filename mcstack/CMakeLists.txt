@@ -7,6 +7,7 @@ set(INCLUDE_DIRECTORIES
   ${Boost_INCLUDE_DIRS}
   ${BASE_INCLUDE_DIRECTORIES}
   ${CMAKE_SOURCE_DIR}/mcstack 
+  ${CMAKE_SOURCE_DIR}/generators 
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
@@ -31,7 +32,7 @@ MpdDetectorList.h
 
 Set(LINKDEF MpdMCStackLinkDef.h)
 Set(LIBRARY_NAME MpdMCStack)
-Set(DEPENDENCIES Base EG Physics Core)
+Set(DEPENDENCIES Base EG Physics Core MpdGen)
 
 GENERATE_LIBRARY()
 

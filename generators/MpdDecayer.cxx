@@ -9,14 +9,22 @@
 
 #include "TClonesArray.h"
 #include "TDatabasePDG.h"
+#include <TDecayChannel.h>
 #include "TF1.h"
 #include "TGeant3.h"
+#include <THashList.h>
 #include "TLorentzVector.h"
 #include "TParticle.h"
+#include <TParticlePDG.h>
 #include "TPDGCode.h"
 #include "TPythia6.h"
 #include "TVirtualMC.h"
 
+//#include "G4ParticleDefinition.hh"
+//#include "G4ParticleTable.hh"
+//#include "G4DecayTable.hh"
+
+#include <fstream>
 #include <iostream>
 
 using std::cout;
@@ -68,6 +76,9 @@ void MpdDecayer::Init()
   //cout << endl;
   fBranch = pythia->GetBRAT(idcb);
   
+  // Define additional particles
+  DefineParticles();
+
   // Since the pi0 lifetime is less than 1.E-15 sec, if pi0 is produced as a decay
   // product in pythia6, e.g. KL0 -> pi0 pi+ pi-, the pi0 will be immediately
   // decayed by pythia6 to 2 gammas, and the KL0 decay product list passed
@@ -103,9 +114,11 @@ void MpdDecayer::Decay(Int_t idpart, TLorentzVector* p)
 {
   // Decay function
   
+  //{ cout << " !!! Out !!! " << endl; exit(0); }
   // Reset internal particle container
   fParticles->Delete();
   fSourceFlag = kPythia;
+  fMother.SetXYZT(0,0,0,0);
   
   if (!p) return;
   TPythia6 *pythia = TPythia6::Instance();
@@ -174,8 +187,20 @@ Int_t MpdDecayer::ImportParticles(TClonesArray *particles)
 {
   Int_t npart = 0;
   
-  if (fSourceFlag == kPythia) npart = TPythia6::Instance()->ImportParticles(particles,"All");
-  else {
+  if (fSourceFlag == kPythia) {
+    fParticles->Delete();
+    //npart = TPythia6::Instance()->ImportParticles(particles,"All");
+    npart = TPythia6::Instance()->ImportParticles(fParticles,"All");
+    TLorentzVector lvDaugh;
+    
+    for (Int_t j = 0; j < npart; ++j) {
+      TParticle *part = (TParticle*) fParticles->UncheckedAt(j);
+      part->ProductionVertex(lvDaugh);
+      lvDaugh += fMother;
+      part->SetProductionVertex(lvDaugh);
+      new ((*particles)[j]) TParticle(*part);
+    }
+  } else {
     npart = fParticles->GetEntriesFast();
     for (Int_t j = 0; j < npart; ++j) new ((*particles)[j]) TParticle(*((TParticle*)fParticles->UncheckedAt(j)));
   }
@@ -237,23 +262,45 @@ Float_t MpdDecayer::GetLifetime(Int_t kf)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Define additional particles
+
+void MpdDecayer::DefineParticles()
+{
+
+  SetDecayTableFile("pythia6.dat");
+  std::ofstream fout(fDecayTableFile);
+  // Lambda(1520)
+  //PrintPDG(TDatabasePDG::Instance()->GetParticle(3124),fout);
+  MakeDecayList(3124, fout);
+  fout.close();
+  ReadDecayTable(); 
+
+  TPythia6 *pythia = TPythia6::Instance();
+  Int_t ccLamb = pythia->Pycomp(2214); // compressed code for phi
+  Int_t idcb = pythia->GetMDCY(ccLamb,2);
+  Int_t idce = idcb + pythia->GetMDCY(ccLamb,3);;
+  for (Int_t idc = idcb; idc < idce; ++idc) cout << pythia->GetBRAT(idc) << " ";
+  cout << endl;
+  for (Int_t idc = idcb; idc < idce; ++idc) cout << pythia->GetMDME(idc,2) << " ";
+  cout << endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Read in particle data from an ASCII file.   The file name must
 /// previously have been set using the member function
 /// SetDecayTableFile.
 
 void MpdDecayer::ReadDecayTable()
 {
-  /*
-    if (fDecayTableFile.IsNull()) {
+  if (fDecayTableFile.IsNull()) {
     Warning("ReadDecayTable", "No file set");
     return;
-    }
-    Int_t lun = 15;
-    TPythia6::Instance()->OpenFortranFile(lun,
-    const_cast<char*>(fDecayTableFile.Data()));
-    TPythia6::Instance()->Pyupda(3,lun);
-    TPythia6::Instance()->CloseFortranFile(lun);
-  */
+  }
+  Int_t lun = 15;
+  TPythia6::Instance()->OpenFortranFile(lun,
+					const_cast<char*>(fDecayTableFile.Data()));
+  TPythia6::Instance()->Pyupda(3,lun);
+  TPythia6::Instance()->CloseFortranFile(lun);
 }
 
 // ===================================================================
@@ -277,8 +324,8 @@ void MpdDecayer::ReadDecayTable()
 // Pythia could then read in.   Ofcourse, one could also manipulate
 // the data structures directly, but that's propably more dangerous.
 //
-#if 0
-void PrintPDG(TParticlePDG* pdg)
+#if 1
+void MpdDecayer::PrintPDG(TParticlePDG* pdg,std::ofstream &fout)
 {
   TParticlePDG* anti = pdg->AntiParticle();
   const char* antiName = (anti ? anti->GetName() : "");
@@ -314,7 +361,8 @@ void PrintPDG(TParticlePDG* pdg)
   case 9910551:
     color = 2; break;
   }
-  std::cout << std::right
+  //std::cout << std::right
+  fout << std::right
 	    << " " << std::setw(9) << pdg->PdgCode()
 	    << "  " << std::left   << std::setw(16) << pdg->GetName()
 	    << "  " << std::setw(16) << antiName
@@ -325,30 +373,47 @@ void PrintPDG(TParticlePDG* pdg)
 	    << std::fixed   << std::setprecision(5)
 	    << std::setw(12) << pdg->Mass()
 	    << std::setw(12) << pdg->Width()
-	    << std::setw(12) << 0 // Broad
+    //<< std::setw(12) << 0.0 // Broad
+            << std::setw(12) << 4*pdg->Width() // Broad
+    //<< std::setw(12) << 8*pdg->Width() // Broad
 	    << std::scientific
-	    << " " << std::setw(13) << pdg->Lifetime()
+    //<< " " << std::setw(13) << pdg->Lifetime()
+            << std::setw(13) << pdg->Lifetime()
 	    << std::setw(3) << 0 // MWID
-	    << std::setw(3) << pdg->Stable()
+	    << std::setw(3) << !pdg->Stable()
 	    << std::endl;
 }
 
-void MakeDecayList()
+// ===================================================================
+
+void MpdDecayer::MakeDecayList(Int_t pdgCode, std::ofstream &fout)
 {
   TDatabasePDG* pdgDB = TDatabasePDG::Instance();
-  pdgDB->ReadPDGTable();
+  if (!pdgDB->ParticleList()) pdgDB->ReadPDGTable();
   const THashList*    pdgs  = pdgDB->ParticleList();
   TParticlePDG*       pdg   = 0;
   TIter               nextPDG(pdgs);
   while ((pdg = static_cast<TParticlePDG*>(nextPDG()))) {
     // std::cout << "Processing " << pdg->GetName() << std::endl;
-    PrintPDG(pdg);
+    if (pdg->PdgCode() != pdgCode) continue;
+    PrintPDG(pdg,fout);
     
     TObjArray*     decays = pdg->DecayList();
     TDecayChannel* decay  = 0;
     TIter          nextDecay(decays);
     while ((decay = static_cast<TDecayChannel*>(nextDecay()))) {
       // std::cout << "Processing decay number " << decay->Number() << std::endl;
+      Int_t ndecay = decay->NDaughters();
+      fout << std::right << std::setw(15) << 1
+	   << std::setw(5) << decay->MatrixElementCode()
+	   << std::fixed << std::setw(12) << std::setprecision(6) << decay->BranchingRatio();
+      
+      for (Int_t id = 0; id < 5; ++id) {
+	if (id < ndecay) fout << std::setw(10) << decay->DaughterPdgCode(id);
+	else fout << std::setw(10) << 0;
+      }
+      fout << "\n";
+      //	"          %5d%5d%12.5f%10d%10d%10d%10d%10d\n"
     }
   }
 }
@@ -421,17 +486,15 @@ void MakeDecayList()
 
 void MpdDecayer::WriteDecayTable()
 {
-  /*
-    if (fDecayTableFile.IsNull()) {
+  if (fDecayTableFile.IsNull()) {
     Warning("ReadDecayTable", "No file set");
     return;
-    }
-    Int_t lun = 15;
-    TPythia6::Instance()->OpenFortranFile(lun,
-    const_cast<char*>(fDecayTableFile.Data()));
-    TPythia6::Instance()->Pyupda(1,lun);
-    TPythia6::Instance()->CloseFortranFile(lun);
-  */
+  }
+  Int_t lun = 15;
+  TPythia6::Instance()->OpenFortranFile(lun,
+					const_cast<char*>(fDecayTableFile.Data()));
+  TPythia6::Instance()->Pyupda(1,lun);
+  TPythia6::Instance()->CloseFortranFile(lun);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -601,6 +664,41 @@ void MpdDecayer::AddMotherPdg(Int_t pdg)
 
   if (fMothersPdg.find(pdg) != fMothersPdg.end()) return;
   fMothersPdg.insert(pdg);
+  /*
+  G4DecayTable *decayTbl = NULL;
+  if (TString(gMC->GetName()) == "TGeant4") {
+    // Get decay table to feed it in again - bypass TGeant4 feature of zeroing decay table
+    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+    G4ParticleDefinition* particleDefinition = particleTable->FindParticle(pdg);
+    decayTbl = particleDefinition->GetDecayTable();
+  }
+  */
   gMC->SetUserDecay(pdg);
+  /*
+  if (TString(gMC->GetName()) == "TGeant4") {
+    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+    G4ParticleDefinition* particleDefinition = particleTable->FindParticle(pdg);
+    particleDefinition->SetDecayTable(decayTbl);
+  }    
+  */
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Decay a TParticle 
+
+void MpdDecayer::Decay(TParticle* p)
+{
+  // Decay function
+  
+  //{ cout << " !!! Out !!! " << endl; exit(0); }
+  // Reset internal particle container
+  fParticles->Delete();
+  fSourceFlag = kPythia;
+  
+  if (!p) return;
+  p->ProductionVertex(fMother);
+  TPythia6 *pythia = TPythia6::Instance();
+  
+  pythia->Py1ent(0, p->GetPdgCode(), p->Energy(), p->Theta(), p->Phi());
+  pythia->GetPrimaries();
+}

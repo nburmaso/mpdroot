@@ -1,8 +1,9 @@
 // -------------------------------------------------------------------------
-// -----                       FairStack header file                    -----
+// -----                      FairStack header file                    -----
 // -----           Created 10/08/04  by D. Bertini / V. Friese         -----
 // -----              adopted for NICA/MPD 29/03/10  (litvin)          -----
 // -----              adopted for NICA/MPD 20/12/19  (ABychkov)        -----
+// -----           added external decayer 30/04/20  (AZinchenko)       -----
 // -------------------------------------------------------------------------
 
 
@@ -31,7 +32,6 @@
 
 #ifndef MPDSTACK_H
 #define MPDSTACK_H
-
 
 #include "MpdDetectorList.h"
 #include "FairGenericStack.h"
@@ -114,6 +114,7 @@ class MpdStack : public FairGenericStack
    ** Declared in TVirtualMCStack
    **/
   virtual Int_t GetNtrack() const { return fNParticles; }
+  //virtual Int_t GetNtrack() const { return fStack.size(); } //AZ 30.04.20
 
 
   /** Get number of primary tracks
@@ -193,7 +194,8 @@ class MpdStack : public FairGenericStack
   TParticle* GetParticle(Int_t trackId) const;
   TClonesArray* GetListOfParticles() { return fParticles; }
 
-
+  // Enable/disable decay of unstable particles
+  void SetDecayUnstable(Int_t decay = 1) { fDecayFlag = decay; } 
 
  private:
 
@@ -211,6 +213,9 @@ class MpdStack : public FairGenericStack
   /** Array of FairMCTracks containg the tracks written to the output **/
   TClonesArray* fTracks;
 
+  //** Array of TParticle containg particles produced from decays of 
+  //** unstable particles (if this option is activated)
+  TClonesArray* fDecays;               //!
 
   /** STL map from particle index to storage flag  **/
   std::map<Int_t, Bool_t>           fStoreMap;        //!
@@ -232,7 +237,7 @@ class MpdStack : public FairGenericStack
   Int_t fNParticles;    //! Number of entries in fParticles
   Int_t fNTracks;       //! Number of entries in fTracks
   Int_t fIndex;         //! Used for merging
-
+  Int_t fDecayFlag;     //! flag to decay unstable particles
 
   /** Variables defining the criteria for output selection **/
   Bool_t     fStoreSecondaries;

@@ -228,6 +228,15 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     fRun->Init();
 
+    //AZ - Enable decays of unstable particles
+    /*
+    MpdStack *stack = NULL;
+    if (TString(fRun->GetName()).Contains("TGeant3"))
+      stack = (MpdStack*) ((TGeant3*)gMC)->GetStack();
+    else stack = (MpdStack*) ((TGeant4*)gMC)->GetStack();
+    stack->SetDecayUnstable();
+    */
+  
     // -Trajectories Visualization (TGeoManager Only)
     // Set cuts for storing the trajectories
     FairTrajFilter* trajFilter = FairTrajFilter::Instance();
