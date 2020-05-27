@@ -66,8 +66,6 @@ MpdEctTrackFinderCpc.cxx
 MpdEctTrackFinderTof.cxx
 MpdMotherFitterPart.cxx
 #MpdMotherFitterTrac.cxx
-MpdCellAutomat.cxx
-MpdCellTrack.cxx
 MpdParticle.cxx
 )
 
@@ -104,8 +102,6 @@ MpdEctTrackFinderCpc.h
 MpdEctTrackFinderTof.h
 MpdMotherFitterPart.h
 #MpdMotherFitterTrac.h
-MpdCellAutomat.h
-MpdCellTrack.h
 lhe.h
 )
 

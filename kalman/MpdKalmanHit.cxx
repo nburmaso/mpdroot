@@ -10,7 +10,7 @@
 MpdKalmanHit::MpdKalmanHit() 
   : TObject(),
     fDetectorID(0),
-    fFlag(1),
+    fFlag(0),
     fLength(0.),
     fIndex(0),
     fHitType(kFixedP),
@@ -30,7 +30,7 @@ MpdKalmanHit::MpdKalmanHit(Int_t detID, Int_t nDim, HitType hitType, Double_t *m
 			   Double_t *cosSin, Double_t signal, Double_t dist, Int_t index, Double_t edge)
   : TObject(),
     fDetectorID(detID),
-    fFlag(1),
+    fFlag(0),
     fLength(0.),
     //fIndex(index),
     fHitType(hitType),

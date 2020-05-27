@@ -5,12 +5,14 @@
 
 //#include "TpcCommon.h"
 #include "MpdTpcHit.h"
+#include "MpdKalmanHit.h"
+#include "MpdTpc2dCluster.h"
 #include "FairLinkManager.h"
 
 //---------------------------------------------------------------------------
 MpdTpcHit::MpdTpcHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index)
   : FairHit(detID, pos, dpos, index),
-    fiPad(-1), fiBin(-1), fLayer(-1), fQ(0), fStep(0), fLength(0), fLocalX(0), fLocalY(0), fLocalZ(0)
+    fiPad(-1), fiBin(-1), fLayer(-1), fNdigits(0), fFlag(0), fQ(0), fStep(0), fLength(0), fLocalX(0), fLocalY(0), fLocalZ(0)
 {
 
 }
@@ -50,6 +52,18 @@ Int_t MpdTpcHit::GetTrackID() const
     }
   }
   return id;
+}
+
+//---------------------------------------------------------------------------
+
+void MpdTpcHit::SetFlags(const MpdTpc2dCluster *clus)
+{
+  // Transfer flags from the cluster 
+  
+  if (clus->Virtual()) fFlag |= MpdKalmanHit::kVirtual;
+  if (clus->Overflows()) fFlag |= MpdKalmanHit::kOverflow;
+  if (clus->Edge()) fFlag |= MpdKalmanHit::kEdge;
+  if (clus->Flag() & 1) fFlag |= MpdKalmanHit::kMlem;
 }
 
 //---------------------------------------------------------------------------

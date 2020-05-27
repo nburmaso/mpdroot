@@ -397,6 +397,7 @@ void MpdTpcClusterFinderMlem::FindHits()
     hit->SetRMS(rmsX, 0);
     hit->SetRMS(rmsZ, 1);
     hit->SetNdigits(nDigis);
+    hit->SetFlags(clus);
     
     // !!! Warning: FairLinks are not persistent !!! 
     //hit->AddLink(FairLink(MpdTpcHit::PointIndex, pointIndx));
@@ -1149,6 +1150,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
     hit->SetRMS(rmsX, 0);
     hit->SetRMS(rmsZ, 1);
     hit->SetNdigits(-selPix.size()); // negative value
+    hit->SetFlags(clus);
     ++nHitsAdd;
     
     // !!! Warning: FairLinks are not persistent !!! 

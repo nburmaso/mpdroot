@@ -16,7 +16,8 @@ class MpdKalmanHit : public TObject
 
  public:
   enum HitType {kFixedP, kFixedR, kFixedZ};
-
+  enum HitFlag {kUsed = 1, kMirror = 2, kMlem = 4, kOverflow = 8, kEdge = 16,
+		kVirtual = 32};
  public:
   
   MpdKalmanHit(); ///< Default ctor
@@ -30,7 +31,8 @@ class MpdKalmanHit : public TObject
   Int_t GetIndex(Int_t indx = 0) const { return fIndex[indx]; } ///< Get index of detector hit
   TArrayI* Index() { return &fIndex; } ///< Get index array of detector hit
   Int_t GetFlag() const { return fFlag; } ///< Get flag
-  Bool_t IsMirror() const { return fFlag / 1000; } ///< Get mirror flag
+  //Bool_t IsMirror() const { return fFlag / 1000; } ///< Get mirror flag
+  Bool_t IsMirror() const { return fFlag & kMirror; } ///< Get mirror flag
   Double_t GetLength() const { return fLength; } ///< Get track length
   Double_t GetMeas(Int_t indx) const { return fMeas[indx]; } ///< Get measurement 
   Double_t GetErr(Int_t indx) const { return fErr[indx]; } ///< Get measurement error
@@ -46,7 +48,8 @@ class MpdKalmanHit : public TObject
   void SetNofDim(Int_t nDim) { fNofDim = nDim; } ///< set number of measur. / point
   void SetType(HitType type) { fHitType = type; } ///< Set hit type
   void SetFlag(Int_t flag) { fFlag = flag; } ///< Set flag
-  void SetMirror() { fFlag += 1000*TMath::Sign(1,fFlag); } ///< set mirror flag
+  //void SetMirror() { fFlag += 1000*TMath::Sign(1,fFlag); } ///< set mirror flag
+  void SetMirror() { fFlag |= kMirror; } ///< set mirror flag
   void SetLength(Double_t leng) { fLength = leng; } ///< set track length
   void SetMeas(Int_t indx, Double_t meas) { fMeas[indx] = meas; } ///< set measurement 
   void SetErr(Int_t indx, Double_t err) { fErr[indx] = err; } ///< set measurement error

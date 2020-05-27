@@ -705,7 +705,7 @@ void MpdTpcKalmanFilter::GetTrackSeeds(Int_t iPass)
     for (Int_t ihit1 = 0; ihit1 < nHits1; ++ihit1) {
       MpdKalmanHit *hit1 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay]+ihit1);
       if (hit1->GetIndex() >= 0) h1 = (MpdTpcHit*) fHits->UncheckedAt(hit1->GetIndex());
-      if (hit1->GetFlag() != 1) continue;
+      if (hit1->GetFlag() & MpdKalmanHit::kUsed) continue;
 
       if (fModular) {
 	//posLoc.SetXYZ(-hit1->GetMeas(0), hit1->GetDist(), hit1->GetMeas(1));
@@ -728,7 +728,7 @@ void MpdTpcKalmanFilter::GetTrackSeeds(Int_t iPass)
 	MpdKalmanHit *hit2 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay+dLays*TMath::Sign(1,iDir)]+ihit2);
 	if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
 	//if (h2->GetTrackID() != h1->GetTrackID()) continue; //!!! for test - exact ID matching
-	if (hit2->GetFlag() != 1) continue;
+	if (hit2->GetFlag() & MpdKalmanHit::kUsed) continue;
 
 	if (fModular) {
 	  //posLoc.SetXYZ(-hit2->GetMeas(0), hit2->GetDist(), hit2->GetMeas(1));
@@ -850,7 +850,7 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
     for (Int_t ihit1 = 0; ihit1 < nHits1; ++ihit1) {
       MpdKalmanHit *hit1 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay]+ihit1);
       if (hit1->GetIndex() >= 0) h1 = (MpdTpcHit*) fHits->UncheckedAt(hit1->GetIndex());
-      if (hit1->GetFlag() != 1) continue;
+      if (hit1->GetFlag() & MpdKalmanHit::kUsed) continue;
       if (TMath::Abs(hit1->GetMeas(1)) > zMax) continue; // too close to end-cap
 
       if (fModular) {
@@ -878,7 +878,7 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
 	MpdKalmanHit *hit2 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay+dLays*iDir]+ihit2);
 	if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
 	//if (h2->GetTrackID() != h1->GetTrackID()) continue; //!!! for test - exact ID matching
-	if (hit2->GetFlag() != 1) continue;
+	if (hit2->GetFlag() & MpdKalmanHit::kUsed) continue;
 
 	if (fModular) {
 	  //posLoc.SetXYZ(-hit2->GetMeas(0), hit2->GetDist(), hit2->GetMeas(1));
@@ -1074,6 +1074,7 @@ void MpdTpcKalmanFilter::MakeKalmanHitsModul()
     MpdKalmanHit *hitK = new ((*fKHits)[nKh++]) 
       MpdKalmanHit(lay*1000000+padID, 2, MpdKalmanHit::kFixedP, meas, err, cossin, hit->GetEnergyLoss()/hit->GetStep(), hit->GetLocalY(), j, edge);
     hitK->SetLength(hit->GetLength());
+    hitK->SetFlag (hitK->GetFlag() | hit->GetFlag());
     //hitK->SetDedx (hit->GetEdep()/hit->GetStep());
     //MpdKalmanFilter::Instance()->GetGeo()->SetGlobalPos(hitK,TVector3(hit->GetX(),hit->GetY(),hit->GetZ()));
   }
@@ -1199,7 +1200,7 @@ void MpdTpcKalmanFilter::DoTracking(Int_t iPass)
     //track->GetParamNew()->Print();
     // Check if the seed hit was used already
     MpdKalmanHit *hit = (MpdKalmanHit*) track->GetHits()->First();
-    if (hit->GetFlag() != 1) iok = -1;
+    if (hit->GetFlag() & MpdKalmanHit::kUsed) iok = -1;
     else {
       if (track->GetDirection() == MpdKalmanTrack::kOutward) { 
 	//cout << " !!! " << track->GetNode() << " !!! " << track->GetNodeNew() <<endl;	
@@ -1368,7 +1369,7 @@ Int_t MpdTpcKalmanFilter::RunKalmanFilter(MpdTpcKalmanTrack *track)
 	//MpdKalmanHit *hit = (MpdKalmanHit*) fKHits->UncheckedAt(indx0+indx);
 	hit = (MpdKalmanHit*) fKHits->UncheckedAt(indx);
 	// Exclude used hits
-	if (hit->GetFlag() != 1) continue;
+	if (hit->GetFlag() & MpdKalmanHit::kUsed) continue;
 	// !!! Exact ID match
 	//if (GetPoint(hit)->GetTrackID() != track->GetTrackID()) continue;
 	//if (GetTpcHit(hit)->GetTrackID() != track->GetTrackID()) continue;
@@ -1975,8 +1976,7 @@ void MpdTpcKalmanFilter::ExcludeHits()
     TObjArray *hits = track->GetHits();
     for (Int_t j = 0; j < nhitsKF; ++j) {
       MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(j);
-      hit->SetFlag(-1);
-      //if (hit->GetLayer() > 26) hit->SetFlag(-1); // 24.12.2018
+      hit->SetFlag (hit->GetFlag() | MpdKalmanHit::kUsed);
     }
   }
 }

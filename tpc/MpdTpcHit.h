@@ -11,6 +11,8 @@
 #include <TObject.h>
 #include <vector>
 
+class MpdTpc2dCluster;
+
 class MpdTpcHit : public FairHit
 {
 
@@ -19,11 +21,11 @@ public:
 
 public:
     MpdTpcHit() : FairHit(),
-      fiPad(-1), fiBin(-1), fLayer(-1), fQ(0), fStep(0), fLength(0), fLocalX(0), fLocalY(0), fLocalZ(0)
+      fiPad(-1), fiBin(-1), fLayer(-1), fNdigits(0), fFlag(0), fQ(0), fStep(0), fLength(0), fLocalX(0), fLocalY(0), fLocalZ(0)
       { }
     
     MpdTpcHit(Int_t iPad, Int_t iBin) : FairHit(),
-	fiPad(iPad), fiBin(iBin), fLayer(-1), fQ(0), fStep(0), fLength(0), fLocalX(0), fLocalY(0), fLocalZ(0)
+      fiPad(iPad), fiBin(iBin), fLayer(-1), fNdigits(0), fFlag(0), fQ(0), fStep(0), fLength(0), fLocalX(0), fLocalY(0), fLocalZ(0)
       { }
     
     MpdTpcHit(Int_t detUID, TVector3 posHit, TVector3 posHitErr, Int_t pointIndx);
@@ -40,10 +42,11 @@ public:
     virtual ~MpdTpcHit() {}
 
     /** Accessors **/
-    Int_t GetModular() { return GetUniqueID(); }
-    Int_t GetPad() { return fiPad; }
-    Int_t GetBin() { return fiBin; }
-    Int_t GetLayer() { return fLayer; }
+    Int_t GetModular() const { return GetUniqueID(); }
+    Int_t GetPad() const { return fiPad; }
+    Int_t GetBin() const { return fiBin; }
+    Int_t GetLayer() const { return fLayer; }
+    Int_t GetFlag() const { return fFlag; }
     Double_t GetQ() const { return fQ; }
     Double_t GetStep() const { return fStep; } // step during MC transport
     Double_t GetLength() const { return fLength; } // track length
@@ -72,6 +75,7 @@ public:
     void SetQ(Double_t q) { fQ = q; }
     void SetStep(Double_t step) { fStep = step; }
     void SetLength(Double_t length) { fLength = length; }
+    void SetFlag(Int_t flag) { fFlag = flag; }
     // For backward compatibility
     void SetR(Double_t r) { fLocalY = r; }
     void SetRphi(Double_t rphi) { fLocalX = rphi; }
@@ -87,15 +91,19 @@ public:
     void SetRMS(Double_t rms, Int_t ixz = 0) { fXZrms[ixz] = rms; }
     void SetNdigits(Int_t ndigs) { fNdigits = ndigs; }
     void AddID(Int_t id) { fIDs.push_back(id); }
+    void SetFlags(const MpdTpc2dCluster *clus);
 
     Bool_t IsSortable() const { return kTRUE; }
     Int_t Compare(const TObject* hit) const; // "Compare" function for sorting
 
 private:
+
+
     Int_t	  fiPad;
     Int_t	  fiBin;
     Int_t	  fLayer;
     Int_t	  fNdigits; // number of digits in the hit
+    Int_t         fFlag;
     std::vector<Int_t> fIDs; // track IDs with the highest charge contribution
     
     Double32_t    fQ;
@@ -108,7 +116,7 @@ private:
     Double32_t    fLocalZ;
     Double32_t    fXZrms[2]; // RMS of the hit (group of digits) along pad and drift directions  
     
-    ClassDef(MpdTpcHit, 2)
+    ClassDef(MpdTpcHit, 3)
 };
 
 #endif // _MPDTPCHIT_H_

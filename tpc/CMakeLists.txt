@@ -54,7 +54,7 @@ MpdTpcHitProducer.cxx
 MpdTpcSectorGeo.cxx
 MpdTpcDigitizerAZ.cxx
 MpdTpcDigitizerAZlt.cxx
-MpdTpcClusterFinderAZ.cxx
+#MpdTpcClusterFinderAZ.cxx
 MpdTPCpid.cxx
 MpdTpcClusterFinderMlem.cxx
 )

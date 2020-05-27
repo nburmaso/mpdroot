@@ -146,7 +146,7 @@ Double_t MpdVertexZfinder::FindZ(const Int_t *layPointers, Int_t &flag)
     // Loop over hits in first layer
     for (Int_t ihit1 = 0; ihit1 < nHits1; ++ihit1) {
       MpdKalmanHit *hit1 = (MpdKalmanHit*) fKHits->UncheckedAt(layPointers[lay]+ihit1);
-      if (hit1->GetFlag() != 1) continue;
+      if (hit1->GetFlag() & MpdKalmanHit::kUsed) continue;
       if (modular) {
 	posLoc.SetXYZ(hit1->GetMeas(0), hit1->GetDist(), hit1->GetMeas(1));
 	isec = hit1->GetDetectorID() % 1000000;
@@ -164,7 +164,7 @@ Double_t MpdVertexZfinder::FindZ(const Int_t *layPointers, Int_t &flag)
 	MpdKalmanHit *hit2 = (MpdKalmanHit*) fKHits->UncheckedAt(layPointers[lay+dLays*iDir]+ihit2);
 	//if (h2->GetTrackID() != h1->GetTrackID()) continue; //!!! for test - exact ID matching
 
-	if (hit2->GetFlag() != 1) continue;
+	if (hit2->GetFlag() & MpdKalmanHit::kUsed) continue;
 	if (modular) {
 	  posLoc.SetXYZ(hit2->GetMeas(0), hit2->GetDist(), hit2->GetMeas(1));
 	  isec1 = hit2->GetDetectorID() % 1000000;

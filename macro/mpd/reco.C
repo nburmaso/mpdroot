@@ -17,7 +17,7 @@
 // MPD includes
 #include "MpdTpcHitProducer.h"
 #include "MpdTpcClusterFinderTask.h"
-#include "MpdTpcDigitizerAZ.h"
+#include "MpdTpcDigitizerAZlt.h"
 #include "MpdTpcClusterFinderAZ.h"
 #include "MpdTpcClusterFinderMlem.h"
 #include "MpdKalmanFilter.h"
@@ -109,7 +109,8 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     fRun->AddTask(kalman);
 
 #ifdef UseMlem
-    MpdTpcDigitizerAZ* tpcDigitizer = new MpdTpcDigitizerAZ();
+    //MpdTpcDigitizerAZ* tpcDigitizer = new MpdTpcDigitizerAZ();
+    MpdTpcDigitizerAZlt* tpcDigitizer = new MpdTpcDigitizerAZlt();
     tpcDigitizer->SetPersistence(kFALSE);
     fRun->AddTask(tpcDigitizer);
 #endif

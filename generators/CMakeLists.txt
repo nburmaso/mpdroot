@@ -60,6 +60,7 @@ MpdDCMSMMGenerator.cxx
 MpdPHQMDGenerator.cxx
 MpdMcDstGenerator.cxx
 MpdDecayer.cxx
+MpdTPythia8Generator.cxx
 )
 if(PLUTO_FOUND)
 set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
