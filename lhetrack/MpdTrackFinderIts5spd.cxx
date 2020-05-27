@@ -22,10 +22,10 @@
 #include "MpdItsKalmanTrack.h"
 #include "MpdTpcKalmanFilter.h"
 #include "MpdTpcKalmanTrack.h"
+#include "MpdMCTrack.h"
 
 #include "FairGeoNode.h"
 #include "FairMCPoint.h"
-#include "FairMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRunAna.h"
@@ -409,7 +409,7 @@ void MpdTrackFinderIts5spd::MakeKalmanHits()
     fhLays->Fill(lay+0.1);
   }
   for (Int_t k = 0; k < 5; ++k) {
-    cout << "Layer= " << k+1 << " Number of hits=" << fhLays->GetCellContent(k+1,0) << endl; }
+    cout << "Layer= " << k+1 << " Number of hits=" << fhLays->GetBinContent(k+1,0) << endl; }
 
   cout << " Max layer = " << layMax << " Number of hits= " << fKHits->GetEntriesFast() << endl;
   fKHits->Sort(); // in descending order in R
@@ -447,10 +447,10 @@ void MpdTrackFinderIts5spd::MakeKalmanHits()
   fLayPointers = new Int_t [layMax+1];
   Int_t ipos = 0;
   for (Int_t i = layMax; i > -1; --i) {
-    //cout << i << " " << fhLays->GetCellContent(i+1,0) << endl;
+    //cout << i << " " << fhLays->GetBinContent(i+1,0) << endl;
     //if (ipos) cout << ((TpcLheHit*)fHits->UncheckedAt(ipos))->GetLayer() << " "
     //     << ((TpcLheHit*)fHits->UncheckedAt(ipos-1))->GetLayer() << endl;
-    Int_t cont = TMath::Nint (fhLays->GetCellContent(i+1,0));
+    Int_t cont = TMath::Nint (fhLays->GetBinContent(i+1,0));
     if (cont == 0) {
       fLayPointers[i] = -1;
       continue;
@@ -622,7 +622,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
   TString mass2 = "0.0194797849"; // pion mass squared
   if (fMCTracks) {
     // Get particle mass - ideal PID
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
     TParticlePDG *pdgP = TDatabasePDG::Instance()->GetParticle(mctrack->GetPdgCode());
     if (pdgP) {
       Double_t mass = pdgP->Mass();
@@ -718,7 +718,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 	    step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
 	  }	       
 	  // Exclude used hits
-	  if (hit->GetFlag() != 1) continue;
+	  if (hit->GetFlag() & MpdKalmanHit::kUsed) continue;
 	  if (frozen) continue;
 	  // !!! Exact ID match
 	  if (fExact && TrackID(hit) != track->GetTrackID()) continue;
@@ -1015,10 +1015,10 @@ void MpdTrackFinderIts5spd::AddHits()
     TObjArray *hits = track->GetHits();
     Int_t nWrong = 0, nMirr = 0, motherID = track->GetTrackID();
     // Get track mother ID 
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() >= 0) {
       motherID = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
     }
 
     Int_t lastIndx = trHits.GetEntriesFast();
@@ -1032,10 +1032,10 @@ void MpdTrackFinderIts5spd::AddHits()
       Int_t motherID1 = ((FairMCPoint*) fItsPoints->UncheckedAt(h->GetRefIndex()))->GetTrackID();
 //      cout << "-" << motherID1;
       // Get point mother ID 
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID1);
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID1);
       while (mctrack->GetMotherId() >= 0) {
         motherID1 = mctrack->GetMotherId();
-        mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+        mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
       }
       if (motherID1 != motherID) ++nWrong;
 

@@ -9,12 +9,11 @@
 
 #include "MpdKalmanTrack.h"
 #include "MpdKalmanHit.h"
-#include "MpdCellTrack.h"
-//#include "MpdCellAutomat.h"
+#include "MpdVector.h"
 #include <TClonesArray.h>
 class MpdTpcKalmanTrack;
 class MpdEctKalmanTrack;
-class MpdCellTrack;
+class MpdVector;
 class TVector3;
 
 class MpdItsKalmanTrack : public MpdKalmanTrack
@@ -31,7 +30,7 @@ class MpdItsKalmanTrack : public MpdKalmanTrack
   MpdItsKalmanTrack (const MpdTpcKalmanTrack& track); ///< constructor from TPC track
   MpdItsKalmanTrack (const MpdEctKalmanTrack& track); ///< constructor from ECT track
   
-  MpdItsKalmanTrack (const MpdCellTrack& track1, TVector3& vec); ///< constructor from CellTrack track
+  MpdItsKalmanTrack (const MpdVector& track1, TVector3& vec); ///< constructor from CellTrack track /// MpdVector&MpdCellTrack&
  
   Int_t GetNofTrHits() const { return fTrHits->GetEntriesFast(); } ///< get number of track hits
   TClonesArray *GetTrHits() const { return fTrHits; } ///< get track hits

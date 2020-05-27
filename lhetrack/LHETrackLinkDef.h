@@ -25,7 +25,8 @@
 #pragma link C++ class  MpdSftTrackFinderTpc+;
 //#pragma link C++ class  MpdTpcTrackFollow2Sft+;
 #pragma link C++ class  MpdKfPrimaryVertexFinder+;
-#pragma link C++ class  MpdTrackFinderIts+;
+//#pragma link C++ class  MpdTrackFinderIts+;
+#pragma link C++ class  MpdTrackFinderIts5spd+;
 #pragma link C++ class  MpdVertexZfinder+;
 #pragma link C++ class  MpdTpcDedxTask+;
 #pragma link C++ class  MpdKfV0Fitter+;
@@ -34,6 +35,9 @@
 #pragma link C++ class  MpdMotherFitterPart+;
 //#pragma link C++ class  MpdMotherFitterTrac+;
 #pragma link C++ class  MpdParticle+;
+#pragma link C++ class  MpdVector+;
+#pragma link C++ class  MpdVectorFinder+;
+#pragma link C++ class  MpdItsToTpcMatching+;
 
 #endif
 

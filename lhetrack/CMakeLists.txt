@@ -58,7 +58,8 @@ MpdEctTrackFinderTpc.cxx
 MpdSftTrackFinderTpc.cxx
 #MpdTpcTrackFollow2Sft.cxx
 MpdKfPrimaryVertexFinder.cxx
-MpdTrackFinderIts.cxx
+#MpdTrackFinderIts.cxx
+MpdTrackFinderIts5spd.cxx
 MpdVertexZfinder.cxx
 MpdTpcDedxTask.cxx
 MpdKfV0Fitter.cxx
@@ -67,6 +68,9 @@ MpdEctTrackFinderTof.cxx
 MpdMotherFitterPart.cxx
 #MpdMotherFitterTrac.cxx
 MpdParticle.cxx
+MpdVector.cxx
+MpdVectorFinder.cxx
+MpdItsToTpcMatching.cxx
 )
 
 # List of header files
@@ -94,7 +98,8 @@ MpdEctTrackFinderTpc.h
 MpdSftTrackFinderTpc.h
 #MpdTpcTrackFollow2Sft.h
 MpdKfPrimaryVertexFinder.h
-MpdTrackFinderIts.h
+#MpdTrackFinderIts.h
+MpdTrackFinderIts5spd.h
 MpdVertexZfinder.h
 MpdTpcDedxTask.h
 MpdKfV0Fitter.h
@@ -103,6 +108,9 @@ MpdEctTrackFinderTof.h
 MpdMotherFitterPart.h
 #MpdMotherFitterTrac.h
 lhe.h
+MpdVector.h
+MpdVectorFinder.h
+MpdItsToTpcMatching.h
 )
 
 Set(LINKDEF LHETrackLinkDef.h)

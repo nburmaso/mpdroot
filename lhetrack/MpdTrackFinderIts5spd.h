@@ -55,7 +55,7 @@ class MpdTrackFinderIts5spd :public FairTask
   // Some constants                                                             
   static const Int_t fgkNlays = 5, fgkNlays2 = 10;
 
-  Int_t GetNofHitsInLayer(Int_t lay) { return (Int_t)fhLays->GetCellContent(lay+1,0); }
+  Int_t GetNofHitsInLayer(Int_t lay) { return (Int_t)fhLays->GetBinContent(lay+1,0); }
   Int_t GetHitsInLayer(Int_t lay) { return fLayPointers[lay]; } ///< first index of hits in layer
   void GetTrackSeeds(Int_t iPass); // build track seeds                       
   void DoTracking(Int_t iPass); // run tracking               
