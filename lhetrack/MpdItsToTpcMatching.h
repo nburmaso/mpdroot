@@ -5,21 +5,25 @@
 /// \class MpdItsToTpcMatching
 /// \brief Track finder in MPD Inner Tracking System (ITS) using cellular automaton (CA)
 ///
-/// \author Maxim Strelchenko, Alexander Zinchenko, LHEP JINR Dubna
+/// \author Dmitrii Zinchenko, Alexander Zinchenko, LHEP JINR Dubna
 
-///#include "MpdStsHit.h"
 #include "MpdItsHit5spd.h"
 #include "MpdVector.h"
+
 #include "FairTask.h"
+
 #include "TH1.h"
 #include "TObject.h" 
 #include "TClonesArray.h" 
 #include "TVector2.h" 
+
 #include <map>
+#include <set>
 
 class MpdKalmanHit;
 class MpdKalmanTrack;
 class MpdItsKalmanTrack;
+class MpdTpcKalmanTrack;
 
 class MpdItsToTpcMatching :public FairTask 
 {
@@ -46,18 +50,18 @@ class MpdItsToTpcMatching :public FairTask
    **/
   void SetParContainers();
 
+  void RefitItsTo27(std::multimap <Float_t, MpdItsKalmanTrack*> &m, std::multimap <Float_t, MpdItsKalmanTrack*> &mPhi);
+  void RefitTpcTo27(std::multimap <Float_t, MpdTpcKalmanTrack*> &m, std::multimap <Float_t, MpdTpcKalmanTrack*> &mPhi);
   void Exec(Option_t * option);
 
   /** Action after each event. **/
   void Finish();
   void Reset();
-  void FillGeoScheme(); // fill Kalman filter geometry manager   ///???
+  //void FillGeoScheme(); // fill Kalman filter geometry manager   ///???
 
  private:     
   //Int_t fNPass; 
-  //Int_t fExact; //!< exact ID match if != 0
-  //TDirectory *fHistoDir;
-  //TH1F *fhNBranches;
+  Int_t fExact; //!< exact ID match if != 0
 
   Int_t fNTracks;             // number of found tracks 10.02
   TClonesArray *fItsPoints; //! ITS MC points
@@ -68,8 +72,9 @@ class MpdItsToTpcMatching :public FairTask
   TClonesArray *fTracks1; //! array of TPC tracks
   TClonesArray *fTracksRefit; //! array of refit ITS tracks
   TClonesArray *fTpcTracksRefit; //! array of refit TPC tracks;
+  TClonesArray *fKHits; //! array of Kalman hits from Vector Finder
 
-  ClassDef(MpdItsToTpcMatching,1); 
+  ClassDef(MpdItsToTpcMatching,0); 
 };
 
 #endif

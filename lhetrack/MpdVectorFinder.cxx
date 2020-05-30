@@ -68,7 +68,7 @@ std::ofstream fout_v("log.txt");
 
 //__________________________________________________________________________
 MpdVectorFinder::MpdVectorFinder(const char *name, Bool_t sa, Int_t iVerbose) 
- :FairTask(name, iVerbose),
+ :FairTask("MpdVectorFinder", iVerbose),
   fExact(0),
   fNTracks(0),
   fNPass(2),
@@ -304,22 +304,23 @@ InitStatus MpdVectorFinder::ReInit()
   if (fItsPoints == 0x0 || fItsHits == 0x0) return kERROR;
   fTpcTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("TpcKalmanTrack");
   fMCTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("MCTrack");
-  //fSTSTrackMatch = (TClonesArray*) FairRootManager::Instance()->GetObject("STSTrackMatch");
-  //fPrimVtx =  (FairVertex *) FairRootManager::Instance() ->GetObject("PrimaryVertex");
+
   FairRootManager::Instance()->Register("ItsTrack", "Its", fTracks, kTRUE);
   FairRootManager::Instance()->Register("ItsTrackCand", "ItsCand", fTrackCand, kTRUE);
-  FairRootManager::Instance()->Register("CellTrack0", "Its0", fKHits[0], kTRUE);
-  FairRootManager::Instance()->Register("CellTrack1", "Its1", fKHits[1], kTRUE);
-  FairRootManager::Instance()->Register("CellTrack2", "Its2", fKHits[2], kTRUE);
-  FairRootManager::Instance()->Register("CellTrack3", "Its3", fKHits[3], kTRUE);
-  FairRootManager::Instance()->Register("CellTrack4", "Its4", fKHits[4], kTRUE); /// for 5th layer
 
-  FairRootManager::Instance()->Register("CellTrack_0", "Its0_2D", f2DHits[0], kTRUE); // 21.04
-  FairRootManager::Instance()->Register("CellTrack_1", "Its1_2D", f2DHits[1], kTRUE); // 21.04
-  FairRootManager::Instance()->Register("CellTrack_2", "Its2_2D", f2DHits[2], kTRUE); // 21.04
-  FairRootManager::Instance()->Register("CellTrack_3", "Its3_2D", f2DHits[3], kTRUE); // 21.04
-  FairRootManager::Instance()->Register("CellTrack_4", "Its4_2D", f2DHits[4], kTRUE); 
-  ///for 5th layer
+  FairRootManager::Instance()->Register("ItsKHits", "ItsKalHits", fKHits1, kFALSE);
+
+  FairRootManager::Instance()->Register("CellTrack0", "Its0", fKHits[0], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack1", "Its1", fKHits[1], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack2", "Its2", fKHits[2], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack3", "Its3", fKHits[3], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack4", "Its4", fKHits[4], kFALSE);
+
+  FairRootManager::Instance()->Register("CellTrack_0", "Its0_2D", f2DHits[0], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack_1", "Its1_2D", f2DHits[1], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack_2", "Its2_2D", f2DHits[2], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack_3", "Its3_2D", f2DHits[3], kFALSE);
+  FairRootManager::Instance()->Register("CellTrack_4", "Its4_2D", f2DHits[4], kFALSE); 
 
   //fNPass = 2; // 2 prochoda
   //fNPass = 3;
@@ -482,7 +483,8 @@ void MpdVectorFinder::Build2DHits()
     z = h->GetZ();
     //AZ Double_t meas[2] = {xloc + h->GetDx() * errX, z + dZ * errZ};
     Double_t meas[2] = {xloc + h->GetDx() * errX, posLoc[2] + h->GetDz() * errZ};
-    Double_t err[2] = {errX, errZ};
+    //AZ Double_t err[2] = {errX, errZ};
+    Double_t err[2] = {errX*1.2, errZ*1.2}; // effective measure
     Double_t cossin[2] = {TMath::Cos(fStereoA[0]), TMath::Sin(fStereoA[0])}; /// wtf is this
     MpdVector *hit = 0x0;//ms
     MpdItsHit5spd *hsts = h;
@@ -503,7 +505,8 @@ void MpdVectorFinder::Build2DHits()
 						       0., // signal
 						       r, // dist
 						       ih); //index
-    khit->SetUniqueID(0);
+    //AZ khit->SetUniqueID(0);
+    khit->SetUniqueID(nKalmanHit); //AZ
       
     nLayerHit = f2DHits[lay]->GetEntriesFast();
     hit = new ((*f2DHits[lay])[nLayerHit]) MpdVector(lay * 1000000 + fId2Id[lay][hsts->GetDetectorID()], //detID
@@ -1323,7 +1326,6 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
   /// Run Kalman tracking
   fout_v << "- DoTracking -" << endl;
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
-  Double_t vert[3] = {0.0,0.0,0.0};
   Int_t nCand = fTrackCand->GetEntriesFast(), iok = 0;// new 05.03.14
   fout_v << "DoTracking candidates on pass " << iPass << ": " << nCand << endl;
   cout << "DoTracking candidates on pass " << iPass << ": " << nCand << endl;     
@@ -1384,54 +1386,7 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
 
     // Propagate track to the beam line   
     /// fSa stands for Stand Alone Flag. If it's value == 1 then no matching is done.
-    if (fSa) {
-      //AZ track->SetParam(*track->GetParamNew());
-      //AZ track->SetPos(track->GetPosNew());
-
-      Double_t pos = track->GetPos();
-      TMatrixD par = *track->GetParam();
-      TMatrixDSym cov = *track->Weight2Cov();
-      Double_t leng = track->GetLength();
-      TString nodeNew = track->GetNodeNew();
-      
-      // Go to beam pipe
-      MpdKalmanHit hit;
-      hit.SetType(MpdKalmanHit::kFixedR);
-      hit.SetPos(fPipeR);
-      iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
-      if (iok != 1) {
-	// Restore track
-	track->SetParam(par);
-	track->SetParamNew(par);
-	track->SetCovariance(cov);
-	track->ReSetWeight();
-	track->SetPos(pos);
-	track->SetPosNew(pos);
-	track->SetLength(leng);
-	track->SetNodeNew(nodeNew);
-      } else {
-	// Add multiple scattering
-	//Double_t dX = 0.05 / 8.9; // 0.5 mm of Al
-	Double_t dX = 0.1 / 35.28; // 1. mm of Be
-	TMatrixDSym* pcov = track->Weight2Cov();
-	Double_t th = track->GetParamNew(3);
-	Double_t cosTh = TMath::Cos(th);
-	Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, dX);
-	(*pcov)(2,2) += (angle2 / cosTh / cosTh);
-	(*pcov)(3,3) += angle2;
-	Int_t ok = 0;
-	MpdKalmanFilter::Instance()->MnvertLocal(pcov->GetMatrixArray(), 5, 5, 5, ok);
-	track->SetWeight(*pcov);
-      }
-      cov = *track->Weight2Cov();
-
-      hit.SetPos(0.);
-      hit.SetMeas(0,track->GetParam(2)); // track Phi
-      //fout_v << i << " " << track->GetTrackID() << " " << track->GetLength() << " " << ((MpdKalmanHitR*)track->GetHits()->First())->GetLength() << endl;
-      iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
-      if (iok != 1) MpdKalmanFilter::Instance()->FindPca(track, vert);
-      track->SetParam(*track->GetParamNew()); // !!! track params at PCA
-    }
+    if (fSa) GoToBeamLine(track);
 
   } // for (Int_t i = 0; i < nCand;
   fTrackCand->Compress();
@@ -1440,6 +1395,63 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
 }
     
 //__________________________________________________________________________
+
+void MpdVectorFinder::GoToBeamLine(MpdItsKalmanTrack *track)
+{
+  // Go to beam line
+
+  Double_t vert[3] = {0.0,0.0,0.0};
+
+  //AZ track->SetParam(*track->GetParamNew());
+  //AZ track->SetPos(track->GetPosNew());
+
+  Double_t pos = track->GetPos();
+  TMatrixD par = *track->GetParam();
+  TMatrixDSym cov = *track->Weight2Cov();
+  Double_t leng = track->GetLength();
+  TString nodeNew = track->GetNodeNew();
+      
+  // Go to beam pipe
+  MpdKalmanHit hit;
+  hit.SetType(MpdKalmanHit::kFixedR);
+  hit.SetPos(fPipeR);
+  Int_t iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
+  if (iok != 1) {
+    // Restore track
+    track->SetParam(par);
+    track->SetParamNew(par);
+    track->SetCovariance(cov);
+    track->ReSetWeight();
+    track->SetPos(pos);
+    track->SetPosNew(pos);
+    track->SetLength(leng);
+    track->SetNodeNew(nodeNew);
+  } else {
+    // Add multiple scattering
+    //Double_t dX = 0.05 / 8.9; // 0.5 mm of Al
+    Double_t dX = 0.1 / 35.28; // 1. mm of Be
+    TMatrixDSym* pcov = track->Weight2Cov();
+    Double_t th = track->GetParamNew(3);
+    Double_t cosTh = TMath::Cos(th);
+    Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, dX);
+    (*pcov)(2,2) += (angle2 / cosTh / cosTh);
+    (*pcov)(3,3) += angle2;
+    Int_t ok = 0;
+    MpdKalmanFilter::Instance()->MnvertLocal(pcov->GetMatrixArray(), 5, 5, 5, ok);
+    track->SetWeight(*pcov);
+  }
+  cov = *track->Weight2Cov();
+
+  hit.SetPos(0.);
+  hit.SetMeas(0,track->GetParam(2)); // track Phi
+  //fout_v << i << " " << track->GetTrackID() << " " << track->GetLength() << " " << ((MpdKalmanHitR*)track->GetHits()->First())->GetLength() << endl;
+  iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
+  if (iok != 1) MpdKalmanFilter::Instance()->FindPca(track, vert);
+  track->SetParam(*track->GetParamNew()); // !!! track params at PCA
+}
+
+//__________________________________________________________________________
+
 Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass) 
 {
   /// Run Kalman filter (fitter) for the hits from the cell track 
@@ -1835,7 +1847,7 @@ void MpdVectorFinder::AddHits()
     Int_t lastIndx = trHits.GetEntriesFast();
     for (Int_t j = 0; j < nHits; ++j) {
       MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(j);
-      hit->SetUniqueID(1); // flag ITS hits
+      //AZ hit->SetUniqueID(1); // flag ITS hits
       new (trHits[j]) MpdKalmanHit(*hit);
       /// fout_v << " " << hit->GetLayer();
       Int_t nOver = hit->Index()->GetSize();

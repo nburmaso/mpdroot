@@ -52,6 +52,7 @@ class MpdVectorFinder :public FairTask
   void Finish();
   void Reset();
   void FillGeoScheme(); // fill Kalman filter geometry manager   
+  void GoToBeamLine(MpdItsKalmanTrack *track); // go to beam line
 
  private:
 

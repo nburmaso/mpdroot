@@ -21,7 +21,7 @@ class MpdTrackFinderIts5spd :public FairTask
  public:
 
   /** Constructor **/
-  MpdTrackFinderIts5spd(const char *name="MpdTrackFinderIts5spd", Int_t iVerbose = 1 );
+  MpdTrackFinderIts5spd(Bool_t useVector = kFALSE, const char *name="MpdTrackFinderIts5spd", Int_t iVerbose = 1 );
   
   /** Destructor **/
   virtual ~MpdTrackFinderIts5spd();
@@ -95,7 +95,8 @@ class MpdTrackFinderIts5spd :public FairTask
   Double_t fPipeR; //!< beam pipe outer radius
   Int_t fNladders[fgkNlays2]; //!< numbers of ladders in layers
   Int_t fNsectors[fgkNlays2]; //!< numbers of sectors in layers
-  Int_t fGeo; //!< geometry version 
+  Int_t fGeo; //!< geometry version
+  Bool_t fUseVector; //!< use Vector Finder Kalman Hits
   std::map<Double_t,Double_t> fCables[fgkNlays]; //!< cable length (z1, z2) for layers 1-6
   MpdItsHit5spd fHitSts; //!< STS hit - helper for detector numeration 
   std::map<Int_t,Int_t> fId2Id[fgkNlays2]; //!< STS hit ID to Kalman hit ID for layers 1-6

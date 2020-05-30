@@ -79,6 +79,7 @@ InitStatus MpdKfPrimaryVertexFinder::Init()
   fTracks = 0x0;
   fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("TpcTrackRefit");
   if (fTracks == 0x0) fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("ItsTrack");
+  if (fTracks == 0x0) fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("ItsTrackKF");
   if (fTracks == 0x0) fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("TpcKalmanTrack");
 
   fMCTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("MCTrack");
