@@ -540,6 +540,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
     //AZ new ((*fTpcTracksRefit)[i]) MpdItsKalmanTrack(*(*ittemp));
     MpdItsKalmanTrack *temp = (MpdItsKalmanTrack*) fItsTracks->UncheckedAt((*ittemp)->GetUniqueID() - 1); //AZ
     Int_t nhits = temp->GetNofTrHits();
+    /*
     if (nhits < 4) {
       // Exclude unmatched tracks with less than 4 ITS hits - reset "Use" flag
       TClonesArray *hits = temp->GetTrHits();
@@ -549,7 +550,18 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 	hitK->SetFlag(0);
       }
       continue;
-    };
+    }
+    */
+    if (nhits < 6) {
+      // Unmatched tracks - reset "Use" flag for reusing in KF-tracking
+      TClonesArray *hits = temp->GetTrHits();
+      for (Int_t ih = 0; ih < nhits; ++ih) {
+	MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(ih);
+	MpdKalmanHit *hitK = (MpdKalmanHit*) fKHits->UncheckedAt(hit->GetUniqueID()-1);
+	hitK->SetFlag(0);
+      }
+      if (nhits < 4) continue; // do not store short tracks (< 4 hits)
+    }
     
     MpdItsKalmanTrack *track = new MpdItsKalmanTrack(*temp); //AZ
     vectorFinder->GoToBeamLine(track);

@@ -96,6 +96,7 @@ MpdTpcKalmanTrack & MpdTpcKalmanTrack::operator=(const MpdTpcKalmanTrack& track)
   // base class assignement
   MpdKalmanTrack::operator=(track);
 
+  if (fTrHits) { fTrHits->Delete(); delete fTrHits; }
   fTrHits = new TClonesArray("MpdKalmanHit",70);
 
   Int_t nHits = track.fTrHits->GetEntriesFast();
@@ -116,8 +117,9 @@ MpdTpcKalmanTrack::~MpdTpcKalmanTrack()
 {
   /// Destructor
 
-  if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete();
   delete fTrHits;
+  fTrHits = NULL;
 }
 
 //__________________________________________________________________________
@@ -125,8 +127,9 @@ void MpdTpcKalmanTrack::Reset()
 {
   /// Reset track
 
-  if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete();
   delete fTrHits;
+  fTrHits = NULL;
   Clear();
 }
 

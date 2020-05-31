@@ -135,6 +135,7 @@ MpdKalmanTrack & MpdKalmanTrack::operator=(const MpdKalmanTrack& track)
   // base class assignement
   TObject::operator=(track);
 
+  Clear();
   fID = track.fID;
   fNhits = track.fNhits;
   fTrackDir = track.fTrackDir;
@@ -180,10 +181,12 @@ MpdKalmanTrack::~MpdKalmanTrack()
   delete fParam; 
   delete fParamNew;
   delete fParamAtHit;
-  delete fCovar; 
+  fParam = fParamNew = fParamAtHit = NULL;
+  delete fCovar; fCovar = NULL;
   delete fWeight; 
   delete fWeightAtHit; 
-  delete fHits; 
+  fWeight = fWeightAtHit = NULL;
+  delete fHits; fHits = NULL;
 }
 
 //__________________________________________________________________________
@@ -193,10 +196,12 @@ void MpdKalmanTrack::Clear()
   delete fParam;
   delete fParamNew;
   delete fParamAtHit;
-  delete fCovar;
+  fParam = fParamNew = fParamAtHit = NULL;
+  delete fCovar; fCovar = NULL;
   delete fWeight;
   delete fWeightAtHit;
-  delete fHits;
+  fWeight = fWeightAtHit = NULL;
+  delete fHits; fHits = NULL;  
   fStepMap.clear();
 }
 
