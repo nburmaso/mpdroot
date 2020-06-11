@@ -183,7 +183,7 @@ MpdFemtoEvent* MpdFemtoMcDstReader::returnHbtEvent() {
   mEventsPassed++;
 
   // Check that McDst exists
-  MpdMcDst *mcDst = mMcDstReader->mcDst();
+  McDst *mcDst = mMcDstReader->mcDst();
   if (!mcDst) {
     std::cout << "[ERROR] MpdFemtoEvent* MpdFemtoMcDstReader::returnHbtEvent() - no McDst is in McDstReader" << std::endl;
     mReaderStatus = 1;
