@@ -22,7 +22,7 @@
 
 //_________________
 McDstReader::McDstReader(const Char_t* inFileName) :
-  mMcDst(new MpdMcDst()), mMcRun(nullptr), mChain(nullptr), mTree(nullptr),
+  mMcDst(new McDst()), mMcRun(nullptr), mChain(nullptr), mTree(nullptr),
   mEventCounter(0), mMcArrays{}, mStatusArrays{} {
   // Constructor
   streamerOff();

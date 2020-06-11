@@ -43,7 +43,7 @@ public:
 
     /// Return a pointer to mcDst (return nullptr if no dst is found)
 
-    MpdMcDst *mcDst() {
+    McDst *mcDst() {
         return mMcDst;
     }
     /// Return a pointer to Run info (return nullptr if not set)
@@ -94,7 +94,7 @@ private:
     void setBranchAddresses(TChain *chain);
 
     /// Pointer to the input/output McDst structure
-    MpdMcDst *mMcDst;
+    McDst *mMcDst;
     /// Pointer to the Run information
     McRun *mMcRun;
     /// Pointer to the chain

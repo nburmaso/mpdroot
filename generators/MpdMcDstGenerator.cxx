@@ -1,6 +1,6 @@
 #include "MpdMcDstGenerator.h"
 
-TClonesArray** MpdMcDst::mcArrays = nullptr;
+TClonesArray** McDst::mcArrays = nullptr;
 
 MpdMcDstGenerator::MpdMcDstGenerator() :
 fEventNumber(0),
@@ -45,7 +45,7 @@ Bool_t MpdMcDstGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     fGenTracks->Delete(); // Clear array with gen. tracks ...
     myReader->chain()->GetEntry(fEventNumber);
 
-    MpdMcDst* dst = myReader->mcDst();
+    McDst* dst = myReader->mcDst();
 
     McEvent* event = dst->event();
 

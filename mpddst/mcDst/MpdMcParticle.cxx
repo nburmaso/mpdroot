@@ -15,16 +15,13 @@ ClassImp(McParticle);
 //_________________
 McParticle::McParticle() : TObject(),
 fIndex(0), fPdg(0), fStatus(0), fParent(0), fParentDecay(0),
-fMate(0), fDecay(0), fChild{}
-
-, fPx(0), fPy(0), fPz(0),
+			   fMate(0), fDecay(0), fChild{}, fPx(0), fPy(0), fPz(0),
 fX(0), fY(0), fZ(0), fT(0), fE(0) { // Default constructor
     /* empty */
 }
 
 //_________________
-
-McParticle::McParticle(const Int_t& index, const Int_t& pdg,
+McParticle::McParticle( const Int_t& index, const Int_t& pdg,
         const Int_t& status,
         const Int_t& parent, const Int_t& parentDecay,
         const Int_t& mate, const Int_t& decay,
@@ -34,41 +31,42 @@ McParticle::McParticle(const Int_t& index, const Int_t& pdg,
         const Double_t& x, const Double_t& y,
         const Double_t& z, const Double_t& t) : TObject() {
     // Standard constructor
-    fIndex = ((index > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) index);
-    fPdg = pdg;
-    if (status <= std::numeric_limits<char>::min()) {
+  fIndex = ( (index > std::numeric_limits<unsigned short>::max() ) ?
+	     std::numeric_limits<unsigned short>::max() : (UShort_t)index );
+  fPdg         = pdg;
+  if ( status <= std::numeric_limits<char>::min() ) {
         fStatus = std::numeric_limits<char>::min();
-    } else if (status >= std::numeric_limits<char>::max()) {
+  }
+  else if ( status >= std::numeric_limits<char>::max() ) {
         fStatus = std::numeric_limits<char>::max();
-    } else {
-        fStatus = (Char_t) status;
     }
-    fParent = ((parent > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) parent);
-    fParentDecay = ((parentDecay > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) parentDecay);
-    fMate = ((mate > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) mate);
-    fDecay = ((TMath::Abs(decay) > std::numeric_limits<short>::max()) ?
-            std::numeric_limits<short>::max() : (Short_t) decay);
-    fChild[0] = ((child[0] > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) child[0]);
-    fChild[1] = ((child[1] > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) child[1]);
-    fPx = (Float_t) px;
-    fPy = (Float_t) py;
-    fPz = (Float_t) pz;
-    fE = (Float_t) e;
-    fX = (Float_t) x;
-    fY = (Float_t) y;
-    fZ = (Float_t) z;
-    fT = (Float_t) t;
+  else {
+    fStatus = (Char_t)status;
+}
+  fParent = ( ( parent > std::numeric_limits<unsigned short>::max() ) ?
+	      std::numeric_limits<unsigned short>::max() : (UShort_t)parent );
+  fParentDecay = ( ( parentDecay > std::numeric_limits<unsigned short>::max() ) ?
+		   std::numeric_limits<unsigned short>::max() : (UShort_t)parentDecay );
+  fMate = ( (mate > std::numeric_limits<unsigned short>::max() ) ?
+	    std::numeric_limits<unsigned short>::max() : (UShort_t)mate );
+  fDecay = ( ( TMath::Abs(decay) > std::numeric_limits<short>::max() ) ?
+	     std::numeric_limits<short>::max() : (Short_t)decay );
+  fChild[0] = ( (child[0] > std::numeric_limits<unsigned short>::max() ) ?
+		std::numeric_limits<unsigned short>::max() : (UShort_t)child[0] );
+  fChild[1] = ( (child[1] > std::numeric_limits<unsigned short>::max() ) ?
+		std::numeric_limits<unsigned short>::max() : (UShort_t)child[1] );
+  fPx = (Float_t)px;
+  fPy = (Float_t)py;
+  fPz = (Float_t)pz;
+  fE  = (Float_t)e;
+  fX  = (Float_t)x;
+  fY  = (Float_t)y;
+  fZ  = (Float_t)z;
+  fT  = (Float_t)t;
 }
 
 //_________________
-
-McParticle::McParticle(const Int_t& index, const Int_t& pdg,
+McParticle::McParticle( const Int_t& index, const Int_t& pdg,
         const Int_t& status,
         const Int_t& parent, const Int_t& parentDecay,
         const Int_t& mate, const Int_t& decay,
@@ -76,36 +74,38 @@ McParticle::McParticle(const Int_t& index, const Int_t& pdg,
         const TLorentzVector& mom,
         const TLorentzVector& pos) : TObject() {
     // Standard constructor
-    fIndex = ((index > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) index);
+  fIndex = ( (index > std::numeric_limits<unsigned short>::max() ) ?
+	     std::numeric_limits<unsigned short>::max() : (UShort_t)index );
     fPdg = pdg;
-    if (status <= std::numeric_limits<char>::min()) {
+  if ( status <= std::numeric_limits<char>::min() ) {
         fStatus = std::numeric_limits<char>::min();
-    } else if (status >= std::numeric_limits<char>::max()) {
+  }
+  else if ( status >= std::numeric_limits<char>::max() ) {
         fStatus = std::numeric_limits<char>::max();
-    } else {
-        fStatus = (Char_t) status;
     }
-    fParent = ((parent > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) parent);
-    fParentDecay = ((parentDecay > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) parentDecay);
-    fMate = ((mate > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) mate);
-    fDecay = ((TMath::Abs(decay) > std::numeric_limits<short>::max()) ?
-            std::numeric_limits<short>::max() : (Short_t) decay);
-    fChild[0] = ((child[0] > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) child[0]);
-    fChild[1] = ((child[1] > std::numeric_limits<unsigned short>::max()) ?
-            std::numeric_limits<unsigned short>::max() : (UShort_t) child[1]);
-    fPx = (Float_t) mom.Px();
-    fPy = (Float_t) mom.Py();
-    fPz = (Float_t) mom.Pz();
-    fE = (Float_t) mom.E();
-    fX = (Float_t) pos.X();
-    fY = (Float_t) pos.Y();
-    fZ = (Float_t) pos.Z();
-    fT = (Float_t) pos.T();
+  else {
+    fStatus = (Char_t)status;
+}
+  fParent = ( ( parent > std::numeric_limits<unsigned short>::max() ) ?
+	      std::numeric_limits<unsigned short>::max() : (UShort_t)parent );
+  fParentDecay = ( ( parentDecay > std::numeric_limits<unsigned short>::max() ) ?
+		   std::numeric_limits<unsigned short>::max() : (UShort_t)parentDecay );
+  fMate = ( (mate > std::numeric_limits<unsigned short>::max() ) ?
+	    std::numeric_limits<unsigned short>::max() : (UShort_t)mate );
+  fDecay = ( ( TMath::Abs(decay) > std::numeric_limits<short>::max() ) ?
+	     std::numeric_limits<short>::max() : (Short_t)decay );
+  fChild[0] = ( (child[0] > std::numeric_limits<unsigned short>::max() ) ?
+		std::numeric_limits<unsigned short>::max() : (UShort_t)child[0] );
+  fChild[1] = ( (child[1] > std::numeric_limits<unsigned short>::max() ) ?
+		std::numeric_limits<unsigned short>::max() : (UShort_t)child[1] );
+  fPx = (Float_t)mom.Px();
+  fPy = (Float_t)mom.Py();
+  fPz = (Float_t)mom.Pz();
+  fE  = (Float_t)mom.E();
+  fX  = (Float_t)pos.X();
+  fY  = (Float_t)pos.Y();
+  fZ  = (Float_t)pos.Z();
+  fT  = (Float_t)pos.T();
 }
 
 //_________________
@@ -216,29 +216,29 @@ McParticle::~McParticle() { // Destructor
 Bool_t McParticle::operator==(const McParticle& right) const {
     // If equal operator
     return (
-            fIndex == right.fIndex &&
-            fPdg == right.fPdg &&
-            fStatus == right.fStatus &&
-            fParent == right.fParent &&
+	  fIndex       == right.fIndex &&
+	  fPdg         == right.fPdg &&
+	  fStatus      == right.fStatus &&
+	  fParent      == right.fParent &&
             fParentDecay == right.fParentDecay &&
-            fMate == right.fMate &&
-            fDecay == right.fDecay &&
-            fChild[0] == right.fChild[0] &&
-            fChild[1] == right.fChild[1] &&
-            ((TMath::Abs((fPx - right.fPx) / fPx) < 0.0001) ||
-            (TMath::Abs(fPx) < 1e-16 && TMath::Abs(right.fPx) < 1e-16)) &&
-            ((TMath::Abs((fPy - right.fPy) / fPy) < 0.0001) ||
-            (TMath::Abs(fPy) < 1e-16 && TMath::Abs(right.fPy) < 1e-16)) &&
-            ((TMath::Abs((fPz - right.fPz) / fPz) < 0.0001) ||
-            (TMath::Abs(fPz) < 1e-16 && TMath::Abs(right.fPz) < 1e-16)) &&
-            ((TMath::Abs((fX - right.fX) / fX) < 0.0001) ||
-            (TMath::Abs(fX) < 1e-16 && TMath::Abs(right.fX) < 1e-16)) &&
-            ((TMath::Abs((fY - right.fY) / fY) < 0.0001) ||
-            (TMath::Abs(fY) < 1e-16 && TMath::Abs(right.fY) < 1e-16)) &&
-            ((TMath::Abs((fZ - right.fZ) / fZ) < 0.0001) ||
-            (TMath::Abs(fZ) < 1e-16 && TMath::Abs(right.fZ) < 1e-16)) &&
-            ((TMath::Abs((fT - right.fT) / fT) < 0.0001) ||
-            (TMath::Abs(fT) < 1e-16 && TMath::Abs(right.fT) < 1e-16))
+	  fMate        == right.fMate &&
+	  fDecay       == right.fDecay &&
+	  fChild[0]    == right.fChild[0] &&
+	  fChild[1]    == right.fChild[1] &&
+	  ((TMath::Abs((fPx-right.fPx)/fPx)<0.0001) ||
+	   (TMath::Abs(fPx)<1e-16&&TMath::Abs(right.fPx)<1e-16)) &&
+	  ((TMath::Abs((fPy-right.fPy)/fPy)<0.0001) ||
+	   (TMath::Abs(fPy)<1e-16&&TMath::Abs(right.fPy)<1e-16)) &&
+	  ((TMath::Abs((fPz-right.fPz)/fPz)<0.0001) ||
+	   (TMath::Abs(fPz)<1e-16&&TMath::Abs(right.fPz)<1e-16)) &&
+	  ((TMath::Abs((fX-right.fX)/fX)<0.0001) ||
+	   (TMath::Abs(fX)<1e-16&&TMath::Abs(right.fX)<1e-16)) &&
+	  ((TMath::Abs((fY-right.fY)/fY)<0.0001) ||
+	   (TMath::Abs(fY)<1e-16&&TMath::Abs(right.fY)<1e-16)) &&
+	  ((TMath::Abs((fZ-right.fZ)/fZ)<0.0001) ||
+	   (TMath::Abs(fZ)<1e-16&&TMath::Abs(right.fZ)<1e-16)) &&
+	  ((TMath::Abs((fT-right.fT)/fT)<0.0001) ||
+	   (TMath::Abs(fT)<1e-16&&TMath::Abs(right.fT)<1e-16))
             );
 }
 

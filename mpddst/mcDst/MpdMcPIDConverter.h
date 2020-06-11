@@ -34,10 +34,8 @@ public:
     /// Return particle PDG code
     Int_t pdgCode(const Int_t& pid, const EConvention& pidType);
     /// Return particle PDG code
-
-    Int_t GetPDGCode(const Int_t& pid, const EConvention& pidType) {
-        return pdgCode(pid, pidType);
-    }
+  Int_t GetPDGCode(const Int_t& pid, const EConvention& pidType)
+  { return pdgCode(pid, pidType); }
     /// Return a pointer to the instance
     static McPIDConverter* Instance();
     /// Return a pointer to the instance
@@ -52,10 +50,8 @@ private:
     /// Load table to decode
     void loadConversionTable(const EConvention& pidType);
     /// Load table to decode
-
-    void LoadConversionTable(const EConvention& pidType) {
-        loadConversionTable(pidType);
-    }
+  void LoadConversionTable(const EConvention& pidType)
+  { loadConversionTable(pidType); }
 
     /// Conversion table map
     ConversionTableMap fConversionTables;

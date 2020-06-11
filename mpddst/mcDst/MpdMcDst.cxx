@@ -13,27 +13,27 @@
 //#ifdef __ROOT__
 //#endif
 
-TClonesArray** MpdMcDst::mcArrays = nullptr;
+TClonesArray** McDst::mcArrays = nullptr;
 
 //_________________
-MpdMcDst::~MpdMcDst() {
+McDst::~McDst() {
   /* empty */
 }
 
 //________________
-void MpdMcDst::unset() {
+void McDst::unset() {
   // Unset pointers
   mcArrays = nullptr;
 }
 
 //________________
-void MpdMcDst::set(TClonesArray** theMcArrays) {
+void McDst::set(TClonesArray** theMcArrays) {
   // Set pointers
   mcArrays = theMcArrays;
 }
 
 //________________
-void MpdMcDst::print() {
+void McDst::print() {
   // Print all information
   std::cout << "\n==================== Full event information ====================\n";
   printEventInfo();
@@ -42,13 +42,13 @@ void MpdMcDst::print() {
 }
 
 //________________
-void MpdMcDst::printEventInfo() {
+void McDst::printEventInfo() {
   // Print event information
   event()->print();
 }
 
 //________________
-void MpdMcDst::printParticles() {
+void McDst::printParticles() {
   // Print all particles
   if( numberOfParticles() == 0 ) {
     std::cout << "No particles found!" << std::endl;
@@ -65,4 +65,4 @@ void MpdMcDst::printParticles() {
   std::cout << std::endl;
 }
 
-ClassImp(MpdMcDst)
+ClassImp(McDst)
