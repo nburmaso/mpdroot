@@ -176,5 +176,83 @@ void UserDecayConfig()
 	if (p) SetMode1_for_PDG(p->PdgCode(),100,1000010020,-211);
 	
 	cout << "!!!! 1-0 !!!!!!! " <<  (db->ParticleList()->GetEntries()) << " " << H3L<< " " << H4L << endl;
+
+        cout<<"====== Redefinition of decay channels for eta/rho/omega/phi/eta-prime ======"<<endl;
+
+		// ----- eta -----
+		for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+		ip = -1; totB = 0.;
+		b[++ip] = 39.40; m1[ip] =  22; m2[ip] =   22; m3[ip] =   0; // (gamma, gamma) + 0.08
+		b[++ip] = 32.68; m1[ip] = 111; m2[ip] =  111; m3[ip] = 111; // pi0, pi0, pi0
+		b[++ip] = 22.92; m1[ip] = 211; m2[ip] = -211; m3[ip] = 111; // pi+, pi-, pi0
+		b[++ip] =  4.22; m1[ip] = 211; m2[ip] = -211; m3[ip] =  22; // pi+, pi-, gamma
+		b[++ip] =  0.69; m1[ip] =  11; m2[ip] =  -11; m3[ip] =  22; // e-, e+, gamma
+		
+		for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+		for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+		
+		SetMode_for_PDG(221,b,m1,m2,m3,++ip);
+
+
+		// ----- rho0 -----
+		for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+		ip = -1; totB = 0.;
+		b[++ip] = 99.9056; m1[ip] = -211; m2[ip] = 211; m3[ip] = 0; // pi-, pi+
+		b[++ip] =  0.0944; m1[ip] =   11; m2[ip] = -11; m3[ip] = 0; // (e-, e+) x 20
+		
+		for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+		for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+		
+		SetMode_for_PDG(113,b,m1,m2,m3,++ip);
+
+
+		// ----- omega (pid=223) -----
+		for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+		ip = -1; totB = 0.;
+		b[++ip] = 88.3828; m1[ip] = 211; m2[ip] = -211; m3[ip] = 111; // (pi+, pi-, pi0) - 0.9172
+		b[++ip] =  8.400;  m1[ip] = 111; m2[ip] =   22; m3[ip] =   0; // pi0, gamma
+		b[++ip] =  1.530;  m1[ip] = 211; m2[ip] = -211; m3[ip] =   0; // pi+, pi-
+		b[++ip] =  1.540;  m1[ip] = 111; m2[ip] =  -11; m3[ip] =  11; // (pi0, e+, e-) x 20
+		b[++ip] =  0.1472; m1[ip] =  11; m2[ip] =  -11; m3[ip] =   0; // (e-, e+)  x 20
+		
+		for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+		for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+		
+		SetMode_for_PDG(223,b,m1,m2,m3,++ip);
+
+
+		// ----- phi (pid=333) -----
+		for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+		ip = -1; totB = 0.;
+		b[++ip] = 49.8234; m1[ip] = 321; m2[ip] = -321; m3[ip] =   0; // (K+, K-) + 0.6234
+		b[++ip] = 34.000;  m1[ip] = 130; m2[ip] =  310; m3[ip] =   0; // Kl0, Ks0
+		b[++ip] = 15.240;  m1[ip] = 211; m2[ip] = -211; m3[ip] = 111; // pi+, pi-, pi0
+		b[++ip] =  0.130;  m1[ip] = 221; m2[ip] =   22; m3[ip] =   0; // eta, gamma
+		b[++ip] =  0.5946; m1[ip] =  11; m2[ip] =  -11; m3[ip] =   0; // (e-, e+) x 20 
+		b[++ip] =  0.212;  m1[ip] = 221; m2[ip] =  -11; m3[ip] =  11; // (eta, e+, e-) x 20
+		
+		for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+		for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+		
+		SetMode_for_PDG(333,b,m1,m2,m3,++ip);
+
+
+
+		// ----- eta-prime (pid=331) -----
+		for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+		ip = -1; totB = 0.;
+		b[++ip] = 42.514; m1[ip] = 221; m2[ip] = -211; m3[ip] = 211; // (eta, pi+, pi-)  - 0.086
+		b[++ip] = 28.90;  m1[ip] = 113; m2[ip] =   22; m3[ip] =   0; // rho0, gamma
+		b[++ip] = 22.80;  m1[ip] = 221; m2[ip] =  111; m3[ip] = 111; // eta, pi0, pi0
+		b[++ip] =  2.22;  m1[ip] =  22; m2[ip] =   22; m3[ip] =   0; // gamma, gamma
+		b[++ip] =  2.62;  m1[ip] = 223; m2[ip] =   22; m3[ip] =   0; // (omega, gamma)
+		b[++ip] =  0.946; m1[ip] =  22; m2[ip] =  -11; m3[ip] =  11; // (gamma, e+, e-) x 20
+		
+		for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+		for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+		
+		SetMode_for_PDG(331,b,m1,m2,m3,++ip);
+
+
 }
 
