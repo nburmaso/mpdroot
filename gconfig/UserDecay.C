@@ -74,6 +74,64 @@ void UserDecayConfig()
 	Float_t b[6], totB;
 	Int_t AlphaPDG, He5PDG, He3, H3L, H4L, prot, deut, neut, H3, He4L;
 	
+//V
+	//Lambda(1520)
+	gMC->DefineParticle(3124, "LAMS", kPTNeutron, 1.5195 , 0.0, 4.219231e-23,"Ion", 0.0156, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added Lambda(1520)"<<endl;
+
+	//anti-Lambda(1520)
+	gMC->DefineParticle(-3124, "ALAMS", kPTNeutron, 1.5195 , 0.0, 4.219231e-23,"Ion", 0.0156, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added anti-Lambda(1520)"<<endl;
+
+	//K*(892)0
+	gMC->DefineParticle(313, "KST0", kPTNeutron, 0.89555 , 0.0, 1.39154e-23,"Ion", 0.0473, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added K*(892)0"<<endl;
+
+	//anti-K*(892)0
+	gMC->DefineParticle(-313, "AKST0", kPTNeutron, 0.89555 , 0.0, 1.39154e-23,"Ion", 0.0473, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added anti-K*(892)0"<<endl;
+
+	//K*(892)+
+	gMC->DefineParticle(323, "KSTP", kPTHadron, 0.89166 , 1.0, 1.308548e-23,"Ion", 0.0508, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added K*(892)+"<<endl;
+
+	//K*(892)-
+	gMC->DefineParticle(-323, "KSTM", kPTHadron, 0.89166 , -1.0, 1.308548e-23,"Ion", 0.0508, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added K*(892)-"<<endl;
+
+	//Sigma(1385)+
+	gMC->DefineParticle(3224, "SIGP", kPTHadron, 1.38280 , 1.0, 1.84e-23,"Ion", 0.036, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added Sigma(1385)+"<<endl;
+
+	//Sigma(1385)-
+	gMC->DefineParticle(3114, "SIGM", kPTHadron, 1.38720 , -1.0, 1.67e-23,"Ion", 0.0394, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added Sigma(1385)-"<<endl;
+
+	//anti-Sigma(1385)+
+	gMC->DefineParticle(-3224, "ASIGP", kPTHadron, 1.38280 , -1.0, 1.84e-23,"Ion", 0.036, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added anti-Sigma(1385)+"<<endl;
+
+	//anti-Sigma(1385)-
+	gMC->DefineParticle(-3114, "ASIGM", kPTHadron, 1.38720 , 1.0, 1.67e-23,"Ion", 0.0394, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added anti-Sigma(1385)-"<<endl;
+
+	//Xi(1530)
+	gMC->DefineParticle(3324, "XIST", kPTNeutron, 1.53180 , 0.0, 7.28e-23,"Ion", 0.0091, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added Xi(1530)"<<endl;
+
+	//anti-Xi(1530)
+	gMC->DefineParticle(-3324, "AXIST", kPTNeutron, 1.53180 , 0.0, 7.28e-23,"Ion", 0.0091, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added anti-Xi(1530)"<<endl;
+
+	//Sigma(1385)0
+	gMC->DefineParticle(3214, "SIG0", kPTNeutron, 1.3837 , 0.0, 1.84e-23,"Ion", 0.036, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added Sigma(1385)0"<<endl;
+
+	//anti-Sigma(1385)0
+	gMC->DefineParticle(-3214, "ASIG0", kPTNeutron, 1.3837 , 0.0, 1.84e-23,"Ion", 0.036, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
+	cout<<"Added anti-Sigma(1385)0"<<endl;
+//V
+
 	p = db->GetParticle("proton");
 	if (p) prot = p->PdgCode();
 	
@@ -176,5 +234,196 @@ void UserDecayConfig()
 	if (p) SetMode1_for_PDG(p->PdgCode(),100,1000010020,-211);
 	
 	cout << "!!!! 1-0 !!!!!!! " <<  (db->ParticleList()->GetEntries()) << " " << H3L<< " " << H4L << endl;
+
+//V
+cout<<"===== (re)defined decays for (a)-L*, (a)-K*0, K*+/-, (a)-Sigma(1385)+, (a)-Sigma(1385)-, (a)-Xi(1530) ====="<<endl;
+                // ----- LAMS (pid=3124) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] = 22.50;  m1[ip] =  2212; m2[ip] = -321; m3[ip] =   0; // p, K-
+                b[++ip] = 22.50;  m1[ip] = -2212; m2[ip] =  321; m3[ip] =   0; // antip, K+
+                b[++ip] = 45.00;  m1[ip] =  3212; m2[ip] =  111; m3[ip] =   0; // Sigma0, pi0
+                b[++ip] = 10.00;  m1[ip] =  3122; m2[ip] =  111; m3[ip] = 111; // Lambda, pi0, pi0
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(3124,b,m1,m2,m3,++ip);
+
+
+                // ----- ALAMS (pid=-3124) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] = 22.50;  m1[ip] = -2212; m2[ip] =  321; m3[ip] =   0; // antip, K+
+                b[++ip] = 22.50;  m1[ip] =  2212; m2[ip] = -321; m3[ip] =   0; // p, K-
+                b[++ip] = 45.00;  m1[ip] = -3212; m2[ip] =  111; m3[ip] =   0; // anti-Sigma0, pi0
+                b[++ip] = 10.00;  m1[ip] = -3122; m2[ip] =  111; m3[ip] = 111; // anti-Lambda, pi0, pi0
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(-3124,b,m1,m2,m3,++ip);
+
+
+                // ----- KST0 (pid=313) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  66.50;  m1[ip] = 321; m2[ip] =  -211; m3[ip] =   0; // K+, pi-
+                b[++ip] =  16.65;  m1[ip] = 130; m2[ip] =   111; m3[ip] =   0; // KL, pi0
+                b[++ip] =  16.65;  m1[ip] = 310; m2[ip] =   111; m3[ip] =   0; // Ks, pi0
+                b[++ip] =  0.10;   m1[ip] = 130; m2[ip] =    22; m3[ip] =   0; // KL, gamma
+                b[++ip] =  0.10;   m1[ip] = 310; m2[ip] =    22; m3[ip] =   0; // Ks, gamma
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(313,b,m1,m2,m3,++ip);
+
+
+                // ----- AKST0 (pid=-313) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  66.50;  m1[ip] = -321; m2[ip] =   211; m3[ip] =   0; // K-, pi+
+                b[++ip] =  16.65;  m1[ip] =  130; m2[ip] =   111; m3[ip] =   0; // KL, pi0
+                b[++ip] =  16.65;  m1[ip] =  310; m2[ip] =   111; m3[ip] =   0; // Ks, pi0
+                b[++ip] =  0.10;   m1[ip] = 130; m2[ip] =    22;  m3[ip] =   0; // KL, gamma
+                b[++ip] =  0.10;   m1[ip] = 310; m2[ip] =    22;  m3[ip] =   0; // Ks, gamma
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(-313,b,m1,m2,m3,++ip);
+
+
+                // ----- KSTP (pid=323) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  33.30;  m1[ip] =  130; m2[ip] =   211; m3[ip] =   0; // KL, pi+
+                b[++ip] =  33.30;  m1[ip] =  310; m2[ip] =   211; m3[ip] =   0; // Ks, pi+
+                b[++ip] =  33.30;  m1[ip] =  321; m2[ip] =   111; m3[ip] =   0; // K+, pi0
+                b[++ip] =   0.10;  m1[ip] =  321; m2[ip] =    22; m3[ip] =   0; // K+, gamma
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(323,b,m1,m2,m3,++ip);
+
+
+                // ----- KSTM (pid=-323) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  33.30;  m1[ip] =  130; m2[ip] =  -211; m3[ip] =   0; // KL, pi-
+                b[++ip] =  33.30;  m1[ip] =  310; m2[ip] =  -211; m3[ip] =   0; // Ks, pi-
+                b[++ip] =  33.30;  m1[ip] = -321; m2[ip] =   111; m3[ip] =   0; // K-, pi0
+                b[++ip] =   0.10;  m1[ip] = -321; m2[ip] =    22; m3[ip] =   0; // K-, gamma
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(-323,b,m1,m2,m3,++ip);
+
+
+                // ----- SIGP (pid=3224) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  88.00;  m1[ip] = 3122; m2[ip] =  211; m3[ip] =   0; // Lambda, pi+
+                b[++ip] =   6.00;  m1[ip] = 3222; m2[ip] =  111; m3[ip] =   0; // Sigma+, pi0
+                b[++ip] =   6.00;  m1[ip] = 3212; m2[ip] =  211; m3[ip] =   0; // Sigma0, pi+
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(3224,b,m1,m2,m3,++ip);
+
+
+                // ----- ASIGP (pid=-3224) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  88.00;  m1[ip] = -3122; m2[ip] = -211; m3[ip] =   0; // anti-Lambda, pi-
+                b[++ip] =   6.00;  m1[ip] = -3222; m2[ip] =  111; m3[ip] =   0; // anti-Sigma+, pi0
+                b[++ip] =   6.00;  m1[ip] = -3212; m2[ip] = -211; m3[ip] =   0; // anti-Sigma0, pi-
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(-3224,b,m1,m2,m3,++ip);
+
+
+                // ----- SIGM (pid=3114) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  88.00;  m1[ip] = 3122; m2[ip] = -211; m3[ip] =   0; // Lambda, pi-
+                b[++ip] =   6.00;  m1[ip] = 3212; m2[ip] = -211; m3[ip] =   0; // Sigma0, pi-
+                b[++ip] =   6.00;  m1[ip] = 3112; m2[ip] =  111; m3[ip] =   0; // Sigma-, pi0
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(3114,b,m1,m2,m3,++ip);
+
+
+                // ----- ASIGM (pid=-3114) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  88.00;  m1[ip] = -3122; m2[ip] = 211; m3[ip] =   0; // anti-Lambda, pi+
+                b[++ip] =   6.00;  m1[ip] = -3212; m2[ip] = 211; m3[ip] =   0; // anti-Sigma0, pi+
+                b[++ip] =   6.00;  m1[ip] = -3112; m2[ip] = 111; m3[ip] =   0; // anti-Sigma-, pi0
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(-3114,b,m1,m2,m3,++ip);
+
+
+                // ----- XIST (pid=3324) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  33.30;  m1[ip] = 3322; m2[ip] = 111; m3[ip] =   0; // Xi0, pi0
+                b[++ip] =  66.70;  m1[ip] = 3312; m2[ip] = 211; m3[ip] =   0; // Xi-, pi+
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(3324,b,m1,m2,m3,++ip);
+
+
+                // ----- AXIST (pid=-3324) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  33.30;  m1[ip] = -3322; m2[ip] =  111; m3[ip] =   0; // anti-Xi0, pi0
+                b[++ip] =  66.70;  m1[ip] = -3312; m2[ip] = -211; m3[ip] =   0; // anti-Xi-, pi-
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(-3324,b,m1,m2,m3,++ip);
+
+
+                // ----- SIG0 (pid=3214) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  88.00;  m1[ip] = 3122; m2[ip] =  111; m3[ip] =   0; // Lambda, pi0
+                b[++ip] =   6.00;  m1[ip] = 3222; m2[ip] = -211; m3[ip] =   0; // Sigma+, pi-
+                b[++ip] =   6.00;  m1[ip] = 3112; m2[ip] =  211; m3[ip] =   0; // Sigma-, pi+
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(3214,b,m1,m2,m3,++ip);
+
+
+                // ----- ASIG0 (pid=-3214) -----
+                for (Int_t kz=0; kz<6; kz++) { b[kz] = 0.; m1[kz] = 0; m2[kz] = 0; m3[kz] = 0; }
+                ip = -1; totB = 0.;
+                b[++ip] =  88.00;  m1[ip] = -3122; m2[ip] =  111; m3[ip] =   0; // Lambda, pi0
+                b[++ip] =   6.00;  m1[ip] = -3222; m2[ip] =  211; m3[ip] =   0; // Sigma+, pi-
+                b[++ip] =   6.00;  m1[ip] = -3112; m2[ip] = -211; m3[ip] =   0; // Sigma-, pi+
+
+                for (Int_t kz=0; kz<ip+1; kz++) totB += b[kz] / 100.;
+                for (Int_t kz=0; kz<ip+1; kz++) b[kz] /= totB;
+
+                SetMode_for_PDG(-3214,b,m1,m2,m3,++ip);
+//V
+
 }
 
