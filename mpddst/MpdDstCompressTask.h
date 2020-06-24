@@ -32,7 +32,6 @@ protected:
 	TClonesArray *fMCTracks;
 	TClonesArray *fTpcKalmans;
 	TClonesArray *fTpcHits;
-	FairEventHeader *fEventHeader;
 	Int_t fMCMapSize;
 	Int_t *fMCIndexMap; //[fMCMapSize]
 	virtual InitStatus CheckBranches();
