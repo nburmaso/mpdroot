@@ -13,7 +13,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class FairPlutoReactionGenerator+;
+//#pragma link C++ class FairPlutoReactionGenerator+;
 
 #pragma link C++ class MpdMCEventHeader+;
 #pragma link C++ class MpdLAQGSMGenerator+;

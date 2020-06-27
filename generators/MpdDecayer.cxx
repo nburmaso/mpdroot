@@ -527,15 +527,14 @@ void MpdDecayer::Gdecay(Int_t idpart, TLorentzVector* p)
   TLorentzVector daughter1, daughter2;
   daughter1.SetPxPyPzE (pcm[0][0], pcm[0][1], pcm[0][2], pcm[0][3]);
   daughter2.SetPxPyPzE (pcm[1][0], pcm[1][1], pcm[1][2], pcm[1][3]);
-  
+
   //Boost to lab frame
-  TVector3 boost = p->BoostVector();
-  //boost *= -1;
+  //TVector3 boost = p->BoostVector(); //AZ - this is wrong !!!!
+  TVector3 boost (0, 0, p->P()/p->E());
   daughter1.Boost(boost);
   daughter2.Boost(boost);
-  //
-  //daughter1.Print();
-  //daughter2.Print();
+  daughter1.Transform(fRotation);
+  daughter2.Transform(fRotation);
 
   TLorentzVector pos;
   gMC->TrackPosition(pos);
@@ -544,6 +543,7 @@ void MpdDecayer::Gdecay(Int_t idpart, TLorentzVector* p)
   Int_t npart = fParticles->GetEntriesFast();
   new ((*fParticles)[npart++]) TParticle(2212, 1, 1, -1, 0, 0, daughter1, pos);
   new ((*fParticles)[npart]) TParticle(-211, 1, 1, -1, 0, 0, daughter2, pos);
+
   fSourceFlag = kCustom;
 
   // Modify mother particle parameters
@@ -579,7 +579,7 @@ void MpdDecayer::Gdeca2(Double_t xm0, Double_t xm1, Double_t xm2, Double_t pcm[2
   TVector3 polar;
   part->GetPolarisation(polar);
   
-  if (polar.X() < 0.0001 && polar.Z() < 0.0001) {
+  if (TMath::Abs(polar.X()) < 0.0001 && TMath::Abs(polar.Z()) < 0.0001) {
     costh = 2. * random[0] - 1.0;
     phi = TMath::TwoPi() * random[1];
   } else {
@@ -608,7 +608,7 @@ void MpdDecayer::Gdeca2(Double_t xm0, Double_t xm1, Double_t xm2, Double_t pcm[2
 ////////////////////////////////////////////////////////////////////////////////
 /// Simulate anisotropic (due to polarization) decay of lambda
 
-void MpdDecayer::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Double_t phi, Double_t costh)
+void MpdDecayer::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Double_t &phi, Double_t &costh)
 {
   // Simulate anisotropic (due to polarization) decay of lambda
 
@@ -626,7 +626,7 @@ void MpdDecayer::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Do
   if (TMath::Abs(costhe) >= 1.0) costhe = TMath::Sign (1.0,costhe);
   else sinth = TMath::Sqrt (1.0 - costhe * costhe);
   phi = TMath::TwoPi() * rndm[1];
-  //std::cout << costhe << " " << phi << std::endl;
+  //std::cout << " Cos: " << costhe << " " << phi << " " << pvert[0] << " " << pvert[1] << " " << pvert[2] << std::endl;
 
   // Compute normal vector
   TVector3 beam(0.0, 0.0, 1.0);
@@ -644,11 +644,20 @@ void MpdDecayer::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Do
   lambY.RotateUz(lambU);
   TRotation rotL;
   rotL.RotateAxes(lambX,lambY,lambZ); // transformation to lab. system
+  fRotation = rotL;
   rotL.Invert(); // from lab. to lambda
-
   unit.RotateUz(norm); // to lab. system
   unit.Transform(rotL); // to lambda system
-
+  /*
+  TVector3 normZ(0,0,1), normX(1,0,0), normY(0,1,0);
+  normZ.RotateUz(norm);
+  normX.RotateUz(norm);
+  normY.RotateUz(norm);
+  TRotation rotN;
+  rotN.RotateAxes(normX,normY,normZ); // transformation to lab. system
+  unit.Transform(rotN); // to lab. system
+  unit.Transform(rotL); // to lambda system
+  */
   costh = TMath::Cos(unit.Theta());
   phi = unit.Phi();
   //std::cout << costh << " " << phi << std::endl;

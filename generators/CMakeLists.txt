@@ -63,7 +63,8 @@ MpdDecayer.cxx
 MpdTPythia8Generator.cxx
 )
 if(PLUTO_FOUND)
-set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
+#set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
+set(SRCS ${SRCS} MpdPlutoGenerator.cxx)
 EndIf(PLUTO_FOUND)
 
 Set(HEADERS)
