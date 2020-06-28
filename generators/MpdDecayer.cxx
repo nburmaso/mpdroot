@@ -12,6 +12,7 @@
 #include <TDecayChannel.h>
 #include "TF1.h"
 #include "TGeant3.h"
+#include "TH1.h"
 #include <THashList.h>
 #include "TLorentzVector.h"
 #include "TParticle.h"
@@ -566,6 +567,11 @@ void MpdDecayer::Gdeca2(Double_t xm0, Double_t xm1, Double_t xm2, Double_t pcm[2
   Double_t e1 = (xm0 * xm0 + xm1 * xm1 - xm2 * xm2) / (2. * xm0);
   Double_t p1 = TMath::Sqrt (TMath::Abs ((e1 - xm1) * (e1 + xm1)));
 
+  static TRandom *myRandom  = NULL;
+  if (!myRandom) { myRandom = new TRandom(); myRandom->SetSeed(0); }
+  TRandom *oldRandom = gRandom;
+  gRandom = myRandom;
+
   gRandom->RndmArray (2, random);
     
   // Sanity check - should not happen (legacy code)
@@ -603,6 +609,8 @@ void MpdDecayer::Gdeca2(Double_t xm0, Double_t xm1, Double_t xm2, Double_t pcm[2
   pcm[1][1] = -pcm[0][1];
   pcm[1][2] = -pcm[0][2];
   pcm[1][3] = TMath::Sqrt (pcm[1][0] * pcm[1][0] + pcm[1][1] * pcm[1][1] + pcm[1][2] * pcm[1][2] + xm2 * xm2);
+
+  gRandom = oldRandom;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -618,8 +626,9 @@ void MpdDecayer::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Do
 
   //const Double_t alpha = 0.642;
   static TF1 f("f","1+0.642*[0]*x",-1,1); 
-
   f.SetParameter(0,polar);
+  f.SetNpx(1000);
+
   Double_t costhe = f.GetRandom();
 
   Double_t sinth = 0.0;
