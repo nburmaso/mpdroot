@@ -1,5 +1,5 @@
 MACRO(InstallNicaFemto)
-	execute_process(COMMAND git clone -b master https://git.jinr.ru/nica/nicafemto.git ${CMAKE_SOURCE_DIR}/nicafemto)
+	execute_process(COMMAND git clone -b pro https://git.jinr.ru/nica/nicafemto.git ${CMAKE_SOURCE_DIR}/nicafemto)
 	if(EXISTS "${CMAKE_SOURCE_DIR}/nicafemto/CMakeLists.txt")
 		set(NICAFEMTO_SUBDIR_BUILD ON)
 		set(NICAFEMTO_CORE "${CMAKE_SOURCE_DIR}/nicafemto")

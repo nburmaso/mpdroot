@@ -8,15 +8,21 @@ STRING(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]" "\\1" req_gcc_minor_vers "${GC
 IF(${req_gcc_major_vers} MATCHES "4" AND NOT ${req_gcc_minor_vers} MATCHES "0")
 ENDIF(${req_gcc_major_vers} MATCHES "4" AND NOT ${req_gcc_minor_vers} MATCHES "0")
 
+add_subdirectory(genFactory)
+
 set(INCLUDE_DIRECTORIES
  ${BASE_INCLUDE_DIRECTORIES}
  ${CMAKE_SOURCE_DIR}/config
+ ${CMAKE_SOURCE_DIR}/mpdbase
+ ${CMAKE_SOURCE_DIR}/mpddst/mcDst
  ${CMAKE_SOURCE_DIR}/generators
+ ${CMAKE_SOURCE_DIR}/mcstack
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
   ${ROOT_INCLUDE_DIR}
   ${FAIRROOT_LIBRARY_DIR}
+  ${GEANT3_INCLUDE_DIR}
 )
 
 if(PLUTO_FOUND)
@@ -51,15 +57,20 @@ MpdVHLLEGenerator.cxx
 MpdFreezoutGenerator.cxx
 MpdEPOSGenerator.cxx
 MpdDCMSMMGenerator.cxx
+MpdPHQMDGenerator.cxx
+MpdMcDstGenerator.cxx
+MpdDecayer.cxx
+MpdTPythia8Generator.cxx
 )
 if(PLUTO_FOUND)
-set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
+#set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
+set(SRCS ${SRCS} MpdPlutoGenerator.cxx)
 EndIf(PLUTO_FOUND)
 
 Set(HEADERS)
 Set(LINKDEF GenLinkDef.h)
 Set(LIBRARY_NAME MpdGen)
-Set(DEPENDENCIES Base EG MathCore Physics RIO Core)
+Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst EGPythia6)
 
 GENERATE_LIBRARY()
 

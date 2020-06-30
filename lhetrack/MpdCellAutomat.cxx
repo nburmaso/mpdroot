@@ -27,7 +27,7 @@
 
 #include "FairGeoNode.h"
 #include "FairMCPoint.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRunAna.h"
@@ -1545,10 +1545,10 @@ void MpdCellAutomat::AddHits()
 
     Int_t nWrong = 0, nMirr = 0, motherID = track->GetTrackID();
     // Get track mother ID 
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() >= 0) {
       motherID = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
     }
 
     Int_t lastIndx = trHits.GetEntriesFast();
@@ -1563,10 +1563,10 @@ void MpdCellAutomat::AddHits()
 	Int_t motherID1 = ((FairMCPoint*) fItsPoints->UncheckedAt(h->GetRefIndex()))->GetTrackID();
 	cout << "-" << motherID1;
 	// Get point mother ID 
-	mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID1);
+	mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID1);
 	while (mctrack->GetMotherId() >= 0) {
 	  motherID1 = mctrack->GetMotherId();
-	  mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+	  mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
 	}
 	if (motherID1 != motherID) ++nWrong;
       }

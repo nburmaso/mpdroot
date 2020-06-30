@@ -33,12 +33,11 @@ link_directories(${LINK_DIRECTORIES} )
 set(SRCS
 MpdPid.cxx
 MpdPidQA.cxx
-MpdPid_AZ.cxx
 )
 
 Set(HEADERS)
 Set(LINKDEF MpdPidLinkDef.h)
 Set(LIBRARY_NAME MpdPid)
-Set(DEPENDENCIES Core Base Hist MCStack MpdBase)
+Set(DEPENDENCIES Core Base Hist MpdMCStack MpdBase)
 
 GENERATE_LIBRARY()

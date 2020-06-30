@@ -21,6 +21,7 @@ class MpdKalmanTrack : public TObject
  public:
   enum TrackDir {kInward, kOutward};
   enum TrackType {kBarrel, kEndcap};
+  enum TrackFlag {kOk, kNoOut};
  public:
   
   MpdKalmanTrack(); ///< Default ctor
@@ -32,6 +33,7 @@ class MpdKalmanTrack : public TObject
   Int_t GetTrackID() const { return fID; } ///< get track ID
   TrackDir GetDirection() const { return fTrackDir; } ///< Get track direction
   TrackType GetType() const { return fTrackType; } ///< Get track type
+  TrackFlag GetFlag() const { return fFlag; } ///< Get track flag
   Int_t GetLastLay() const { return fLastLay; } ///< get the outermost layer
   Int_t GetNofWrong() const { return fNofWrong; } ///< number of wrong hits
   TString GetNode() const { return fNode; } ///< node path
@@ -63,6 +65,7 @@ class MpdKalmanTrack : public TObject
   void SetNofHits(Int_t nHits) { fNhits = nHits; } ///< Set number of track hits
   void SetDirection(TrackDir dir) { fTrackDir = dir; } ///< set track direction
   void SetType(TrackType type) { fTrackType = type; } ///< set track type
+  void SetFlag(TrackFlag flag) { fFlag = flag; } ///< set track flag
   void SetLastLay(Int_t lay) { fLastLay = lay; } ///< set last layer
   void SetNofWrong(Int_t nWrong) { fNofWrong = nWrong; } ///< set number of wrong hits 
   void SetNode(TString node) { fNode = node; } ///< set node path
@@ -94,7 +97,7 @@ class MpdKalmanTrack : public TObject
   Double_t Pt() const { return TMath::Abs(GetParam(4)) > 0.01 ? 1. / TMath::Abs(GetParam(4)) : 100. ; }
   Double_t Phi() const { return GetParam(2); }
   Double_t Theta() const { return TMath::PiOver2() - GetParam(3); }
-  Double_t Momentum() const { return TMath::Abs(Pt()) / TMath::Cos(GetParam(3)); }
+  Double_t Momentum() const { return TMath::Abs(Pt() / TMath::Cos(GetParam(3))); }
   Int_t Charge() const { return TMath::Nint(TMath::Sign(1., -GetParam(4))); }
   TVector3 Momentum3() const { return TVector3(Pt()*TMath::Cos(Phi()), Pt()*TMath::Sin(Phi()), Momentum()*TMath::Cos(Theta())); }
   Double_t DCA() const; ///< signed DCA
@@ -129,7 +132,8 @@ class MpdKalmanTrack : public TObject
   TVector3 fVertex; ///< track vertex
   TObjArray *fHits; ///<! array of hit pointers assigned to the track
   std::map<Int_t,Double_t> fStepMap; ///<! steps between points on track
+  TrackFlag fFlag; ///< track flag
 
-  ClassDef(MpdKalmanTrack,4);
+  ClassDef(MpdKalmanTrack,5);
 };
 #endif

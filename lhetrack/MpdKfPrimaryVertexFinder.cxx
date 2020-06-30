@@ -18,7 +18,7 @@
 #include "MpdVertex.h"
 
 #include "FairMCPoint.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include <TAxis.h>
 #include <TClonesArray.h>
@@ -77,17 +77,18 @@ InitStatus MpdKfPrimaryVertexFinder::Init()
   fHist[2] = new TH1D("hZv","Zv",1000,-100.1,99.9);
 
   fTracks = 0x0;
-  fTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("ItsTrack");
-  if (fTracks == 0x0) fTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("TpcKalmanTrack");
+  fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("TpcTrackRefit");
+  if (fTracks == 0x0) fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("ItsTrack");
+  if (fTracks == 0x0) fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("ItsTrackKF");
+  if (fTracks == 0x0) fTracks = (TClonesArray *) FairRootManager::Instance()->GetObject("TpcKalmanTrack");
 
   fMCTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("MCTrack");
-  //fSTSTrackMatch = (TClonesArray*) FairRootManager::Instance()->GetObject("STSTrackMatch");
-  //fPrimVtx =  (FairVertex *) FairRootManager::Instance() ->GetObject("PrimaryVertex");
 
   FairRootManager::Instance()->Register("Vertex", "MPDVertex", fVertexCont, kTRUE);
   if (fConstrFlag) FairRootManager::Instance()->Register("PrimTracks", "ConstrTrs", fVertTracks, kTRUE);
 
   fNPass = 3;
+  return kSUCCESS;
 }
 
 //__________________________________________________________________________
@@ -282,7 +283,7 @@ void MpdKfPrimaryVertexFinder::FindVertex()
       MpdKalmanTrack *track = (MpdKalmanTrack*) fTracks->UncheckedAt(itr);
       //if (track->GetNode() != "") continue; // exclude failed tracks 
       // Select primaries
-      FairMCTrack *mcTr = (FairMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+      MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
       //if (mcTr->GetMotherId() >= 0) continue; // secondary
       Double_t th = TMath::PiOver2() - track->GetParam(3);
       //if (TMath::Abs(TMath::Log(TMath::Tan(th/2))) > 1.) continue; // eta-cut
@@ -771,7 +772,7 @@ void MpdKfPrimaryVertexFinder::Chi2Vertex()
     }
 
     // Select primaries
-    //FairMCTrack *mcTr = (FairMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+    //MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
     //if (mcTr->GetMotherId() >= 0) continue; // secondary
     Double_t th = TMath::PiOver2() - track->GetParam(3);
     //if (TMath::Abs(TMath::Log(TMath::Tan(th/2))) > 1.) continue; // eta-cut

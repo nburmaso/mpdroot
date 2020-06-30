@@ -6,36 +6,37 @@
 #include <limits>
 
 // ROOT headers
-#include "TMath.h"
+#include "TString.h"
 
-// PicoDst headers
+// MiniDst headers
 #include "MpdMiniMessMgr.h"
 #include "MpdMiniBECalHit.h"
 
 ClassImp(MpdMiniBECalHit)
 
 //_________________
-MpdMiniBECalHit::MpdMiniBECalHit(): TObject(), mAdc(0), mE(-9000) {
+MpdMiniBECalHit::MpdMiniBECalHit(): TObject(),
+  mBEcalMatchFlag(kFALSE), fEnergy(0), fTime(0),
+  fFlag(0), fNumOfTracks(0), fX(-1.), fY(-1.), fZ(-1.),
+  fdPhi(-1.), fdZ(-1.) {
   /* empty */
+  fCellIds.resize(0);
 }
 
 //_________________
-MpdMiniBECalHit::MpdMiniBECalHit(Int_t adc, Float_t e) : TObject() {
-
-  if (adc < 0) return;
-  mAdc  = (adc > std::numeric_limits<unsigned short>::max()) ? 
-    std::numeric_limits<unsigned short>::max() : (UShort_t)adc;
-
-  mE = ( fabs(e * 1000.) > std::numeric_limits<short>::max() ?
-	 ( (e > 0.) ? std::numeric_limits<short>::max() :
-	   std::numeric_limits<short>::min() ) :
-	 (Short_t)( TMath::Nint(e * 1000.) ) );
-}
-
-//_________________
-MpdMiniBECalHit::MpdMiniBECalHit(const MpdMiniBECalHit &hit) : TObject() {
-  mAdc = hit.mAdc;
-  mE = hit.mE;
+MpdMiniBECalHit::MpdMiniBECalHit(const MpdMiniBECalHit &hit) : TObject(),  
+							       fCellIds( hit.fCellIds),
+  mBEcalMatchFlag(hit.mBEcalMatchFlag),
+  fEnergy( hit.fEnergy ),
+  fTime( hit.fTime ), 
+  fFlag( hit.fFlag ),
+  fNumOfTracks( hit.fNumOfTracks ),
+  fX(hit.fX), 
+  fY(hit.fY), 
+  fZ(hit.fZ),
+  fdPhi(hit.fdPhi), 
+  fdZ(hit.fdZ) {
+  // Copy constructor
 }
 
 //_________________
@@ -43,36 +44,35 @@ MpdMiniBECalHit::~MpdMiniBECalHit() {
   /* empty */
 }
 
-//_________________
+//__________________
 void MpdMiniBECalHit::Print(const Char_t* option __attribute__((unused)) ) const {
-  LOG_INFO << " Adc = " << adc() << " Energy = " << energy() << endm;
+  LOG_INFO << " cellIds.size(): " << Form( "%lu", fCellIds.size())
+           << " energy/time: " << Form( "%3.2f/%6.1f", energy(),time() ) << endm;
 }
 
 //_________________
-Bool_t MpdMiniBECalHit::isBad() const {
-  if( energy()<=-2. && mAdc==0) {
-    return kTRUE;
+void MpdMiniBECalHit::setFlag(Int_t flag) {
+  if ( flag > std::numeric_limits<char>::max() ) {
+    fFlag = std::numeric_limits<char>::max();
+  }
+  else if ( flag < std::numeric_limits<char>::min() ) {
+    fFlag = std::numeric_limits<char>::min();
   }
   else {
-    return kFALSE;
+    fFlag = (Char_t)flag;
   }
 }
 
 //_________________
-void MpdMiniBECalHit::setEnergy(Float_t energy) {
-  mE = ( fabs(energy * 1000) > std::numeric_limits<short>::max() ?
-	 ( (energy > 0) ? std::numeric_limits<short>::max() :
-	   std::numeric_limits<short>::min() ) :
-	 (Short_t)( TMath::Nint(energy * 1000) ) );
-}
-
-//_________________
-void MpdMiniBECalHit::setAdc(Int_t adc) {
-  if( adc<0 ) {
-    mAdc = 0;
+void MpdMiniBECalHit::setNumberOfTracks(Int_t ntrk) {
+  if ( ntrk > std::numeric_limits<UChar_t>::max() ) {
+    fNumOfTracks = std::numeric_limits<UChar_t>::max();
+  }
+  else if ( ntrk > std::numeric_limits<UChar_t>::min() ) {
+    // Next line is not a mistake. It will also indicate a bad tower.
+    fNumOfTracks = (UChar_t)ntrk;
   }
   else {
-    mAdc = (adc > std::numeric_limits<unsigned short>::max()) ?
-      std::numeric_limits<unsigned short>::max() : (UShort_t)adc;
+    fNumOfTracks = 0;
   }
 }

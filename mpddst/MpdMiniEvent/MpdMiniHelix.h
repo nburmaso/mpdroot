@@ -8,7 +8,7 @@
  *
  * \author Grigory Nigmatkulov
  * \email nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date July 11, 2019
+ * \date May 01, 2020
  */
 
 #ifndef MpdMiniHelix_h

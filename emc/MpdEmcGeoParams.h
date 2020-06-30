@@ -34,10 +34,10 @@ public:
   
   const UInt_t GetNsec() const {return nSec;}
   const UInt_t GetNrows() const {return nRows;}
-  const UInt_t GetNmod() const {return nMod;}
+  const UInt_t GetNmod() const {return nTowers;}
 
-  const Double_t GetSizeAngleSector1() const {return fAngleSector1;}
-  const Double_t GetSizeAngleSector2() const {return fAngleSector2;}
+  const Double_t GetSizeAngleSector() const {return fAngleSector;}
+  const Double_t GetSizeAngleCrate() const {return fAngleCrate;}
 
   const Double_t GetSizeLowBox() const {return sizeLowBox;}
   const Double_t GetSizeHighBox() const {return sizeHighBox;}
@@ -45,15 +45,26 @@ public:
  
   vector<Double_t> GetPhiSector() {return phiSector;}
   vector<Double_t> GetPhiRow() {return phiRow;}
+  vector<Double_t> GetXRow() {return xRow;}
+  vector<Double_t> GetYRow() {return yRow;}
+
+  vector<Double_t> GetXBox() {return xBox;}
+  vector<Double_t> GetYBox() {return yBox;}
+  vector<Double_t> GetZBox() {return zBox;}
+
+  vector<Double_t> GetRhoCenterBox() {return rhoBox;}
+  vector<Double_t> GetZCenterBox() {return zBox;}
+
   vector<Double_t> GetThetaBox() {return thetaBox;}
-  vector<Double_t> GetRhoCenterBox() {return rhoCenterBox;}
-  vector<Double_t> GetZCenterBox() {return zCenterBox;}
+  vector<Double_t> GetPhiBox() {return phiBox;}
+
 
   UInt_t GetNsupMod()const {return nSupMod;}
 
 
 private:
 
+  UInt_t geoVersion; // version number (2 or 3)
     
   Double_t length; // Total EMC length
   Double_t rMin; // Barell minimal radius 
@@ -61,14 +72,14 @@ private:
 
   UInt_t nSec;  // number of sectors in EMC
   UInt_t nRows; // number of rows in one sector
-  UInt_t nMod;  // number of modules in one rows
+  UInt_t nTowers;  // number of towers in one rows
 
   UInt_t  nSupMod;
   
 // Static module parameters 
 
-  Double_t fAngleSector1; // big sector angle size
-  Double_t fAngleSector2; // small sector angle size
+  Double_t fAngleSector; // sector phi angle size
+  Double_t fAngleCrate; // crate phi angle 
 
   Double_t sizeLowBox; // low XY-size of module 
   Double_t sizeHighBox; // high XY-size of module
@@ -76,9 +87,11 @@ private:
 
   vector<Double_t> phiSector; // phi - central angle of each sector
   vector<Double_t> phiRow; // phi - central angle of each row
-  vector<Double_t> thetaBox; // theta - angle of each module in row
-  vector<Double_t> rhoCenterBox; // XY - radius of module (center)
-  vector<Double_t> zCenterBox; // Z - coodinate of module (center)
+  vector<Double_t> xRow, yRow; // x and y of row in the local system
+
+  vector<Double_t> xBox, yBox, zBox; // X, Y, Z - coordinate of tower (center)
+  vector<Double_t> rhoBox; // tower radius (center)
+  vector<Double_t> phiBox, thetaBox; // phi, theta - angles of each tower
 
   ClassDef(MpdEmcGeoParams, 1)
 };

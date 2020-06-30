@@ -13,7 +13,7 @@
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
 #include "MpdDetectorList.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 
 #include "TClonesArray.h"
 #include "TVirtualMC.h"
@@ -98,7 +98,7 @@ Bool_t  MpdEmc::ProcessHits(FairVolume* vol)
 // Increment number of tutorial det points in TParticle
 //    printf("Name x, y, z %s %f %f %f \n", vol->GetName(), fPos.X(), fPos.Y(), fPos.Z());     
 
-    FairStack* stack = (FairStack*) gMC->GetStack();
+    MpdStack* stack = (MpdStack*) gMC->GetStack();
     stack->AddPoint(kECAL);
   }
   

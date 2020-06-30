@@ -31,15 +31,13 @@ public:
 
    	// *@param name    detector name
    	// *@param active  sensitivity flag
-        MpdFfd(const char* name, Bool_t active);
+  	MpdFfd(const char* name, Bool_t active);
 
-        MpdFfd();
-        virtual ~MpdFfd();
-
-	virtual void Initialize();
+	MpdFfd();
+	virtual ~MpdFfd();
 
 	// Defines the action to be taken when a step is inside the
-        // active volume. Creates MpdFfdPoints and adds them to the collection.
+	// active volume. Creates MpdFfdPoints and adds them to the collection.
 	// @param vol  Pointer to the active volume
         virtual Bool_t  ProcessHits(FairVolume* vol = 0);
 
@@ -56,7 +54,6 @@ public:
    	// Screen output of hit collection.
 	virtual void Print() const;
 
-    /**      has to be called after each event to reset the containers      */
    	// Clears the hit collection
 	virtual void Reset();
 
@@ -65,9 +62,19 @@ public:
 	// *@param offset  Index offset
  	virtual void CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset);
 
-        // Constructs the FFD geometry
+	// Constructs the FFD geometry
  	virtual void ConstructGeometry();
-        virtual void   SetSpecialPhysicsCuts() {;}
+	
+	// Construct the geometry from an ASCII geometry file
+	virtual void ConstructAsciiGeometry();
+	
+	// Check whether a volume is sensitive.
+	// The decision is based on the volume name. Only used in case
+	// of GDML and ROOT geometry.
+	// @param name    Volume name
+	// @value         kTRUE if volume is sensitive, else kFALSE
+	virtual Bool_t CheckIfSensitive(std::string name);
+
   
 private:
 
@@ -81,22 +88,22 @@ private:
   	Double32_t     fELoss;             //!  energy loss
 
   	Int_t fPosIndex;                   //!
-        TClonesArray* fFfdCollection;      //! Hit collection
+  	TClonesArray* fFfdCollection;      //! Hit collection
 
 
-        // Adds a MpdFfdPoint to the HitCollection
-        MpdFfdPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss);
+	// Adds a MpdFfdPoint to the HitCollection
+  	MpdFfdPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss); 
  
 	// Resets the private members for the track parameters
   	void ResetParameters();
 
 
-  ClassDef(MpdFfd,1)
+  ClassDef(MpdFfd,1) 
 
 };
 
 //------------------------------------------------------------------------------------------------------------------------
-inline void MpdFfd::ResetParameters()
+inline void MpdFfd::ResetParameters() 
 {
 	fTrackID = fVolumeID = 0;
 	fPos.SetXYZM(0.0, 0.0, 0.0, 0.0);

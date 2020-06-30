@@ -13,7 +13,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class FairPlutoReactionGenerator+;
+//#pragma link C++ class FairPlutoReactionGenerator+;
 
 #pragma link C++ class MpdMCEventHeader+;
 #pragma link C++ class MpdLAQGSMGenerator+;
@@ -30,6 +30,10 @@
 #pragma link C++ class MpdFreezoutGenerator+;
 #pragma link C++ class MpdEPOSGenerator+;
 #pragma link C++ class MpdDCMSMMGenerator+;
+#pragma link C++ class MpdPHQMDGenerator+;
+#pragma link C++ class MpdMcDstGenerator+;
+#pragma link C++ class MpdDecayer+;
+#pragma link C++ class MpdTPythia8Generator+;
 
 #pragma link C++ class map<TString, FairIon*>;
 

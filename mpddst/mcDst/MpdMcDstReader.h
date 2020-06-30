@@ -1,5 +1,5 @@
 /**
- * \class MpdMcDstReader
+ * \class McDstReader
  * \brief Allows to read mcDst file or a list of files
  *
  * This class allows to read mcDst.root file or a list of files
@@ -9,8 +9,8 @@
  * SetStatus method.
  */
 
-#ifndef MpdMcDstReader_h
-#define MpdMcDstReader_h
+#ifndef McDstReader_h
+#define McDstReader_h
 
 // ROOT headers
 #include "TChain.h"
@@ -18,29 +18,32 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TClonesArray.h"
+#include <TObject.h>
 
 // McDst headers
 #include "MpdMcDst.h"
 #include "MpdMcRun.h"
+#include "MpdMcEvent.h"
+#include "MpdMcParticle.h"
 #include "MpdMcArrays.h"
 
 //_________________
 
-class MpdMcDstReader : public TObject {
+class McDstReader : public TObject {
 public:
     // Empty constructor 
 
-    MpdMcDstReader() {
+    McDstReader() {
     }
     /// Constructor that takes either mcDst file or file that
     /// contains a list of mcDst.root files
-    MpdMcDstReader(const Char_t* inFileName);
+    McDstReader(const Char_t* inFileName);
     /// Destructor
-    virtual ~MpdMcDstReader();
+    virtual ~McDstReader();
 
     /// Return a pointer to mcDst (return nullptr if no dst is found)
 
-    MpdMcDst *mcDst() {
+    McDst *mcDst() {
         return mMcDst;
     }
     /// Return a pointer to Run info (return nullptr if not set)
@@ -56,7 +59,7 @@ public:
     }
     /// Return Run information
 
-    MpdMcRun *run() const {
+    McRun *run() const {
         return mMcRun;
     }
 
@@ -91,9 +94,9 @@ private:
     void setBranchAddresses(TChain *chain);
 
     /// Pointer to the input/output McDst structure
-    MpdMcDst *mMcDst;
+    McDst *mMcDst;
     /// Pointer to the Run information
-    MpdMcRun *mMcRun;
+    McRun *mMcRun;
     /// Pointer to the chain
     TChain *mChain;
     /// Pointer to the current tree
@@ -103,13 +106,13 @@ private:
     Int_t mEventCounter;
 
     /// Pointer to the TClonesArray with the data
-    TClonesArray *mMcArrays[MpdMcArrays::NAllMpdMcArrays];
+    TClonesArray *mMcArrays[McArrays::NAllMcArrays];
     /// Status of the TClonesArray
-    Char_t mStatusArrays[MpdMcArrays::NAllMpdMcArrays];
+    Char_t mStatusArrays[McArrays::NAllMcArrays];
 
 //#ifdef __ROOT__
-    ClassDef(MpdMcDstReader, 0)
+    ClassDef(McDstReader, 0)
 //#endif
 };
 
-#endif // MpdMcDstReader_h
+#endif // McDstReader_h

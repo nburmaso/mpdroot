@@ -1,3 +1,4 @@
+#include <Rtypes.h>
 #if !defined(__CINT__) && !defined(__CLING__)
 // ROOT includes
 #include "TString.h"
@@ -16,7 +17,7 @@
 // MPD includes
 #include "MpdTpcHitProducer.h"
 #include "MpdTpcClusterFinderTask.h"
-#include "MpdTpcDigitizerAZ.h"
+#include "MpdTpcDigitizerAZlt.h"
 #include "MpdTpcClusterFinderAZ.h"
 #include "MpdTpcClusterFinderMlem.h"
 #include "MpdKalmanFilter.h"
@@ -108,7 +109,8 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     fRun->AddTask(kalman);
 
 #ifdef UseMlem
-    MpdTpcDigitizerAZ* tpcDigitizer = new MpdTpcDigitizerAZ();
+    //MpdTpcDigitizerAZ* tpcDigitizer = new MpdTpcDigitizerAZ();
+    MpdTpcDigitizerAZlt* tpcDigitizer = new MpdTpcDigitizerAZlt();
     tpcDigitizer->SetPersistence(kFALSE);
     fRun->AddTask(tpcDigitizer);
 #endif
@@ -178,7 +180,10 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     MpdFillDstTask* fillDST = new MpdFillDstTask("MpdDst task");
     fRun->AddTask(fillDST);
-
+    
+    MpdMiniDstFillTask* miniDst = new MpdMiniDstFillTask(outFile);
+    fRun->AddTask(miniDst);
+    
     // -----   Intialise   ----------------------------------------------------
     fRun->Init();
     if (run_type != "proof") cout<<"Field: "<<fRun->GetField()->GetBz(0., 0., 0.)<<endl;

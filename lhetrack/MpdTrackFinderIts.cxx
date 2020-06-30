@@ -23,7 +23,7 @@
 
 #include "FairGeoNode.h"
 #include "FairMCPoint.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRunAna.h"
@@ -865,7 +865,7 @@ Int_t MpdTrackFinderIts::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t layB
   TString mass2 = "0.0194797849"; // pion mass squared
   if (fMCTracks) {
     // Get particle mass - ideal PID
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
     TParticlePDG *pdgP = TDatabasePDG::Instance()->GetParticle(mctrack->GetPdgCode());
     if (pdgP) {
       Double_t mass = pdgP->Mass();
@@ -1289,7 +1289,7 @@ Bool_t MpdTrackFinderIts::NavigateToLayer(Int_t lay, MpdItsKalmanTrack *curTr, M
   x0 = 0.0116 * 2 * nCables; // in rad. length - 116um cable per side 
   if (fMCTracks) {
     // Get particle mass - ideal PID
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(curTr->GetTrackID());
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(curTr->GetTrackID());
     TParticlePDG *pdgP = TDatabasePDG::Instance()->GetParticle(mctrack->GetPdgCode());
     if (pdgP) {
       Double_t mass = pdgP->Mass();
@@ -1489,10 +1489,10 @@ void MpdTrackFinderIts::AddHits()
     TObjArray *hits = track->GetHits();
     Int_t nWrong = 0, nMirr = 0, motherID = track->GetTrackID();
     // Get track mother ID 
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() >= 0) {
       motherID = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
     }
 
     Int_t lastIndx = trHits.GetEntriesFast();
@@ -1505,10 +1505,10 @@ void MpdTrackFinderIts::AddHits()
       Int_t motherID1 = ((FairMCPoint*) fItsPoints->UncheckedAt(h->GetRefIndex()))->GetTrackID();
       cout << "-" << motherID1;
       // Get point mother ID 
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID1);
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID1);
       while (mctrack->GetMotherId() >= 0) {
         motherID1 = mctrack->GetMotherId();
-        mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+        mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
       }
       if (motherID1 != motherID) ++nWrong;
     }

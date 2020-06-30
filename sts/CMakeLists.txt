@@ -27,14 +27,17 @@ link_directories(${LINK_DIRECTORIES})
 set(SRCS
 MpdStsGeo.cxx 
 MpdStsGeoPar.cxx 
-MpdSts.cxx 
-MpdStsNew2.cxx 
+#MpdSts.cxx 
+#MpdStsNew2.cxx 
+MpdIts5spd.cxx
 MpdStsContFact.cxx 
-MpdStsHit.cxx 
-MpdStsHitProducer.cxx 
-MpdStsHitProducerV1.cxx 
-MpdStsHitProducerNew2.cxx 
+#MpdStsHit.cxx 
+#MpdStsHitProducer.cxx 
+#MpdStsHitProducerV1.cxx 
+#MpdStsHitProducerNew2.cxx 
 MpdStsPoint.cxx
+MpdItsHitProducer5spd.cxx 
+MpdItsHit5spd.cxx 
 )
 
 Set(HEADERS)

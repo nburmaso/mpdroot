@@ -32,7 +32,7 @@ ${CMAKE_SOURCE_DIR}/nicafemto/dataformat/formats
 ${CMAKE_SOURCE_DIR}/nicafemto/dataformat/formats/fair
 ${CMAKE_SOURCE_DIR}/nicafemto/dataformat/detector
 ${CMAKE_SOURCE_DIR}/nica_mpd/format
-${CMAKE_SOURCE_DIR}/nica_mpd/format/fairmc
+${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdmc
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/unigen
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/combined
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/kalman
@@ -68,16 +68,10 @@ mpdevent/NicaMpdTrack.cxx
 mpdevent/NicaMpdTrackInterface.cxx
 mpdevent/NicaMpdTrackTpcPads.cxx
 mpdevent/NicaTpcSectorGeo.cxx
-fairmc/NicaFairEvent.cxx
-fairmc/NicaFairEventInterface.cxx
-fairmc/NicaFairExtendedEvent.cxx
-fairmc/NicaFairTrack.cxx
-fairmc/NicaFairExtendedTrack.cxx
-fairmc/NicaFairExtendedEventInterface.cxx
-fairmc/NicaFairTrackInterface.cxx
-fairmc/NicaFairExtendedTrackInterface.cxx
-fairmc/NicaGeneratorWriteFairMC.cxx
-fairmc/NicaGeneratorWriteFairMCFreez.cxx
+mpdmc/NicaMpdMcEvent.cxx
+mpdmc/NicaMpdMcEventInterface.cxx
+mpdmc/NicaMpdMcTrack.cxx
+mpdmc/NicaMpdMcTrackInterface.cxx
 unigen/NicaGeneratorReadUnigen.cxx
 unigen/NicaGeneratorWriteUnigen.cxx
 unigen/NicaUnigenEvent.cxx
@@ -92,7 +86,7 @@ unigen/UParticle.cxx
 Set(HEADERS )
 Set(LINKDEF NicaMpdInterfaceLinkDef.h)
 Set(LIBRARY_NAME NicaMpdFormat)
-Set(DEPENDENCIES NicaFeatures NicaGen NicaDataFormat MpdDst MpdBase tpc MCStack)
+Set(DEPENDENCIES NicaFeatures NicaGen NicaDataFormat MpdDst MpdBase tpc MpdMCStack)
 
 GENERATE_LIBRARY()
 

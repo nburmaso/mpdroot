@@ -30,7 +30,7 @@ void NicaMpdEventInterface::Compress(Int_t* map, Int_t map_size) {
 			Int_t track_pos=0;
 			for(int i=0;i<map_size;i++){
 				Int_t good_track = map[i];
-				for(int j=track_pos;j<good_track;track_pos++){
+				for(int j=track_pos;j<good_track;j++){
 					if(map[i]<shift)
 						prim->RemoveAt(j);
 					else
@@ -45,7 +45,7 @@ void NicaMpdEventInterface::Compress(Int_t* map, Int_t map_size) {
 			Int_t track_pos=0;
 			for(int i=0;i<map_size;i++){
 				Int_t good_track = map[i];
-				for(int j=track_pos;j<good_track;track_pos++){
+				for(int j=track_pos;j<good_track;j++){
 					prim->RemoveAt(j);
 				}
 				track_pos = good_track+1;
@@ -56,7 +56,7 @@ void NicaMpdEventInterface::Compress(Int_t* map, Int_t map_size) {
 			Int_t track_pos=0;
 			for(int i=0;i<map_size;i++){
 				Int_t good_track = map[i];
-				for(int j=track_pos;j<good_track;track_pos++){
+				for(int j=track_pos;j<good_track;j++){
 					glob->RemoveAt(j);
 				}
 				track_pos = good_track+1;

@@ -7,11 +7,12 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "NicaMpdDstMCEvent.h"
-#include "NicaFairEvent.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
+
+#include "NicaMpdMcEvent.h"
 #include "NicaTpcTrack.h"
 
-NicaMpdDstMCEvent::NicaMpdDstMCEvent() :NicaComplexEvent(new NicaMpdEvent(), new NicaFairEvent()){
+NicaMpdDstMCEvent::NicaMpdDstMCEvent() :NicaComplexEvent(new NicaMpdEvent(), new NicaMpdMcEvent()){
 }
 
 void NicaMpdDstMCEvent::OnlyPrimary() {
@@ -41,6 +42,7 @@ void NicaMpdDstMCEvent::Update() {
 		}else{
 			track->SetImgTrack(NULL);
 		}
+		track->SetID(i);
 	}
 }
 

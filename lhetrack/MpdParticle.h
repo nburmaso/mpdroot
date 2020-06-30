@@ -33,7 +33,7 @@ class MpdParticle : public TObject
   /** Default constructor  **/
   MpdParticle(); ///< Default ctor
   MpdParticle(const MpdParticle& part); ///< copy constructor
-  MpdParticle(const MpdKalmanTrack& track, Int_t indx = -1, Double_t mass = 0.1396); ///< ctor from Kalman track
+  MpdParticle(const MpdKalmanTrack& track, Int_t indx = -1, Double_t mass = 0.1396, Double_t *orig = NULL); ///< ctor from Kalman track
 
   MpdParticle& operator= (const MpdParticle& part); ///< assignment operator
 
@@ -60,7 +60,8 @@ class MpdParticle : public TObject
   Double_t Phi() const { return fq(0,0); } // smoothed value
   Double_t Pt() const { return fCharge == 0 ? TMath::Min (fq(2,0)*TMath::Sin(Theta()), 100.) : 
                         TMath::Min (TMath::Abs(fCharge/fq(2,0)*fieldConst), 100.); }
-  Double_t Theta() const { return fq(1,0); }
+  //Double_t Theta() const { return fq(1,0); }
+  Double_t Theta() const;
   Double_t Momentum() const { return fCharge == 0 ? fq(2,0) : Pt() / TMath::Sin(Theta()); }
   TVector3 Momentum3() const { return TVector3(Pt()*TMath::Cos(Phi()), Pt()*TMath::Sin(Phi()), 
 					       Momentum()*TMath::Cos(Theta())); }
@@ -69,10 +70,13 @@ class MpdParticle : public TObject
   Double_t Dca() const { return fMeas(0,0); } ///< signed DCA
   Int_t Ndaughters() const { return fDaughtersInds.size(); }
   const vector<Int_t>& DaughterInds() const { return fDaughtersInds; }
-  void Track2Part(const MpdKalmanTrack &track, Bool_t setWeight); // conversion from track to particle
+  void Track2Part(const MpdKalmanTrack &track, Bool_t setWeight, Double_t *orig); // conversion from track to particle
   const Double_t Chi2Vertex() { return fChi2ver; } ///< return Chi2 w.r.t. vertex
   Double_t Chi2Vertex(MpdVertex *vtx); ///< compute Chi2 w.r.t. vertex
   Double_t Chi2() const { return fChi2; } ///< Chi2 of mother particle
+  Bool_t Point00() const { return fPoint00; } ///< flag for tracks extrapolated to (0,0)
+  void FillJ();                  // fill Jacobian matrix fJ
+  void FillJinv(TVector3& mom3); // fill Jacobian matrix fJinv
 
   TMatrixD& GetMeas() { return fMeas; }
   TMatrixD& GetJ() { return fJ; }
@@ -94,6 +98,8 @@ class MpdParticle : public TObject
   void SetMass (Double_t mass = -2.0);
   void AddDaughter (Int_t indx) { fDaughtersInds.push_back(indx); }
   Double_t BuildMother(vector<MpdParticle*> &vDaught); 
+  Double_t BuildMother(vector<MpdKalmanTrack*> &vTracks, vector<MpdParticle*> &vDaught); 
+  void SetChi2(Double_t chi2) { fChi2 = chi2; }
   void SetMeas(TMatrixD &matr) { fMeas = matr; }
   void SetCovD(TMatrixD &matr) { fD = matr; }
   void SetCovE(TMatrixD &matr) { fE = matr; }
@@ -110,8 +116,7 @@ class MpdParticle : public TObject
 
  private:
 
-  void FillJ();                  // fill Jacobian matrix fJ
-  void FillJinv(TVector3& mom3); // fill Jacobian matrix fJinv
+  void WeightAtDca(MpdKalmanTrack &track, Double_t *vert); // obtain MpdParticle weight at DCA
 
   Int_t fIndx;                  // index of particle
   Int_t fPdg;                   // PDG hypothesis
@@ -136,9 +141,27 @@ class MpdParticle : public TObject
   Double_t fChi2;               // Chi2 of mother particle
   Double_t fChi2ver;            // Chi2 of particle w.r.t. vertex
   Int_t fFlag;                  // status flag
+  Bool_t fPoint00;              // flag for tracks extrapolated to (0,0)
 
-  ClassDef(MpdParticle,1);
+  ClassDef(MpdParticle,2);
 
 };
+
+//__________________________________________________________________________ 
+
+inline Double_t MpdParticle::Theta() const
+{
+  // Theta angle
+
+  if (TMath::Abs(fq(1,0)) < TMath::PiOver2()) {
+    if (TMath::Abs(fq(1,0)) > 0.001) return fq(1,0);
+    return TMath::Sign(0.001,fq(1,0));
+  } else {
+    if (TMath::Abs(fq(1,0)) < TMath::Pi()-0.001) return fq(1,0);
+    return TMath::Sign(TMath::Pi()-0.001,fq(1,0));
+  }
+}
+
+//__________________________________________________________________________ 
 
 #endif

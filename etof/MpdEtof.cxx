@@ -14,7 +14,7 @@
 #include "FairGeoNode.h"
 #include "FairGeoRootBuilder.h"
 #include "FairRootManager.h"
-#include "FairStack.h"
+#include "MpdStack.h"
 #include "FairRuntimeDb.h"
 #include "FairRunAna.h"
 #include "FairVolume.h"
@@ -72,7 +72,7 @@ Bool_t  MpdEtof::ProcessHits(FairVolume* vol)
 
 		AddPoint(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss);
 
-		((FairStack*)gMC->GetStack())->AddPoint(kETOF);
+		((MpdStack*)gMC->GetStack())->AddPoint(kETOF);
 
     		ResetParameters();
   	}

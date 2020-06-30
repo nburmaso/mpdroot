@@ -7,7 +7,7 @@
 #ifdef BMNROOT
 #include "CbmMCTrack.h"
 #else
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #endif
 #include "FairRootManager.h"
 #include "FairLogger.h"
@@ -46,7 +46,7 @@ InitStatus MpdMCStack::Init()
     fTrackList = (TClonesArray*) fManager->GetObject("MCTrack");
     if (fTrackList == 0)
     {
-        LOG(ERROR)<<"MpdMCStack::Init() branch "<<GetName()<<" not found! Task will be deactivated"<<FairLogger::endl;
+        LOG(ERROR)<<"MpdMCStack::Init() branch "<<GetName()<<" not found! Task will be deactivated";
         SetActive(kFALSE);
     }
     if (fVerbose > 2)
@@ -97,7 +97,7 @@ void MpdMCStack::Exec(Option_t* /*option*/)
 #ifdef BMNROOT
         CbmMCTrack* tr = (CbmMCTrack*) fTrackList->At(i);
 #else
-        FairMCTrack* tr = (FairMCTrack*) fTrackList->At(i);
+        MpdMCTrack* tr = (MpdMCTrack*) fTrackList->At(i);
 #endif
 
         TVector3 Ptot;

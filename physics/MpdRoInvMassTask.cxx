@@ -6,7 +6,7 @@
 
 #include <TLorentzVector.h>
 #include "FairRootManager.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "MpdTrack.h"
 
 #include <iostream>
@@ -108,7 +108,7 @@ void MpdRoInvMassTask::Exec(Option_t * option)
   
   for (Int_t i = 0; i < nMCTracks; i++)
   {
-    FairMCTrack *MCtrack1 = (FairMCTrack*) fMCTracks->UncheckedAt(i);
+    MpdMCTrack *MCtrack1 = (MpdMCTrack*) fMCTracks->UncheckedAt(i);
     //if( MCtrack1->GetMotherId() >0 ) continue; // start from initial vertex
     Int_t pdgCode1 = MCtrack1->GetPdgCode();
   
@@ -118,7 +118,7 @@ void MpdRoInvMassTask::Exec(Option_t * option)
     
     for (Int_t j = 0; j<i; j++)
 	{
-	  FairMCTrack *MCtrack2 = (FairMCTrack*) fMCTracks->UncheckedAt(j);
+	  MpdMCTrack *MCtrack2 = (MpdMCTrack*) fMCTracks->UncheckedAt(j);
 	  //if( MCtrack2->GetMotherId() >0 ) continue; // start from initial vertex
 	  Int_t pdgCode2 = MCtrack2->GetPdgCode();
       

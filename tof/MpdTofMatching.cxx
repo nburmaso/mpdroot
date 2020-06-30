@@ -16,7 +16,7 @@
 #include <TEfficiency.h>
 
 #include "FairRootManager.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRunAna.h"
 #include "FairLogger.h" 
 
@@ -703,10 +703,10 @@ mcInfo	MpdTofMatching::GetMcInfo(const TmmT2P& mmT2P, const MpdKalmanTrack* pKfT
 	mcInfo mcData;
 
 	mcData.trackIndex = pKfTrack->GetTrackID();
-	auto mcTrack = (const FairMCTrack*) aMcTracks->UncheckedAt(mcData.trackIndex);
+	auto mcTrack = (const MpdMCTrack*) aMcTracks->UncheckedAt(mcData.trackIndex);
 			
 	mcData.pid = mcTrack->GetPdgCode();       
-	auto track =  const_cast<FairMCTrack*>(mcTrack);
+	auto track =  const_cast<MpdMCTrack*>(mcTrack);
 	track->GetMomentum(mcData.vertMomentum);
 	track->GetStartVertex(mcData.vertPosition);
 

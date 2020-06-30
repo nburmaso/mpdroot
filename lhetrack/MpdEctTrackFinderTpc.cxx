@@ -20,7 +20,7 @@
 #include "MpdTpcKalmanTrack.h"
 
 #include "FairGeoNode.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
@@ -1234,10 +1234,10 @@ void MpdEctTrackFinderTpc::AddHits()
     TObjArray *hits = track->GetHits();
     Int_t nWrong = 0, nMirr = 0, motherID = track->GetTrackID(), motherID1 = 0;
     // Get track mother ID 
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() >= 0) {
       motherID = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
     }
 
     for (Int_t j = 0; j < nHits; ++j) {
@@ -1276,10 +1276,10 @@ Int_t MpdEctTrackFinderTpc::HitMotherId(MpdKalmanHit* hit, Int_t idM, Int_t &id1
     FairMCPoint *h = (FairMCPoint*) fEctHits->UncheckedAt(hit->GetIndex(i));
     id1 = idHit = h->GetTrackID();
     // Get point mother ID 
-    FairMCTrack* mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(id1);
+    MpdMCTrack* mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(id1);
     while (mctrack->GetMotherId() >= 0) {
       id1 = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
     }
     if (id1 == idM) return idHit;
   }

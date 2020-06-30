@@ -23,6 +23,7 @@
 #pragma link C++ class MpdEmcTrackExtrap + ;
 #pragma link C++ class MpdEmcSimParams + ;
 #pragma link C++ class MpdEmcMatchingKI + ;
+#pragma link C++ class MpdEmcCalibParams + ;
 
 #pragma link C++ class MpdEmcHitProducerA+;
 #pragma link C++ class MpdEmcHitA+;

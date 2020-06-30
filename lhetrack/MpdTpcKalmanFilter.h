@@ -72,7 +72,7 @@ class MpdTpcKalmanFilter : public FairTask
   void MakeKalmanHits(); // create Kalman hits  
   void MakeKalmanHitsModul(); // create Kalman hits for modular geom. of r/out chambers  
   void GoOutward(MpdTpcKalmanTrack *track); // propagate track outward
-  void BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight, Int_t iDir = 1, Bool_t corDedx = kFALSE); // propagate track thru found hits
+  Bool_t BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight, Int_t iDir = 1, Bool_t corDedx = kFALSE); // propagate track thru found hits
   void GoOut(); // backpropagate tracks outward
   void RemoveDoubles(TClonesArray *tracks); // remove double tracks
   Int_t GetNofCommonHits(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2); // get common hits

@@ -8,41 +8,41 @@
 // McDst headers
 #include "MpdMcParticle.h"
 
-#ifdef __ROOT__
-ClassImp(MpdMcParticle);
-#endif
+//#ifdef __ROOT__
+ClassImp(McParticle);
+//#endif
 
 //_________________
-MpdMcParticle::MpdMcParticle() : TObject(),
-  fIndex(0), fPdg(0), fStatus(0), fParent(0), fParentDecay(0),
-  fMate(0), fDecay(0), fChild{}, fPx(0), fPy(0), fPz(0),
-  fX(0), fY(0), fZ(0), fT(0) { // Default constructor
-  /* empty */
+McParticle::McParticle() : TObject(),
+fIndex(0), fPdg(0), fStatus(0), fParent(0), fParentDecay(0),
+			   fMate(0), fDecay(0), fChild{}, fPx(0), fPy(0), fPz(0),
+fX(0), fY(0), fZ(0), fT(0), fE(0) { // Default constructor
+    /* empty */
 }
 
 //_________________
-MpdMcParticle::MpdMcParticle( const Int_t& index, const Int_t& pdg,
-                  			const Int_t& status,
-                  			const Int_t& parent, const Int_t& parentDecay,
-                  			const Int_t& mate, const Int_t& decay,
-                  			Int_t child[2],
-                  			const Double_t& px, const Double_t& py,
-                  			const Double_t& pz, const Double_t& /* e */,
-                  			const Double_t& x, const Double_t& y,
-                  			const Double_t& z, const Double_t& t) : TObject() {
-  // Standard constructor
+McParticle::McParticle( const Int_t& index, const Int_t& pdg,
+        const Int_t& status,
+        const Int_t& parent, const Int_t& parentDecay,
+        const Int_t& mate, const Int_t& decay,
+        Int_t child[2],
+        const Double_t& px, const Double_t& py,
+        const Double_t& pz, const Double_t& e,
+        const Double_t& x, const Double_t& y,
+        const Double_t& z, const Double_t& t) : TObject() {
+    // Standard constructor
   fIndex = ( (index > std::numeric_limits<unsigned short>::max() ) ?
 	     std::numeric_limits<unsigned short>::max() : (UShort_t)index );
   fPdg         = pdg;
   if ( status <= std::numeric_limits<char>::min() ) {
-    fStatus = std::numeric_limits<char>::min();
+        fStatus = std::numeric_limits<char>::min();
   }
   else if ( status >= std::numeric_limits<char>::max() ) {
-    fStatus = std::numeric_limits<char>::max();
-  }
+        fStatus = std::numeric_limits<char>::max();
+    }
   else {
     fStatus = (Char_t)status;
-  }
+}
   fParent = ( ( parent > std::numeric_limits<unsigned short>::max() ) ?
 	      std::numeric_limits<unsigned short>::max() : (UShort_t)parent );
   fParentDecay = ( ( parentDecay > std::numeric_limits<unsigned short>::max() ) ?
@@ -58,6 +58,7 @@ MpdMcParticle::MpdMcParticle( const Int_t& index, const Int_t& pdg,
   fPx = (Float_t)px;
   fPy = (Float_t)py;
   fPz = (Float_t)pz;
+  fE  = (Float_t)e;
   fX  = (Float_t)x;
   fY  = (Float_t)y;
   fZ  = (Float_t)z;
@@ -65,26 +66,26 @@ MpdMcParticle::MpdMcParticle( const Int_t& index, const Int_t& pdg,
 }
 
 //_________________
-MpdMcParticle::MpdMcParticle( const Int_t& index, const Int_t& pdg,
-                        const Int_t& status,
-              		      const Int_t& parent, const Int_t& parentDecay,
-              		      const Int_t& mate, const Int_t& decay,
-                        Int_t child[2],
-              		      const TLorentzVector& mom,
-                        const TLorentzVector& pos) : TObject() {
-  // Standard constructor
+McParticle::McParticle( const Int_t& index, const Int_t& pdg,
+        const Int_t& status,
+        const Int_t& parent, const Int_t& parentDecay,
+        const Int_t& mate, const Int_t& decay,
+        Int_t child[2],
+        const TLorentzVector& mom,
+        const TLorentzVector& pos) : TObject() {
+    // Standard constructor
   fIndex = ( (index > std::numeric_limits<unsigned short>::max() ) ?
 	     std::numeric_limits<unsigned short>::max() : (UShort_t)index );
-  fPdg = pdg;
+    fPdg = pdg;
   if ( status <= std::numeric_limits<char>::min() ) {
-    fStatus = std::numeric_limits<char>::min();
+        fStatus = std::numeric_limits<char>::min();
   }
   else if ( status >= std::numeric_limits<char>::max() ) {
-    fStatus = std::numeric_limits<char>::max();
-  }
+        fStatus = std::numeric_limits<char>::max();
+    }
   else {
     fStatus = (Char_t)status;
-  }
+}
   fParent = ( ( parent > std::numeric_limits<unsigned short>::max() ) ?
 	      std::numeric_limits<unsigned short>::max() : (UShort_t)parent );
   fParentDecay = ( ( parentDecay > std::numeric_limits<unsigned short>::max() ) ?
@@ -100,37 +101,17 @@ MpdMcParticle::MpdMcParticle( const Int_t& index, const Int_t& pdg,
   fPx = (Float_t)mom.Px();
   fPy = (Float_t)mom.Py();
   fPz = (Float_t)mom.Pz();
-  fX = (Float_t)pos.X();
-  fY = (Float_t)pos.Y();
-  fZ = (Float_t)pos.Z();
-  fT = (Float_t)pos.T();
+  fE  = (Float_t)mom.E();
+  fX  = (Float_t)pos.X();
+  fY  = (Float_t)pos.Y();
+  fZ  = (Float_t)pos.Z();
+  fT  = (Float_t)pos.T();
 }
 
 //_________________
-MpdMcParticle::MpdMcParticle(const MpdMcParticle& right) : TObject() {
-  // Copy constructor
-  fIndex = right.fIndex;
-  fPdg = right.fPdg;
-  fStatus = right.fStatus;
-  fParent = right.fParent;
-  fParentDecay = right.fParentDecay;
-  fMate = right.fMate;
-  fDecay = right.fDecay;
-  fChild[0] = right.fChild[0];
-  fChild[1] = right.fChild[1];
-  fPx = right.fPx;
-  fPy = right.fPy;
-  fPz = right.fPz;
-  fX = right.fX;
-  fY = right.fY;
-  fZ = right.fZ;
-  fT = right.fT;
-}
 
-//_________________
-const MpdMcParticle& MpdMcParticle::operator=(const MpdMcParticle& right) {
-  // Assignment operator
-  if( this != &right ) {
+McParticle::McParticle(const McParticle& right) : TObject() {
+    // Copy constructor
     fIndex = right.fIndex;
     fPdg = right.fPdg;
     fStatus = right.fStatus;
@@ -143,74 +124,103 @@ const MpdMcParticle& MpdMcParticle::operator=(const MpdMcParticle& right) {
     fPx = right.fPx;
     fPy = right.fPy;
     fPz = right.fPz;
+    fE = right.fE;
     fX = right.fX;
     fY = right.fY;
     fZ = right.fZ;
     fT = right.fT;
-  }
-  return (*this);
 }
 
 //_________________
-MpdMcParticle::MpdMcParticle(const TParticle &right) {
-  // Copy constructor from the TParticle
-  fIndex = 0;
-  fPdg = right.GetPdgCode();
-  fStatus = right.GetStatusCode();
-  fParent = right.GetFirstMother();
-  fParentDecay = 0;
-  fMate = 0;
-  fDecay = 0;
-  fChild[0] = right.GetFirstDaughter();
-  fChild[1] = right.GetLastDaughter();
-  fPx = right.Px();
-  fPy = right.Py();
-  fPz = right.Pz();
-  //fE = right.Energy();
-  fX = right.Vx();
-  fY = right.Vy();
-  fZ = right.Vz();
-  fT = right.T();
+
+const McParticle& McParticle::operator=(const McParticle& right) {
+    // Assignment operator
+    if (this != &right) {
+        fIndex = right.fIndex;
+        fPdg = right.fPdg;
+        fStatus = right.fStatus;
+        fParent = right.fParent;
+        fParentDecay = right.fParentDecay;
+        fMate = right.fMate;
+        fDecay = right.fDecay;
+        fChild[0] = right.fChild[0];
+        fChild[1] = right.fChild[1];
+        fPx = right.fPx;
+        fPy = right.fPy;
+        fPz = right.fPz;
+        fE = right.fE;
+        fX = right.fX;
+        fY = right.fY;
+        fZ = right.fZ;
+        fT = right.fT;
+    }
+    return (*this);
 }
 
 //_________________
-const MpdMcParticle& MpdMcParticle::operator=(const TParticle &right) {
-  // Assignment operator from the TParticle
-  fIndex = 0;
-  fPdg = right.GetPdgCode();
-  fStatus = right.GetStatusCode();
-  fParent = right.GetFirstMother();
-  fParentDecay = 0;
-  fMate = 0;
-  fDecay = 0;
-  fChild[0] = right.GetFirstDaughter();
-  fChild[1] = right.GetLastDaughter();
-  fPx = right.Px();
-  fPy = right.Py();
-  fPz = right.Pz();
-  //fE = right.Energy();
-  fX = right.Vx();
-  fY = right.Vy();
-  fZ = right.Vz();
-  fT = right.T();
 
-  return (*this);
+McParticle::McParticle(const TParticle &right) {
+    // Copy constructor from the TParticle
+    fIndex = 0;
+    fPdg = right.GetPdgCode();
+    fStatus = right.GetStatusCode();
+    fParent = right.GetFirstMother();
+    fParentDecay = 0;
+    fMate = 0;
+    fDecay = 0;
+    fChild[0] = right.GetFirstDaughter();
+    fChild[1] = right.GetLastDaughter();
+    fPx = right.Px();
+    fPy = right.Py();
+    fPz = right.Pz();
+    fE = right.Energy();
+    fX = right.Vx();
+    fY = right.Vy();
+    fZ = right.Vz();
+    fT = right.T();
 }
 
 //_________________
-MpdMcParticle::~MpdMcParticle() { // Destructor
-  /* empty */
+
+const McParticle& McParticle::operator=(const TParticle &right) {
+    // Assignment operator from the TParticle
+    fIndex = 0;
+    fPdg = right.GetPdgCode();
+    fStatus = right.GetStatusCode();
+    fParent = right.GetFirstMother();
+    fParentDecay = 0;
+    fMate = 0;
+    fDecay = 0;
+    fChild[0] = right.GetFirstDaughter();
+    fChild[1] = right.GetLastDaughter();
+    fPx = right.Px();
+    fPy = right.Py();
+    fPz = right.Pz();
+    fE = right.Energy();
+    fX = right.Vx();
+    fY = right.Vy();
+    fZ = right.Vz();
+    fT = right.T();
+
+    return (*this);
 }
 
 //_________________
-Bool_t MpdMcParticle::operator==(const MpdMcParticle& right) const {
-  // If equal operator
-  return (
+
+McParticle::~McParticle() { // Destructor
+    /* empty */
+}
+
+//_________________
+
+Bool_t McParticle::operator==(const McParticle& right) const {
+    // If equal operator
+    return (
 	  fIndex       == right.fIndex &&
 	  fPdg         == right.fPdg &&
 	  fStatus      == right.fStatus &&
 	  fParent      == right.fParent &&
-	  fParentDecay == right.fParentDecay &&
+            fParentDecay == right.fParentDecay &&
 	  fMate        == right.fMate &&
 	  fDecay       == right.fDecay &&
 	  fChild[0]    == right.fChild[0] &&
@@ -229,47 +239,49 @@ Bool_t MpdMcParticle::operator==(const MpdMcParticle& right) const {
 	   (TMath::Abs(fZ)<1e-16&&TMath::Abs(right.fZ)<1e-16)) &&
 	  ((TMath::Abs((fT-right.fT)/fT)<0.0001) ||
 	   (TMath::Abs(fT)<1e-16&&TMath::Abs(right.fT)<1e-16))
-	  );
+            );
 }
 
 //_________________
-void MpdMcParticle::print() const {
-  // Print the data members to the standard output
-  std::cout << "------------------------------------------------" << std::endl
-	    << "-I-                 Particle                 -I-" << std::endl
-	    << "Index                       : " << fIndex << std::endl
-	    << "PDG code                    : " << fPdg << std::endl
-	    << "Status code                 : " << fStatus << std::endl
-	    << "Parent index                : " << fParent << std::endl
-	    << "Parent decay index          : " << fParentDecay << std::endl
-	    << "Last collision partner      : " << fMate << std::endl
-	    << "Decay index                 : " << fDecay << std::endl
-	    << "First child index           : " << fChild[0] << std::endl
-	    << "Last child index            : " << fChild[1] << std::endl
-	    << "Momentum (px, py, pz) (GeV) : (" << fPx << ", " << fPy << ", " << fPz << ")" << std::endl
-            // << "Energy (GeV)                : " << fE << std::endl
-	    << "Position (x, y, z) (fm)     : (" << fX << ", " << fY << ", " << fZ << ")" << std::endl
-	    << "Creation time (fm)          : " << fT << std::endl
-	    << "------------------------------------------------" << std::endl;
+
+void McParticle::print() const {
+    // Print the data members to the standard output
+    std::cout << "------------------------------------------------" << std::endl
+            << "-I-                 Particle                 -I-" << std::endl
+            << "Index                       : " << fIndex << std::endl
+            << "PDG code                    : " << fPdg << std::endl
+            << "Status code                 : " << fStatus << std::endl
+            << "Parent index                : " << fParent << std::endl
+            << "Parent decay index          : " << fParentDecay << std::endl
+            << "Last collision partner      : " << fMate << std::endl
+            << "Decay index                 : " << fDecay << std::endl
+            << "First child index           : " << fChild[0] << std::endl
+            << "Last child index            : " << fChild[1] << std::endl
+            << "Momentum (px, py, pz) (GeV) : (" << fPx << ", " << fPy << ", " << fPz << ")" << std::endl
+            << "Energy (GeV)                : " << fE << std::endl
+            << "Position (x, y, z) (fm)     : (" << fX << ", " << fY << ", " << fZ << ")" << std::endl
+            << "Creation time (fm)          : " << fT << std::endl
+            << "------------------------------------------------" << std::endl;
 }
 
 //_________________
-void MpdMcParticle::Print( Option_t* option __attribute__((unused)) ) const {
-  // Print the data members to the standard output
-  std::cout << "------------------------------------------------" << std::endl
-	    << "-I-                 Particle                 -I-" << std::endl
-	    << "Index                       : " << fIndex << std::endl
-	    << "PDG code                    : " << fPdg << std::endl
-	    << "Status code                 : " << fStatus << std::endl
-	    << "Parent index                : " << fParent << std::endl
-	    << "Parent decay index          : " << fParentDecay << std::endl
-	    << "Last collision partner      : " << fMate << std::endl
-	    << "Decay index                 : " << fDecay << std::endl
-	    << "First child index           : " << fChild[0] << std::endl
-	    << "Last child index            : " << fChild[1] << std::endl
-	    << "Momentum (px, py, pz) (GeV) : (" << fPx << ", " << fPy << ", " << fPz << ")" << std::endl
-            // << "Energy (GeV)                : " << fE << std::endl
-	    << "Position (x, y, z) (fm)     : (" << fX << ", " << fY << ", " << fZ << ")" << std::endl
-	    << "Creation time (fm)          : " << fT << std::endl
-	    << "------------------------------------------------" << std::endl;
+
+void McParticle::Print(Option_t* option __attribute__ ((unused))) const {
+    // Print the data members to the standard output
+    std::cout << "------------------------------------------------" << std::endl
+            << "-I-                 Particle                 -I-" << std::endl
+            << "Index                       : " << fIndex << std::endl
+            << "PDG code                    : " << fPdg << std::endl
+            << "Status code                 : " << fStatus << std::endl
+            << "Parent index                : " << fParent << std::endl
+            << "Parent decay index          : " << fParentDecay << std::endl
+            << "Last collision partner      : " << fMate << std::endl
+            << "Decay index                 : " << fDecay << std::endl
+            << "First child index           : " << fChild[0] << std::endl
+            << "Last child index            : " << fChild[1] << std::endl
+            << "Momentum (px, py, pz) (GeV) : (" << fPx << ", " << fPy << ", " << fPz << ")" << std::endl
+            << "Energy (GeV)                : " << fE << std::endl
+            << "Position (x, y, z) (fm)     : (" << fX << ", " << fY << ", " << fZ << ")" << std::endl
+            << "Creation time (fm)          : " << fT << std::endl
+            << "------------------------------------------------" << std::endl;
 }

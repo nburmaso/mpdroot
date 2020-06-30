@@ -1,13 +1,13 @@
 /**
- * \class MpdMcPIDConverter
+ * \class McPIDConverter
  * \brief Converts particle PID code from generator to the PDG standard code
  *
  * The class allows a conversion of the particle PID from the
  * generator encoding to the PDG ones
  */
 
-#ifndef MpdMcPIDConverter_h
-#define MpdMcPIDConverter_h
+#ifndef McPIDConverter_h
+#define McPIDConverter_h
 
 // C++ headers
 #include <map>
@@ -17,7 +17,7 @@
 
 //_________________
 
-class MpdMcPIDConverter : public TNamed {
+class McPIDConverter : public TNamed {
 public:
 
     /// Generator PID table indices (enumeration: PDG=-1, Pluto=0, UrQMD=1, Werner(VENUS, NEXUS, EPOS)=2)
@@ -30,18 +30,16 @@ public:
     } EConvention;
 
     /// Default constructor
-    MpdMcPIDConverter();
+    McPIDConverter();
     /// Return particle PDG code
     Int_t pdgCode(const Int_t& pid, const EConvention& pidType);
     /// Return particle PDG code
-
-    Int_t GetPDGCode(const Int_t& pid, const EConvention& pidType) {
-        return pdgCode(pid, pidType);
-    }
+  Int_t GetPDGCode(const Int_t& pid, const EConvention& pidType)
+  { return pdgCode(pid, pidType); }
     /// Return a pointer to the instance
-    static MpdMcPIDConverter* Instance();
+    static McPIDConverter* Instance();
     /// Return a pointer to the instance
-    static MpdMcPIDConverter* instance();
+    static McPIDConverter* instance();
 
 private:
 
@@ -52,20 +50,18 @@ private:
     /// Load table to decode
     void loadConversionTable(const EConvention& pidType);
     /// Load table to decode
-
-    void LoadConversionTable(const EConvention& pidType) {
-        loadConversionTable(pidType);
-    }
+  void LoadConversionTable(const EConvention& pidType)
+  { loadConversionTable(pidType); }
 
     /// Conversion table map
     ConversionTableMap fConversionTables;
-    /// Instance of the MpdMcPIDConverter which can be achieved at any time
-    static MpdMcPIDConverter* fgInstance;
+    /// Instance of the McPIDConverter which can be achieved at any time
+    static McPIDConverter* fgInstance;
 
     //#ifdef __ROOT__
-    ClassDef(MpdMcPIDConverter, 0);
+    ClassDef(McPIDConverter, 0);
     //#endif
 
 };
 
-#endif // #define MpdMcPIDConverter_h
+#endif // #define McPIDConverter_h

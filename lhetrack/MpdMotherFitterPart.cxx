@@ -10,9 +10,9 @@
 #include "MpdKalmanHit.h"
 #include "MpdHelix.h"
 #include "MpdVertex.h"
+#include "MpdMCTrack.h"
 
 #include "FairField.h"
-#include "FairMCTrack.h"
 #include "FairRunAna.h"
 #include "FairTask.h"
 
@@ -127,73 +127,167 @@ void MpdMotherFitterPart::Exec(Option_t * option)
 }
 
 //__________________________________________________________________________
-void MpdMotherFitterPart::WeightAtDca(MpdParticle *part, MpdKalmanTrack &tr)
+
+Double_t MpdMotherFitterPart::BuildMother(MpdParticle *mother, vector<MpdParticle*> &vDaught)
 {
-  // Obtain MpdParticle weight at DCA from MpdKalmanTrack weight
+  /// Build mother particle from daughters which were smoothed
+  /// according to the decay vertex constraint (after FindVertex)
 
-  TMatrixDSym *covar = tr.Weight2Cov(); // get covariance matrix
-  TMatrixD g = *tr.GetWeight(); // track weight matrix
-  TMatrixD meas0 = part->GetMeas();
-  TMatrixD param0 = *tr.GetParamNew();
-  if (tr.GetNodeNew() != "") {
-    // Local coordinates
-    tr.SetNode(tr.GetNodeNew());
-    tr.SetNodeNew("");
+  TVector3 vtx;
+  Double_t chi2 = MpdMotherFitterPart::Instance()->FindVertex(vDaught,vtx);
+  if (chi2 < -1.0) return chi2; // failed to find decay vertex (too high chi2)
+  Int_t nDaught = vDaught.size();
+  // Check for sanity
+  for (Int_t id = 0; id < nDaught; ++id) {
+    Double_t theta = vDaught[id]->Theta();
+    if (theta < 0 || theta > TMath::Pi()) return -chi2; // weird track
   }
-  TMatrixD jacob(5,5);
-  Double_t vert[3] = {0.0};
 
-  Double_t dPar;
-  // Loop over parameters to find change of the propagated vs initial ones
-  Bool_t ok = kTRUE;
-  for (Int_t i = 0; i < 5; ++i) {
-    dPar = TMath::Sqrt((*covar)(i,i));
-    if (i < 4) dPar = TMath::Min (dPar, 0.1);
-    else dPar = TMath::Min (dPar, 0.1*TMath::Abs(param0(4,0)));
-    tr.SetParam(param0);
-    if (i == 4) dPar *= TMath::Sign(1.,-param0(4,0)); // 1/p
-    //else if (i == 2) dPar *= sign;
-    else if (i == 3) dPar *= TMath::Sign(1.,-param0(3,0)); // dip-angle
-    tr.SetParam(i,param0(i,0)+dPar);
-    ok = MpdKalmanFilter::Instance()->FindPca(&tr, vert);
-    tr.SetParam(*tr.GetParamNew());
-    MpdParticle tmpPart;
-    tmpPart.Track2Part(tr, kFALSE);
+  mother->SetChi2(chi2);
+  
+  TVector3 mom3;
+  Int_t charge = 0;
+  Double_t energy = 0.0;
 
-    Double_t meas = 0.0;
-    for (Int_t j = 0; j < 5; ++j) {
-      if (j == 2) meas = MpdKalmanFilter::Instance()->Proxim(meas0(j,0),tmpPart.GetMeas(j));
-      else meas = tmpPart.GetMeas(j);
-      jacob(j,i) = (meas - meas0(j,0)) / dPar;
-      //cout << i << " " << j << " " << dPar << " " << track->GetParamNew(j) << " " << paramNew0(j,0)
-      //   << " " << track->GetPos() << " " << track->GetPosNew() << " " << jacob(j,i) << endl;
+  for (Int_t i = 0; i < nDaught; ++i) {
+    MpdParticle* part = vDaught[i];
+    charge += part->GetCharge();
+    mom3 += part->Momentum3();
+    part->FillJ();
+    Double_t ptot = part->Momentum3().Mag();
+    energy += TMath::Sqrt (part->GetMass() * part->GetMass() + ptot * ptot);
+    mother->AddDaughter(part->GetIndx());
+  }
+  mother->SetCharge(charge);
+  mother->SetMass(TMath::Sqrt (energy*energy - mom3.X()*mom3.X() - mom3.Y()*mom3.Y() - mom3.Z()*mom3.Z()));
+  mother->Setx(vDaught[0]->Getx());
+  TMatrixD qm(3,1);
+  qm(0,0) = mom3.Phi();
+  qm(1,0) = mom3.Theta();
+  if (charge == 0) qm(2,0) = mom3.Mag();
+  else qm(2,0) = -fieldConst / mom3.Pt() * TMath::Abs(charge);
+  mother->Setq(qm);
+
+  ParamsAtDca(mother); // compute params at DCA 
+  //return chi2; //
+
+  mother->FillJinv(mom3);
+
+  // Compute covariance matrix
+  TMatrixD en(3,3);
+  TMatrixD ec(3,3);
+  for (Int_t i = 0; i < nDaught; ++i) {
+    MpdParticle* part = vDaught[i];
+    // E += E*Jt
+    TMatrixD jt = TMatrixD(TMatrixD::kTransposed,part->GetJ());
+    TMatrixD tmp = TMatrixD(part->GetE(),TMatrixD::kMult,jt);
+    if (part->GetCharge()) {
+      // Charged track
+      ec += tmp;
+    } else {
+      // Neutral
+      en += tmp;
     }
   }
+  
+  TMatrixD etot = ec;
+  etot += en;
+  TMatrixD c = GetCovariance();
+  TMatrixD qtot = ComputeQmatr(vDaught);
 
-  //jacob.Print();
-  jacob.Invert();
+  TMatrixD ck0(5,1);
+  //ComputeAandB(mother->Getx(), *mother, fA, fB, ck0);
+  ComputeAandB(mother->Getx(), *mother, mother->GetA(), mother->GetB(), ck0);
+  
+  // Covar. matrix
+  TMatrixD at(TMatrixD::kTransposed,mother->GetA());
+  TMatrixD tmp11(c,TMatrixD::kMult,at);
+  TMatrixD tmp12(mother->GetA(),TMatrixD::kMult,tmp11);
 
-  TMatrixD tmp(g,TMatrixD::kMult,jacob); // WD
-  TMatrixD weight1(jacob,TMatrixD::kTransposeMult,tmp); // DtWD
-  //part->SetG (weight1);
+  TMatrixD bt(TMatrixD::kTransposed,mother->GetB());
+  TMatrixD tmp21(mother->GetJinv(),TMatrixD::kTransposeMult,bt);
+  TMatrixD tmp22(etot,TMatrixD::kMult,tmp21);
+  TMatrixD tmp23(mother->GetA(),TMatrixD::kMult,tmp22);
 
-  // Add multiple scattering 
-  weight1.Invert(); // covar
-  Double_t step = tr.GetPos(); // radius of TPC inner layer
-  Double_t x0 = 13363.6; // rad. length - TPCMixture
-  TString mass2;
-  mass2 += (part->GetMass() * part->GetMass());
-  Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(&tr, x0, step, mass2);
-  Double_t th = tr.GetParamNew(3);
-  Double_t cosTh = TMath::Cos(th);
-  weight1(2,2) += (angle2 / cosTh / cosTh);
-  weight1(3,3) += angle2;
-  weight1.Invert(); // weight
-  part->SetG (weight1);
+  TMatrixD tmp31(etot,TMatrixD::kTransposeMult,at);
+  TMatrixD tmp32(mother->GetJinv(),TMatrixD::kMult,tmp31);
+  TMatrixD tmp33(mother->GetB(),TMatrixD::kMult,tmp32);
+
+  TMatrixD tmp41(mother->GetJinv(),TMatrixD::kTransposeMult,bt);
+  TMatrixD tmp42(qtot,TMatrixD::kMult,tmp41);
+  TMatrixD tmp43(mother->GetJinv(),TMatrixD::kMult,tmp42);
+  TMatrixD tmp44(mother->GetB(),TMatrixD::kMult,tmp43);
+
+  TMatrixD gm(5,5);
+  gm = tmp12;
+  gm += tmp23;
+  gm += tmp33;
+  gm += tmp44;
+  //cout << " Mother covariance " << endl;
+  //fG.Print();
+  gm.Invert(); // mother weight
+  mother->SetG(gm);
+  
+  return chi2;
 }
 
+//__________________________________________________________________________
+
+Double_t MpdMotherFitterPart::BuildMother(MpdParticle* mother, vector<MpdKalmanTrack*> &vTracks, vector<MpdParticle*> &vDaught)
+{
+  /// Build mother particle from daughters which were smoothed
+  /// according to the decay vertex constraint (after FindVertex).
+  /// Daughters are built from tracks and parametrized at their 
+  /// intersection point.  
+
+  vDaught.clear();
+  vector<MpdHelix> vhel;
+
+  // Create 2 helices and cross them
+  for (Int_t itr = 0; itr < 2; ++itr) {
+    Double_t rad = vTracks[itr]->GetPosNew();
+    Double_t phi = 0.0;
+    if (rad > 1.e-6) phi = (*vTracks[itr]->GetParam())(0,0) / rad;
+    vhel.push_back (MpdHelix (vTracks[itr]->Momentum3(), TVector3(rad*TMath::Cos(phi),rad*TMath::Sin(phi),(*vTracks[itr]->GetParam())(1,0)), 
+			      vTracks[itr]->Charge()));
+  }
+  pair<Double_t,Double_t> paths = vhel[0].pathLengths(vhel[1]);
+  TVector3 cross;
+  Double_t xyz[3] = {0};
+  Int_t ntr = vTracks.size();
+
+  if (paths.first < 100.0 || paths.second < 100.0) {
+    //MpdKalmanHit hit;
+    //hit.SetType(MpdKalmanHit::kFixedR);
+    cross = vhel[0].at(paths.first);
+    cross += vhel[1].at(paths.second);
+    cross *= 0.5;
+    cross.GetXYZ(xyz);
+    /*
+    for (Int_t itr = 0; itr < ntr; ++itr) {
+      //Double_t s = vhel[itr].pathLength(cross);
+      //TVector3 pca = vhel[itr].at(s);
+      //hit.SetPos(pca.Pt());
+      //MpdKalmanFilter::Instance()->PropagateToHit(vTacks[itr],&hit,kFALSE);
+    }
+    */
+  }
+
+  //xyz[0] = xyz[1] = xyz[2] = 0;
+  for (Int_t itr = 0; itr < ntr; ++itr) {
+    MpdKalmanFilter::Instance()->FindPca(vTracks[itr],xyz);
+    vTracks[itr]->SetParam(*vTracks[itr]->GetParamNew());
+    vTracks[itr]->Weight2Cov(); //AZ
+    vDaught.push_back(new MpdParticle(*vTracks[itr],-1,0.1396,xyz));
+  }
+  Double_t chi2 = BuildMother (mother, vDaught);
+  // Bring back to master frame in transverse plane
+  for (Int_t j = 0; j < 2; ++j) mother->Getx()(j,0) += xyz[j];
+  return chi2;
+}
 
 //__________________________________________________________________________
+
 void MpdMotherFitterPart::EvalVertex(vector<MpdParticle*> vDaught)
 {
   /// Evaluate decay vertex position as PCA of helices
@@ -240,9 +334,9 @@ void MpdMotherFitterPart::EvalVertex(vector<MpdParticle*> vDaught)
 	// straight line
 	//Double_t dx = helix[j]
       pair<Double_t,Double_t> paths = helix[i]->pathLengths(*helix[j]);
-      //cout << " Intersection: " << paths.first << " " << paths.second << endl;
       p1 = helix[i]->at(paths.first);
       p2 = helix[j]->at(paths.second);
+      //cout << " Intersection: " << helix[i]->period() << " " << paths.first << " " << helix[j]->period() << " " << paths.second << " " << (p1-p2).Mag() << endl;
       sum += (p1+p2);
       ncombs += 2;
       pathMax = TMath::Max (pathMax, TMath::Abs(paths.first));

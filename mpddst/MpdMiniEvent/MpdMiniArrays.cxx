@@ -36,20 +36,25 @@ const char* MpdMiniArrays::miniArrayTypes[NAllMiniArrays] = { "MpdMiniEvent",
 // Choosing too large initial values gives a performance penalty when reading
 // only selected miniDst branches
 //_________________
-int MpdMiniArrays::miniArraySizes [NAllMiniArrays] = { 1,    // MpdMiniEvent
-						       800,  // MpdMiniTrack
-						       100,  // MpdMiniBTofHit
-						       100,  // MpdMiniBTofPidTraits
-						       100,  // MpdMiniBECalHit (size is not yet defined in TDR)
-						       100,  // MpdMiniBECalPidTraits
-						       800,  // MpdMiniTrackCovMatrix
-						       1,    // MpdMiniMcEvent
-						       1000  // MpdMiniMcTrack
-
+int MpdMiniArrays::miniArraySizes[NAllMiniArrays] = {1, // MpdMiniEvent
+						     800,   // MpdMiniTrack
+						     100,   // MpdMiniBTofHit
+						     100,   // MpdMiniBTofPidTraits
+						     60000, // MpdMiniBECalHit (size is not yet defined in TDR)
+						     100,   // MpdMiniBECalPidTraits
+						     800,   // MpdMiniTrackCovMatrix
+						     1,     // MpdMiniMcEvent
+						     1000   // MpdMiniMcTrack
 };
 
 //_________________
 MpdMiniArrays::MpdMiniArrays() {
+  // Default constructor
+  /* empty */
+}
+
+//_________________
+MpdMiniArrays::~MpdMiniArrays() {
   // Destructor
   /* empty */
 }

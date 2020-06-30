@@ -24,7 +24,7 @@
 #include "TpcPoint.h"
 #include "MpdTpcPeak.h"
 #include "FairRootManager.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "TClonesArray.h"
 #include <TSystem.h>
 #include <iostream>

@@ -36,7 +36,7 @@ R__ADD_INCLUDE_PATH($VMCWORKDIR)
 #include "macro/mpd/mpdloadlibs.C"
 #include "macro/mpd/geometry_stage1.C"
 //#include "macro/mpd/geometry_v2.C"
-
+        
 #define HADGEN  // Choose generator: URQMD VHLLE FLUID PART ION BOX HSD LAQGSM HADGEN
 #define GEANT3  // Choose: GEANT3 GEANT4
 
@@ -46,7 +46,7 @@ R__ADD_INCLUDE_PATH($VMCWORKDIR)
 // outFile - output file with MC data, default: evetest.root
 // flag_store_FairRadLenPoint
 // FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
-void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 10,
+void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 2,
         Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0)
 {
     TStopwatch timer;
@@ -80,7 +80,16 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     // Use user defined decays https://fairroot.gsi.de/?q=node/57
     fRun->SetUserDecay(kTRUE);
+    // Use external decayer
+    //fRun->SetPythiaDecayer(TString("$VMCWORKDIR/gconfig/LambdaDecayConfig.C"));
+    
+#ifdef MCDST // McDst generator
+    if (!CheckFileExist(inFile)) return;
 
+    MpdMcDstGenerator* mcDstGen = new MpdMcDstGenerator(inFile);
+    primGen->AddGenerator(mcDstGen);
+
+#else    
 #ifdef URQMD // <---- Urqmd  Generator
     if (!CheckFileExist(inFile)) return;
 
@@ -152,7 +161,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 #ifdef LAQGSM // <---- LAQGSM Generator
     if (!CheckFileExist(inFile)) return;
 
-    MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(inFile.Data(), kTRUE, 0, 1+nStartEvent+nEvents);
+    MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(inFile.Data(), kTRUE, 4, 1+nStartEvent+nEvents);
     // kTRUE - for NICA/MPD, 1+nStartEvent+nEvents - search ions in selected part of file.
     primGen->AddGenerator(guGen);
     if (nStartEvent > 0) guGen->SkipEvents(nStartEvent);
@@ -179,9 +188,10 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 #endif
 #endif
 #endif 
+#endif 
 
     fRun->SetOutputFile(outFile.Data());
-
+    
     // Magnetic Field Map - for proper use in the analysis MultiField is necessary here
     MpdMultiField* fField = new MpdMultiField();
 
@@ -218,6 +228,15 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     fRun->Init();
 
+    //AZ - Enable decays of unstable particles
+    /*
+    MpdStack *stack = NULL;
+    if (TString(fRun->GetName()).Contains("TGeant3"))
+      stack = (MpdStack*) ((TGeant3*)gMC)->GetStack();
+    else stack = (MpdStack*) ((TGeant4*)gMC)->GetStack();
+    stack->SetDecayUnstable();
+    */
+  
     // -Trajectories Visualization (TGeoManager Only)
     // Set cuts for storing the trajectories
     FairTrajFilter* trajFilter = FairTrajFilter::Instance();
@@ -243,7 +262,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
         Par->SetParameters(fField);
     Par->setInputVersion(fRun->GetRunId(), 1);
     Par->setChanged();
-    // Par->printParams();
+    // Par->printParams(); 
 
     rtdb->saveOutput();
     rtdb->print();

@@ -19,7 +19,7 @@ void Config()
              << endl;
   }
   // create Fair Specific Stack
-  FairStack *st = new FairStack();
+  MpdStack *st = new MpdStack();
   // Set minimum number of points to store the track
   // The default value is one, which means each track 
   // needs at least 1 point in any detector

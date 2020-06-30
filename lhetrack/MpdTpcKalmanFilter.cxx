@@ -20,11 +20,11 @@
 #include "TpcGeoPar.h"
 #include "TpcPoint.h"
 #include "TpcLheTrack.h"
+#include "MpdMCTrack.h"
 
 #include "FairEventHeader.h"
 #include "FairField.h"
 #include "FairMCEventHeader.h"
-#include "FairMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
@@ -615,10 +615,10 @@ void MpdTpcKalmanFilter::AddHits(Int_t indx0)
 
     Int_t nWrong = 0, motherID = track->GetTrackID();
     // Get track mother ID
-    FairMCTrack *mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(motherID);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() >= 0) {
       motherID = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
     }
 
     TObjArray *hits = track->GetHits();
@@ -629,10 +629,10 @@ void MpdTpcKalmanFilter::AddHits(Int_t indx0)
       Int_t motherID1 = p->GetTrackID();
       //AZ 19-07-15 if (!fUseMCHit) motherID1 = p->GetRefIndex();
       // Get point mother ID
-      mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(motherID1);
+      mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(motherID1);
       while (mctrack->GetMotherId() >= 0) {
         motherID1 = mctrack->GetMotherId();
-        mctrack = (FairMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
+        mctrack = (MpdMCTrack*) fMCtracks->UncheckedAt(mctrack->GetMotherId());
       }
       if (motherID1 != motherID) nWrong++;
       hits->AddAt(newHit, j); // replace content - 13.10.2015
@@ -705,7 +705,7 @@ void MpdTpcKalmanFilter::GetTrackSeeds(Int_t iPass)
     for (Int_t ihit1 = 0; ihit1 < nHits1; ++ihit1) {
       MpdKalmanHit *hit1 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay]+ihit1);
       if (hit1->GetIndex() >= 0) h1 = (MpdTpcHit*) fHits->UncheckedAt(hit1->GetIndex());
-      if (hit1->GetFlag() != 1) continue;
+      if (hit1->GetFlag() & MpdKalmanHit::kUsed) continue;
 
       if (fModular) {
 	//posLoc.SetXYZ(-hit1->GetMeas(0), hit1->GetDist(), hit1->GetMeas(1));
@@ -728,7 +728,7 @@ void MpdTpcKalmanFilter::GetTrackSeeds(Int_t iPass)
 	MpdKalmanHit *hit2 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay+dLays*TMath::Sign(1,iDir)]+ihit2);
 	if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
 	//if (h2->GetTrackID() != h1->GetTrackID()) continue; //!!! for test - exact ID matching
-	if (hit2->GetFlag() != 1) continue;
+	if (hit2->GetFlag() & MpdKalmanHit::kUsed) continue;
 
 	if (fModular) {
 	  //posLoc.SetXYZ(-hit2->GetMeas(0), hit2->GetDist(), hit2->GetMeas(1));
@@ -850,7 +850,7 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
     for (Int_t ihit1 = 0; ihit1 < nHits1; ++ihit1) {
       MpdKalmanHit *hit1 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay]+ihit1);
       if (hit1->GetIndex() >= 0) h1 = (MpdTpcHit*) fHits->UncheckedAt(hit1->GetIndex());
-      if (hit1->GetFlag() != 1) continue;
+      if (hit1->GetFlag() & MpdKalmanHit::kUsed) continue;
       if (TMath::Abs(hit1->GetMeas(1)) > zMax) continue; // too close to end-cap
 
       if (fModular) {
@@ -878,7 +878,7 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
 	MpdKalmanHit *hit2 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay+dLays*iDir]+ihit2);
 	if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
 	//if (h2->GetTrackID() != h1->GetTrackID()) continue; //!!! for test - exact ID matching
-	if (hit2->GetFlag() != 1) continue;
+	if (hit2->GetFlag() & MpdKalmanHit::kUsed) continue;
 
 	if (fModular) {
 	  //posLoc.SetXYZ(-hit2->GetMeas(0), hit2->GetDist(), hit2->GetMeas(1));
@@ -1074,6 +1074,7 @@ void MpdTpcKalmanFilter::MakeKalmanHitsModul()
     MpdKalmanHit *hitK = new ((*fKHits)[nKh++]) 
       MpdKalmanHit(lay*1000000+padID, 2, MpdKalmanHit::kFixedP, meas, err, cossin, hit->GetEnergyLoss()/hit->GetStep(), hit->GetLocalY(), j, edge);
     hitK->SetLength(hit->GetLength());
+    hitK->SetFlag (hitK->GetFlag() | hit->GetFlag());
     //hitK->SetDedx (hit->GetEdep()/hit->GetStep());
     //MpdKalmanFilter::Instance()->GetGeo()->SetGlobalPos(hitK,TVector3(hit->GetX(),hit->GetY(),hit->GetZ()));
   }
@@ -1199,7 +1200,7 @@ void MpdTpcKalmanFilter::DoTracking(Int_t iPass)
     //track->GetParamNew()->Print();
     // Check if the seed hit was used already
     MpdKalmanHit *hit = (MpdKalmanHit*) track->GetHits()->First();
-    if (hit->GetFlag() != 1) iok = -1;
+    if (hit->GetFlag() & MpdKalmanHit::kUsed) iok = -1;
     else {
       if (track->GetDirection() == MpdKalmanTrack::kOutward) { 
 	//cout << " !!! " << track->GetNode() << " !!! " << track->GetNodeNew() <<endl;	
@@ -1368,7 +1369,7 @@ Int_t MpdTpcKalmanFilter::RunKalmanFilter(MpdTpcKalmanTrack *track)
 	//MpdKalmanHit *hit = (MpdKalmanHit*) fKHits->UncheckedAt(indx0+indx);
 	hit = (MpdKalmanHit*) fKHits->UncheckedAt(indx);
 	// Exclude used hits
-	if (hit->GetFlag() != 1) continue;
+	if (hit->GetFlag() & MpdKalmanHit::kUsed) continue;
 	// !!! Exact ID match
 	//if (GetPoint(hit)->GetTrackID() != track->GetTrackID()) continue;
 	//if (GetTpcHit(hit)->GetTrackID() != track->GetTrackID()) continue;
@@ -1655,7 +1656,7 @@ void MpdTpcKalmanFilter::GoOutward(MpdTpcKalmanTrack *track)
 }
 
 //__________________________________________________________________________
-void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight0, Int_t iDir, Bool_t corDedx)
+Bool_t MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight0, Int_t iDir, Bool_t corDedx)
 {
   /// Propagate track using already found hits
 
@@ -1674,8 +1675,10 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
   Int_t lay0 = -1, lay = -1, ifirst = 1;
   iend += iDir;
 
+  Bool_t ok = kTRUE;
   MpdKalmanHit *hit = 0x0;
   map<Int_t,Double_t>& stepMap = track->GetSteps();
+
   for (Int_t i = ibeg; i != iend; i+=iDir) {
     //for (Int_t i = 1; i < nHits; ++i) {
     if (i == ibeg && iDir > 0) track->SetLength(0.); // for correct track length
@@ -1691,7 +1694,7 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
     Double_t leng = track->GetLength(), stepBack = -1;
     if (stepMap.find(lay) != stepMap.end() && stepMap.find(lay0) != stepMap.end()) 
       stepBack = TMath::Abs (stepMap[lay] - stepMap[lay0]);
-    Bool_t ok = MpdKalmanFilter::Instance()->PropagateToHit(track, hit, kTRUE, kTRUE, stepBack);
+    ok = MpdKalmanFilter::Instance()->PropagateToHit(track, hit, kTRUE, kTRUE, stepBack);
     if (!ok) continue;
     //cout << track->GetLength() << endl;
     // Add multiple scattering in TPC gas (TPCmixture)
@@ -1739,7 +1742,8 @@ void MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weight
   track->SetWeightAtHit(*track->GetWeight());
   track->GetHits()->UnSort(); // 20-02-2012
   track->GetHits()->Sort(); // 20-02-2012
- }
+  return ok;
+}
 
 //__________________________________________________________________________
 void MpdTpcKalmanFilter::GoOut()
@@ -1780,28 +1784,31 @@ void MpdTpcKalmanFilter::GoOut()
     }
     tr.SetPosNew(tr.GetPos()); 
     //cout << tr.GetTrackID() << " " << tr.GetLengAtHit() << " " << tr.GetPos() << endl;
-    BackTrace(&tr,tmp,-1,kTRUE); 
+    Bool_t ok = BackTrace(&tr,tmp,-1,kTRUE); 
     //cout << " aaaaa " << tr.Momentum3().Eta() << " " << tr.GetLength() << endl;
-    MpdKalmanHit hitTmp;
-    hitTmp.SetType(MpdKalmanHit::kFixedR);
-    if (fModular) {
-      // Transform to global frame
-      /*
-      hit = (MpdKalmanHit*) tr.GetTrHits()->First();
-      posLoc.SetXYZ(-hit->GetMeas(0), hit->GetDist(), hit->GetMeas(1));
-      isec = hit->GetDetectorID() % 1000000;
-      pos = fPadPlane->fromSectorReferenceFrame(posLoc, isec);
-      */
-      //Double_t v7[3] = {tr.GetParamNew(0), tr.GetParamNew(1), tr.GetPosNew()}, v77[3];
-      Double_t v7[3] = {-tr.GetParamNew(0), tr.GetParamNew(1), tr.GetPosNew()}, v77[3];
-      gGeoManager->cd(tr.GetNodeNew());
-      gGeoManager->CdUp();
-      gGeoManager->LocalToMaster(v7,v77);
-      //MpdKalmanHit hitTmp;
-      hitTmp.SetDist(TMath::Sqrt(v77[0]*v77[0]+v77[1]*v77[1]) + 0.2);
-      //hitTmp.SetType(MpdKalmanHit::kFixedR);
-    } else hitTmp.SetDist(tr.GetPosNew() + 0.2);
-    Bool_t ok = MpdKalmanFilter::Instance()->PropagateToHit(&tr,&hitTmp);
+    if (ok) {
+      MpdKalmanHit hitTmp;
+      hitTmp.SetType(MpdKalmanHit::kFixedR);
+      if (fModular) {
+	// Transform to global frame
+	/*
+	  hit = (MpdKalmanHit*) tr.GetTrHits()->First();
+	  posLoc.SetXYZ(-hit->GetMeas(0), hit->GetDist(), hit->GetMeas(1));
+	  isec = hit->GetDetectorID() % 1000000;
+	  pos = fPadPlane->fromSectorReferenceFrame(posLoc, isec);
+	*/
+	//Double_t v7[3] = {tr.GetParamNew(0), tr.GetParamNew(1), tr.GetPosNew()}, v77[3];
+	Double_t v7[3] = {-tr.GetParamNew(0), tr.GetParamNew(1), tr.GetPosNew()}, v77[3];
+	gGeoManager->cd(tr.GetNodeNew());
+	gGeoManager->CdUp();
+	gGeoManager->LocalToMaster(v7,v77);
+	//MpdKalmanHit hitTmp;
+	hitTmp.SetDist(TMath::Sqrt(v77[0]*v77[0]+v77[1]*v77[1]) + 0.2);
+	//hitTmp.SetType(MpdKalmanHit::kFixedR);
+      } else hitTmp.SetDist(tr.GetPosNew() + 0.2);
+      ok = MpdKalmanFilter::Instance()->PropagateToHit(&tr,&hitTmp);
+    }
+    if (!ok) track->SetFlag(MpdKalmanTrack::kNoOut); //AZ
     track->SetLengAtHit(tr.GetLength());
     track->SetParamAtHit(*tr.GetParamNew());
     track->SetWeightAtHit(*tr.GetWeight());
@@ -1969,8 +1976,7 @@ void MpdTpcKalmanFilter::ExcludeHits()
     TObjArray *hits = track->GetHits();
     for (Int_t j = 0; j < nhitsKF; ++j) {
       MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(j);
-      hit->SetFlag(-1);
-      //if (hit->GetLayer() > 26) hit->SetFlag(-1); // 24.12.2018
+      hit->SetFlag (hit->GetFlag() | MpdKalmanHit::kUsed);
     }
   }
 }
@@ -2115,7 +2121,7 @@ Int_t MpdTpcKalmanFilter::GetParticleId(Int_t id)
   /// Particle ID: 
   /// !!! based on MC information at the moment !!!
 
-  FairMCTrack* mcTr = (FairMCTrack*) fMCtracks->UncheckedAt(id);
+  MpdMCTrack* mcTr = (MpdMCTrack*) fMCtracks->UncheckedAt(id);
   Int_t pdg = mcTr->GetPdgCode();
   if (TMath::Abs(pdg) == 11) return 1;
   return 0;
@@ -2131,18 +2137,18 @@ Bool_t MpdTpcKalmanFilter::SameOrigin(TpcPoint *hit, Int_t idKF, Int_t *mcTracks
   if (mcTracks[hit->GetTrackID()] <= 0 && mcTracks[idKF] <= 0) return kFALSE; // both hits are from primaries
   else if (mcTracks[hit->GetTrackID()] > 0) {
     // Check mother
-    FairMCTrack *track = (FairMCTrack*) fMCtracks->UncheckedAt(hit->GetTrackID());
+    MpdMCTrack *track = (MpdMCTrack*) fMCtracks->UncheckedAt(hit->GetTrackID());
     while (track->GetMotherId() > 0) {
       //cout << " Wrongs1: " << track->GetMotherId() << endl;
       if (track->GetMotherId() == idKF) return kTRUE;
-      track = (FairMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
+      track = (MpdMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
     }
   } else {
-    FairMCTrack *track = (FairMCTrack*) fMCtracks->UncheckedAt(idKF);
+    MpdMCTrack *track = (MpdMCTrack*) fMCtracks->UncheckedAt(idKF);
     while (track->GetMotherId() > 0) {
       //cout << " Wrongs2: " << track->GetMotherId() << endl;
       if (track->GetMotherId() == hit->GetTrackID()) return kTRUE;
-      track = (FairMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
+      track = (MpdMCTrack*) fMCtracks->UncheckedAt(track->GetMotherId());
     }
   }
   return kFALSE;
@@ -2576,6 +2582,8 @@ void MpdTpcKalmanFilter::MergeTracks(Int_t ipass)
 	  hitTmp.SetDist(fSecGeo->GetMinY());
 	  ok = MpdKalmanFilter::Instance()->PropagateToHit(&track,&hitTmp,kFALSE);
 	}
+	if (!ok) continue; // do not merge tracks
+
 	// Save info for further use
 	track.SetWeightAtHit(*track.GetWeight());
 	track.SetParamAtHit(*track.GetParamNew());

@@ -15,7 +15,7 @@
 
 #include "MpdFieldCreator.h"
 #include "MpdMapPar.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
@@ -44,7 +44,7 @@ using namespace std;
 
 MpdFillDstTask::MpdFillDstTask(const char *name, const char *title)
 : FairTask(name),fEvent(NULL),
-  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL),fTpcHits(NULL),
+  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL), fGenTracks(nullptr), fTpcHits(NULL),
   fMCEventHeader(NULL),fTofMatching(NULL),fEtofMatching(NULL),
   fVertex(NULL),fZdcSkeletonesSaved(kFALSE),
   fHistZdc1En(NULL),fHistZdc2En(NULL),
@@ -71,6 +71,7 @@ InitStatus MpdFillDstTask::Init() {
     fKFTracks = (TClonesArray *) manager->GetObject("TpcKalmanTrack");
     fKFEctTracks = (TClonesArray *) manager->GetObject("EctTrack");
     fMCTracks = (TClonesArray *) manager->GetObject("MCTrack");
+    fGenTracks = (TClonesArray *) manager->GetObject("GenTracks");
     fTpcHits = (TClonesArray*) manager->GetObject("TpcRecPoint");
     fMCEventHeader = (FairMCEventHeader*) manager->GetObject("MCEventHeader.");
     fTofMatching = (TClonesArray *) manager->GetObject("TOFMatching");
@@ -97,6 +98,8 @@ InitStatus MpdFillDstTask::Init() {
 
     FairRootManager::Instance()->Register("MCEventHeader.", "MC", fMCEventHeader, kTRUE);
     FairRootManager::Instance()->Register("MCTrack", "MC", fMCTracks, kTRUE);
+    if (fGenTracks)
+        FairRootManager::Instance()->Register("GenTracks", "MC", fGenTracks, kTRUE);
     //FairRootManager::Instance()->Register("MpdEvent","MpdEvents", fEvents, kTRUE);
     FairRootManager::Instance()->Register("MPDEvent.", "MpdEvent", fEvent, kTRUE);
     // FairRootManager::Instance()->Register("EZdc1","EZdc1", fELossZdc1Histo, kTRUE);
@@ -303,7 +306,7 @@ void MpdFillDstTask::CleanMC() {
     cout << "-I- [MpdFillDstTask::Exec] Cleaning from outer decays..." << flush;
 
     Int_t nMC = fMCTracks->GetEntriesFast(), motherId;
-    FairMCTrack *track;
+    MpdMCTrack *track;
 
     //reading outer radius of TOF
     FairRunAna::Instance()->GetRuntimeDb()->getContainer("FairBaseParSet");
@@ -315,7 +318,7 @@ void MpdFillDstTask::CleanMC() {
     vector<int> removedMother;
     Int_t i, j;
     for (i = 0; i < nMC; i++) {
-        track = (FairMCTrack*) fMCTracks->UncheckedAt(i);
+        track = (MpdMCTrack*) fMCTracks->UncheckedAt(i);
 
         //filling hostograms
         motherId = track->GetMotherId();
@@ -485,33 +488,29 @@ void MpdFillDstTask::FillTrackDCA(MpdTrack* track, TVector3 *recoVertex, TVector
 }
 
 void MpdFillDstTask::FillTrackPID(MpdTrack* track) {
-	TVector3 mom(track->GetPx(),track->GetPy(),track->GetPz());
-	Double_t p = mom.Mag();
-	Double_t dedx = track->GetdEdXTPC();
-	Double_t dedx_el = fPID->GetDedxElParam(p);
-	Double_t dedx_pi = fPID->GetDedxPiParam(p);
-	Double_t dedx_ka = fPID->GetDedxKaParam(p);
-	Double_t dedx_pr = fPID->GetDedxPrParam(p);
-	Double_t sigma_el = fPID->GetDedxWidthValue(p, 4)*dedx_el;
-	Double_t sigma_pi = fPID->GetDedxWidthValue(p, 1)*dedx_pi;
-	Double_t sigma_ka = fPID->GetDedxWidthValue(p, 2)*dedx_ka;
-	Double_t sigma_pr = fPID->GetDedxWidthValue(p, 3)*dedx_pr;
-	sigma_el = (dedx-dedx_el)/(sigma_el);
-	sigma_pi = (dedx-dedx_pi)/(sigma_pi);
-	sigma_ka = (dedx-dedx_ka)/(sigma_ka);
-	sigma_pr = (dedx-dedx_pr)/(sigma_pr);
-	if(TMath::IsNaN(sigma_el))
-		sigma_el = -1E+2;
-	if(TMath::IsNaN(sigma_pi))
-		sigma_pi = -1E+2;
-	if(TMath::IsNaN(sigma_ka))
-		sigma_ka = -1E+2;
-	if(TMath::IsNaN(sigma_pr))
-		sigma_pr = -1E+2;
-	track->SetNSigmaElectron(sigma_el);
-	track->SetNSigmaKaon(sigma_ka);
-	track->SetNSigmaPion(sigma_pi);
-	track->SetNSigmaProton(sigma_pr);
+    TVector3 mom(track->GetPx(), track->GetPy(), track->GetPz());
+    Double_t p = mom.Mag();
+    Double_t dedx = track->GetdEdXTPC();
+    Double_t dedx_el = fPID->GetDedxElParam(p);
+    Double_t dedx_pi = fPID->GetDedxPiParam(p);
+    Double_t dedx_ka = fPID->GetDedxKaParam(p);
+    Double_t dedx_pr = fPID->GetDedxPrParam(p);
+    Double_t sigma_el = fPID->GetDedxWidthValue(p, 4) * dedx_el;
+    Double_t sigma_pi = fPID->GetDedxWidthValue(p, 1) * dedx_pi;
+    Double_t sigma_ka = fPID->GetDedxWidthValue(p, 2) * dedx_ka;
+    Double_t sigma_pr = fPID->GetDedxWidthValue(p, 3) * dedx_pr;
+
+    if (sigma_el > FLT_EPSILON) 
+        track->SetNSigmaElectron((dedx - dedx_el) / sigma_el);
+
+    if (sigma_pi > FLT_EPSILON)
+        track->SetNSigmaPion((dedx - dedx_pi) / sigma_pi);
+    
+    if (sigma_ka > FLT_EPSILON)
+        track->SetNSigmaKaon((dedx - dedx_ka) / sigma_ka);
+   
+    if (sigma_pr > FLT_EPSILON)
+       track->SetNSigmaProton((dedx - dedx_pr) / sigma_pr);
 }
 
 // -------------------------------------------------------------------

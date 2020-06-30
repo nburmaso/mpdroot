@@ -91,8 +91,9 @@ Bool_t MpdTpc2dCluster::Insert(Int_t sec, Int_t row, Int_t col, Int_t bkt, Float
 {
   // Insert pixel
 
-  Insert(row, col, bkt, adc);
+  Bool_t asd = Insert(row, col, bkt, adc);
   fSecList.push_back(sec);
+  return asd;
 }
 
 //......................................................................

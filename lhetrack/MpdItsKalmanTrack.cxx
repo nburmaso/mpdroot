@@ -15,8 +15,9 @@
 #include "MpdKalmanGeoScheme.h"
 #include "MpdKalmanHit.h"
 #include "MpdKalmanTrack.h"
-//#include "MpdCellAutomat.h"
-#include "MpdCellTrack.h"
+///#include "MpdCellAutomat.h"
+#include "MpdVector.h"
+///#include "MpdCellTrack.h"
 
 #include <TMatrixD.h>
 #include <TMatrixDSym.h>
@@ -113,6 +114,7 @@ MpdItsKalmanTrack & MpdItsKalmanTrack::operator=(const MpdItsKalmanTrack& track)
   // base class assignement
   MpdKalmanTrack::operator=(track);
 
+  if (fTrHits) { fTrHits->Delete(); delete fTrHits; }
   fTrHits = new TClonesArray("MpdKalmanHit");
   fNofIts = track.fNofIts;
   fChi2Its = track.fChi2Its;
@@ -160,37 +162,33 @@ MpdItsKalmanTrack::MpdItsKalmanTrack (const MpdEctKalmanTrack& track)
 }
 
 //__________________________________________________________________________
-MpdItsKalmanTrack::MpdItsKalmanTrack (const MpdCellTrack& track1, TVector3& vec)//14.11
+MpdItsKalmanTrack::MpdItsKalmanTrack (const MpdVector& track, TVector3& vec)
   : MpdKalmanTrack(0.0, vec),
     fTrHits(new TClonesArray("MpdKalmanHit")),
-    //fKHits(new TClonesArray("MpdKalmanHit")),
     fNofIts(0),
     fChi2Its(0.0)  
- { 
-
- }
-
-/*
 {
-  /// constructor from Cell track
+  /// construct from last layer celltrack
+  const MpdVector* temp = &track;
 
-  TClonesArray* hits = track.GetTrHits();
-  //TClonesArray* hits = track.GetKHits();
-  Int_t nHits = hits->GetEntriesFast();
-  for (Int_t i = 0; i < nHits; ++i) {
-    MpdKalmanHit *hit = (MpdKalmanHit*) (hits->UncheckedAt(i));
+  for (Int_t i = 0; i < 5; ++i) {
+    MpdKalmanHit* hit = temp->GetKalmanHit();
+    temp = temp->GetPrevTrackPointer();
     new ((*fTrHits)[i]) MpdKalmanHit(*hit);
-    // new ((*fKHits)[i]) MpdKalmanHit(*hit);
+    if (temp == NULL) break;
   }
+  fTrHits->Sort();
 }
-*/				     
+				     
 //__________________________________________________________________________
 MpdItsKalmanTrack::~MpdItsKalmanTrack() 
 {
   /// Destructor
 
-  if (fTrHits) fTrHits->Clear("C");
+  ///if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete(); //AZ
   delete fTrHits;
+  fTrHits = NULL;
 }
 
 //__________________________________________________________________________
@@ -198,8 +196,10 @@ void MpdItsKalmanTrack::Reset()
 {
   /// Reset track
 
-  if (fTrHits) fTrHits->Clear("C");
+  //if (fTrHits) fTrHits->Clear("C");
+  if (fTrHits) fTrHits->Delete();
   delete fTrHits;
+  fTrHits = NULL;
   Clear();
 }
 

@@ -28,11 +28,11 @@ public:
    *@param length   Track length since creation [cm]
    *@param eLoss    Energy deposit [GeV]
    **/
-        MpdFfdPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss);
-        MpdFfdPoint(const MpdFfdPoint& point) { *this = point; };
+  MpdFfdPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss);
+ MpdFfdPoint(const MpdFfdPoint& point):FairMCPoint(point) { *this = point; }
 
-        MpdFfdPoint();
-        virtual ~MpdFfdPoint();
+  	MpdFfdPoint();	
+  	virtual ~MpdFfdPoint();
 
 	// Output to screen 
   	virtual void Print(const Option_t* opt) const;

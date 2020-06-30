@@ -21,7 +21,8 @@ MpdTrack::MpdTrack():
   fPidTPCProbElectron(0.), fPidTPCProbPion(0.),fPidTPCProbKaon(0.), fPidTPCProbProton(0.), 
   fPidTOFProbElectron(0.), fPidTOFProbPion(0.),fPidTOFProbKaon(0.), fPidTOFProbProton(0.),      
   fTofBeta(0.), fTofMass2(0.), fdEdXTPC(0.), fTofFlag(0) ,fHitMap(0) ,
-  fSharedHitMap(0)
+  fSharedHitMap(0),fNSigmaElectron(-100.), fNSigmaPion(-100.), fNSigmaKaon(-100.), fNSigmaProton(-100.), 
+  fTofHitIndex(-1)  
 {}
 // -------------------------------------------------------------------
 Float_t MpdTrack::GetPx() const

@@ -23,7 +23,7 @@
 #include "FairMCApplication.h"
 #include "FairDetector.h"
 #include "FairRootManager.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairGeoVolume.h"
 
 #include "MpdEtofGeoPar.h"

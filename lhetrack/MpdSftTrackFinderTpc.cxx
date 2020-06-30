@@ -18,7 +18,7 @@
 #include "TpcLheHit.h"
 
 #include "FairMCPoint.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "TMath.h"
@@ -235,7 +235,7 @@ void MpdSftTrackFinderTpc::GetTrackSeeds(Int_t iPass)
     // Loop over hits in the downstream SFT
     MpdKalmanHit *hit1 = (MpdKalmanHit*) fKHits->UncheckedAt(indx0[0]+i);
     Int_t id1 = ((FairMCPoint*)fSftPoints->UncheckedAt(hit1->GetIndex()))->GetTrackID();
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(id1);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(id1);
     if (mctrack->GetMotherId() >= 0) continue; // skip secondary tracks - for test
     hitTmp.SetZ(hit1->GetDist());
     
@@ -958,10 +958,10 @@ void MpdSftTrackFinderTpc::AddHits()
     Int_t nWrong = 0, motherID = track->GetTrackID();
     cout << i << " " << nHits << " " << motherID << endl;
     // Get track mother ID 
-    FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID);
+    MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() > 0) {
       motherID = mctrack->GetMotherId();
-      mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+      mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
     }
 
     for (Int_t j = 0; j < nHits; ++j) {
@@ -986,10 +986,10 @@ void MpdSftTrackFinderTpc::AddHits()
       //Int_t motherID1 = p->GetTrackID();
       cout << "-" << motherID1;
       // Get point mother ID 
-      FairMCTrack *mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(motherID1);
+      MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID1);
       while (mctrack->GetMotherId() > 0) {
         motherID1 = mctrack->GetMotherId();
-        mctrack = (FairMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+        mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
       }
       //if (motherID1 != motherID && hit->GetMult() == 1) nWrong++;
       if (motherID1 != motherID) nWrong++;

@@ -13,44 +13,54 @@
 #include "TMath.h"
 
 // ------------------------------------------------------------------------
-MpdHypYPtGenerator::MpdHypYPtGenerator():FairGenerator(){
+MpdHypYPtGenerator::MpdHypYPtGenerator():FairGenerator() 
+{
   // Default constructor
+
   fPDGType =  -1;
   fMult    =   0;
 }
 
 // ------------------------------------------------------------------------
-MpdHypYPtGenerator::MpdHypYPtGenerator(Int_t pdgid, Int_t mult):FairGenerator(){
+MpdHypYPtGenerator::MpdHypYPtGenerator(Int_t pdgid, Int_t mult, Double_t yield)
+  :FairGenerator(), fPDGType(pdgid), fMult(mult), fYield(yield)
+{
   // Constructor. Set default distributions
-  fPDGType = pdgid;
-  fMult    = mult;
+
   SetDistributionPt();
   SetDistributionY();
   SetRangePt();
 }
 // ------------------------------------------------------------------------
-Bool_t  MpdHypYPtGenerator::Init(){   // EL
+Bool_t  MpdHypYPtGenerator::Init()
+{   
   // Initialize generator
+
   // Check for particle type
   TDatabasePDG* pdgBase = TDatabasePDG::Instance();
   TParticlePDG *particle = pdgBase->GetParticle(fPDGType);
   if (! particle)  {
     Fatal("CbmAnaHypYPtGenerator","PDG code %d not defined.",fPDGType);
-    return kFALSE;  // EL
+    return kFALSE; 
   }
   fPDGMass = particle->Mass();
   //gRandom->SetSeed(0);
   fDistPt = new TF1("distPt","x*exp(-sqrt(x*x+[1]*[1])/[0])",fPtMin,fPtMax);
   fDistPt->SetParameters(fT,fPDGMass,fY0,fSigma);
   Info("Init","pdg=%i y0=%4.2f sigma_y=%4.2f T_pt=%6.4f",fPDGType,fY0,fSigma,fT);
-  return kTRUE;   // EL
+  return kTRUE; 
 }
 
 // ------------------------------------------------------------------------
-Bool_t MpdHypYPtGenerator::ReadEvent(FairPrimaryGenerator* primGen){
+Bool_t MpdHypYPtGenerator::ReadEvent(FairPrimaryGenerator* primGen)
+{
+
   Double_t phi, pt, y, mt, px, py, pz;
+  Double_t aaa = gRandom->Rndm();
+  if (fYield > 0 && gRandom->Rndm() > fYield) return kTRUE;
 
   // Generate particles
+
   for (Int_t k = 0; k < fMult; k++) {
 
     phi = gRandom->Uniform(0,TMath::TwoPi());

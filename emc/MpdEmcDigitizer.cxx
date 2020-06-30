@@ -16,7 +16,7 @@
 #include "MpdEmcPoint.h"
 
 #include "FairMCPoint.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 
@@ -110,7 +110,7 @@ void MpdEmcDigitizer::Exec(Option_t* opt)
     FairMCPoint* pnt = (FairMCPoint*) fPointArray->UncheckedAt(iPnt);
     Int_t trId = pnt->GetTrackID();
     if (trId < 0) continue; // strange case
-    FairMCTrack* tr = (FairMCTrack*) fMcTrackArray->UncheckedAt(trId);
+    MpdMCTrack* tr = (MpdMCTrack*) fMcTrackArray->UncheckedAt(trId);
     //        if (tr->GetMotherId() != -1) continue;
     Int_t pdg = tr->GetPdgCode();
     Double_t x = pnt->GetX();
@@ -223,14 +223,14 @@ void MpdEmcDigitizer::RedoId(TClonesArray *digis, TClonesArray *mctrs)
 
     for (map<Int_t,Float_t>::iterator it = copy.begin(); it != copy.end(); ++it) {
       Int_t id = it->first, idm = -1;
-      FairMCTrack *mctr = (FairMCTrack*) mctrs->UncheckedAt(id);
+      MpdMCTrack *mctr = (MpdMCTrack*) mctrs->UncheckedAt(id);
       mctr->GetStartVertex(vert);
       Double_t rvert = vert.Pt();
       while (rvert > rmin && rvert < rmax) {
 	// Born inside EMC - find ancestor
 	idm = mctr->GetMotherId();
 	if (idm < 0) break;
-	mctr = (FairMCTrack*) mctrs->UncheckedAt(idm);
+	mctr = (MpdMCTrack*) mctrs->UncheckedAt(idm);
 	mctr->GetStartVertex(vert);
 	rvert = vert.Pt();
       }

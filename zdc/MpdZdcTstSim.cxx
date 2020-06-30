@@ -13,7 +13,7 @@
 #include "TpcPoint.h"
 
 #include "FairRootManager.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "FairBaseParSet.h"
@@ -193,7 +193,7 @@ void MpdZdcTstSim::Exec(Option_t * option)
 
     TVector3 position, momentum, vertex;
     MpdZdcPoint *pPoint=NULL;
-    FairMCTrack *pTrack = NULL;
+    MpdMCTrack *pTrack = NULL;
     Int_t pdg=0;
 
     Float_t fArgs[30];
@@ -231,7 +231,7 @@ void MpdZdcTstSim::Exec(Option_t * option)
 	continue;
       }
 
-      pTrack = (FairMCTrack*)fMCTrackArray->UncheckedAt(pPoint->GetTrackID());
+      pTrack = (MpdMCTrack*)fMCTrackArray->UncheckedAt(pPoint->GetTrackID());
       if (!pTrack){
 	if (fVerbose>2) {
 	  cout << i << ":" <<(pPoint->GetTrackID()) << "!";	  
@@ -292,7 +292,7 @@ void MpdZdcTstSim::Exec(Option_t * option)
       fArgs[11] = TMath::Sqrt(fArgs[2]*fArgs[2]+fArgs[3]*fArgs[3]+fArgs[4]*fArgs[4]); 
       fArgs[12]=  0.5*TMath::Log((fArgs[9]+fArgs[4])/(fArgs[9]-fArgs[4]));
 
-      fArgs[13]=1;   // not implemented on the level of FairMCTrack now
+      fArgs[13]=1;   // not implemented on the level of MpdMCTrack now
       //fArgs[13]=pTrack->GetStartTime();
 
 
@@ -316,7 +316,7 @@ void MpdZdcTstSim::Exec(Option_t * option)
       fArgs[27]= pPoint->GetCopyMother();
 
       if (fArgs[1]!=-1) {
-        pTrack = (FairMCTrack*)fMCTrackArray->UncheckedAt(pTrack->GetMotherId());
+        pTrack = (MpdMCTrack*)fMCTrackArray->UncheckedAt(pTrack->GetMotherId());
 	if (pTrack) {
 	  fArgs[28]= pTrack->GetPdgCode();
           TVector3 vertexTemp;
@@ -433,7 +433,7 @@ void MpdZdcTstSim::Exec(Option_t * option)
 
 	if ((trackId>=0)&& (trackId<nMCTracks)) {
 
-          if (((FairMCTrack*)fMCTrackArray->UncheckedAt(trackId))->GetMotherId()==-1) {
+          if (((MpdMCTrack*)fMCTrackArray->UncheckedAt(trackId))->GetMotherId()==-1) {
 
 	    if (tpc_tracks.find(trackId)==tpc_tracks.end())
 	      tpc_tracks[trackId]=kTRUE;

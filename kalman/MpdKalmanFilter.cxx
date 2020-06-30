@@ -829,6 +829,8 @@ Bool_t MpdKalmanFilter::PropagateParamP(MpdKalmanTrack *track, const Double_t *p
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
   Double_t dir = 1., norm = 1., scalar = 0., normal[3] = {0}, normLeng = 0;
 
+  if (track->Momentum() < 0.001) return kFALSE; //AZ - safety 19.04.2020
+
   for (Int_t i = 0; i < 3; ++i) {
     normal[i] = plane[i+3];
     normLeng += normal[i] * normal[i];
@@ -905,13 +907,15 @@ Bool_t MpdKalmanFilter::PropagateParamP(MpdKalmanTrack *track, const Double_t *p
     //} while (dist * dir * norm > 0 && TMath::Abs(dist) > fgkEpsilon);
 
   GetFromGeantParamE(track,v3new,dir);
-  if (calcLeng) track->UpdateLength(step0); // update track length              
+  if (calcLeng) track->UpdateLength(step0); // update track length
   //track->GetParamNew()->Print();
 
   // Position adjustment (until within tolerance)
   Double_t dir1 = dir;
   //dist0 = TMath::Abs(dist);
-  dist0 = dist;
+  //AZ dist0 = dist;
+  if (TMath::Abs(dist) < TMath::Abs(dist0)) dist0 = dist; //AZ
+
   while (TMath::Abs(dist) > fgkEpsilon) {
     dist = d;
     cosA = 0.;

@@ -10,15 +10,13 @@ using namespace std;
 R__ADD_INCLUDE_PATH($VMCWORKDIR)
 #include "macro/mpd/mpdloadlibs.C"
 
-void readVHLLE(TString);
-
 /*
  A macro to be used for vHLLE input aiming at its converting to the McDst-format
  * @in@ means input vHLLE file
  * @out@ is considered as output file having *.mcDst.root extension
  */
 
-void createMcDstFromVHLLE(TString in = "", TString out = "") {
+void createMcDstFromVHLLE(TString in = "", TString out = "", TString branch = "treefin") {
     if (in.IsNull() || out.IsNull() || !out.Contains(".mcDst.")) {
         cout << "Specify correct input and output file names!" << endl;
         return;
@@ -28,14 +26,14 @@ void createMcDstFromVHLLE(TString in = "", TString out = "") {
     TFile* outFile = new TFile(out.Data(), "recreate");
     TTree* outTree = new TTree("McDst", "McDst");
 
-    TClonesArray* events = new TClonesArray("MpdMcEvent");
-    TClonesArray* particles = new TClonesArray("MpdMcParticle");
+    TClonesArray* events = new TClonesArray("McEvent");
+    TClonesArray* particles = new TClonesArray("McParticle");
 
     outTree->Branch("Event", &events);
     outTree->Branch("Particle", &particles);
 
     // Open and read tree with vHLLE input
-    TChain* fin = new TChain("treefin");
+    TChain* fin = new TChain(branch.Data());
     fin->Add(in.Data());
 
     const Int_t dim = 15000;
@@ -63,7 +61,7 @@ void createMcDstFromVHLLE(TString in = "", TString out = "") {
     fin->SetBranchAddress("y", fY);
     fin->SetBranchAddress("z", fZ);
     fin->SetBranchAddress("t", fT);
-    fin->SetBranchAddress("px", fPx);
+    fin->SetBranchAddress("px", fPx);    
     fin->SetBranchAddress("py", fPy);
     fin->SetBranchAddress("pz", fPz);
     fin->SetBranchAddress("E", fE);
@@ -73,7 +71,7 @@ void createMcDstFromVHLLE(TString in = "", TString out = "") {
     fin->SetBranchAddress("bar", fBAR);
     fin->SetBranchAddress("str", fSTR);
     fin->SetBranchAddress("npart", &fNpart);
-
+   
     for (Int_t iEvent = 0; iEvent < fin->GetEntries(); iEvent++) {
         if (iEvent % 1000 == 0)
             cout << "Event# " << iEvent << endl;
@@ -90,11 +88,12 @@ void createMcDstFromVHLLE(TString in = "", TString out = "") {
 
         fin->GetEntry(iEvent);
 
-        MpdMcEvent* event = new ((*events)[events->GetEntriesFast()]) MpdMcEvent();
+        McEvent* event = new ((*events)[events->GetEntriesFast()]) McEvent();
         event->SetEventNr(iEvent);
+        event->SetB(-1);
 
         for (Int_t iTrack = 0; iTrack < fNpart; iTrack++) {
-            MpdMcParticle* particle = new ((*particles)[particles->GetEntriesFast()]) MpdMcParticle();
+            McParticle* particle = new ((*particles)[particles->GetEntriesFast()]) McParticle();
 
             particle->SetX(fX[iTrack]);
             particle->SetY(fY[iTrack]);

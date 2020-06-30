@@ -11,11 +11,14 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/mpdfield
  ${CMAKE_SOURCE_DIR}/tpc
  ${CMAKE_SOURCE_DIR}/tof
+ ${CMAKE_SOURCE_DIR}/emc
+ ${CMAKE_SOURCE_DIR}/emc/emcKI
  ${CMAKE_SOURCE_DIR}/etof
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/lhetrack
  ${CMAKE_SOURCE_DIR}/mpdpid
  ${CMAKE_SOURCE_DIR}/mpddst
+ ${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -35,12 +38,13 @@ link_directories(${LINK_DIRECTORIES})
 # List of source files
 set(SRCS
  MpdFillDstTask.cxx
+ MpdMiniDstFillTask.cxx
  MpdDstCompressTask.cxx
 )
 
 Set(HEADERS)
 Set(LINKDEF MpdDstLinkDef.h)
 Set(LIBRARY_NAME MpdDst)
-Set(DEPENDENCIES Core Base MpdBase MpdPid)
+Set(DEPENDENCIES Core Base MpdBase LHETrack MpdPid MpdMiniEvent)
 
 GENERATE_LIBRARY()

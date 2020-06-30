@@ -7,6 +7,7 @@ set(INCLUDE_DIRECTORIES
   ${Boost_INCLUDE_DIRS}
   ${BASE_INCLUDE_DIRECTORIES}
   ${CMAKE_SOURCE_DIR}/mcstack 
+  ${CMAKE_SOURCE_DIR}/generators 
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
@@ -19,19 +20,18 @@ set(LINK_DIRECTORIES
 link_directories(${LINK_DIRECTORIES})
 
 set(SRCS
-FairStack.cxx 
-FairMCTrack.cxx
+MpdStack.cxx 
+MpdMCTrack.cxx
 )
 
 set(HEADERS
-FairStack.h 
-FairMCTrack.h
+MpdStack.h 
+MpdMCTrack.h
 MpdDetectorList.h
 )
 
-Set(LINKDEF MCStackLinkDef.h)
-Set(LIBRARY_NAME MCStack)
-Set(DEPENDENCIES Base EG Physics Core)
+Set(LINKDEF MpdMCStackLinkDef.h)
+Set(LIBRARY_NAME MpdMCStack)
+Set(DEPENDENCIES Base EG Physics Core MpdGen)
 
 GENERATE_LIBRARY()
-

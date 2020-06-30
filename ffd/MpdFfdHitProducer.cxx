@@ -11,6 +11,8 @@
 
 #include "FairRootManager.h"
 #include "FairDetector.h"
+#include "FairBaseParSet.h"
+#include "FairGeoNode.h"
 
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
@@ -21,15 +23,20 @@
 #include "FairRuntimeDb.h"
 #include "TMath.h"
 
+#include "FairRunAna.h"
+
 #include "MpdFfdHitProducer.h"
+#include "MpdFfdGeoPar.h"
 #include "MpdFfdHit.h"
 #include "MpdFfdPoint.h"
 
 // -----   Default constructor   -------------------------------------------
+
+
 MpdFfdHitProducer::MpdFfdHitProducer(const char* fileGeo) :
-  FairTask("Ideal CPC hit Producer") {
+  FairTask("Ideal FFD hit Producer") {
   fFileGeo=fileGeo;
-  eneThr = 0.001; // Energy threshold for CPC
+  eneThr = 0.001; // Energy threshold for Ffd
 
 }
 
@@ -58,17 +65,17 @@ InitStatus MpdFfdHitProducer::Init() {
   }
   
   // Get input array
-  fPointArray = (TClonesArray*) ioman->GetObject("FfdPoint");
+  fPointArray = (TClonesArray*) ioman->GetObject("FFDPoint");
   if ( ! fPointArray ) {
     cout << "-W- MpdFfdHitProducer::Init: "
-         << "No FfdPoint array!" << endl;
+	 << "No FfdPoint array!" << endl;
     return kERROR;
   }
   
   // Create and register output array
   fDigiArray = new TClonesArray("MpdFfdHit");
   
-  ioman->Register("CpcHit","Cpc",fDigiArray,kTRUE);
+  ioman->Register("FfdHit","Ffd",fDigiArray,kTRUE);
 
   CreateStructure();
 
@@ -83,16 +90,16 @@ InitStatus MpdFfdHitProducer::Init() {
 }
 
 //__________________________________________________________________
-void MpdFfdHitProducer::FinishTask() {
+void MpdFfdHitProducer::Finish() {
   //---
 
-  cout << "-I- MpdFfdHitProducer: FinishTask" << endl;
+  cout << "-I- MpdFfditProducer: FinishTask" << endl;
 
 }
 
 
 //__________________________________________________________________
-void MpdFfdHitProducer::Finish() {
+void MpdFfdHitProducer::FinishTask() {
   //---
 
   cout << "-I- MpdFfdHitProducer: Finish" << endl;
@@ -110,17 +117,17 @@ void MpdFfdHitProducer::Finish() {
 void MpdFfdHitProducer::MakeHists() {
   //---
 
-  fZ    = new TH1F("z","", 1000, -300., 300.);
+  fZ    = new TH1F("z","", 500, 150., 250.);
   hlist->Add(fZ);
 
-  Float_t xbins[5] = {0., 15., 15.5, 16.5, 50.0};
+  Float_t xbins[5] = {0., 15., 20., 30., 50.0};
 
 
-  //fR    = new TH1F("r","", 100, 0., 55.);
-  fR    = new TH1F("r","", 4, xbins);
+  fR    = new TH1F("r","", 100, 0., 55.);
+  //fR    = new TH1F("r","", 4, xbins);
   hlist->Add(fR);
 
-  fXY    = new TH2F("xy","", 100, -30., 30., 100, -30., 30.);
+  fXY    = new TH2F("xy","", 100, -50., 50., 100, -50., 50.);
   hlist->Add(fXY);
 
   fRphi    = new TH2F("rphi","", 100, 0., TMath::TwoPi(), 100, 0., 50.);
@@ -128,7 +135,18 @@ void MpdFfdHitProducer::MakeHists() {
 
 }
  
+// -----   Private method SetParContainers   -------------------------------
+void MpdFfdHitProducer::SetParContainers() {
+  // Get run and runtime database
+  FairRunAna* run = FairRunAna::Instance();
+  if ( ! run ) Fatal("SetParContainers", "No analysis run");
 
+  FairRuntimeDb* db = run->GetRuntimeDb();
+  if ( ! db ) Fatal("SetParContainers", "No runtime database");
+
+  // Get √ geometry parameter container
+  db->getContainer("MpdFfdGeoPar"); 
+}
 
 // -----   Public method Exec   --------------------------------------------
 void MpdFfdHitProducer::Exec(Option_t* opt) {
@@ -136,7 +154,29 @@ void MpdFfdHitProducer::Exec(Option_t* opt) {
   //cout << " DIGI EXECUTION *********************" << endl;
   // Reset output array
   if ( ! fDigiArray ) Fatal("Exec", "No DigiArray");
+
+  ///////////////////////////////////////
+
+  FairRuntimeDb* rtdb = FairRun::Instance()->GetRuntimeDb();
+  //rtdb->printParamContext();
+
+  MpdFfdGeoPar *geoPar = (MpdFfdGeoPar*) rtdb->getContainer("MpdFfdGeoPar");
+
+  //TString volName = "cpc01l";
+  TObjArray* sensNodes = geoPar->GetGeoSensitiveNodes();
   
+  Double_t rMin, rMax;
+  for (Int_t i=0; i<sensNodes->GetEntriesFast(); i++){
+    FairGeoNode* sensVol = (FairGeoNode*) (sensNodes->At(i));
+    TArrayD* params = sensVol->getParameters();
+    rMin = params->At(0);
+    rMax = params->At(1);
+    cout << " *** Ffd sensitive volume " <<(i+1) <<": " << sensVol->GetName() << " " << rMin << " " << rMax << endl;    
+  }
+
+
+  /////////////////////////////////////
+
   fDigiArray->Clear();
   
   // Declare some variables
@@ -177,16 +217,16 @@ void MpdFfdHitProducer::Exec(Option_t* opt) {
 
 
 // -----   Public method Create Structure   --------------------------------
-void MpdFfdHitProducer::CreateStructure() {
+void MpdFfdHitProducer::CreateStructure() { 
  
   /*
   TString work = getenv("VMCWORKDIR");
   work = work + "/geometry/" + fFileGeo;
-  cout << "-I- <MpdFfdHitProducer::CreateStructure> Cpc geometry loaded from: "
+  cout << "-I- <MpdCpcHitProducer::CreateStructure> Cpc geometry loaded from: "
        << work << endl;
 
   Int_t detId = -1;
-  MpdFfdReader read(work);
+  MpdCpcReader read(work);
   
   for(Int_t module=1; module<=read.GetMaxModules(); module++) 
     for(Int_t row=1; row<=read.GetMaxRows(module); row++)
@@ -208,14 +248,10 @@ void MpdFfdHitProducer::CreateStructure() {
 
 // -----   Private method AddDigi   --------------------------------------------
 MpdFfdHit* MpdFfdHitProducer::AddHit(Int_t trackID,Int_t detID, Float_t energy){
-  // It fills the MpdFfdHit category
-  // cout << "MpdFfdHitProducer: track " << trackID << " evt " << eventID << " sec " << sec << " plane " << pla << " strip " << strip << "box " << box << " tube " << tub << endl;
-
   TClonesArray& clref = *fDigiArray;
   Int_t size = clref.GetEntriesFast();
   return new(clref[size]) MpdFfdHit(); // FIXME: real hit info needed here
 }
 // ----
-
 
 ClassImp(MpdFfdHitProducer)

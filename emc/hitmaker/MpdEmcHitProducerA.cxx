@@ -19,7 +19,7 @@
 #include "MpdEmcGeoPar.h"
 #include "MpdEmcPoint.h"
 
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 
 #include <iostream>
 using std::cout;
@@ -109,20 +109,20 @@ MpdEmcHitA* MpdEmcHitProducerA::GetHit(Float_t x, Float_t y, Float_t z)
 }
 
 //________________________________________________________________________________________
-void MpdEmcHitProducerA::GetNGen(FairMCTrack* trk, Int_t& ng) 
+void MpdEmcHitProducerA::GetNGen(MpdMCTrack* trk, Int_t& ng) 
 {
    ng++;
    Int_t mId = trk->GetMotherId();
-   if (mId != -1) GetNGen((FairMCTrack*)fMcTrackArray->At(mId),ng);
+   if (mId != -1) GetNGen((MpdMCTrack*)fMcTrackArray->At(mId),ng);
 }
  
 //________________________________________________________________________________________
-void MpdEmcHitProducerA::GetVertexMother(FairMCTrack* trk, Int_t& itrk) 
+void MpdEmcHitProducerA::GetVertexMother(MpdMCTrack* trk, Int_t& itrk) 
 {
    Int_t mtrk = trk->GetMotherId(); 
    if (mtrk != -1) {
        itrk = mtrk;
-       GetVertexMother((FairMCTrack*)fMcTrackArray->At(itrk),itrk);
+       GetVertexMother((MpdMCTrack*)fMcTrackArray->At(itrk),itrk);
    }
 }
 
@@ -130,9 +130,9 @@ void MpdEmcHitProducerA::GetVertexMother(FairMCTrack* trk, Int_t& itrk)
 void MpdEmcHitProducerA::AddContent(MpdEmcHitA* hit, FairMCPoint* pnt) 
 {   
     Int_t trkId = pnt->GetTrackID();
-    FairMCTrack* trk = (FairMCTrack*)fMcTrackArray->At(trkId); 
+    MpdMCTrack* trk = (MpdMCTrack*)fMcTrackArray->At(trkId); 
     Int_t pdg = trk->GetPdgCode();  
-    FairMCTrack* mtrk; 
+    MpdMCTrack* mtrk; 
     
     Int_t mtrkId;
     Int_t mpdg = 0;
@@ -140,8 +140,8 @@ void MpdEmcHitProducerA::AddContent(MpdEmcHitA* hit, FairMCPoint* pnt)
     
 //     mtrkId = trk->GetMotherId();     //-> get real mother
 //     if (mtrkId != -1) {   
-//         mtrk = (FairMCTrack*)fMcTrackArray->At(mtrkId);
-//         //mtrk = (FairMCTrack*)fMcTrackArray->At(trkId); 
+//         mtrk = (MpdMCTrack*)fMcTrackArray->At(mtrkId);
+//         //mtrk = (MpdMCTrack*)fMcTrackArray->At(trkId); 
 //         mpdg = mtrk->GetPdgCode();
 //         men = mtrk->GetEnergy();
 //     }
@@ -149,7 +149,7 @@ void MpdEmcHitProducerA::AddContent(MpdEmcHitA* hit, FairMCPoint* pnt)
     mtrkId = trkId;                //-> get vertex mother
     GetVertexMother(trk,mtrkId);   //-> get vertex mother
    
-    mtrk = (FairMCTrack*)fMcTrackArray->At(mtrkId);
+    mtrk = (MpdMCTrack*)fMcTrackArray->At(mtrkId);
     
     if (mtrk->GetPdgCode() == 111 && mtrk->GetMotherId() == -1) {
         mpdg = mtrk->GetPdgCode();
@@ -186,7 +186,7 @@ void MpdEmcHitProducerA::AddContent(MpdEmcHitA* hit, FairMCPoint* pnt)
    
     if (ngen == 2) {
         mtrkId = trk->GetMotherId();
-        mtrk = (FairMCTrack*)fMcTrackArray->At(mtrkId);    
+        mtrk = (MpdMCTrack*)fMcTrackArray->At(mtrkId);    
         if (mtrk->GetPdgCode() == 111) {
             hitc->SetAttachedParticle(pdg,trkId,trk->GetEnergy()); 
         }
@@ -194,12 +194,12 @@ void MpdEmcHitProducerA::AddContent(MpdEmcHitA* hit, FairMCPoint* pnt)
     }
     
     trkId = trk->GetMotherId();
-    trk = (FairMCTrack*)fMcTrackArray->At(trkId);
+    trk = (MpdMCTrack*)fMcTrackArray->At(trkId);
            
     while (kTRUE) {        
            mtrkId = trk->GetMotherId();
            if (mtrkId == -1) return;
-           mtrk = (FairMCTrack*)fMcTrackArray->At(mtrkId);         
+           mtrk = (MpdMCTrack*)fMcTrackArray->At(mtrkId);         
            if (mtrk->GetPdgCode() == 111) {
                hitc->SetAttachedParticle(trk->GetPdgCode(),trkId,trk->GetEnergy()); 
                return;
@@ -284,7 +284,7 @@ void MpdEmcHitProducerA::Test()
     
     for (UInt_t i = 0; i < fMcTrackArray->GetEntriesFast(); ++i) {
          
-         FairMCTrack* tr = (FairMCTrack*)fMcTrackArray->At(i);
+         MpdMCTrack* tr = (MpdMCTrack*)fMcTrackArray->At(i);
       
          np1 += tr->GetNPoints(kECAL); //tr->GetTotalPoints();
          np2 += tr->GetNPoints(kECAL);
@@ -295,8 +295,8 @@ void MpdEmcHitProducerA::Test()
          //if (tr->GetTotalPoints() > 0) nempty++;
          
          Int_t mid = tr->GetMotherId();
-         FairMCTrack* mtr = 0;
-         if (mid != -1) mtr = (FairMCTrack*)fMcTrackArray->At(mid);
+         MpdMCTrack* mtr = 0;
+         if (mid != -1) mtr = (MpdMCTrack*)fMcTrackArray->At(mid);
                 
          if (mtr && mtr->GetMotherId() == -1 && mtr->GetPdgCode() == 111) {
            
@@ -332,14 +332,14 @@ void MpdEmcHitProducerA::Test()
     
     for (UInt_t i = 0; i < fMcTrackArray->GetEntriesFast(); ++i) {
          
-         FairMCTrack* tr = (FairMCTrack*)fMcTrackArray->At(i);
+         MpdMCTrack* tr = (MpdMCTrack*)fMcTrackArray->At(i);
          if (!tr) continue;
 
          if (tr->GetPdgCode() == 111) continue;
            
          Int_t mi = i;
          GetVertexMother(tr,mi);
-         FairMCTrack* mtr = (FairMCTrack*)fMcTrackArray->At(mi);
+         MpdMCTrack* mtr = (MpdMCTrack*)fMcTrackArray->At(mi);
          
          if (mtr && mtr->GetPdgCode() == 111 && mtr->GetMotherId() == -1) {
              npi0part++;
@@ -356,7 +356,7 @@ void MpdEmcHitProducerA::Test()
      
     for (Int_t i(0); i<fPointArray->GetEntriesFast(); i++) {   
          pp = (FairMCPoint*)fPointArray->At(i);       
-         FairMCTrack* tr = (FairMCTrack*)fMcTrackArray->At(pp->GetTrackID());
+         MpdMCTrack* tr = (MpdMCTrack*)fMcTrackArray->At(pp->GetTrackID());
          
          allpart.insert(pp->GetTrackID());
          
@@ -366,7 +366,7 @@ void MpdEmcHitProducerA::Test()
          else if (tr->GetPdgCode() == 22) {
              Int_t mid = tr->GetMotherId();
              if (mid != -1) {
-                 FairMCTrack* mtr = (FairMCTrack*)fMcTrackArray->At(mid);
+                 MpdMCTrack* mtr = (MpdMCTrack*)fMcTrackArray->At(mid);
                  if (mtr && mtr->GetPdgCode() == 111 && mtr->GetMotherId() == -1) {
                      gammas.insert(pp->GetTrackID());
                  }
@@ -380,7 +380,7 @@ void MpdEmcHitProducerA::Test()
     Int_t np = 0;
     
     for ( ; it != gammas.end(); it++) {
-         FairMCTrack* tr = (FairMCTrack*)fMcTrackArray->At(*it);
+         MpdMCTrack* tr = (MpdMCTrack*)fMcTrackArray->At(*it);
          gg = 0;
          GetNGen(tr,gg);
          if (gg == 2) ngg++;

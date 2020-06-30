@@ -8,6 +8,7 @@
  */
 #include "MpdDstCompressTask.h"
 
+#include "FairMCEventHeader.h"
 #include "FairRunAna.h"
 MpdDstCompressTask::MpdDstCompressTask():MpdDstCompressTask("dstwirite",1) {
 }
@@ -57,6 +58,14 @@ InitStatus MpdDstCompressTask::CheckBranches() {
 	/*	 TODO when FairROOT will be ugpraded
 		FairRunAna::Instance()->SetEventHeaderPersistence(kFALSE);
 		*/
+	    TNamed *EventHeader = (TNamed*)mngr->GetObject("MCEventHeader.");
+	    if(EventHeader){
+	        mngr->Register("MCEventHeader.","MC",EventHeader,kTRUE);
+	    }
+	    if(EventHeader==nullptr){
+	        EventHeader = (FairMCEventHeader*)mngr->GetObject("EventHeader.");
+	        mngr->Register("EventHeader.","MC",EventHeader,kTRUE);
+	    }
 	}
 	return kSUCCESS;
 }
@@ -76,7 +85,7 @@ MpdDstCompressTask::MpdDstCompressTask(const char* name, Int_t Verbose):FairTask
 				fUseTpcKalmans(kFALSE),fUseTpcHits(kFALSE),fUseHeader(kFALSE),
 				fMCCompression(kFALSE),
 				fMpdEvent(NULL),fFreezouts(NULL),fMCTracks(NULL),
-				fTpcKalmans(NULL),fTpcHits(NULL),fEventHeader(NULL),
+				fTpcKalmans(NULL),fTpcHits(NULL),
 				fMCMapSize(0),fMCIndexMap(NULL){
 
 }

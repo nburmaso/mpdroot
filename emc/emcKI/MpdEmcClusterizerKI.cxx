@@ -11,6 +11,7 @@
 #include "MpdEmcDigitKI.h"
 #include "MpdEmcGeoUtils.h"
 #include "MpdEmcSimParams.h"
+#include "MpdEmcCalibParams.h"
 
 #include "TClonesArray.h"
 #include "TMath.h"
@@ -25,7 +26,8 @@ MpdEmcClusterizerKI::MpdEmcClusterizerKI()
     fDigitsArray(nullptr),
     fClustersArray(nullptr),
     fSimParams(nullptr),
-    fGeom(nullptr)
+    fGeom(nullptr),
+    fCalibData(nullptr)
 {
 }
 //__________________________________________________________________________
@@ -38,6 +40,18 @@ InitStatus MpdEmcClusterizerKI::Init()
     LOG(ERROR) << "RootManager not instantiated!";
     return kERROR;
   }
+
+  //Temporary solution: get calibration from file TODO!!!!
+  if(!fCalibData){
+
+    TString CalFile = "$VMCWORKDIR/input/MpdEmcCalib.root";
+
+    TFile * f = new TFile(CalFile) ;
+
+    fCalibData =(MpdEmcCalibParams*)f->Get("CalibrationDef") ;
+    cout<<"ECAL: Read out EMC calib data"<<endl;
+  }
+
 
   // Get input collection
   fDigitsArray = (TClonesArray*)ioman->GetObject("EmcDigit");
@@ -91,10 +105,15 @@ void MpdEmcClusterizerKI::PrepareDigits()
   // Remove digits below clustering threshold
   int n = fDigitsArray->GetEntriesFast();
   for (int i = 0; i < n; i++) {
-    const MpdEmcDigitKI* digit = static_cast<MpdEmcDigitKI*>(fDigitsArray->UncheckedAt(i));
+    MpdEmcDigitKI* digit = static_cast<MpdEmcDigitKI*>(fDigitsArray->UncheckedAt(i));
     if (!digit) { // already removed e.g. by bad map selection
       continue;
     }
+    //Calibrate energy
+    digit->SetE(digit->GetE()*fCalibData->GetGain(digit->GetDetId()));//V
+
+    //Calibrate Time TODO!!!
+
     if (digit->GetE() < fSimParams->DigitMinEnergy()) {
       fDigitsArray->RemoveAt(i);
     }
@@ -370,24 +389,29 @@ double MpdEmcClusterizerKI::ShowerShape(double dx, double dz)
   // Parameterization from V.Riabov. TODO: verify with beam-test
 
   double frac = 0;
-  double x = std::sqrt(dx * dx + dz * dz) / 4.0;
+  double x = std::sqrt(dx * dx + dz * dz);
 
-  // frac = (7.73835e-001)*exp( (-1.29697e-001) + (-2.53969e+000)*pow(x,(1.93982e+000)) ) + (1.86226e-002)*exp(
-  // (1.78531e-001) + (-6.75549e-003)*pow(x,(5.75354e+000)) );
+  if (x < 0.25) return 0.73;
 
-  if (x < 1.78) {
-    frac = 2.54922e+000 * exp(6.13882e-002 + 1.73690e+000 * x - 1.98340e+00 * x * x) -
-           1.11927e+000 * exp(5.81353e-001 + 2.24269e+000 * x - 2.21654e+000 * x * x + 2.21425e-003 * x * x * x * x);
-  }
-  if (x >= 1.78 && x < 2.65) {
-    frac = 4.46227e-002 * exp(1.56817e+000 - 7.41051e-001 * x - 4.80563e-001 * x * x);
-  }
-  if (x >= 2.65) {
-    frac = 1.24899e-002 * exp(3.60075e-001 - 8.15748e-001 * x - 3.74305e-002 * x * x * x);
-  }
+      if (x < 4.5)
+	{
+	  frac = 7.55666e+000*exp(-2.35773e+000  + 1.23342e-001*x -2.53958e-001*x*x +1.41214e-002*x*x*x );
+	}      
+      if ( x >= 4.5 && x < 8.33 )
+	{
+	  frac = 4.26832e-002*exp(1.47109e+000  -2.06712e-001*x -6.60220e-002*x*x +4.88207e-003*x*x*x );
+	}
+      if ( x >= 8.33 && x < 2.65*4 )
+	{
+	  frac = 4.46227e-002*exp( 1.56817e+000 -7.41051e-001*x/4 -4.80563e-001*x/4*x/4 );
+	}
+      if ( x >= 2.65*4 )
+	{
+	  frac = 1.24899e-002*exp( 3.60075e-001 -8.15748e-001*x/4 -3.74305e-002*x/4*x/4*x/4 );
+	}
 
-  if (frac < 1e-24)
-    frac = 1e-24;
+
+  if (frac < 1e-24)  frac = 1e-24;
 
   return frac;
 }

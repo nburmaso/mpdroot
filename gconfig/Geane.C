@@ -8,7 +8,7 @@ void Config()
   cout << "-I- G3Config: Geant3 with TGeo has been created for Geane."
        << endl;
   // create Fair Specific Stack
-  FairStack *st = new FairStack(10);
+  MpdStack *st = new MpdStack(10);
   gMC3->SetStack( st ) ;
 
   // ******* GEANEconfiguration for simulated Runs  *******

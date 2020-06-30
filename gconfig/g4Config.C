@@ -35,12 +35,13 @@ void Config()
    cout << "Geant4 has been created." << endl;
 
 /// create Fair Specific stack
-   FairStack *stack = new FairStack(1000); 
+   MpdStack *stack = new MpdStack(1000); 
    stack->StoreSecondaries(kTRUE);
  //  stack->SetMinPoints(0);
    geant4->SetStack(stack);
 
-   if(FairRunSim::Instance()->IsExtDecayer()){
+   //AZ if(FairRunSim::Instance()->IsExtDecayer()){
+   if(FairRunSim::Instance()->IsExtDecayer() && !geant4->GetDecayer()){ //AZ
       TVirtualMCDecayer* decayer = TPythia6Decayer::Instance();
       geant4->SetExternalDecayer(decayer);
    }

@@ -14,38 +14,43 @@
 #include "MpdMcEvent.h"
 
 //#ifdef __ROOT__
-ClassImp(MpdMcEvent);
+ClassImp(McEvent);
 //#endif
 
 //_________________
-MpdMcEvent::MpdMcEvent() : TObject(), fEventNr(0), fB(0), fPhi(0),
-		     fNes(0), fStepNr(0), fStepT(0), fComment("") {
-  // Default constructor
-  /* empty */
+
+McEvent::McEvent() : TObject(),
+fEventNr(0), fB(0), fPhi(0),
+fNes(0), fStepNr(0), fStepT(0), fComment(""),
+fNpart(-1), fNcoll(-1) {
+    // Default constructor
+    /* empty */
 }
 
 //_________________
-MpdMcEvent::MpdMcEvent(const MpdMcEvent& right) : TObject() {
-  // Copy constructor
-  fEventNr  = right.fEventNr;
-  fB        = right.fB;
-  fPhi      = right.fPhi;
-  fNes      = right.fNes;
-  fStepNr   = right.fStepNr;
-  fStepT    = right.fStepT;
-  fComment  = right.fComment;
+McEvent::McEvent(const McEvent& right) : TObject() {
+    // Copy constructor
+    fEventNr = right.fEventNr;
+    fB = right.fB;
+    fPhi = right.fPhi;
+    fNes = right.fNes;
+    fStepNr = right.fStepNr;
+    fStepT = right.fStepT;
+    fComment = right.fComment;
+    fNpart = right.fNpart;
+    fNcoll = right.fNcoll;
 }
 
 //_________________
-MpdMcEvent::~MpdMcEvent() {
-  // Default destructor
-  /* empty */
+McEvent::~McEvent() {
+    // Default destructor
+    /* empty */
 }
 
 //_________________
-void MpdMcEvent::print() const {
-  // Print data members to the standard output
-  std::cout << "---------------------------------------------" << std::endl
+void McEvent::print() const {
+    // Print data members to the standard output
+    std::cout << "---------------------------------------------" << std::endl
             << "-I-                 Event                 -I-" << std::endl
             << "Event number               : " << fEventNr << std::endl
             << "Impact parameter (fm)      : " << fB << std::endl
@@ -53,14 +58,17 @@ void MpdMcEvent::print() const {
             << "Number of time steps       : " << fNes << std::endl
             << "Time step number           : " << fStepNr << std::endl
             << "Time of the time step (fm) : " << fStepT << std::endl
-            << "Comment                    :\n" << fComment << std::endl;
-  std::cout << "---------------------------------------------" << std::endl;
+            << "Comment                    : " << fComment << std::endl
+            << "Number of participants     : \n" << fNpart << std::endl
+            << "Number of bin. collisions  : " << fNcoll << std::endl
+            << "---------------------------------------------" << std::endl;
 }
 
 //_________________
-void MpdMcEvent::Print( Option_t* option __attribute__((unused)) ) const {
-  // Print data members to the standard output
-  std::cout << "---------------------------------------------" << std::endl
+
+void McEvent::Print(Option_t* option __attribute__ ((unused))) const {
+    // Print data members to the standard output
+    std::cout << "---------------------------------------------" << std::endl
             << "-I-                 Event                 -I-" << std::endl
             << "Event number               : " << fEventNr << std::endl
             << "Impact parameter (fm)      : " << fB << std::endl
@@ -68,25 +76,27 @@ void MpdMcEvent::Print( Option_t* option __attribute__((unused)) ) const {
             << "Number of time steps       : " << fNes << std::endl
             << "Time step number           : " << fStepNr << std::endl
             << "Time of the time step (fm) : " << fStepT << std::endl
-            << "Comment                    :\n" << fComment << std::endl;
-  std::cout << "---------------------------------------------" << std::endl;
+            << "Comment                    :\n" << fComment << std::endl
+            << "Number of participants     : " << fNpart << std::endl
+            << "Number of bin. collisions  : " << fNcoll << std::endl
+            << "---------------------------------------------" << std::endl;
 }
 
 //_________________
-void MpdMcEvent::setParameters(const Int_t& eventNr, const Double_t& b,
-												    const Double_t& phi, const Int_t& nes,
-												    const Int_t& stepNr, const Double_t& stepT,
-												    const char* comment) {
-  // Set the event parameters
-  fEventNr = (UInt_t)eventNr;
-  fB = (Float_t)b;
-  fPhi = (Float_t)phi;
-  fNes = ( ( nes > std::numeric_limits<unsigned short>::max() ) ?
-	   std::numeric_limits<unsigned short>::max() : (UShort_t)nes );
-  fStepNr = ( ( stepNr > std::numeric_limits<unsigned short>::max() ) ?
-	      std::numeric_limits<unsigned short>::max() : (UShort_t)stepNr ) ;
-  fStepT = (Float_t)stepT;
-  fComment = comment;
+void McEvent::setParameters(const Int_t& eventNr, const Double_t& b,
+        const Double_t& phi, const Int_t& nes,
+        const Int_t& stepNr, const Double_t& stepT,
+        const char* comment) {
+    // Set the event parameters
+    fEventNr = (UInt_t) eventNr;
+    fB = (Float_t) b;
+    fPhi = (Float_t) phi;
+    fNes = ((nes > std::numeric_limits<unsigned short>::max()) ?
+            std::numeric_limits<unsigned short>::max() : (UShort_t) nes);
+    fStepNr = ((stepNr > std::numeric_limits<unsigned short>::max()) ?
+            std::numeric_limits<unsigned short>::max() : (UShort_t) stepNr);
+    fStepT = (Float_t) stepT;
+    fComment = comment;
 }
 
 

@@ -227,9 +227,11 @@ MpdItsHit5spd* MpdItsHitProducer5spd::AddHit(Int_t trackID, Int_t detID)
   MpdStsPoint *point  = (MpdStsPoint*) fPointArray->UncheckedAt(trackID);
   TClonesArray& clref = *fDigiArray;
   Int_t size = clref.GetEntriesFast();
-  TVector3 pos;
+  TVector3 pos, posOut;
   point->Position(pos); // one detector side
-  // point->PositionOut(pos);  // the other side
+  point->PositionOut(posOut);  // the other side
+  pos += posOut;
+  pos *= 0.5;
   Double_t errx, errz;
   gRandom->Rannor(errx, errz);
   return new(clref[size]) MpdItsHit5spd(detID, pos, TVector3(errx,0.,errz), point->GetEnergyLoss(), trackID, 0);

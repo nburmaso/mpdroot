@@ -50,6 +50,7 @@ MpdEmcDigitizer.cxx
 MpdEmcClusterFinderAZ.cxx
 MpdEmcMatching.cxx
 MpdEmcMatch.cxx
+MpdEmcCalibParams.cxx
 
 hitmaker/MpdEmcHitA.cxx
 hitmaker/MpdEmcHitProducerA.cxx

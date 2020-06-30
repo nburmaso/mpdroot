@@ -28,6 +28,8 @@ set(SRCS
  MpdVertex.cxx
  MpdEvent.cxx
  MpdCodeTimer.cxx
+ MpdGenTrack.cxx
+ MpdGenTrackTask.cxx
 )
 
 if(RULE_CHECKER_FOUND)

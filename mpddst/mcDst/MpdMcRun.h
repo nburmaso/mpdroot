@@ -1,13 +1,13 @@
 /**
- * \class MpdMcRun
+ * \class McRun
  * \brief The class descibes collision parameters
  *
- * The MpdMcRun class describes collision parameters such
+ * The McRun class describes collision parameters such
  * as projectile and target (A,Z), momentum, etc...
  */
 
-#ifndef MpdMcRun_h
-#define MpdMcRun_h
+#ifndef McRun_h
+#define McRun_h
 
 // C++ headers
 #include <limits>
@@ -17,19 +17,19 @@
 #include "TString.h"
 
 //_________________
-class MpdMcRun : public TNamed {
+class McRun : public TNamed {
 
  public:
   /// Default constructor
-  MpdMcRun();
+  McRun();
   /// Parametrized constructor
-  MpdMcRun(const char* generator, const char* comment, const Int_t& aProj,
+  McRun(const char* generator, const char* comment, const Int_t& aProj,
 	const Int_t& zProj, const Double_t& pProj, const Int_t& aTarg,
 	const Int_t& zTarg, const Double_t& pTarg, const Double_t& bMin,
 	const Double_t& bMax, const Int_t& bWeight, const Double_t& phiMin,
 	const Double_t& phiMax, const Double_t& sigma, const Int_t& nEvents);
   /// Default destructor
-  virtual ~MpdMcRun();
+  virtual ~McRun();
   /// Print run info
   void print() const;
   /// Print run info
@@ -200,8 +200,8 @@ class MpdMcRun : public TNamed {
   UInt_t     fNEvents;
 
 //#ifdef __ROOT__
-  ClassDef(MpdMcRun, 1);
+  ClassDef(McRun, 1);
 //#endif
 };
 
-#endif // #define MpdMcRun_h
+#endif // #define McRun_h

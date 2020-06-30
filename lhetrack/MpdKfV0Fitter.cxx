@@ -12,7 +12,7 @@
 #include "MpdTpcKalmanTrack.h"
 
 #include "FairField.h"
-#include "FairMCTrack.h"
+#include "MpdMCTrack.h"
 #include "FairRunAna.h"
 #include "FairTask.h"
 
@@ -194,7 +194,7 @@ Double_t MpdKfV0Fitter::FindVertex(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2, TVe
       MpdKalmanTrack *track = tracks[itr];
 
       // Select primaries
-      //FairMCTrack *mcTr = (FairMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+      //MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
       //if (mcTr->GetMotherId() >= 0) continue; // secondary
       //Double_t th = TMath::PiOver2() - track->GetParam(3);
       //if (TMath::Abs(TMath::Log(TMath::Tan(th/2))) > 1.) continue; // eta-cut

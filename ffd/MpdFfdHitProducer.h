@@ -51,6 +51,8 @@ class MpdFfdHitProducer : public FairTask
 
  private: 
    
+  virtual void SetParContainers();
+
   /** Input array of MpdFfdPoints **/
   TClonesArray* fPointArray;
 

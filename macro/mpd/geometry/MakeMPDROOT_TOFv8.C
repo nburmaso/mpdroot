@@ -111,13 +111,13 @@ void MakeMPDROOT_TOFv8()
     
     TGeoVolume* topTof = new TGeoVolumeAssembly("tof1"); // TOP tof volume
     // ------------------------------------------------------ Create sector -------------
-    const size_t Nsectors =  14;
-    const double tofRmin = 147.5, tofRmax = 165.5, tofZ = 292.*2.;
-  
-    const double trap_dY =  (tofRmax - tofRmin)/2.;
-    const double trap_dZ =  tofZ/2.;  
-  
+    const size_t Nsectors =  14; 
     const double sectorAngle_2 = 25.5 /2. * TMath::DegToRad(); // [rad]
+    const double tofRmin = 147.5, tofRMAX = 168.0, tofZ = 292.*2.; // [cm]
+    const double tofRmax = tofRMAX *TMath::Cos(sectorAngle_2);
+    
+    const double trap_dY =  (tofRmax - tofRmin)/2.;
+    const double trap_dZ =  tofZ/2.;
     const double trap_dXmax = tofRmin * TMath::Tan(sectorAngle_2);
     const double trap_dXmin = tofRmax * TMath::Tan(sectorAngle_2);   
    
@@ -540,15 +540,14 @@ void MakeMPDROOT_TOFv8()
     }
 
     // -------------------------------------- Install sectors -----------------------------------------------------------
-    const float sectorR = 148.5 +  16./2.;// [cm]  //NEW RADIUS NEEDED
+    const float sectorR = tofRmin + trap_dY;
     const float rotationAngle = 25.5; //  [degree]
-
     const double SectorAngles[] = {-76.5, -51., -25.5, 0., 25.5, 51., 76.5, 103.5, 129., 154.5, 180., 205.5, 231., 256.5}; //degrees
     
     int sectorID = 1;  
     TVector3 pos0(0., sectorR, 0.); // [cm]   
     
-    cout<<"\n Install sector:";
+    cout<<"\n Install sector:"; 
     for(int i = 0; i < Nsectors; i++)
     {
         float angleDeg = SectorAngles[i]; // [degree]
@@ -565,9 +564,7 @@ void MakeMPDROOT_TOFv8()
         topTof->AddNode(vSector, sectorID++, cR1);
     }
     
-    
-    
-       	top->AddNode(topTof, 1, new TGeoTranslation("tw",  0.,  0., 0.)); 
+    top->AddNode(topTof, 1, new TGeoTranslation("tw",  0.,  0., 0.)); 
         
     cerr<<endl<<endl;
     // ---------------   Finish   --------------------------------------------
@@ -596,11 +593,11 @@ void MakeMPDROOT_TOFv8()
     gEve->AddGlobalElement(en);
     gEve->Redraw3D(kTRUE);
 */  
-/*  
+  
     top->SetVisContainers(kTRUE);
     gGeoManager->SetVisOption(0);
     gGeoManager->SetVisLevel(7);
     gGeoManager->SetMaxVisNodes(100000);
     top->Draw("ogl");
-*/
+
 }

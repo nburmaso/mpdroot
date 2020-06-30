@@ -227,6 +227,7 @@ add_subdirectory (mpddst)
 add_subdirectory (physics)
 add_subdirectory (macro)
 add_subdirectory (eventdisplay)
+add_subdirectory (mcord)
 
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/macro/mpd_scheduler/CMakeLists.txt")
