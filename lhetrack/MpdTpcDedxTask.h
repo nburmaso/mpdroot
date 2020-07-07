@@ -5,6 +5,8 @@
 
 #include "TClonesArray.h"
 
+class MpdTpcKalmanTrack;
+
 class MpdTpcDedxTask :public FairTask
 {
  public:
@@ -34,6 +36,7 @@ class MpdTpcDedxTask :public FairTask
 
  private:
 
+  void DriftCorrection(MpdTpcKalmanTrack *track); // hit correction for drift length
   void Write();
   void Writedir2current( TObject *obj );
 

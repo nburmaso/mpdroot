@@ -18,11 +18,11 @@
 #include <TMath.h>
 
 #include <iostream>
-#include <vector>
+#include <set>
 
 using std::cout;
 using std::endl;
-using std::vector;
+using std::set;
 
 //__________________________________________________________________________
 MpdTpcDedxTask::MpdTpcDedxTask(const char *name, Int_t iVerbose )
@@ -83,28 +83,26 @@ void MpdTpcDedxTask::Exec(Option_t * option)
   Reset();
 
   Int_t nTracks = fTracks->GetEntriesFast();
-
   for (Int_t itr = 0; itr < nTracks; ++itr) {
     MpdTpcKalmanTrack *track = (MpdTpcKalmanTrack*) fTracks->UncheckedAt(itr);
     TClonesArray *hits = track->GetTrHits();
     Int_t nHits = hits->GetEntriesFast(), nOK = 0;
     Double_t *dedx = new Double_t [nHits];
-
     for (Int_t j = 0; j < nHits; ++j) {
       MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(j);
       //cout << j << " " << hit->GetUniqueID() << " " << hit->GetDedx() << endl;
       if (hit->GetUniqueID() == 1) continue; // ITS hit
       if (hit->GetSignal() <= 0.) continue; // strange
-      Double_t sig = hit->GetSignal(), sig1 = 0;
+      Double_t sig = hit->GetSignal();
       if (!fHits) {
-	// For hit producer
-	MpdTpcHit *thit = (MpdTpcHit*) fHits0->UncheckedAt(hit->GetIndex());
+        // For hit producer
+        MpdTpcHit *thit = (MpdTpcHit*) fHits0->UncheckedAt(hit->GetIndex());
 	Double_t x = thit->GetStep();
-	x = TMath::Max (x, 0.4);
-	x = TMath::Min (x, 10.0);
-	sig /= (7.57541 * TMath::Power(x-0.292613,0.0160641) - 6.64079);
+        x = TMath::Max (x, 0.4);
+        x = TMath::Min (x, 10.0);
+        sig /= (7.57541 * TMath::Power(x-0.292613,0.0160641) - 6.64079);
       } else {
-	// For clusters: correct for track segment length
+	// For clusters: correct for track angles
 	while (1) {
 	  MpdKalmanHit *hit1 = NULL;
 	  if (j == 0) hit1 = (MpdKalmanHit*) hits->UncheckedAt(1);
@@ -122,31 +120,19 @@ void MpdTpcDedxTask::Exec(Option_t * option)
 	  Double_t padh = thit->GetStep();
 	  Double_t dx = thit->GetLocalX() - thit1->GetLocalX();
 	  Double_t dz = thit->GetLocalZ() - thit1->GetLocalZ();
-	  Double_t dy = thit->GetLocalY() - thit1->GetLocalY(); //AZ
+	  Double_t dy = thit->GetLocalY() - thit1->GetLocalY();
 	  //Double_t tancros = dx / padh;
 	  //Double_t tandip = dz / padh;
-	  //sig /= TMath::Sqrt (1 + tancros * tancros + tandip * tandip);
-	  Double_t lengxz = TMath::Sqrt (dx*dx + dz*dz);
-	  Double_t ang = TMath::ATan2 (lengxz,TMath::Abs(dy));
-	  Double_t leng = padh / TMath::Cos(ang);
-	  //leng = TMath::Min (leng, 4.0);
-	  leng = TMath::Min (leng, 3.8);
-	  //if (TMath::Abs(track->Momentum3().Eta()) > 1) cout << track->Momentum3().Eta() << " " << leng << endl;
-	  sig *= (padh/leng);
-	  //AZ 27.11.2019 - Second order correction due to dE/dx-distribution shape 
-	  //track->SetPartID (sig);
-	  //sig1 = track->GetDeDx(); // conversion to GeV
-	  //Double_t x = padh * TMath::Sqrt (1 + tancros * tancros + tandip * tandip);
-	  Double_t x = leng;
-	  sig1 = sig;
-	  sig1 /= (7.57541 * TMath::Power(x-0.292613,0.0160641) - 6.64079);
-	  //AZ
+	  Double_t tancros = TMath::Abs (dx / dy);
+	  Double_t tandip = TMath::Abs (dz / dy);
+	  sig /= TMath::Sqrt (1 + tancros * tancros + tandip * tandip);
+	  //sig /= TMath::Power (1 + tancros*tancros + tandip*tandip, 0.2);
+	  //sig /= TMath::Sqrt (1 + tancros * tancros);
 	  break;
 	}
       }
-      if (!fHits) dedx[nOK++] = sig;
-      //AZ else if (sig > 800) dedx[nOK++] = sig; // threshold
-      else if (sig > 800) dedx[nOK++] = sig1; // threshold
+      if (fHits && sig > -800) dedx[nOK++] = sig; // threshold
+      else if (!fHits) dedx[nOK++] = sig;
       hit->SetSignal(sig);
     }
     if (nOK == 0) continue;
@@ -159,10 +145,58 @@ void MpdTpcDedxTask::Exec(Option_t * option)
     track->SetPartID (sum / nTrunc);
     delete [] dedx;
     delete [] indx;
+
+    // Apply signal correction for the drift length
+    if (fHits) 
+      for (Int_t iter = 0; iter < 3; ++iter) DriftCorrection(track);
   }
 }
 
 //__________________________________________________________________________
+
+void MpdTpcDedxTask::DriftCorrection(MpdTpcKalmanTrack *track)
+{
+  // Signal correction for the drift length
+
+  Double_t dedx = TMath::Log10 (track->GetDedx(6.036e-3)); // in kev
+  //cout << dedx << " " << track->GetPartID() << endl;
+  dedx = TMath::Min (dedx, 2.5);
+  dedx = TMath::Max (dedx, 1.0);
+  Double_t dedx2 = dedx * dedx;
+  Double_t coef = -3.51299e-05 + 8.99592e-05*dedx -6.55681e-05*dedx2 + 1.25936e-05*dedx2*dedx;
+  //coef = TMath::Min (coef, 0.0);
+  
+  TClonesArray *hits = track->GetTrHits();
+  Int_t nhits = hits->GetEntriesFast();
+  const Double_t trunc = 0.7; // truncation parameter
+  set<Double_t> signals;
+
+  for (Int_t ih = 0; ih < nhits; ++ih) {
+    MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(ih);
+    if (hit->GetSignal() < -800) continue; // threshold
+    Double_t sig = TMath::Log10(hit->GetSignal()*6.036e-3); // in keV
+    //cout << ih << " " << " " << hit->GetMeas(1) << " " << sig << " ";
+    //sig /= (1 + p01 * TMath::Abs(hit->GetMeas(1)) + p02 * hit->GetMeas(1) * hit->GetMeas(1));
+    sig /= (1 + coef * hit->GetMeas(1) * hit->GetMeas(1));
+    //cout << sig << endl;
+    signals.insert(sig);
+  }
+  Int_t nTrunc = TMath::Nint (signals.size() * trunc);
+  if (nTrunc == 0) nTrunc = 1;
+  Int_t nok = 0;
+  Double_t sum = 0;
+
+  for (set<Double_t>::iterator sit = signals.begin(); sit != signals.end(); ++sit) {
+    sum += TMath::Power (10,*sit) / 6.036e-3;
+    ++nok;
+    if (nok == nTrunc) break;
+  }
+  track->SetPartID(sum/nTrunc);
+  //cout << track->GetPartID() << endl;
+}
+
+//__________________________________________________________________________
+
 void MpdTpcDedxTask::Write()
 {
   /// Write

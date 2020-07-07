@@ -1,12 +1,12 @@
 //-----------------------------------------------------------
 //
 // Description:
-//      Implementation of class MpdTpcDigitizerAZ
-//      see MpdTpcDigitizerAZ.h for details
+//      Implementation of class MpdTpcDigitizerAZlt
+//      see MpdTpcDigitizerAZlt.h for details
 //
 // Author List:
 //      Alexander Zinchenko LHEP, JINR, Dubna - 17-July-2015
-//      (modified version of MpdTpcDigitizerTask.cxx)
+//      (deep modernization of MpdTpcDigitizerTask.cxx)
 //
 //-----------------------------------------------------------
 
@@ -179,7 +179,8 @@ InitStatus MpdTpcDigitizerAZlt::Init()
   ioman->Register(fOutputBranchName, "TPC", fDigits, fPersistence);
   
   //AZ fNoiseThreshold = 1000.0; // electrons    
-  fNoiseThreshold = 30.0; // ADC counts
+  //AZ-040720 fNoiseThreshold = 30.0; // ADC counts
+  fNoiseThreshold = 3.0; // ADC counts
   //AZ fGain = 5000.0; //electrons
   fGain = 1000.0; //electrons
   if (fResponse) {
@@ -258,6 +259,7 @@ void MpdTpcDigitizerAZlt::Exec(Option_t* opt)
     
     for ( ; it != pointID.end(); ++it) {
       TpcPoint* curPoint = (TpcPoint*) fMCPointArray->UncheckedAt(it->second);
+      if (prePoint == virtPoint) curPoint->SetEnergyLoss(virtPoint->GetEnergyLoss()); //AZ-090620 - corrected for entrance effect
       //if (curPoint->GetTrackID() != prePoint->GetTrackID()) Check4Edge(iSec, prePoint, virtPoint); // check for edge-effect 
       //if (curPoint->GetTrackID() != prePoint->GetTrackID()) {
       if (curPoint->GetTrackID() != prePoint->GetTrackID() || curPoint->GetLength() - prePoint->GetLength() > 1.1) { // 14.11.2017
@@ -344,7 +346,8 @@ void MpdTpcDigitizerAZlt::Check4Edge(UInt_t iSec, TpcPoint* &prePoint, TpcPoint*
   MpdTpcSectorGeo::Instance()->Local2Global(iSec%(nSectors/2), posL, posG);
   virtPoint->SetPosition(posG);
   virtPoint->SetTrackID(prePoint->GetTrackID());
-  prePoint->SetEnergyLoss(prePoint->GetEnergyLoss()*1.3); // 29.10.16 - correct for edge-effect
+  //AZ prePoint->SetEnergyLoss(prePoint->GetEnergyLoss()*1.3); // 29.10.16 - correct for edge-effect
+  virtPoint->SetEnergyLoss(prePoint->GetEnergyLoss()*1.3); //AZ-090620 - correct for entrance effect
   prePoint = virtPoint;
 }
 
@@ -465,6 +468,7 @@ void MpdTpcDigitizerAZlt::SignalShaping()
   static Double_t *reFilt = NULL, *imFilt = NULL;
   static TVirtualFFT *fft[2] = {NULL,NULL};
   const Double_t sigma = 190./2/TMath::Sqrt(2*TMath::Log(2)), sigma2 = sigma * sigma; // FWHM = 190 ns
+  const Int_t maxTimeBin = MpdTpcSectorGeo::Instance()->TimeMax() / MpdTpcSectorGeo::Instance()->TimeBin() + 1;
 
   if (first == 0) {
     first = 1;
@@ -491,20 +495,57 @@ void MpdTpcDigitizerAZlt::SignalShaping()
   Double_t *imSig = new Double_t [nbins];
   Double_t *reTot = new Double_t [nbins];
   Double_t *imTot = new Double_t [nbins];
+  map<Int_t,Int_t> cumul; // cumulative active time bin counter 
 
   //AZ Int_t nRows = MpdTpcSectorGeo::Instance()->NofRows();
-  for (UInt_t iRow = 0; iRow < nRows; ++iRow) {
-    for (UInt_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
+  for (Int_t iRow = 0; iRow < nRows; ++iRow) {
+    for (Int_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
+      memset(reSig,0,sizeof(Double_t)*nbins);
       Int_t fired = 0;
-      for (UInt_t iTime = 0; iTime < nbins; ++iTime) {
+      Int_t ntbins = 0;
+
+      //for (Int_t iTime = 0; iTime < nbins; ++iTime) {
+      for (Int_t iTime = 0; iTime < maxTimeBin; ++iTime) {
 	//if (fDigits4dArray[iRow][iPad][iTime].signal > 0) {
 	if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) {
 	  // Fired channel
 	  fired = 1;
+	  if (ntbins == 0) cumul.clear();
 	  reSig[iTime] = fDigits4dArray[iRow][iPad][iTime].signal;
-	} else reSig[iTime] = 0;
+	  cumul[iTime] = ++ntbins;
+	}
       }
       if (!fired) continue;
+
+      // !!! Formally expand each time bin backward by 3 bins (and forward if the next time bin is far enough) !!!
+      for (map<Int_t,Int_t>::iterator mit = cumul.begin(); mit != cumul.end(); ++mit) {
+	Int_t tbin = mit->first;
+	Int_t orig = fDigits4dArray[iRow][iPad][tbin].origin;
+
+	for (Int_t it = 1; it < 4; ++it) {
+	  Int_t iTime = tbin - it;
+	  if (iTime < 0) break;
+	  if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) break;
+	  fDigits4dArray[iRow][iPad][iTime].origin = orig;
+	  fDigits4dArray[iRow][iPad][iTime].origins[orig] = 1.0; // 1.0 - some amplitude
+	}
+	// Expand forward if needed
+	map<Int_t,Int_t>::iterator next = cumul.upper_bound(tbin);
+	if (next == cumul.end() || next->first - tbin > 4) {
+	  Int_t nexp = (next == cumul.end()) ? 4 : next->first - tbin - 3;
+	  nexp = TMath::Min (nexp, 4);
+	  // Expand
+	  for (Int_t it = 1; it < nexp; ++it) {
+	    Int_t iTime = tbin + it;
+	    //if (iTime >= nbins) break;
+	    if (iTime >= maxTimeBin) break;
+	    //if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) break;
+	    fDigits4dArray[iRow][iPad][iTime].origin = orig;
+	    fDigits4dArray[iRow][iPad][iTime].origins[orig] = 1.0; // 1.0 - some amplitude
+	  }
+	}
+      }
+
       // Fourier transform
       fft[0]->SetPoints(reSig);
       fft[0]->Transform();
@@ -524,7 +565,8 @@ void MpdTpcDigitizerAZlt::SignalShaping()
       fft[1]->Transform();
       fft[1]->GetPoints(reTot);
 
-      for (Int_t i = 0; i < nbins; ++i) {
+      //AZ for (Int_t i = 0; i < nbins; ++i) {
+      for (Int_t i = 0; i < maxTimeBin; ++i) {
 	if (fDigits4dArray[iRow][iPad][i].origin < 0) continue; // !!! do not add extra time bins due to shaping !!!
 	Int_t i1 = i;
 	if (i1 <= icent) i1 += icent;
@@ -533,7 +575,17 @@ void MpdTpcDigitizerAZlt::SignalShaping()
 	//
 	// Scale factor to adjust ADC counts
 	ampl /= 30.0;
-	if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
+	//IR 11-MAR-2020 if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
+        //
+        // IR03 new scale and rounding
+        //Double_t ScaleFactor = 20./(550.*1.25); // 687.5
+        // В старой шкале пик от mip для 15mm пэда был 687 канале, 
+        // тогда среднее (As=1.3MP) от рел-роста 1.01 в канале 550.*1.25*1.3,
+        // а в правильной шкале должен быть в 75 канале 
+        Double_t ScaleFactor = 75./(550.*1.25*1.3); // 19-MAR-2020 Movchan 
+        // S.Movchan denies: if( iRow >= 26) ScaleFactor *=(1.2/1.8);
+        ampl *= ScaleFactor;
+        if( ampl > 1023.1) ampl = 1023.1;                                     
 	//
 	fDigits4dArray[iRow][iPad][i].signal = ampl;
       }

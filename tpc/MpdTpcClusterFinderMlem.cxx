@@ -169,7 +169,8 @@ void MpdTpcClusterFinderMlem::ProcessPadrow(Int_t isec, Int_t irow)
     Int_t ipad = digi->GetPad(), itime = digi->GetTimeBin();
     if (ipad >= fgkNpads) Fatal("ProcessPadrow", "Too few pads!!! %i %i", ipad, fgkNpads);
     if (itime >= fgkNtimes) Fatal("ProcessPadrow", "Too few time bins!!! %i %i", itime, fgkNtimes);
-    fCharges[ipad][itime] = digi->GetAdc();
+    //AZ-110620 fCharges[ipad][itime] = digi->GetAdc();
+    fCharges[ipad][itime] = TMath::Min (digi->GetAdc(), Float_t(fgkOvfw)); //AZ-110620 
     //fDigis[ipad][itime] = *it;
     fDigis[ipad][itime] = digi->GetOrigin(); // store trackID with max charge contribution
     fFlags[ipad][itime] = 1;
@@ -316,11 +317,15 @@ void MpdTpcClusterFinderMlem::FindHits()
     }
     if (edge) clus->SetEdge(); // flag edge effect
 
-    if (edge || localMax.size() > 1) {
+    //AZ if (edge || localMax.size() > 1) {
+    //if (1) {
+    if (edge || localMax.size() > 1 || novfw) { //AZ - 030620
       // Run MLEM procedure
       //PeakAndValley(clus, localMax);
+      //AZ clus->SetFlag(clus->Flag()|1); // flag MLEM procedure usage
+      if (edge || localMax.size() > 1 || novfw) clus->SetFlag(clus->Flag()|1); // flag MLEM procedure usage
+      //cout << " xxx " << edge << " " << localMax.size() << " " << novfw << " " << clus->Flag() << endl; //AZ
       Mlem(iclus, localMax);
-      clus->SetFlag(clus->Flag()|1); // flag MLEM procedure usage
       continue;
     }
 
@@ -607,6 +612,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
     // Consider edge effect
     //*
     if (edge && (ipad-2 == 0 || ipad-2 == 2*fSecGeo->NPadsInRows()[clus->Row()] - 1)) { // extra shift
+      //cout << " Edge: " << ipad << " " << pix.iy << " " << hXY->GetYaxis()->GetBinCenter(pix.iy) << endl;
       if (ipad-2 == 0) {
 	--pix.iy;
 	fDigis[ipad-1][itime] = fDigis[ipad][itime];
@@ -692,25 +698,34 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
 	pixels[icur].push_back(pix);
 
 	// Compute couplings for this pixel
+	Double_t vis = 0, invis = 0;
+
 	for (Int_t ibin = 0; ibin < nbins; ++ibin) {
 	  Double_t x1 = hXY->GetXaxis()->GetBinCenter(bins[ibin].ix);
 	  Double_t y1 = hXY->GetYaxis()->GetBinCenter(bins[ibin].iy);
-	  cij(npix,ibin) = GetCij(x0, y0, x1, y1, sigt, sigp, correl);
+	  cij(npix,ibin) = GetCij(clus->Row(), x0, y0, x1, y1, sigt, sigp, correl, vis);
 	  //?? pixels[icur][npix].vis += cij(npix,ibin); // visibility
 	  if (cij(npix,ibin) > cijMin) {
-	    if (bins[ibin].qq < fgkOvfw - 1.5) pixels[icur][npix].vis += cij(npix,ibin); // visibility
+	    //if (bins[ibin].qq < fgkOvfw - 1.5) pixels[icur][npix].vis += cij(npix,ibin); // visibility
+	    //else invis += cij(npix,ibin); // "invisibility"
+	    if (bins[ibin].qq > fgkOvfw - 1.5) invis += cij(npix,ibin); // invisibility
 	    pairs.push_back(pair<Int_t,Int_t>(npix,ibin));
 	  }
 	}
+	pixels[icur][npix].vis = vis;
 	visMax = TMath::Max(visMax,pixels[icur][npix].vis);
-
-	//cout << npix << " " << pixels[icur][npix].vis << endl;
+	//AZ 04.07.20 pixels[icur][npix].vis = pixels[icur][npix].vis / (pixels[icur][npix].vis + invis); //AZ - 030620
+	pixels[icur][npix].vis -= invis; //AZ - 050720
+	//pixels[icur][npix].vis /= visMax; //AZ - 050720
+	pixels[icur][npix].vis /= 1.2; //AZ - 050720
+	
+	//cout << npix << " " << pixels[icur][npix].vis << " " << invis << endl; //AZ
 	++npix;
 	//if (npix >= nbins) break;
       } // for (Int_t ij = 0;
       //if (npix >= nbins) break;
     } // for (it = pixels[iprev].begin();
-
+    
     //for (Int_t ipix = 0; ipix < npix; ++ipix) cout << ipix << " " << pixels[icur][ipix].vis << " " << pixels[icur][ipix].qq << " " << pixels[icur][ipix].ix << " " <<  pixels[icur][ipix].iy << endl;
 
     // MLEM procedure
@@ -748,10 +763,12 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
       for (vit = pairs.begin(); vit != pairs.end(); ++vit) {
 	Int_t ipix = vit->first, ibin = vit->second;
 	if (bins[ibin].vis > 1.e-6) pixels[icur][ipix].sum += (bins[ibin].qq / bins[ibin].vis * cij(ipix,ibin));
+	//if (bins[ibin].vis > 1.e-6 && bins[ibin].qq < fgkOvfw - 1.5) pixels[icur][ipix].sum += (bins[ibin].qq / bins[ibin].vis * cij(ipix,ibin)); //AZ - 030620
       }
 
       for (Int_t ipix = 0; ipix < npix; ++ipix) 
 	if (pixels[icur][ipix].vis > 1.e-6) pixels[icur][ipix].qq *= (pixels[icur][ipix].sum / pixels[icur][ipix].vis);
+	//if (pixels[icur][ipix].vis > 1.e-6) pixels[icur][ipix].qq *= (pixels[icur][ipix].sum / 1); //AZ - 030620
 
     } // for (Int_t iter = 0; 
 
@@ -947,13 +964,32 @@ void MpdTpcClusterFinderMlem::GetResponse(const MpdTpc2dCluster* clus, TH2D *hXY
 {
   // Get response parameters
 
-  const Double_t sigx[2] = {0.584, 0.597};
-  const Double_t coef[2][5] = {{1.10951, -1.12393e-3, 1.62066e-4, -4.40694e-6, 6.26894e-8},
-			       {1.11737, 1.16204e-3, -1.01821e-4, 3.83333e-6, 0.0}};
+  const Double_t sigT[2][4] = {{0.853542, 0.00104733, -4.49635e-07, 0.0},
+			       {0.853845, 0.00106644, -4.84877e-07, 0.0}}; // Sigma_time vs time (in time bins)
+  const Double_t sigP[2][4] = {{0.357956, 0.00128714, -2.07788e-06, 2.15803e-09},
+			       {0.501219, -4.32769e-05, 2.54277e-06, -3.65539e-09}}; // Sigma_pad vs time
+
+  // Sigma_p vs tan(cross) (1 + A*abs(x) + B*x*x + C*x*x*x*x; A,B,C - functions of time bin)
+  const Double_t tanCrosA[2][3] = {{0.214453, -0.00196814, 4.47426e-06},
+				   {-0.869907, 0.00733796, -1.50085e-05}};
+  const Double_t tanCrosB[2][3] = {{1.54845, -0.00341245, 4.81089e-06},
+				   {3.12359, -0.00978931, 1.54187e-05}};
+  const Double_t tanCrosC[2][3] = {{-0.648698, 0.00258523, -4.0762e-06},
+				   {-1.05394, 0.00179292, 1.8612e-07}};
+
+  // Sigma_t vs tan(dip) (1 + A*abs(x) + B*x*x + C*x*x*x*x; A,B,C - functions of time bin)
+  const Double_t tanDipA[2][3] = {{0.2576, -0.00243985, 5.49784e-06},
+				  {0.494572, -0.00417108, 9.28609e-06}};
+  const Double_t tanDipB[2][3] = {{0.12751, 0.00110365, -2.57362e-06},
+				  {0.129227, 0.00267634, -6.82141e-06}};
+  const Double_t tanDipC[2][3] = {{0.00168453, -0.000124739, 2.09058e-07},
+				  {0.0188111, -0.000514421, 1.30111e-06}};
+
   
-  // Dip angle estimate
+  // Dip and crossing angle estimates assuming straight tracks from Z=0 for now
   Double_t padMean = (hXY->GetYaxis()->GetXmin() + hXY->GetYaxis()->GetXmax()) / 2;
   Double_t timeMean = (hXY->GetXaxis()->GetXmin() + hXY->GetXaxis()->GetXmax()) / 2;
+  Double_t t = timeMean;
   Double_t xloc = fSecGeo->Pad2Xloc(padMean,clus->Row());
   Int_t padID = fSecGeo->PadID(clus->GetSect() % fSecGeo->NofSectors(), clus->Row());
   Double_t yloc = fSecGeo->LocalPadPosition(padID).Y();
@@ -961,16 +997,35 @@ void MpdTpcClusterFinderMlem::GetResponse(const MpdTpc2dCluster* clus, TH2D *hXY
   TVector3 p3loc(xloc, yloc, zloc), p3glob;
   if (clus->GetSect() >= fSecGeo->NofSectors()) p3loc[2] = -p3loc[2];
   fSecGeo->Local2Global(clus->GetSect(), p3loc, p3glob);
-  Double_t dip = TMath::ATan2 (TMath::Abs(p3glob[2]),p3glob.Pt()) * TMath::RadToDeg();
-  dip = TMath::Min (80.0,TMath::Abs(dip));
+  Double_t tanDip = TMath::Abs(p3glob[2]) / p3glob.Pt();
+  tanDip = TMath::Min (tanDip, 2.0);
+  Double_t tanDip2 = tanDip * tanDip;
+  Double_t tanDip4 = tanDip2 * tanDip2;
+
+  Double_t tanCros = TMath::Abs(xloc) / p3glob.Pt();
+  tanCros = TMath::Min (tanCros, 1.0);
+  Double_t tanCros2 = tanCros * tanCros;
+  Double_t tanCros4 = tanCros2 * tanCros2;
 
   Int_t ireg = (clus->Row() < 27) ? 0 : 1; // pad height region
-  Double_t dip2 = dip * dip;
-  Double_t dip3 = dip2 * dip;
-  Double_t dip4 = dip3 * dip;
-  sigt = coef[ireg][0] + coef[ireg][1] * dip + coef[ireg][2] * dip2 + coef[ireg][3] * dip3 
-    + coef[ireg][4] * dip4;
-  sigp = sigx[ireg];
+
+  Double_t t2 = t * t;
+  sigt = sigT[ireg][0] + sigT[ireg][1]*t + sigT[ireg][2]*t2;
+    
+  Double_t a = tanDipA[ireg][0] + tanDipA[ireg][1]*t + tanDipA[ireg][2]*t2;
+  Double_t b = tanDipB[ireg][0] + tanDipB[ireg][1]*t + tanDipB[ireg][2]*t2;
+  Double_t c = tanDipC[ireg][0] + tanDipC[ireg][1]*t + tanDipC[ireg][2]*t2;
+  sigt *= (1 + a*tanDip + b*tanDip2 + c*tanDip4);
+  
+  sigp = sigP[ireg][0] + sigP[ireg][1]*t + sigP[ireg][2]*t2 + sigP[ireg][3]*t2*t;
+    
+  a = tanCrosA[ireg][0] + tanCrosA[ireg][1]*t + tanCrosA[ireg][2]*t2;
+  b = tanCrosB[ireg][0] + tanCrosB[ireg][1]*t + tanCrosB[ireg][2]*t2;
+  c = tanCrosC[ireg][0] + tanCrosC[ireg][1]*t + tanCrosC[ireg][2]*t2;
+
+  //AZ sigp *= (1 + a*tanCros + b*tanCros2 + c*tanCros4);
+  sigp *= (1 + 0);
+  
   correl = 0.0;
   if (hOvfw) {
     correl = hOvfw->GetCorrelationFactor();
@@ -978,7 +1033,7 @@ void MpdTpcClusterFinderMlem::GetResponse(const MpdTpc2dCluster* clus, TH2D *hXY
     //sigp = hOvfw->GetRMS(2);
   }
 }
-
+/*
 //__________________________________________________________________________
 
 Double_t MpdTpcClusterFinderMlem::GetCij(Double_t x0, Double_t y0, Double_t x1, Double_t y1, 
@@ -990,14 +1045,76 @@ Double_t MpdTpcClusterFinderMlem::GetCij(Double_t x0, Double_t y0, Double_t x1, 
   Double_t dy = y1 - y0;
   dx /= sigt;
   dy /= sigp; 
-
-  if (TMath::Abs(correl) < 0.001) return TMath::Exp(-dx*dx/2 - dy*dy/2) / sigt / sigp / TMath::TwoPi();
+  Double_t cij = 0;
+  
+  if (TMath::Abs(correl) < 0.001) cij = TMath::Exp(-dx*dx/2 - dy*dy/2) / sigt / sigp / TMath::TwoPi();
   else {
     Double_t corr2 = 1 - correl * correl;
-    return TMath::Exp((-dx*dx/2 + correl*dx*dy - dy*dy/2)/corr2) / sigt / sigp / TMath::TwoPi() / TMath::Sqrt(corr2);
+    cij = TMath::Exp((-dx*dx/2 + correl*dx*dy - dy*dy/2)/corr2) / sigt / sigp / TMath::TwoPi() / TMath::Sqrt(corr2);
   }
+  cout << x1-x0 << " " << y1-y0 << " " << cij << endl;
+  return cij;
 }
+*/
+//*
+//__________________________________________________________________________
 
+Double_t MpdTpcClusterFinderMlem::GetCij(Int_t irow, Double_t x0, Double_t y0, Double_t x1, Double_t y1, 
+					 Double_t sigt, Double_t sigp, Double_t correl, Double_t &vis)
+{
+  // Compute couplings - Gauss parameter Sigma_t as a function of the dip angle.
+  // Make use of cache (map) to process the same pixel.
+
+  static Int_t ixpix0 = -999, iypix0 = -999;
+  static map<Int_t,map<Int_t,Double_t> > cijCache; 
+  Int_t ixpix = x0 * 1000, iypix = y0 * 1000, ixc = 0, iyc = 0;
+  Int_t ixbin = Int_t(x1), iybin = Int_t(y1);
+
+  if (ixpix != ixpix0 || iypix != iypix0) {
+    cijCache.clear();
+    ixpix0 = ixpix;
+    iypix0 = iypix;
+    ixc = Int_t(x0);
+    iyc = Int_t(y0);
+
+    Int_t nxy = 2;
+    vis = 0.0;
+    
+    // Compute Cij for the bin area around central pixel
+    for (Int_t i = -nxy; i <= nxy; ++i) {
+      Int_t it = ixc + i;
+      Double_t dx = it - x0 + 0.5;
+      
+      for (Int_t j = -nxy; j <= nxy; ++j) {
+	Int_t ip = iyc + j;
+	//if (ip-2 == 0 || ip-2 == 2*fSecGeo->NPadsInRows()[irow] - 1) continue; // edge
+	if (ip-2 < 0 || ip-2 > 2*fSecGeo->NPadsInRows()[irow] - 1) continue; // edge
+	Double_t dy = ip - y0 + 0.5;
+	dx /= sigt;
+	dy /= sigp; 
+	map<Int_t,Double_t> aaa;
+	if (cijCache.count(it) == 0) cijCache[it] = aaa;
+	
+	if (TMath::Abs(correl) < 0.001) cijCache[it][ip] =  TMath::Exp(-dx*dx/2 - dy*dy/2) / sigt / sigp / TMath::TwoPi();
+	else {
+	  Double_t corr2 = 1 - correl * correl;
+	  cijCache[it][ip] =
+	    TMath::Exp((-dx*dx/2 + correl*dx*dy - dy*dy/2)/corr2) / sigt / sigp / TMath::TwoPi() / TMath::Sqrt(corr2);
+	}
+	vis += cijCache[it][ip];
+	//cout << it - x0 + 0.5 << " " << ip - y0 + 0.5 << " " << cijCache[it][ip] << " " << it << " " << ip << endl;
+      }
+    }
+    //cout << " Visibility: " << vis << endl;
+  } else if (cijCache.count(ixbin) == 0 || cijCache[ixbin].count(iybin) == 0) {
+    //cout << ixbin << " " << iybin << endl;
+    return 0.0; // outside computed area
+  }
+
+  return cijCache[ixbin][iybin];
+    
+}
+//*/
 //__________________________________________________________________________
 
 void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<Double_t,Int_t> &localMax, 
@@ -1248,6 +1365,7 @@ void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, ve
       ++nsel;
       if (nsel > nb) break;
       Int_t ipix = TMath::Abs(it->second) - 1;
+      //cout << nsel << " " << pixels[ipix].qq << " " << pixels[ipix].vis << endl; //AZ
       pixs.push_back(pixels[ipix]);
       pixs.back().qq = 1;
       pixs.back().ix = ipix; // save pixel index
@@ -1260,9 +1378,11 @@ void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, ve
   vector<pair<Int_t,Int_t> > pairs;
   vector<pair<Int_t,Int_t> >::iterator vit;
   Int_t npix = pixs.size();
-
+  Double_t qbins = 0; //AZ
+  
   for (Int_t ibin = 0; ibin < nBinsTot; ++ibin) {
     for (Int_t i = 0; i < npix; ++i) if (cij(pixs[i].ix,ibin) > cijMin) pairs.push_back(pair<Int_t,Int_t>(i,ibin));
+    qbins += bins[ibin].qq; //AZ
   }
 
   // MLEM procedure
@@ -1298,11 +1418,13 @@ void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, ve
 
     for (vit = pairs.begin(); vit != pairs.end(); ++vit) {
       Int_t ipix = vit->first, ibin = vit->second;
-      if (bins[ibin].vis > 1.e-6) pixs[ipix].sum += (bins[ibin].qq / bins[ibin].vis * cij(pixs[ipix].ix,ibin));
+      //AZ if (bins[ibin].vis > 1.e-6) pixs[ipix].sum += (bins[ibin].qq / bins[ibin].vis * cij(pixs[ipix].ix,ibin));
+      if (bins[ibin].vis > 1.e-6 && bins[ibin].qq < fgkOvfw - 1.5) pixs[ipix].sum += (bins[ibin].qq / bins[ibin].vis * cij(pixs[ipix].ix,ibin)); //AZ - 030620
     }
 
     for (Int_t ipix = 0; ipix < npix; ++ipix) 
       if (pixs[ipix].vis > 1.e-6) pixs[ipix].qq *= (pixs[ipix].sum / pixs[ipix].vis);
+      //if (pixs[ipix].vis > 1.e-6) pixs[ipix].qq *= pixs[ipix].sum; //AZ 03-06-20
   } // for (Int_t iter = 0; 
 
   // Compute hit charges
@@ -1312,12 +1434,16 @@ void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, ve
     else charges[pixs[ipix].iy] += pixs[ipix].qq;
   }
 
-  
+  Double_t qCor = 0; //AZ
   for (Int_t ih = nHits0; ih < nH; ++ih) {
     MpdTpcHit* hit = (MpdTpcHit*) fHitArray->UncheckedAt(ih);
     //cout << hit->GetQ() << " " << charges[ih] << " " << hit->GetNdigits() << " " << hit->GetLayer() << " " << nHits << endl;
-    hit->SetEnergyLoss(charges[ih]/1.089); // coefficient due to different peak with and w/out MLEM
+    qCor += charges[ih]; //AZ
+    //AZ hit->SetEnergyLoss(charges[ih]/1.089); // coefficient due to different peak with and w/out MLEM
+    //hit->SetEnergyLoss(charges[ih]/1.0); //AZ - 040620 coefficient due to different peak with and w/out MLEM
+    hit->SetEnergyLoss(charges[ih]*1.25); //AZ - 120620 coefficient due to different peak with and w/out MLEM
   }
+  //cout << " qtot: " << qTot << " " << qCor/qTot << " " << (nH-nHits0) << " " << nBinsTot << " " << qbins << " " << pixels.size() << endl; //AZ
 }
 
 //__________________________________________________________________________

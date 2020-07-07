@@ -24,7 +24,7 @@ class MpdTpcEDepParams : public TObject
   Double_t GetRandEnergy (Double_t log10bg);
   Double_t GetMinLimit() const { return fCollDensL10BgMin; }
   Double_t GetMaxLimit() const { return fCollDensL10BgMax; }
-  Double_t GetEloss (Double_t log10bg, Double_t step);
+  Double_t GetEloss (Double_t log10bg, Double_t charge, Double_t step);
 
  protected:
   MpdTpcEDepParams() { Init(); } ///< Default ctor

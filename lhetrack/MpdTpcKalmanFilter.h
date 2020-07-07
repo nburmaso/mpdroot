@@ -50,7 +50,7 @@ class MpdTpcKalmanFilter : public FairTask
   Int_t GetParticleId(Int_t id); ///< particle ID for track id
   void SetModular(Int_t modular) { fModular = modular; } ///< set != 0 if modular geom. of r/out chambers
   void SetSectorGeo(MpdTpcSectorGeo *secGeo) { fSecGeo = secGeo; } ///< set sector geometry
-  Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE, std::map<Int_t,TMatrixD> *params = NULL); ///< refit track using its points for given particle mass and charge
+  Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE); ///< refit track using its points for given particle mass and charge
   Int_t GetHitID(MpdKalmanHit *hit); // get hit ID from MC point ID
   void UseTpcHit(Bool_t useMC = kTRUE) { fUseMCHit = useMC; }; // to use TpcHit branch instead of MpdTpcHit
   void FillGeoScheme(); // fill Kalman filter geometry manager info (for modular geometry of r/out chambers)

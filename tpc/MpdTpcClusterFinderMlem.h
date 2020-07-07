@@ -69,7 +69,8 @@ private:
   // Private Data Members ------------
   static const Int_t fgkNsec2 = 24; // number of readout sectors (12 * 2)
   static const Int_t fgkNpads = 128, fgkNtimes = 512; // max number of pads and time bins
-  static const Int_t fgkOvfw = 4095; // overflow value
+  //AZ static const Int_t fgkOvfw = 4095; // overflow value
+  static const Int_t fgkOvfw = 1023; // overflow value - 10 bits
 
   TClonesArray* fDigiArray;
   TClonesArray* fClusArray;
@@ -91,8 +92,8 @@ private:
   //static Bool_t SortPix(const pixel i, const pixel j); // sorting function
   void GetResponse(const MpdTpc2dCluster* clus, TH2D *hXY, TH2D *hOvfw, 
 		   Double_t &sigt, Double_t &sigp, Double_t &correl); // get response parameters
-  Double_t GetCij(Double_t x0, Double_t y0, Double_t x1, Double_t y1, 
-		  Double_t sigt, Double_t sigp, Double_t correl); // compute pixel-to-bin couplings
+  Double_t GetCij(Int_t irow, Double_t x0, Double_t y0, Double_t x1, Double_t y1, 
+		  Double_t sigt, Double_t sigp, Double_t correl, Double_t &vis); // compute pixel-to-bin couplings
   void PeakAndValley(const MpdTpc2dCluster* clus, std::multimap<Double_t,Int_t> &localMax); // peak-and-valley
   void PeakAndValley(const std::vector<pixel> &pixels, std::multimap<Double_t,Int_t> &localMax, 
 		     std::vector<std::vector<Double_t> > &charges, std::vector<std::vector<Int_t> > &flags); // peak-and-valley in pixel domain

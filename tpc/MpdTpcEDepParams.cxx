@@ -146,11 +146,11 @@ Double_t MpdTpcEDepParams::GetRandEnergy (Double_t log10bg)
 
 //__________________________________________________________________________
 
-Double_t MpdTpcEDepParams::GetEloss (Double_t log10bg, Double_t step)
+Double_t MpdTpcEDepParams::GetEloss (Double_t log10bg, Double_t charge, Double_t step)
 {
   /// Energy loss for given log10(beta*gamma) and step
 
-  Double_t collDens = GetCollisionDensity (log10bg);
+  Double_t collDens = GetCollisionDensity (log10bg) *charge*charge;
   Double_t nColl = gRandom->PoissonD (collDens * step);
   Double_t eloss = 0;
 

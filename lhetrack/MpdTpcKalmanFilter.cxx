@@ -610,8 +610,6 @@ void MpdTpcKalmanFilter::AddHits(Int_t indx0)
     TClonesArray &trHits = *track->GetTrHits();
     Int_t idOld = track->GetTrackID(); // 24.12.2018
     SetTrackID(track); // set track ID as ID of majority of its hits
-    if (track->GetTrackID() == 218 || idOld == 218) cout << " idddddd " << idOld << " " 
-							 << track->GetTrackID() << " " << nHits << " " << i << endl;
 
     Int_t nWrong = 0, motherID = track->GetTrackID();
     // Get track mother ID
@@ -1685,10 +1683,12 @@ Bool_t MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weig
     hit = (MpdKalmanHit*) track->GetHits()->UncheckedAt(i);
     lay0 = lay;
     lay = hit->GetLayer();
+    /*AZ-100620 - W.t.f. is this???
     if (!fUseMCHit && corDedx && i == ibeg) {
       Double_t cosTh = TMath::Cos(track->GetParam(3));
       hit->SetSignal(hit->GetSignal() * cosTh);
     }
+    */
     if (i == ibeg) continue; // skip first hit
 
     Double_t leng = track->GetLength(), stepBack = -1;
@@ -2155,8 +2155,7 @@ Bool_t MpdTpcKalmanFilter::SameOrigin(TpcPoint *hit, Int_t idKF, Int_t *mcTracks
 }
 
 //__________________________________________________________________________
-Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t charge, Bool_t skip, Int_t iDir, Bool_t exclude, 
-				 std::map<Int_t,TMatrixD> *params)
+Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t charge, Bool_t skip, Int_t iDir, Bool_t exclude)
 {
   /// Refit track in TPC using track hits (toward beam line) for some
   /// particle mass and charge hypothesis 
@@ -2232,7 +2231,6 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
     track->SetWeight(weight);
     track->SetParamNew(param);
     //cout << i << " " << dChi2 << " " << 1./track->GetParamNew(4) << endl;
-    if (params) params->insert (pair<Int_t,TMatrixD>(hit->GetLayer(),param));
   }
   if (exclude) track->GetHits()->Compress();
   if (iDir < 0 || skip) return kTRUE; // going outward or do not go to the beam line

@@ -127,7 +127,7 @@ Bool_t TpcDetector::ProcessHits( FairVolume *v)
       MpdTpcEDepParams *deParams = MpdTpcEDepParams::Instance();
       if (betgam >= deParams->GetMinLimit() && betgam < deParams->GetMaxLimit()) {
 	// New value
-	eLoss = deParams->GetEloss (betgam, gMC->TrackStep());
+	eLoss = deParams->GetEloss (betgam, gMC->TrackCharge(), gMC->TrackStep());
 	//cout << " xxxxxx " << gMC->Edep() << " " << eLoss << endl;
       } 
     }
