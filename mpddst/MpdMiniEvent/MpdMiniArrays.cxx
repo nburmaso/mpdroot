@@ -11,9 +11,9 @@ const char* MpdMiniArrays::miniArrayNames[NAllMiniArrays] = { "Event",
 							      "Track",
 							      "BTofHit",
 							      "BTofPidTraits",
-							      "BECalHit",
-							      "BECalPidTraits",
+							      "BECalCluster",
 							      "TrackCovMatrix",
+							      "FHCalHit",
 							      "McEvent",
 							      "McTrack"
 };
@@ -24,9 +24,9 @@ const char* MpdMiniArrays::miniArrayTypes[NAllMiniArrays] = { "MpdMiniEvent",
 							      "MpdMiniTrack",
 							      "MpdMiniBTofHit",
 							      "MpdMiniBTofPidTraits",
-							      "MpdMiniBECalHit",
-							      "MpdMiniBECalPidTraits",
+							      "MpdMiniBECalCluster",
 							      "MpdMiniTrackCovMatrix",
+							      "MpdMiniFHCalHit",
 							      "MpdMiniMcEvent",
 							      "MpdMiniMcTrack"
 };
@@ -36,13 +36,13 @@ const char* MpdMiniArrays::miniArrayTypes[NAllMiniArrays] = { "MpdMiniEvent",
 // Choosing too large initial values gives a performance penalty when reading
 // only selected miniDst branches
 //_________________
-int MpdMiniArrays::miniArraySizes[NAllMiniArrays] = {1, // MpdMiniEvent
+int MpdMiniArrays::miniArraySizes[NAllMiniArrays] = {1,     // MpdMiniEvent
 						     800,   // MpdMiniTrack
 						     100,   // MpdMiniBTofHit
 						     100,   // MpdMiniBTofPidTraits
-						     60000, // MpdMiniBECalHit (size is not yet defined in TDR)
-						     100,   // MpdMiniBECalPidTraits
+						     300,   // MpdMiniBECalCluster
 						     800,   // MpdMiniTrackCovMatrix
+						     616,   // MpdMiniFHCalHit
 						     1,     // MpdMiniMcEvent
 						     1000   // MpdMiniMcTrack
 };

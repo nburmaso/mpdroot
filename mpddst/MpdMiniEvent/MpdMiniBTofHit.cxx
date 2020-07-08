@@ -1,8 +1,8 @@
 //
-// MpdMiniBTofHit holds information about BTOF hits
+// MpdMiniBTofHit holds information about BTof hits
 //
 
-// PicoDst headers
+// MiniDst headers
 #include "MpdMiniMessMgr.h"
 #include "MpdMiniBTofHit.h"
 
@@ -10,13 +10,13 @@ ClassImp(MpdMiniBTofHit)
 
 //_________________
 MpdMiniBTofHit::MpdMiniBTofHit() : TObject(),
-  fDetectorID(-1), mBTofMatchFlag(kFALSE), mBTofHitPosX(-1.),
-  mBTofHitPosY(-1.), mBTofHitPosZ(-1.), mBTof(0.) {
-  /* empty */
+  fDetectorID(-1), fBTofHitPosX(0), fBTofHitPosY(0), fBTofHitPosZ(0), fTime(0) {
+  // Default constructor
 }
 
 //_________________
-MpdMiniBTofHit::MpdMiniBTofHit(int id) : TObject() {
+MpdMiniBTofHit::MpdMiniBTofHit(int id) : MpdMiniBTofHit() {
+  // Parametrized constructor
   if (id < 0) return;
   fDetectorID = ( (id > std::numeric_limits<short>::max()) ?
 		  std::numeric_limits<short>::max() : (Short_t) id );
@@ -24,12 +24,12 @@ MpdMiniBTofHit::MpdMiniBTofHit(int id) : TObject() {
 
 //_________________
 MpdMiniBTofHit::MpdMiniBTofHit(const MpdMiniBTofHit &hit) : TObject() {
+  // Copy constructor
   fDetectorID = hit.fDetectorID;
-  mBTofMatchFlag = hit.mBTofMatchFlag;
-  mBTof = hit.mBTof;
-  mBTofHitPosX = hit.mBTofHitPosX;
-  mBTofHitPosY = hit.mBTofHitPosY;
-  mBTofHitPosZ = hit.mBTofHitPosZ;
+  fTime = hit.fTime;
+  fBTofHitPosX = hit.fBTofHitPosX;
+  fBTofHitPosY = hit.fBTofHitPosY;
+  fBTofHitPosZ = hit.fBTofHitPosZ;
 }
 
 //_________________
@@ -39,7 +39,9 @@ MpdMiniBTofHit::~MpdMiniBTofHit() {
 
 //_________________
 void MpdMiniBTofHit::Print(const Char_t* option __attribute__ ((unused))) const {
-  LOG_INFO << " Id = " << id() << endm;
+  LOG_INFO << " Id: " << id() << " x/y/z: "
+	   << btofHitPosX() << "/" << btofHitPosY() << "/" << btofHitPosZ()
+	   << " time: " << time() << endm;
 }
 
 //_________________
@@ -49,7 +51,7 @@ void MpdMiniBTofHit::setId(Int_t sector, Int_t gap, Int_t detector, Int_t strip)
 
 //_________________
 void MpdMiniBTofHit::setHitPositionX(Float_t x) {
-  mBTofHitPosX = ( fabs(x * 100.) > std::numeric_limits<short>::max() ?
+  fBTofHitPosX = ( fabs(x * 100.) > std::numeric_limits<short>::max() ?
 		   ( (x>0) ? std::numeric_limits<short>::max() :
 		     std::numeric_limits<short>::min() ):
 		   (Short_t)( TMath::Nint( x * 100. ) ) );
@@ -57,7 +59,7 @@ void MpdMiniBTofHit::setHitPositionX(Float_t x) {
 
 //_________________
 void MpdMiniBTofHit::setHitPositionY(Float_t y) {
-  mBTofHitPosY = ( fabs(y * 100.) > std::numeric_limits<short>::max() ?
+  fBTofHitPosY = ( fabs(y * 100.) > std::numeric_limits<short>::max() ?
 		   ( (y>0) ? std::numeric_limits<short>::max() :
 		     std::numeric_limits<short>::min() ):
 		   (Short_t)( TMath::Nint( y * 100. ) ) );
@@ -65,7 +67,7 @@ void MpdMiniBTofHit::setHitPositionY(Float_t y) {
 
 //_________________
 void MpdMiniBTofHit::setHitPositionZ(Float_t z) {
-  mBTofHitPosZ = ( fabs(z * 100.) > std::numeric_limits<short>::max() ?
+  fBTofHitPosZ = ( fabs(z * 100.) > std::numeric_limits<short>::max() ?
 		   ( (z>0) ? std::numeric_limits<short>::max() :
 		     std::numeric_limits<short>::min() ):
 		   (Short_t)( TMath::Nint( z * 100. ) ) );

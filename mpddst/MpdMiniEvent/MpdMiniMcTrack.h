@@ -48,7 +48,7 @@ class MpdMiniMcTrack : public TObject {
   void setPdgId(Int_t pdg)                                 { fPdgId = pdg; }
   /// Set status
   void setStatus(Int_t status)
-  { if ( status <= std::numeric_limits<char>::min() )      { fStatus = std::numeric_limits<char>::min(); }
+  { if ( status <= std::numeric_limits<char>::min() ) { fStatus = std::numeric_limits<char>::min(); }
     else if ( status >= std::numeric_limits<char>::max() ) { fStatus = std::numeric_limits<char>::max(); }
     else { fStatus = (Char_t)status; } }
   // Set parent index
@@ -58,7 +58,7 @@ class MpdMiniMcTrack : public TObject {
 		     std::numeric_limits<unsigned short>::max() : (UShort_t)parent ); }
   */
   /// Set two daughter track indices (the first and the last one)
-  void setChild(Int_t child[2])                             { setFirstChild(child[0]); setLastChild(child[1]); }
+  void setChild(Int_t child[2])               { setFirstChild(child[0]); setLastChild(child[1]); }
   /// Set index of the first child
   void setFirstChild(Int_t child)
   { fChild[0] = ( (child > std::numeric_limits<unsigned short>::max() ) ?
@@ -68,34 +68,33 @@ class MpdMiniMcTrack : public TObject {
   { fChild[1] = ( (child > std::numeric_limits<unsigned short>::max() ) ?
 		  std::numeric_limits<unsigned short>::max() : (UShort_t)child ); }
   /// Set px (GeV/c)
-  void setPx(Double_t px)                                   { fPx = (Float_t)px; }
+  void setPx(Double_t px)                     { fPx = (Float_t)px; }
   /// Set py (GeV/c)
-  void setPy(Double_t py)                                   { fPy = (Float_t)py; }
+  void setPy(Double_t py)                     { fPy = (Float_t)py; }
   /// Set pz (GeV/c)
-  void setPz(Double_t pz)                                   { fPz = (Float_t)pz; }
+  void setPz(Double_t pz)                     { fPz = (Float_t)pz; }
   /// Set energy (GeV)
-  void setEnergy(Double_t e)                                { fEnergy = (Float_t)e; }
+  void setEnergy(Double_t e)                  { fEnergy = (Float_t)e; }
   /// Set energy (GeV)
-  void setE(Double_t e)                                     { setEnergy(e); }
+  void setE(Double_t e)                       { setEnergy(e); }
   /// Set four-momentum (px, py, pz, E)
   void set4momentum(TLorentzVector mom)
   { setPx(mom.Px()); setPy(mom.Py()); setPz(mom.Pz()); setE(mom.E()); }
   /// Set start x
-  void setX(Double_t x)                                     { fX = (Float_t)x; }
+  void setX(Double_t x)                       { fX = (Float_t)x; }
   /// Set start y
-  void setY(Double_t y)                                     { fY = (Float_t)y; }
+  void setY(Double_t y)                       { fY = (Float_t)y; }
   /// Set start z
-  void setZ(Double_t z)                                     { fZ = (Float_t)z; }
+  void setZ(Double_t z)                       { fZ = (Float_t)z; }
   /// Set freeze-out t (fm/c)
-  void setT(Double_t t)                                     { fT = (Float_t)t; }
+  void setT(Double_t t)                       { fT = (Float_t)t; }
   /// Set four-coordinate (x, y, z, t)
   void set4coordinate(TLorentzVector vec)
   { setX(vec.X()); setY(vec.Y()); setZ(vec.Z()); setT(vec.T()); }
   /// Add index of MpdMiniTrack that was reconstructed out of current MC track
   void addGlobalTrackId(UShort_t id);
   /// Add indices of MpdMiniTracks that wwere reconstructed out of current MC track
-  void setGlobalTrackIds(std::vector< UShort_t > ids)      { fRecoTrackIds = ids; }
-
+  void setGlobalTrackIds(std::vector< UShort_t > ids) { fRecoTrackIds = ids; }
 
   //
   // Getters

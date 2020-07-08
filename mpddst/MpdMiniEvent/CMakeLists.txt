@@ -25,7 +25,7 @@ set(SRCS
 MpdMiniPhysicalHelix.cxx
 MpdMiniEvent.cxx
 MpdMiniDst.cxx
-MpdMiniBECalPidTraits.cxx
+MpdMiniBECalCluster.cxx
 MpdMiniArrays.cxx
 MpdMiniTrack.cxx
 MpdMiniTrackCovMatrix.cxx
@@ -35,7 +35,7 @@ MpdMiniHelix.cxx
 MpdMiniDstReader.cxx
 MpdMiniBTofPidTraits.cxx
 MpdMiniBTofHit.cxx
-MpdMiniBECalHit.cxx
+MpdMiniFHCalHit.cxx
 )
 
 Set(HEADERS)

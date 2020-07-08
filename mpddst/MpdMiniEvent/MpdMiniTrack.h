@@ -2,8 +2,7 @@
  * \class MpdMiniTrack
  * \brief Holds information about reconstructed track parameters
  *
- * The class stores information about the tracks reconstructed in TPC
- * for both real and MC cases. 
+ * The class stores information about tracks reconstructed in TPC
  *
  * \author Grigory Nigmatkulov (NRNU MEPhI)
  * \email nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
@@ -67,18 +66,20 @@ class MpdMiniTrack : public TObject {
   /// Helix at point of DCA to MpdMiniEvent::mPrimaryVertex
   MpdMiniPhysicalHelix helix(Float_t const B) const;
 
-  // Next functions return DCA (or its components) of the global track
-  // to the point with coordinates (pVtxX, pVtxY, pVtxZ)
-
-  /// Return signed distance in x direction (cm) between the value and x position of the DCA point (gDCAx - x)
+  /// Return signed distance in x direction (cm) between the value
+  /// and x position of the DCA point (gDCAx - x)
   Float_t gDCAx(Float_t pVtxX) const     { return (fOriginX - pVtxX); }
-  /// Return signed distance in y direction between the value and y position of the DCA point (gDCAy - y)
+  /// Return signed distance in y direction (cm) between the value
+  /// and y position of the DCA point (gDCAy - y)
   Float_t gDCAy(Float_t pVtxY) const     { return (fOriginY - pVtxY); }
-  /// Return signed distance in z direction (cm) between the value and z position of the DCA point (gDCAz - z)
+  /// Return signed distance in z direction (cm) between the value
+  /// and z position of the DCA point (gDCAz - z)
   Float_t gDCAz(Float_t pVtxZ) const     { return (fOriginZ - pVtxZ); }
-  /// Return distance in xy direction (cm) between the (x,y) point and the DCA point to primary vertex
+  /// Return distance in xy direction (cm) between the (x,y) point
+  /// and the DCA point to primary vertex
   Float_t gDCAxy(Float_t pVtxX, Float_t pVtxY) const;
-  /// Return distance in xyz direction (cm) between the (x,y,z) point and the DCA point to primary vertex
+  /// Return distance in xyz direction (cm) between the (x,y,z) point
+  /// and the DCA point to primary vertex
   Float_t gDCA(Float_t pVtxX, Float_t pVtxY, Float_t pVtxZ) const;
   /// Return 3-vector (distance) between the DCA point and the point (gDCA - point)
   TVector3 gDCA(TVector3 pVtx) const;
@@ -86,15 +87,20 @@ class MpdMiniTrack : public TObject {
   Int_t charge() const                   { return (fNHits > 0) ? 1 : -1; }
   /// Return number of hits
   Int_t   nHits() const                  { return (fNHits > 0) ? (Int_t)fNHits : (Int_t)(-1 * fNHits); }
-  /// Return number of hits possible
+  
+  // Return number of hits possible
   //Int_t   nHitsMax() const               { return (Int_t)fNHitsMax; }
-  /// Return number of hits possible
+  
+  // Return number of hits possible
   //Int_t   nHitsPoss() const              { return nHitsMax(); }
-  /// Return number of hits used for dE/dx measurement
+  
+  // Return number of hits used for dE/dx measurement
   //Int_t   nHitsDedx() const              { return (Int_t)fNHitsDedx; }
+  
   /// Return dE/dx (GeV/cm) of the track
   Float_t dEdx() const                   { return fDedx; }
-  /// Return dE/dx error of the track
+  
+  // Return dE/dx error of the track
   //Float_t dEdxError() const              { return fDedxError; }
 
   /// Return nSigma(pion)
@@ -110,23 +116,23 @@ class MpdMiniTrack : public TObject {
   ULong64_t hitMap() const               { return fHitMap; }
 
   /// Return if track has TOF hit
-  Bool_t isBTofTrack() const             { return (fBTofPidTraitsIndex<0) ? false : true; }
-  /// Return if track has ECal hit
-  Bool_t isBECalTrack() const            { return (fBECalPidTraitsIndex<0) ? false : true; }
+  Bool_t isBTofTrack() const             { return (fBTofPidTraitsIndex<0) ? kFALSE : kTRUE; }
+  /// Return if track was reconstructed in ECal cluster
+  Bool_t isBECalTrack() const            { return (fBECalClusterIndex<0) ? kFALSE : kTRUE; }
 
   /// Return if track is primary
   Bool_t isPrimary() const               { return ( pMom().Mag() > 0 ); }
 
-  //  Not used right now since we can have just one-to-one matching 
-  //  Presense of matching can be checked by isBTofTrack() or isBECalTrack() methods
-  
-  Int_t bECalPidTraitsIndex() const      { return fBECalPidTraitsIndex; }
+  /// Return index of the associated barrel ECal cluster (-1 if not match)
+  Int_t bECalClusterIndex() const        { return fBECalClusterIndex; }
+  /// Return index of the associated barrel TofPidTrait (-1 if not match)
   Int_t bTofPidTraitsIndex() const       { return fBTofPidTraitsIndex; }
   
-  /// Return index of MpdMiniMcTrack corresponding to current miniTrack
-  // If returns -1, it means that the miniTrack does not correspond to any written primary track from generator 
+  /// Return index of MpdMiniMcTrack corresponding
+  /// to current MpdMiniTrack (-1 if not match)
   Int_t mcTrackIndex() const             { return (Int_t)fMcTrackId; }
-  Bool_t hasMcTrack() const              { return (fMcTrackId<0) ? false : true; }
+  /// Check if miniTrack has corresponding miniMcTrack
+  Bool_t hasMcTrack() const              { return (fMcTrackId<0) ? kFALSE : kTRUE; }
 
   //
   // Setters
@@ -166,14 +172,19 @@ class MpdMiniTrack : public TObject {
 
   /// Set dE/dx of the track
   void setDedx(Float_t dEdx);
-  /// Set dE/dx error of the track
+  
+  // Set dE/dx error of the track
   //void setDedxError(Float_t dEdxError)     { fDedxError = dEdxError; }
+  
   /// Set nHitsFit ( charge * nHitsFit )
   void setNHits(Int_t nhits)               { fNHits = (Char_t)nhits; }
-  /// Set nHitsPoss
+  
+  // Set nHitsPoss
   //void setNHitsPossible(Int_t nhits);
-  /// Set nHitsPoss
+  
+  // Set nHitsPoss
   //void setNHitsMax(Int_t nhits);
+  
   /// Set nHitsDedx
   void setNHitsDedx(Int_t nhits);
   /// Set nSigma(pion)
@@ -187,11 +198,11 @@ class MpdMiniTrack : public TObject {
   /// Set hit map
   void setHitMap(ULong64_t map)      { fHitMap = map; }
   
-  // Set link to MC-track
+  /// Set index of the corresponding miniMcTrack
   void setMcTrackIndex(Int_t index);
 
-  /// Set index to ECal PID traits
-  void setBECalPidTraitsIndex(Int_t index) { fBECalPidTraitsIndex = (Short_t)index; }
+  /// Set index to ECal cluster
+  void setBECalClusterIndex(Int_t index)   { fBECalClusterIndex = (Short_t)index; }
   /// Set index to BTOF PID traits
   void setBTofPidTraitsIndex(Int_t index)  { fBTofPidTraitsIndex = (Short_t)index; }
 
@@ -207,11 +218,14 @@ class MpdMiniTrack : public TObject {
   Float_t fPMomentumY;
   /// Pz momentum (GeV/c) of the primary track ( 0 if not primary )
   Float_t fPMomentumZ;
-  /// Px component of the momentum (GeV/c) of the global track at DCA to primary vertex
+  /// Px component of the momentum (GeV/c) of the global track
+  /// at DCA to primary vertex
   Float_t fGMomentumX;
-  /// Py component of the momentum (GeV/c) of the global track at DCA to primary vertex
+  /// Py component of the momentum (GeV/c) of the global track
+  /// at DCA to primary vertex
   Float_t fGMomentumY;
-  /// Pz component of the momentum (GeV/c) of the global track at DCA to primary vertex
+  /// Pz component of the momentum (GeV/c) of the global track
+  /// at DCA to primary vertex
   Float_t fGMomentumZ;
   /// Track origin x in cm (at DCAx to the primary vertex)
   Float_t fOriginX;
@@ -222,15 +236,19 @@ class MpdMiniTrack : public TObject {
   
   /// dE/dx in arbitrary units
   Float16_t fDedx;
-  /// dE/dx error in arbitrary units
+  
+  // dE/dx error in arbitrary units
   //Float16_t fDedxError;
   
   /// Charge * nHits
   Char_t   fNHits;
-  /// Possible number of hits (in TPC)
+  
+  // Possible number of hits (in TPC)
   //UChar_t  fNHitsMax;
-  /// Number of hits used for dE/dx estimation (in TPC)
+  
+  // Number of hits used for dE/dx estimation (in TPC)
   //UChar_t  fNHitsDedx;
+  
   /// nSigma(pion)  (encoding = nsigma * 1000)
   Short_t  fNSigmaPion;
   /// nSigma(kaon)  (encoding = nsigma * 1000)
@@ -242,12 +260,12 @@ class MpdMiniTrack : public TObject {
   /// Track hit map
   ULong64_t fHitMap;
 
-  /// Index of the BEMC pidTratis in the event (-1 if not matched)
-  Short_t  fBECalPidTraitsIndex;
-  /// Index of the BTOF pidTratis in the event (-1 if not matched)
+  /// Index of the barrel ECal cluster in the event (-1 if no match)
+  Short_t  fBECalClusterIndex;
+  /// Index of the BTOF pidTratis in the event (-1 if no match)
   Short_t  fBTofPidTraitsIndex;
-  
-  // Index of miniMcTrack that correponds to miniTrack
+  /// Index of miniMcTrack that correponds to miniTrack (aka IdTruth).
+  /// (-1 if no match)
   Short_t fMcTrackId;
 
   ClassDef(MpdMiniTrack, 3)

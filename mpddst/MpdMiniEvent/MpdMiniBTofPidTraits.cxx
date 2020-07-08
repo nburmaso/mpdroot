@@ -9,7 +9,7 @@
 // ROOT headers
 #include "TMath.h"
 
-// PicoDst headers
+// MiniDst headers
 #include "MpdMiniMessMgr.h"
 #include "MpdMiniBTofPidTraits.h"
 
@@ -17,16 +17,19 @@ ClassImp(MpdMiniBTofPidTraits)
 
 //_________________
 MpdMiniBTofPidTraits::MpdMiniBTofPidTraits() : TObject(),
-  mTrackIndex(-1), mHitIndex(-1), mBTofBeta(0), fLength(0.) {
+  fTrackIndex(-1), fHitIndex(-1),
+  fBTofBeta(0),fPx(0), fPy(0), fPz(0) {
   /* empty */
 }
 
 //_________________
 MpdMiniBTofPidTraits::MpdMiniBTofPidTraits(const MpdMiniBTofPidTraits &traits) : TObject() {
-  mTrackIndex = traits.mTrackIndex;  
-  mHitIndex = traits.mHitIndex;
-  mBTofBeta = traits.mBTofBeta;
-  fLength = traits.fLength; 
+  fTrackIndex = traits.fTrackIndex;  
+  fHitIndex = traits.fHitIndex;
+  fBTofBeta = traits.fBTofBeta;
+  fPx = traits.fPx;
+  fPy = traits.fPy;
+  fPz = traits.fPz;
 }
 
 //_________________
@@ -37,10 +40,10 @@ MpdMiniBTofPidTraits::~MpdMiniBTofPidTraits() {
 //_________________
 void MpdMiniBTofPidTraits::setBeta(Float_t beta) {
   if( beta <= 0) {
-    mBTofBeta = 0;
+    fBTofBeta = 0;
   }
   else {
-    mBTofBeta = ( (beta * 20000.) > std::numeric_limits<unsigned short>::max() ?
+    fBTofBeta = ( (beta * 20000.) > std::numeric_limits<unsigned short>::max() ?
 		  std::numeric_limits<unsigned short>::max() :
 		  (UShort_t)( TMath::Nint( beta * 20000. ) ) );
   }
@@ -48,7 +51,12 @@ void MpdMiniBTofPidTraits::setBeta(Float_t beta) {
 
 //_________________
 void MpdMiniBTofPidTraits::Print(const Char_t* option __attribute__((unused)) ) const {
-  LOG_INFO << " Matched track index = " << mTrackIndex << " Matched hit index = " << mHitIndex << endm;
-  LOG_INFO << " beta = " << btofBeta() << " Length = " << fLength << endm;
+  LOG_INFO << "TrkId: " << fTrackIndex << " HitId: " << fHitIndex
+	   << " beta: " << beta() /*<< " p: " << p().Mag()
+				    << " m2: " << massSqr() */ << endm;
 }
 
+//_________________
+Float_t MpdMiniBTofPidTraits::massSqr() const {
+  return p().Mag2() * ( 1. / ( beta() * beta() ) - 1. );
+}

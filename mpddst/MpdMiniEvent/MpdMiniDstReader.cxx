@@ -16,9 +16,9 @@
 #include "MpdMiniTrack.h"
 #include "MpdMiniBTofHit.h"
 #include "MpdMiniBTofPidTraits.h"
-#include "MpdMiniBECalHit.h"
-#include "MpdMiniBECalPidTraits.h"
+#include "MpdMiniBECalCluster.h"
 #include "MpdMiniTrackCovMatrix.h"
+#include "MpdMiniFHCalHit.h"
 #include "MpdMiniMcEvent.h"
 #include "MpdMiniMcTrack.h"
 #include "MpdMiniArrays.h"
@@ -100,15 +100,13 @@ void MpdMiniDstReader::setBranchAddresses(TChain *chain) {
 
 //_________________
 void MpdMiniDstReader::streamerOff() {
-  // This is to to save space on the file. No need for TObject bits for this structure.
-  // see: https://root.cern.ch/doc/master/classTClass.html#a606b0442d6fec4b1cd52f43bca73aa51
   MpdMiniEvent::Class()->IgnoreTObjectStreamer();
   MpdMiniTrack::Class()->IgnoreTObjectStreamer();
   MpdMiniBTofHit::Class()->IgnoreTObjectStreamer();
   MpdMiniBTofPidTraits::Class()->IgnoreTObjectStreamer();
-  MpdMiniBECalHit::Class()->IgnoreTObjectStreamer();
-  MpdMiniBECalPidTraits::Class()->IgnoreTObjectStreamer();
+  MpdMiniBECalCluster::Class()->IgnoreTObjectStreamer();
   MpdMiniTrackCovMatrix::Class()->IgnoreTObjectStreamer();
+  MpdMiniFHCalHit::Class()->IgnoreTObjectStreamer();
   MpdMiniMcEvent::Class()->IgnoreTObjectStreamer();
   MpdMiniMcTrack::Class()->IgnoreTObjectStreamer();
 }

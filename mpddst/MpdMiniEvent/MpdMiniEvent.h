@@ -246,9 +246,6 @@ class MpdMiniEvent : public TObject {
 
  private:
 
-  /// Number of FHCal modules
-  static const UShort_t fNumberOfFHCalModules = 90;
-
   /// Run number (or runId)
   Int_t    fRunId;
   /// Event ID

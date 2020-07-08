@@ -8,9 +8,9 @@
 #include "MpdMiniTrack.h"
 #include "MpdMiniBTofHit.h"
 #include "MpdMiniBTofPidTraits.h"
-#include "MpdMiniBECalHit.h"
-#include "MpdMiniBECalPidTraits.h"
+#include "MpdMiniBECalCluster.h"
 #include "MpdMiniTrackCovMatrix.h"
+#include "MpdMiniFHCalHit.h"
 #include "MpdMiniMcEvent.h"
 #include "MpdMiniMcTrack.h"
 #include "MpdMiniDst.h"          //MUST be the last one
@@ -52,17 +52,17 @@ void MpdMiniDst::printTracks() {
 }
 
 //_________________
-void MpdMiniDst::printBECalHits() {
+void MpdMiniDst::printBECalClusters() {
 
-  if(numberOfBECalHits() == 0) {
-    LOG_INFO << "No ECalHit found!" << endm;
+  if(numberOfBECalClusters() == 0) {
+    LOG_INFO << "No ECalClusters found!" << endm;
     return;
   }
 
-  LOG_INFO << "\n+++++++++ ECalHit list ( " << numberOfBECalHits() << " entries )\n\n";
-  for(UInt_t iEntry=0; iEntry<numberOfBECalHits(); iEntry++) {
-    LOG_INFO << "+++ becalHit " << iEntry << "\n";
-    becalHit(iEntry)->Print();
+  LOG_INFO << "\n+++++++++ ECalCluster list ( "<<numberOfBECalClusters()<<" entries )\n\n";
+  for(UInt_t iEntry=0; iEntry<numberOfBECalClusters(); iEntry++) {
+    LOG_INFO << "+++ becalCluster " << iEntry << "\n";
+    becalCluster(iEntry)->Print();
     LOG_INFO << "\n";
   }
 
@@ -81,24 +81,6 @@ void MpdMiniDst::printBTofHits() {
   for(UInt_t iEntry=0; iEntry<numberOfBTofHits(); iEntry++) {
     LOG_INFO << "+++ btofHit " << iEntry << "\n";
     btofHit(iEntry)->Print();
-    LOG_INFO << "\n";
-  }
-
-  LOG_INFO << endm;
-}
-
-//_________________
-void MpdMiniDst::printBECalPidTraits() {
-
-  if(numberOfBECalPidTraits() == 0) {
-    LOG_INFO << "No ECal pidTraits found!" << endm;
-    return;
-  }
-
-  LOG_INFO << "\n+++++++++ ECal pidTraits list ( " << numberOfBECalPidTraits() << " entries )\n\n";
-  for(UInt_t iEntry=0; iEntry<numberOfBECalPidTraits(); iEntry++) {
-    LOG_INFO << "+++ ECalPidTraits " << iEntry << "\n";
-    becalPidTraits(iEntry)->Print();
     LOG_INFO << "\n";
   }
 
@@ -139,6 +121,23 @@ void MpdMiniDst::printTrackCovMatrices() {
   }
 
   LOG_INFO << endm;
+}
+
+//_________________
+void MpdMiniDst::printFHCalHits() {
+  if(numberOfFHCalHits() == 0) {
+    LOG_INFO << "No FHCal hits found!" << endm;
+    return;
+  }
+
+  LOG_INFO << "\n+++++++++ fhcalHit list ( " << numberOfFHCalHits() << " entries )\n\n";
+  for(UInt_t iEntry=0; iEntry<numberOfFHCalHits(); iEntry++) {
+    LOG_INFO << "+++ FHCal hit " << iEntry << "\n";
+    fhcalHit(iEntry)->Print();
+    LOG_INFO << "\n";
+  }
+  
+  LOG_INFO << endm  ;
 }
 
 //_________________

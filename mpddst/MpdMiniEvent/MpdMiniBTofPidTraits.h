@@ -37,39 +37,47 @@ class MpdMiniBTofPidTraits : public TObject {
   //
 
   /// Return index of the associated track
-  Int_t   trackIndex() const     { return mTrackIndex; }
+  Int_t   trackIndex() const     { return fTrackIndex; }
   /// Return index of the associated hit
-  Int_t   hitIndex() const     { return mHitIndex; }
+  Int_t   hitIndex() const       { return fHitIndex; }
   /// Return beta (compression = beta * 20000)
-  Float_t btofBeta() const       { return (Float_t)mBTofBeta / 20000.f; }
-  /// Return length
-  Float_t length() const   { return fLength; }
+  Float_t beta() const           { return (Float_t)fBTofBeta / 20000.f; }
+  /// Return track momentum
+  TVector3 p() const             { return TVector3(fPx,fPy,fPz); }
+  /// Return mass square
+  Float_t massSqr() const;
   
   //
   // Setters
   //
 
   /// Set associated track index
-  void setTrackIndex(Int_t idx) { mTrackIndex = (idx > std::numeric_limits<short>::max()) ? -1 : (Short_t)idx; }
+  void setTrackIndex(Int_t idx) {
+    fTrackIndex = (idx > std::numeric_limits<Short_t>::max()) ? -1 : (Short_t)idx; }
   /// Set associated tof hit index
-  void setHitIndex(Int_t idx) { mHitIndex = (idx > std::numeric_limits<short>::max()) ? -1 : (Short_t)idx; }
+  void setHitIndex(Int_t idx) {
+    fHitIndex = (idx > std::numeric_limits<Short_t>::max()) ? -1 : (Short_t)idx; }
   /// Set beta
   void setBeta(Float_t beta);
-  /// Set length
-  void setLength(Float_t length) { fLength = length; }
+  /// Set momentum
+  void setMomentum(TVector3 p) { fPx = p.X(); fPy = p.Y(); fPz = p.Z(); }
   
  private:
 
-  /// Index to the associated track in the event
-  Short_t  mTrackIndex; 
-  /// Index to the associated hit in the event
-  Short_t  mHitIndex;   
+  /// Index to the associated track in the event (-1 if no matching)
+  Short_t   fTrackIndex; 
+  /// Index to the associated hit in the event (-1 if no matching)
+  Short_t   fHitIndex;   
   /// Beta * 20000
-  UShort_t  mBTofBeta;
-  /// Track length
-  Float_t fLength;
+  UShort_t  fBTofBeta;
+  /// Px of the track (GeV/c)
+  Float16_t fPx;
+  /// Py of the track (GeV/c)
+  Float16_t fPy;
+  /// Pz of the track (GeV/c)
+  Float16_t fPz;
   
-  ClassDef(MpdMiniBTofPidTraits, 1);
+  ClassDef(MpdMiniBTofPidTraits, 3);
 };
 
 #endif // #define MpdMiniBTofPidTraits_h

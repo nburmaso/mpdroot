@@ -1,13 +1,11 @@
-//#ifdef _VANILLA_ROOT_
-
 #ifndef HEP_PHYSICAL_CONSTANTS_H
 #ifndef __CINT__
 #define HEP_PHYSICAL_CONSTANTS_H
 
-/// ROOT headers
+// ROOT headers
 #include "TMath.h"
 
-/// PicoDst headers
+// MiniDst headers
 #include "SystemOfUnits.h"
 
 #ifndef ST_NO_NAMESPACES
@@ -145,4 +143,3 @@ static const double kGasThreshold   = 1.e-2*gram/centimeter3;
 
 #endif /* HEP_PHYSICAL_CONSTANTS_H */
 
-//#endif // #ifdef _VANILLA_ROOT_

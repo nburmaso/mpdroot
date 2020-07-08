@@ -1,5 +1,5 @@
 //
-// MpdMiniTrack holds information about the reconstructed track parameters
+// MpdMiniTrack holds information about reconstructed track parameters
 //
 
 // C++ headers
@@ -26,7 +26,7 @@ MpdMiniTrack::MpdMiniTrack() : TObject(),
   fNSigmaKaon( std::numeric_limits<short>::min() ),
   fNSigmaProton( std::numeric_limits<short>::min() ),
   fNSigmaElectron( std::numeric_limits<short>::min() ),
-  fHitMap(0), fBECalPidTraitsIndex(-1), fBTofPidTraitsIndex(-1),
+  fHitMap(0), fBECalClusterIndex(-1), fBTofPidTraitsIndex(-1),
   fMcTrackId(-1) {
   // Default constructor
   /* empty */
@@ -56,7 +56,7 @@ MpdMiniTrack::MpdMiniTrack(const MpdMiniTrack &track) : TObject() {
   fNSigmaProton = track.fNSigmaProton;
   fNSigmaElectron = track.fNSigmaElectron;
   fHitMap = track.fHitMap;
-  fBECalPidTraitsIndex = track.fBECalPidTraitsIndex;
+  fBECalClusterIndex = track.fBECalClusterIndex;
   fBTofPidTraitsIndex = track.fBTofPidTraitsIndex;
   fMcTrackId = track.fMcTrackId;
 }
@@ -77,7 +77,7 @@ void MpdMiniTrack::Print(const Char_t* option __attribute__((unused)) ) const {
            << "nHits: " << nHits()
            << "nSigma pi/K/p/e: " << nSigmaPion()   << "/" << nSigmaKaon() << "/"
            << nSigmaProton() << "/" << nSigmaElectron() << "\n"
-	   << "Hit index in ECal/BTof: " << fBECalPidTraitsIndex << "/"
+	   << "Hit index in ECal/BTof: " << fBECalClusterIndex << "/"
 	   << fBTofPidTraitsIndex << "\n"
 	   << "MC track id: " << fMcTrackId << "\n" << endm;
 }

@@ -13,6 +13,7 @@
  * BECalHit       - Hit in Barrel Electromagnectic Calorimeter (for each tower)
  * BECalPidTraits - PID information from the tower for the ECal-matched track
  * TrackCovMatrix - Track covariance matrix
+ * FHCalHit       - Hit in forward hadronic calorimeter (for each tower)
  * McEvent        - Monte Carlo event information
  * McTrack        - Monte Carlo track information
  *
@@ -47,8 +48,8 @@ class MpdMiniArrays {
   static int miniArraySizes[NAllMiniArrays];
 
   /// Array names
-  enum TypeIndex { Event=0, Track, BTofHit, BTofPidTraits, BECalHit, BECalPidTraits,
-		   TrackCovMatrix, McEvent, McTrack };
+  enum TypeIndex { Event=0, Track, BTofHit, BTofPidTraits, BECalCluster,
+		   TrackCovMatrix, FHCalHit, McEvent, McTrack };
 };
 
 #endif // #define MpdMiniArrays_h
