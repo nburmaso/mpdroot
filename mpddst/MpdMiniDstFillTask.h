@@ -7,11 +7,16 @@
  *
  * \author Pavel Batyuk (JINR), Grigory Nigmatkulov (NRNU MEPhI)
  * \email pavel.batyuk@jinr.ru ; nigmatkulov@gmail.com ; ganigmatkulov@mephi.ru
- * \date May 01, 2020
+ * \date Aug 01, 2019
  **/
 
-#ifndef MPDMINIDSTFILLTASK_H
-#define MPDMINIDSTFILLTASK_H
+#ifndef MpdMiniDstFillTask_h
+#define MpdMiniDstFillTask_h
+
+// C++ headers
+#include <vector>
+#include <utility>
+#include <map>
 
 // ROOT and FAIRROOT headers
 #include "TNamed.h"
@@ -22,40 +27,23 @@
 #include "TClonesArray.h"
 #include "TFile.h"
 
-#include <FairTask.h>
-#include <FairRunAna.h>
-#include <FairField.h>
-#include <FairRootManager.h>
-#include <FairMCEventHeader.h>
-#include <FairEventHeader.h>
-#include <MpdMCTrack.h>
-#include <MpdGenTrack.h>
+// FairRoot headers
+#include "FairTask.h"
+#include "FairRunAna.h"
+#include "FairField.h"
+#include "FairRootManager.h"
+#include "FairMCEventHeader.h"
+#include "FairEventHeader.h"
 
 // MpdRoot headers
-#include <MpdEvent.h>
-#include <MpdVertex.h>
-#include <MpdTrack.h>
-#include <MpdTpcKalmanTrack.h>
-#include <MpdKalmanFilter.h>
-#include <MpdKalmanGeoScheme.h>
-#include <MpdTofHit.h>
-#include <MpdEmcDigitKI.h>
-#include <MpdEmcClusterKI.h>
-#include <MpdTofMatchingData.h>
+class MpdEvent;
+class MpdKalmanTrack;
+class MpdVertex;
 
 // MpdMiniDst headers
-#include "MpdMiniDst.h"
-#include "MpdMiniArrays.h"
-#include "MpdMiniEvent.h"
-#include "MpdMiniTrack.h"
-#include "MpdMiniMcTrack.h"
-#include "MpdMiniMessMgr.h"
-#include "MpdMiniTrackCovMatrix.h"
-#include "MpdMiniBTofHit.h"
-#include "MpdMiniBTofPidTraits.h"
-#include "MpdMiniBECalHit.h"
-#include "MpdMiniBECalPidTraits.h"
-#include "MpdMiniMcEvent.h"
+class MpdMiniDst;
+class MpdMiniTrack;
+class MpdMiniTrackCovMatrix;
 
 //_________________
 class MpdMiniDstFillTask : public FairTask {
@@ -81,10 +69,16 @@ class MpdMiniDstFillTask : public FairTask {
   /// \param false do not store covariant matrix information
   void isUseCovMatrix(Bool_t flag) { fIsUseCovMatrix = flag; }
 
+  /// Fill ECal-related information
+  void isUseECal(Bool_t flag)      { fIsUseECal = flag; }
+
  private:
 
   /// Store/Not store track covariant matrix information
   Bool_t fIsUseCovMatrix;
+
+  /// Store/Not store ECal information
+  Bool_t fIsUseECal;
 
   /// Pointer to event header
   FairMCEventHeader* fEventHeaders;
@@ -102,34 +96,39 @@ class MpdMiniDstFillTask : public FairTask {
   TClonesArray* fMCTracks;
   // Pointer to GenTracks (Primaries from MC-generator)
   TClonesArray* fGenTracks;
-  // Pointer to EMC digits 
-  TClonesArray* fEmcDigits;
   // Pointer to EMC clusters
-  TObjArray* fEmcClusters;
+  TClonesArray* fEmcClusters;
+  // Pointer to ZDC digits
+  TClonesArray* fZdcDigits;
   
   /// A pointer to the main input/outpur miniDst structure containing all `TObjArray`s
-  MpdMiniDst* mMiniDst;
+  MpdMiniDst* fMiniDst;
 
   /// Magnetic field of the current event
-  Float_t mBField;
+  Float_t fBField;
 
   /// Output file name
-  TString mOutputFileName;
+  TString fOutputFileName;
   /// Pointer to the output file
-  TFile* mOutputFile;
+  TFile* fOutputFile;
 
   /// Pointer to the TTree with miniDst
-  TTree* mTTree;
+  TTree* fTTree;
 
   /// Splitting level of ROOT file
-  Int_t mSplit;
+  Int_t fSplit;
   /// Compression level
-  Int_t mCompression;
+  Int_t fCompression;
   /// Size of the buffer
-  Int_t mBufferSize;
+  Int_t fBufferSize;
 
   /// Pointer to the mini arrays
-  TClonesArray** mMiniArrays;
+  TClonesArray** fMiniArrays;
+
+  /// Vector that keeps McTrack to miniMcTrack correspondence
+  std::vector< std::pair<Int_t, UShort_t> > fMcTrk2MiniMcTrk;
+  /// Mat for keeping MC track to barrel ECal cluster correpsondence
+  std::map< Int_t, Int_t > fMcTrk2EcalCluster;
 
   /// Turn-off ROOT streamers
   void streamerOff();
@@ -140,36 +139,43 @@ class MpdMiniDstFillTask : public FairTask {
   /// Fill event information
   void fillEvent();
 
+  /// Fill MC tracks
+  void fillMcTracks();
+
+  /// Fill barrel ECal clusters
+  void fillECalClusters();
+
   /// Fill track information
   void fillTracks();
 
   /// Fill BTOF information
   void fillBTofHits();
 
-  /// Fill ECal information
-  void fillECalHits();
+  /// Fill FHCal information
+  void fillFHCalHits();
+
+  /// Return index of miniMcTrack that corresponds to McTrack (-1 not found)
+  Int_t miniMcIdxFromMcIdx(Int_t mcIdx);
  
   /* Below is given a set of auxiliary functions */
   /// Compute matrices of derivatives
-  void ComputeAandB(TMatrixD&, const MpdKalmanTrack*, const MpdKalmanTrack&,
+  void computeAandB(TMatrixD&, const MpdKalmanTrack*, const MpdKalmanTrack&,
 		    TMatrixD&, TMatrixD&, TMatrixD&);
 
   /// Adjust track parameters
   void Proxim(const MpdKalmanTrack&, MpdKalmanTrack&);
   
-  /// Refit function for momenta
-  void RefitToVp(MpdMiniTrack*, Int_t, MpdVertex*); // A function to be used when doing refit of tracks considered as primaries to the primary vertex aimed at precising of their momenta
+  /// A function to be used when doing refit of tracks considered
+  /// as primaries to the primary vertex aimed at precising of their momenta
+  void refit2Vp(MpdMiniTrack*, Int_t, MpdVertex*);
 
-  // Fill covariance matrix if needed
-  void fillCovMatrix(MpdTpcKalmanTrack*, MpdMiniTrackCovMatrix*); // A function used for filling of cov. track matrix
+  /// Fill covariance matrix if needed
+  void fillCovMatrix(MpdTpcKalmanTrack*, MpdMiniTrackCovMatrix*);
   
-  // Tof matching 
-  void DoTofMatching(Int_t, Int_t, MpdMiniTrack*, MpdMiniBTofPidTraits*);
-  
-  // Ecal matching
-  void DoEcalMathching(Int_t, Int_t, MpdMiniTrack*, MpdMiniBECalPidTraits*);
+  /// Check if the event event is okay (reasonabler reconstruction)
+  Bool_t isGoodEvent();
   
   ClassDef(MpdMiniDstFillTask, 0)
 };
 
-#endif
+#endif // MpdMiniDstFillTask_h

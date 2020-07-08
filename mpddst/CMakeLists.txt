@@ -17,6 +17,7 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/lhetrack
  ${CMAKE_SOURCE_DIR}/mpdpid
+ ${CMAKE_SOURCE_DIR}/zdc
  ${CMAKE_SOURCE_DIR}/mpddst
  ${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
 )
