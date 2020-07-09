@@ -46,7 +46,7 @@ fCompression(9),
 fBufferSize(65536 * 4),
 fMiniArrays(nullptr),
 fIsUseCovMatrix(kTRUE),
-fIsUseECal(kFALSE),
+fIsUseECal(kTRUE),
 //fEmcDigits(nullptr),
 fEmcClusters(nullptr) {
 
