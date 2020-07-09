@@ -258,13 +258,14 @@ cout<<"MpdBmdTowerDraw::DrawTowers"<<endl;
             return;
         }
         TGeoNode* bmdNode = gGeoManager->GetCurrentNode();
+        cout<< "bmdNode : " << bmdNode << endl;
         TGeoVolume* bmdVolumeClone = bmdNode->GetVolume()->CloneVolume();
         TObjArray* bmdArr= bmdNode->GetVolume()->GetNodes();
-
+        cout<< "bmdArr : " << bmdArr << endl;
         for (UInt_t module = 0; module < (bmdNode->GetVolume()->GetNdaughters()); module++)
         {
             TGeoNode* moduleNode = (TGeoNode*) bmdArr->UncheckedAt(module);
-
+            cout << "module" << module << " " << "moduleNode" << moduleNode << endl;
             TGeoNode* moduleNodeCopy;
             if (GetShadowFlag())
             {

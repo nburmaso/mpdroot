@@ -30,11 +30,12 @@ void geometry_v1(FairRunSim *fRun)
 
     FairModule *Pipe= new FairPipe("PIPE");
     Pipe->SetGeometryFileName("pipe.geo");
+    //Pipe->SetGeometryFileName("pipe_v2.root");
     fRun->AddModule(Pipe);
 
     FairModule *Magnet= new FairMagnet("MAGNET");
     Magnet->SetGeometryFileName("magnet_v5.root");
-//    fRun->AddModule(Magnet);
+    fRun->AddModule(Magnet);
 
     //   Silicon Tracker Stations
 //    FairDetector *Sts= new MpdSts("STS", kTRUE);
@@ -48,11 +49,11 @@ void geometry_v1(FairRunSim *fRun)
 
     FairDetector *Tof= new MpdTof("TOF", kTRUE );
     Tof->SetGeometryFileName("tof_v8.root");
-//    fRun->AddModule(Tof);
+    fRun->AddModule(Tof);
 
     FairDetector *eTof= new MpdEtof("ETOF", kTRUE );
     eTof->SetGeometryFileName("etof_v2.geo");
-//    fRun->AddModule(eTof);
+    fRun->AddModule(eTof);
 
 //    FairDetector *straw_ecStt= new MpdStrawendcap("ESTT", kTRUE);
 //    straw_ecStt->SetGeometryFileName("straw_60_layers.geo");
@@ -64,15 +65,15 @@ void geometry_v1(FairRunSim *fRun)
 
     FairDetector *Emc= new MpdEmc("EMC", kTRUE );
     Emc->SetGeometryFileName("emc_v3.root");
-//    fRun->AddModule(Emc);
+    fRun->AddModule(Emc);
 
     FairDetector *Bbc = new BmdDetector("BMD",kTRUE );
     Bbc->SetGeometryFileName("bbc_hexagon_v3.root");
     //Bbc->SetGeometryFileName("simple1_v1.root");
     fRun->AddModule(Bbc);
 
-    FairDetector *Cpc = new MpdCpc("CPC",kTRUE );
-    Cpc->SetGeometryFileName("simple1_v2.root");
+//    FairDetector *Cpc = new MpdCpc("CPC",kTRUE );
+//    Cpc->SetGeometryFileName("simple1_v2.root");
 //    fRun->AddModule(Cpc);
 
     //    FairDetector *Fsa = new MpdFsa("FSA",kTRUE );

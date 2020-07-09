@@ -47,8 +47,12 @@ R__ADD_INCLUDE_PATH($VMCWORKDIR)
 // outFile - output file with MC data, default: evetest.root
 // flag_store_FairRadLenPoint
 // FieldSwitcher: 0 - corresponds to the ConstantField (0, 0, 5) kG (It is used by default); 1 - corresponds to the FieldMap ($VMCWORKDIR/input/B-field_v2.dat)
-void runMC1(TString inFile = "", TString outFile = "evetest.root", Int_t nStartEvent = 0, Int_t nEvents = 1,
-        Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0)
+void runMC1(TString inFile = "/home/demezhan/proograms/DCQGSM/Au_Au_mb/AuAuss5mb1_mer.r12.gz"
+                            /*"/home/demezhan/proograms/urqmd-3.4/test.f14"*/, 
+            TString outFile = /*"/home/demezhan/proograms/DCQGSM/Bmd_QGSM_AuAu_mb/ZDC_LAQGSM_AuAu_5GeV.root",*/
+                                "evetest.root",
+            Int_t nStartEvent = 0, Int_t nEvents = 2,
+            Bool_t flag_store_FairRadLenPoint = kFALSE, Int_t FieldSwitcher = 0)
 {
     TStopwatch timer;
     timer.Start();

@@ -276,7 +276,11 @@ Bool_t MpdLAQGSMGenerator::GetEventHeader(char *ss)
   case 3:
       general_fgets(ss,250,fInputFile); 
       general_fgets(ss,250,fInputFile); 
-    break;
+      break;
+  case 4: //AZ
+      general_fgets(ss, 250, fInputFile);
+      general_fgets(ss, 250, fInputFile);
+      break;
   default:
     break;
   }
@@ -459,44 +463,36 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 
     general_fgets(ss,250,fInputFile);
 
-    if (fQGSM_format_ID<3)
+    if (fQGSM_format_ID<3 || fQGSM_format_ID == 4)
       sscanf(ss," %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &iCode); 
-    else{ 
-		if(fQGSM_format_ID==4){	      
-//		   cout << ss << endl;
-		   sscanf(ss," %d %d %d %d %d %g %g %g %g %g %g", &iCharge,&iLeptonic,&iStrange,&iBarionic, &PDG, &px, &py, &pz, &pz1, &pza1, &mass); 
-//		   printf("!!!!!!!!!!!!!!!!!!!!!reading: %d %d %d %d %d %g %g %g %g %g %g\n", iCharge,iLeptonic,iStrange,iBarionic, PDG, px, py, pz, pz1, pza1, mass); 
-		   primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
-		}
-		else
-		   sscanf(ss," %d %d %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &io1, &io2, &io3); 
-	}
-    if(fQGSM_format_ID!=4){	
-	    Int_t p_num = 21;
-	    if (fQGSM_format_ID==3)
-	      p_num=36;
+    else 
+      sscanf(ss," %d %d %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &io1, &io2, &io3); 
 
-	    if (!fQGSM_format_ID)
-	      sscanf(&(ss[p_num]),"%g%g%g%g%g",&px,&py,&pz,&pz1,&mass);
-	    else
-	      sscanf(&(ss[p_num]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
+    Int_t p_num = 21;
+    if (fQGSM_format_ID==3)
+      p_num=36;
+    else if (fQGSM_format_ID == 4) p_num = 30;
+
+    if (!fQGSM_format_ID)
+      sscanf(&(ss[p_num]),"%g%g%g%g%g",&px,&py,&pz,&pz1,&mass);
+    else
+      sscanf(&(ss[p_num]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
 
 
-	    if (FindParticle (iCharge, iStrange, iLeptonic, iBarionic,  mass, PDG, ionName)) {
+    if (FindParticle (iCharge, iStrange, iLeptonic, iBarionic,  mass, PDG, ionName)) {
 
-	      if (!fPDG->GetParticle(PDG))  {
-		cout << "-W- MpdLAQGSMGenerator::ReadEvent: Cannot find " << PDG << " " 
-		     << ionName << " in database!" << endl;
-		continue;
-	      }
-			  
-	      // Give track to PrimaryGenerator
-	      if (fUseColliderSystem)
-		primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
-	      else
-		primGen->AddTrack(PDG, px, py, pz1, 0., 0., 0.);
-	   }
+      if (!fPDG->GetParticle(PDG))  {
+	cout << "-W- MpdLAQGSMGenerator::ReadEvent: Cannot find " << PDG << " " 
+	     << ionName << " in database!" << endl;
+	continue;
       }
+	          
+      // Give track to PrimaryGenerator
+      if (fUseColliderSystem)
+	primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
+      else
+	primGen->AddTrack(PDG, px, py, pz1, 0., 0., 0.);
+    }
   }
 
   return kTRUE;
@@ -616,19 +612,13 @@ Int_t MpdLAQGSMGenerator::RegisterIons(Int_t Max_Event_Number) {
       // 	sscanf(&(ss[21]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
 
       Int_t p_num = 21;
-      if (fQGSM_format_ID>2)
-		p_num=36;
+      if (fQGSM_format_ID==3)
+	p_num=36;
 
-      if (!fQGSM_format_ID) {
-		sscanf(&(ss[p_num]),"%g%g%g%g%g",&px,&py,&pz,&pz1,&mass);
-		//if(iCharge>20)
-		//	cout << "format 1 " << mass << " " << fQGSM_format_ID << endl;
-	  }
-      else{
-		sscanf(&(ss[p_num]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
-		//if(iCharge>20)
-		//	cout << "format 2 " << px << " " << py << " " << pz << " " << pz1 << " " << pza1 << " "<< mass << " " << fQGSM_format_ID << endl;
-	  }
+      if (!fQGSM_format_ID)
+	sscanf(&(ss[p_num]),"%g%g%g%g%g",&px,&py,&pz,&pz1,&mass);
+      else
+	sscanf(&(ss[p_num]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
 
 
       if (iBarionic>1){    // ion
@@ -640,16 +630,11 @@ Int_t MpdLAQGSMGenerator::RegisterIons(Int_t Max_Event_Number) {
 	if (A>9)
 	  geant4_bug_case=0;
 
-	//if(iCharge>20)
-	//	cout << "??????????????????1 " << iCharge << " " << iStrange << " " << iLeptonic << " " << iBarionic<< " " <<  mass << endl;
+
 	if (FindParticle (iCharge, iStrange, iLeptonic, iBarionic,  mass, PDG, buf_ionName)) {
 
-	//if(iCharge>20)
-	//	cout << "??????????????????2 " << iCharge << " " << iStrange << " " << iLeptonic << " " << iBarionic<< " " <<  mass << endl;
 	  if (fPDG->GetParticle(PDG))
 	    continue;
-		
-	//	cout << "!!!!!!!!!!!!!!!!!!!! " << PDG << endl;
 
 	  ionName = buf_ionName;
 
@@ -951,3 +936,4 @@ Bool_t MpdLAQGSMGenerator::CreateNucleus (Int_t Z, Float_t mass, Int_t pdgCode, 
 
 
 ClassImp(MpdLAQGSMGenerator)
+

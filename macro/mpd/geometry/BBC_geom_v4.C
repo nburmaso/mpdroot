@@ -151,10 +151,10 @@ void BBC_geom_v4()
     //TString gdmlname = gPath + "/geometry/tpc_v7.gdml";
     //gGeoManager->Export(gdmlname);
 
-    top->Draw("ogl");
-    TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
-    v->SetStyle(TGLRnrCtx::kOutline);
-    top->Draw("");
+    //top->Draw("ogl");
+    //TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
+    //v->SetStyle(TGLRnrCtx::kOutline);
+    //top->Draw("");
 
 }
 
@@ -423,7 +423,7 @@ void ring(TGeoVolume* mother_volume, Int_t A_or_B_side, Int_t nring)
 
         TGeoTranslation *hex_position = new TGeoTranslation(Xaxid, Yaxid, Zaxid);
         mother_volume->AddNode(hex_vol,modNb,hex_position);
-
+        cout << "ring = " << nring << " " << "cell =" << cell_number << " " << "modNb = " << modNb << " " << "Xaxid = " << Xaxid << " " << "Yaxid = " << Yaxid << endl;
 
 
 
