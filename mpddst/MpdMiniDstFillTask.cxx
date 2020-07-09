@@ -409,7 +409,10 @@ void MpdMiniDstFillTask::fillBTofHits() {
   // Instantiate MpdMiniBTofHit array
   TClonesArray* miniToF = fMiniArrays[MpdMiniArrays::BTofHit];
   miniToF->Delete();
-
+ 
+  if (!fTofHits)
+      return;
+  
   // Loop over TOF hits
   for (Int_t iHit = 0; iHit < fTofHits->GetEntriesFast(); iHit++) {
 
@@ -442,6 +445,9 @@ void MpdMiniDstFillTask::fillMcTracks() {
   Bool_t isEmcTrack = kFALSE;
   Bool_t isGenLevelTrack = kFALSE;
 
+  if (!fMCTracks)
+      return;
+  
   // Loop over MC tracks
   for (Int_t iMcTrk = 0; iMcTrk < fMCTracks->GetEntriesFast(); iMcTrk++) {
 
@@ -467,7 +473,7 @@ void MpdMiniDstFillTask::fillMcTracks() {
     // 		<< std::endl;
     // }
 
-    if ( fIsUseECal ) {
+    if ( fIsUseECal && fEmcClusters) {
       // Check if MC track that was used in ECal clusters
       for (Int_t iCluster = 0; iCluster < fEmcClusters->GetEntriesFast(); iCluster++) {
 	// Retrieve barrel ECal cluster
@@ -833,6 +839,7 @@ void MpdMiniDstFillTask::fillTracks() {
     //
 
     // Loop over TOF-matching information
+    if (fTofMatching)
     for (Int_t iMatch = 0; iMatch < fTofMatching->GetEntriesFast(); iMatch++) {
 
       // Retrieve TOF-matching information
