@@ -17,15 +17,15 @@ ClassImp(MpdMiniEvent)
 
 //_________________
 MpdMiniEvent::MpdMiniEvent(): TObject(),
-  fRunId(0), fEventId(0), fFillId(0), fBunchCrossId(0), fBField(0), fTime(0),
-  fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0),
+  fRunId(0), fEventId(0), fFillId(0), fBunchCrossId(0), fBField(5.), fTime(0),
+  fPrimaryVertexX(-999.), fPrimaryVertexY(-999.), fPrimaryVertexZ(-999.),
   fPrimaryVertexErrorX(0), fPrimaryVertexErrorY(0), fPrimaryVertexErrorZ(0),
   fNBECalMatch(0), fNBTOFMatch(0), fTriggerIds(),
   fRefMultNeg(0), fRefMultPos(0),
   fRefMult2NegEast(0), fRefMult2PosEast(0), fRefMult2NegWest(0), fRefMult2PosWest(0),
   fRefMultHalfNegEast(0), fRefMultHalfPosEast(0),
   fRefMultHalfNegWest(0), fRefMultHalfPosWest(0),
-  fGRefMult(0), fNumberOfGlobalTracks(0), fbTofTrayMultiplicity(0), 
+  fGRefMult(0), fNumberOfGlobalTracks(0), fBTofTrayMultiplicity(0), 
   fNFfdHitsEast(0), fNFfdHitsWest(0), fVzFfd(-999.), fNTofT0(0), 
   fFHCalX(0), fBackgroundRate(0), fFHCalEastRate(0), fFHCalWestRate(0),
   fFHCalEnergyDeposit{} {
@@ -79,7 +79,7 @@ MpdMiniEvent::MpdMiniEvent(const MpdMiniEvent &event) : TObject() {
   fNumberOfGlobalTracks = event.fNumberOfGlobalTracks;
 
   // Hit mulitplicities
-  fbTofTrayMultiplicity = event.fbTofTrayMultiplicity;
+  fBTofTrayMultiplicity = event.fBTofTrayMultiplicity;
 
   // FFD info
   fNFfdHitsEast = event.fNFfdHitsEast;

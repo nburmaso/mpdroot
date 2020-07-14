@@ -523,6 +523,10 @@ void MpdMiniDstFillTask::fillMcTracks() {
       miniMcTrack->setZ( -1. );
       miniMcTrack->setT( -1. );
 
+      if ( isGenLevelTrack ) {
+	miniMcTrack->setIsFromGenerator( kTRUE );
+      }
+
       if (fGenTracks && isGenLevelTrack) {
 	for (Int_t iGenTrack = 0; iGenTrack < fGenTracks->GetEntriesFast(); iGenTrack++) {
 	  MpdGenTrack* genTrack = (MpdGenTrack*) fGenTracks->UncheckedAt(iGenTrack);

@@ -95,6 +95,8 @@ class MpdMiniMcTrack : public TObject {
   void addGlobalTrackId(UShort_t id);
   /// Add indices of MpdMiniTracks that wwere reconstructed out of current MC track
   void setGlobalTrackIds(std::vector< UShort_t > ids) { fRecoTrackIds = ids; }
+  /// Set if particle is from generator
+  void setIsFromGenerator(Bool_t isFromGen)   { fIsFromGen = isFromGen; }
 
   //
   // Getters
@@ -150,6 +152,8 @@ class MpdMiniMcTrack : public TObject {
   /// Return indices of the MpdMiniTracks that were reconstructed
   /// from the current MC track
   std::vector< UShort_t > recoTrackIds() const { return fRecoTrackIds; }
+  /// Check if paricle is from generator
+  Bool_t isFromGenerator() const              { return fIsFromGen; }
 
  private:
   /// Unique track ID
@@ -184,7 +188,10 @@ class MpdMiniMcTrack : public TObject {
   /// Empty when no tracks were reconstructed from the MC track.
   std::vector< UShort_t > fRecoTrackIds;
 
-  ClassDef(MpdMiniMcTrack, 2)
+  /// Is from generator
+  Bool_t   fIsFromGen;
+
+  ClassDef(MpdMiniMcTrack, 3)
 };
 
 #endif // #define MpdMiniMcTrack_h

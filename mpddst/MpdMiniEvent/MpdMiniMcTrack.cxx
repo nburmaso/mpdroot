@@ -12,7 +12,7 @@ ClassImp(MpdMiniMcTrack)
 MpdMiniMcTrack::MpdMiniMcTrack() : TObject(),
   fId(0), fStatus(0), fPdgId(0), /*fParentIndex(0),*/ fChild{},
   fPx(0), fPy(0), fPz(0), fEnergy(0),
-  fX(0), fY(0), fZ(0), fT(0) {
+  fX(0), fY(0), fZ(0), fT(0), fIsFromGen(kFALSE) {
   // Default constructor
   if ( !fRecoTrackIds.empty() ) {
     fRecoTrackIds.clear();
@@ -37,6 +37,7 @@ MpdMiniMcTrack::MpdMiniMcTrack(const MpdMiniMcTrack& copy) : TObject() {
   fZ = copy.fZ;
   fT = copy.fT;
   fRecoTrackIds = copy.fRecoTrackIds;
+  fIsFromGen = copy.fIsFromGen;
 }
 
 //_________________

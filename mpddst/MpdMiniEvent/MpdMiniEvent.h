@@ -43,7 +43,7 @@ class MpdMiniEvent : public TObject {
   Int_t    eventId() const             { return fEventId; }
   /// Return fill ID
   Int_t    fillId() const              { return (Int_t)fFillId; }
-  /// Return magnetic field
+  /// Return magnetic field (kG)
   Float_t  bField() const              { return fBField; }
   /// Return time stamp
   Int_t    time() const                { return fTime; }
@@ -104,7 +104,7 @@ class MpdMiniEvent : public TObject {
   /// Return total number of global tracks that were reconstructed in the event
   UShort_t numberOfGlobalTracks() const  { return fNumberOfGlobalTracks; }
   /// Return number of hits in TOF trays
-  UShort_t btofTrayMultiplicity() const  { return fbTofTrayMultiplicity; }
+  UShort_t btofTrayMultiplicity() const  { return fBTofTrayMultiplicity; }
 
   /// Return number of hits in the east Fast Forward Detector (FFD)
   Int_t    nFfdHitsEast() const          { return (Int_t)fNFfdHitsEast; }
@@ -214,7 +214,7 @@ class MpdMiniEvent : public TObject {
   /// Set number of global tracks reconstructed in the event
   void setNumberOfGlobalTracks(UShort_t mult)   { fNumberOfGlobalTracks = (UShort_t)mult; }
   /// Set total number of hits in TOF trays
-  void setbTofTrayMultiplicity(UShort_t mult)   { fbTofTrayMultiplicity = (UShort_t)mult; }
+  void setbTofTrayMultiplicity(UShort_t mult)   { fBTofTrayMultiplicity = (UShort_t)mult; }
 
   /// Set number of hits in the east FFD
   void setNFfdHitsEast(UShort_t nHits)          { fNFfdHitsEast = (UChar_t)nHits; }
@@ -254,7 +254,7 @@ class MpdMiniEvent : public TObject {
   UShort_t fFillId;
   /// Number of bunch crossing
   UChar_t  fBunchCrossId;
-  /// Magnetic field strength
+  /// Magnetic field strength (kG)
   Float_t  fBField;
   /// GMT time casted into unsigned int
   Int_t    fTime;
@@ -316,7 +316,7 @@ class MpdMiniEvent : public TObject {
   UShort_t fNumberOfGlobalTracks;
   
   /// Total hit multiplicity in TOF trays
-  UShort_t fbTofTrayMultiplicity;
+  UShort_t fBTofTrayMultiplicity;
 
   /// Number of hits in east Fast Forward Detector (FFD)
   UChar_t  fNFfdHitsEast;
