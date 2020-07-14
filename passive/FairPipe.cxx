@@ -9,7 +9,10 @@
 #include "FairGeoPassivePar.h"
 #include "TObjArray.h"
 #include "FairRun.h"
+#include "FairGeoVolume.h"              // for FairGeoVolume
 
+#include <stddef.h>                     // for NULL
+#include <iostream>                     // for operator<<, basic_ostream, etc
 
 FairPipe::~FairPipe()
 {
@@ -22,7 +25,19 @@ FairPipe::FairPipe(const char * name, const char * title)
   : FairModule(name ,title)
 {
 }
-void FairPipe::ConstructGeometry(){
+void FairPipe::ConstructGeometry()
+{
+
+  TString fileName=GetGeometryFileName();
+  if (fileName.EndsWith(".geo")) {
+    ConstructASCIIGeometry();
+  } else if(fileName.EndsWith(".root")) {
+    ConstructRootGeometry();
+  } else {
+    std::cout<< "Geometry format not supported " <<std::endl;
+  }
+}
+void FairPipe::ConstructASCIIGeometry(){
 
     FairGeoLoader *loader=FairGeoLoader::Instance();
         FairGeoInterface *GeoInterface =loader->getGeoInterface();

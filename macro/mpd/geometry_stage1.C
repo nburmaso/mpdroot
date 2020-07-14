@@ -9,7 +9,7 @@ void geometry_stage1(FairRunSim *fRun) {
   fRun->AddModule(Cave);
 
   FairModule *Pipe = new FairPipe("PIPE");
-  Pipe->SetGeometryFileName("pipe.geo");
+  Pipe->SetGeometryFileName("pipe_v2.root");
   fRun->AddModule(Pipe);
 
   FairModule *Magnet = new FairMagnet("MAGNET");

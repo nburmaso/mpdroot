@@ -11,6 +11,7 @@
 #include "FairModule.h"                 // for FairModule
 
 #include "Rtypes.h"                     // for FairPipe::Class, ClassDef, etc
+#include <string>                       // for string
 
 class FairPipe : public FairModule
 {
@@ -19,7 +20,8 @@ class FairPipe : public FairModule
     FairPipe();
 
     virtual ~FairPipe();
-    virtual void ConstructGeometry();
+    void ConstructGeometry();
+    void ConstructASCIIGeometry();
 
     ClassDef(FairPipe,1) //PNDPIPE
 
