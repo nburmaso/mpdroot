@@ -335,7 +335,7 @@ void MpdMiniDstFillTask::fillEvent() {
   miniMcEventHeaders->Delete();
 
   // Retrieve number of primary tracks
-  Int_t nPrim = fEventHeaders->GetNPrim();
+  Int_t nPart = -1;
   Int_t nColl = -1;
   Double_t rp = -1;
   // Impact parameter
@@ -351,8 +351,9 @@ void MpdMiniDstFillTask::fillEvent() {
   fEventHeaders->GetVertex( vtx );
 
   // Create and fill MiniMcEvent
-  new ((*miniMcEventHeaders)[miniMcEventHeaders->GetEntriesFast()])
-    MpdMiniMcEvent( runId, eventId, rp, b, nPrim, nColl, vtx, time );
+  MpdMiniMcEvent* mcEvent = new ((*miniMcEventHeaders)[miniMcEventHeaders->GetEntriesFast()])
+    MpdMiniMcEvent( runId, eventId, rp, b, nPart, nColl, vtx, time );
+  mcEvent->setReactionPlaneAngle(fEventHeaders->GetRotZ()); 
 }
 
 //_________________

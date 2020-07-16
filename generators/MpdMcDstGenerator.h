@@ -22,6 +22,7 @@
 #include <MpdGenTrack.h>
 
 #include <TClonesArray.h>
+#include <TRandom.h>
 
 using namespace std;
 using namespace TMath;
@@ -40,12 +41,21 @@ public:
         cout << "NUMBER OF SKIPPED EVENTS = " << ev << endl;
     }
 
+    void SetEventPlane(Double_t phiMin, Double_t phiMax) {
+        fPhiMin = phiMin;
+        fPhiMax = phiMax;
+        fEventPlaneSet = kTRUE;
+    }
+
 private:
     Long64_t fEventNumber; //!
     McDstReader* myReader;
-    
+
     TClonesArray* fGenTracks;
-    
+
+    Double_t fPhiMin, fPhiMax; // Limits of event plane angle
+    Bool_t fEventPlaneSet; // Flag whether event plane angle is used
+
     MpdMcDstGenerator(const MpdMcDstGenerator&);
     MpdMcDstGenerator& operator=(const MpdMcDstGenerator&);
 

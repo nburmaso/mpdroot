@@ -5,14 +5,20 @@ TClonesArray** McDst::mcArrays = nullptr;
 MpdMcDstGenerator::MpdMcDstGenerator() :
 fEventNumber(0),
 myReader(nullptr),
-fGenTracks(nullptr) {
-
+fGenTracks(nullptr),
+fEventPlaneSet(kFALSE), 
+fPhiMin(0.), 
+fPhiMax(0.) {
+    
 }
 
 MpdMcDstGenerator::MpdMcDstGenerator(TString fileName) :
 fEventNumber(0),
 myReader(nullptr),
-fGenTracks(nullptr) {
+fGenTracks(nullptr),
+fEventPlaneSet(kFALSE),
+fPhiMin(0.), 
+fPhiMax(0.) {
     cout << "-I MpdMcDstGenerator: Opening input file " << fileName << endl;
 
     myReader = new McDstReader(fileName.Data());
@@ -53,6 +59,13 @@ Bool_t MpdMcDstGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
         cout << "Something went wrong when getting event, stopping here ..." << endl;
         return kFALSE;
     }
+    
+    Double_t phi = 0.;
+    // ---> Generate rotation angle
+    if (fEventPlaneSet) {
+        gRandom->SetSeed(0);
+        phi = gRandom->Uniform(fPhiMin, fPhiMax);
+    }
 
     FairMCEventHeader* header = primGen->GetEvent();
     if (header && (!header->IsSet())) {
@@ -60,6 +73,7 @@ Bool_t MpdMcDstGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
         header->SetNPrim(event->npart());
         header->SetB(event->impact());
         header->MarkSet(kTRUE);
+        header->SetRotZ(phi);
     }
 
     UInt_t nTracks = dst->numberOfParticles();
@@ -69,13 +83,24 @@ Bool_t MpdMcDstGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 
         if (!particle)
             continue;
+        
+        Double_t px = particle->px();
+        Double_t py = particle->py(); 
+        
+        if (fEventPlaneSet) {
+            Double_t pt = Sqrt(px * px + py * py);
+            Double_t azim = ATan2(py, px);
+            azim += phi;
+            px = pt * Cos(azim);
+            py = pt * Sin(azim);
+        }
 
-        primGen->AddTrack(particle->pdg(), particle->px(), particle->py(), particle->pz(), 0., 0., 0.);
+        primGen->AddTrack(particle->pdg(), px, py, particle->pz(), 0., 0., 0.);
 
         // Push a new track to the array of gen. tracks ...
         MpdGenTrack* track = new ((*fGenTracks)[fGenTracks->GetEntriesFast()]) MpdGenTrack();
-        track->SetXYZT(particle->x(), particle->y(), particle->z(), particle->t());
-        track->SetPxyz(particle->px(), particle->py(), particle->pz()); // Do we need them? FIXME
+        track->SetXYZT(px, py, particle->z(), particle->t());
+        track->SetPxyz(px, py, particle->pz()); 
         track->SetPdg(particle->pdg());
         track->SetE(particle->e());
     }
