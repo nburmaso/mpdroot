@@ -46,27 +46,14 @@ class MpdMiniMcTrack : public TObject {
 	    std::numeric_limits<unsigned short>::max() : (UShort_t)index ); }
   /// Set PdgId (pdg code)
   void setPdgId(Int_t pdg)                                 { fPdgId = pdg; }
-  /// Set status
-  void setStatus(Int_t status)
-  { if ( status <= std::numeric_limits<char>::min() ) { fStatus = std::numeric_limits<char>::min(); }
-    else if ( status >= std::numeric_limits<char>::max() ) { fStatus = std::numeric_limits<char>::max(); }
-    else { fStatus = (Char_t)status; } }
+  
   // Set parent index
   /*
   void setParentIndex(Int_t parent)
   { fParentIndex = ( ( parent > std::numeric_limits<unsigned short>::max() ) ?
 		     std::numeric_limits<unsigned short>::max() : (UShort_t)parent ); }
   */
-  /// Set two daughter track indices (the first and the last one)
-  void setChild(Int_t child[2])               { setFirstChild(child[0]); setLastChild(child[1]); }
   /// Set index of the first child
-  void setFirstChild(Int_t child)
-  { fChild[0] = ( (child > std::numeric_limits<unsigned short>::max() ) ?
-		  std::numeric_limits<unsigned short>::max() : (UShort_t)child ); }
-  /// Set index of the second (last) child
-  void setLastChild(Int_t child)
-  { fChild[1] = ( (child > std::numeric_limits<unsigned short>::max() ) ?
-		  std::numeric_limits<unsigned short>::max() : (UShort_t)child ); }
   /// Set px (GeV/c)
   void setPx(Double_t px)                     { fPx = (Float_t)px; }
   /// Set py (GeV/c)
@@ -104,19 +91,11 @@ class MpdMiniMcTrack : public TObject {
 
   /// Return unique ID
   UShort_t id() const                         { return fId; }
-  /// Return particle status
-  Int_t status() const                        { return (Int_t)fStatus; }
   /// Return particle charge
   Float_t charge() const
   { return TDatabasePDG::Instance()->GetParticle( fPdgId )->Charge(); }
   /// Return PDG code
   Int_t pdgId() const                         { return fPdgId; }
-  // Return parent particle index
-  // UShort_t parentIndex() const                { return fParentIndex; }
-  /// Return the first child index
-  UShort_t firstChildIndex() const            { return fChild[0]; }
-  /// Return the second (last) child index
-  UShort_t lastChildIndex() const             { return fChild[1]; }
   /// Return px (GeV/c)
   Float_t px() const                          { return fPx; }
   /// Return py (GeV/c)
@@ -157,15 +136,9 @@ class MpdMiniMcTrack : public TObject {
 
  private:
   /// Unique track ID
-  UShort_t fId;
-  /// Status of the track
-  Char_t   fStatus;
+  UShort_t fId;  
   /// PDG code
   Int_t    fPdgId;
-  // Parent index
-  //UShort_t fParentIndex;
-  /// The first and the second daughter particle indeces (-1 if not decayed)
-  UShort_t fChild[2];
   /// Px (GeV/c)
   Float_t  fPx;
   /// Py (GeV/c)
