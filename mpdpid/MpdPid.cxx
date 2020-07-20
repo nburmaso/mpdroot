@@ -764,6 +764,210 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 		}
 	}
 	
+	if ( Generator == "PHSD_CENT" ) /// PHSD central events, b < 3 fm, fEnergy = 11.0, 20/03/2019, 5482 events
+	{
+		parPiPosMom->SetParameters(2628.47,0.846834,0.203337,0.357357,0.147232); Multiplicities[0] = 1310378;
+		parPiNegMom->SetParameters(1997.0,1.41096,0.196863,0.341347,0.18051); Multiplicities[1] = 1423581;
+		parKaPosMom->SetParameters(872.775,0.346697,0.298306,0.102013,0.423512); Multiplicities[2] = 175908;
+		parKaNegMom->SetParameters(437.025,0.368078,0.279169,0.0955438,0.48267); Multiplicities[3] = 88328;
+		parPrPosMom->SetParameters(1705.66,0.663284,0.425112,0.220086,0.457981); Multiplicities[4] = 344194;
+		parPrNegMom->SetParameters(191.997,6.39986,0.276029,0.244932,0.722006); Multiplicities[5] = 9803;
+		parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+		parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+		parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+		parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+		parDeMom->SetParameters(0.,1.,1.,1.,1.);
+		parTrMom->SetParameters(0.,1.,1.,1.,1.);
+		parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+		parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+	}
+	
+	if ( Generator == "PHSD_CSR" )
+	{
+		if (fEnergy < 5.0) /// PHSD csr central events, b < 3 fm, fEnergy = 4.0 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(326.591,37.4694,0.0395906,0.145417,1.08328); Multiplicities[0] = 4637927;
+			parPiNegMom->SetParameters(7834.26,1.46868,0.178981,0.0634056,0.520443); Multiplicities[1] = 5651992;
+			parKaPosMom->SetParameters(1709.8,1.73908,0.20194,0.143219,0.290164); Multiplicities[2] = 343045;
+			parKaNegMom->SetParameters(327.052,0.638412,0.183259,0.0800663,0.554539); Multiplicities[3] = 65986;
+			parPrPosMom->SetParameters(29176.4,3.57695,0.238379,0.195002,0.670283); Multiplicities[4] = 5858655;
+			parPrNegMom->SetParameters(4.18494,1.07077,0.165123,0.0865973,2.30082); Multiplicities[5] = 945;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else if (fEnergy < 7.0) /// PHSD csr central events, b < 3 fm, fEnergy = 6.2 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(112.48,188.057,0.183905,0.284109,-9.42658e-05); Multiplicities[0] = 7656887;
+			parPiNegMom->SetParameters(369.468,63.2746,0.190742,0.278494,-0.0606429); Multiplicities[1] = 8715275;
+			parKaPosMom->SetParameters(4727.89,0.411218,0.271326,0.10275,0.38878); Multiplicities[2] = 948753;
+			parKaNegMom->SetParameters(1467.24,0.423877,0.247845,0.0908385,0.477971); Multiplicities[3] = 294951;
+			parPrPosMom->SetParameters(22653.3,2.16885,0.335439,0.255945,0.403967); Multiplicities[4] = 4560388;
+			parPrNegMom->SetParameters(85.4405,1.87681,0.13522,0.0885255,2.5824); Multiplicities[5] = 17742;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else if (fEnergy < 8.0) /// PHSD csr central events, b < 3 fm, fEnergy = 7.6 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(271.408,92.8688,0.184859,0.303397,0.0543418); Multiplicities[0] = 9235403;
+			parPiNegMom->SetParameters(1489.49,17.1459,0.192214,0.302818,-0.0970675); Multiplicities[1] = 10319307;
+			parKaPosMom->SetParameters(6031.92,0.356296,0.28695,0.0997535,0.406052); Multiplicities[2] = 1211986;
+			parKaNegMom->SetParameters(2292.64,0.392553,0.26581,0.0946355,0.461694); Multiplicities[3] = 460846;
+			parPrPosMom->SetParameters(20282.1,1.38552,0.373508,0.255721,0.370525); Multiplicities[4] = 4090897;
+			parPrNegMom->SetParameters(178.133,1.51585,0.201521,0.125455,1.68405); Multiplicities[5] = 36475;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else if (fEnergy < 10.0) /// PHSD csr central events, b < 3 fm, fEnergy = 8.8 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(330.227,85.1517,0.179918,0.3141,0.121203); Multiplicities[0] = 10473715;
+			parPiNegMom->SetParameters(21412.6,0.965329,0.210709,0.338147,0.08417); Multiplicities[1] = 11579444;
+			parKaPosMom->SetParameters(6714.74,0.343555,0.297204,0.101954,0.396783); Multiplicities[2] = 1350509;
+			parKaNegMom->SetParameters(2939.86,0.373118,0.276092,0.0958796,0.458351); Multiplicities[3] = 591237;
+			parPrPosMom->SetParameters(18934.3,1.02918,0.397596,0.248315,0.378061); Multiplicities[4] = 3823045;
+			parPrNegMom->SetParameters(271.395,1.29596,0.246056,0.146202,1.31564); Multiplicities[5] = 55217;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else /// PHSD csr central events, b < 3 fm, fEnergy = 12.3 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(523.376,66.8745,0.172619,0.330811,0.198081); Multiplicities[0] = 13262313;
+			parPiNegMom->SetParameters(996.699,25.9407,0.202627,0.35925,-0.162493); Multiplicities[1] = 14426178;
+			parKaPosMom->SetParameters(8208.95,0.325369,0.313731,0.105367,0.393535); Multiplicities[2] = 1653266;
+			parKaNegMom->SetParameters(4565.48,0.344706,0.298358,0.100691,0.441146); Multiplicities[3] = 919173;
+			parPrPosMom->SetParameters(15861.8,1.06114,0.420781,0.268906,0.331336); Multiplicities[4] = 3211971;
+			parPrNegMom->SetParameters(545.455,5.15299,0.289769,0.250636,0.750215); Multiplicities[5] = 110793;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+	}
+	
+	if ( Generator == "PHSD_NOCSR" )
+	{
+		if (fEnergy < 5.0) /// PHSD no csr central events, b < 3 fm, fEnergy = 4 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(396.282,32.7313,0.0382901,0.141021,1.12647); Multiplicities[0] = 4940651;
+			parPiNegMom->SetParameters(3579.74,3.98371,0.11532,0.0306925,1.30859); Multiplicities[1] = 5997347;
+			parKaPosMom->SetParameters(1081.74,3.09011,0.190816,0.154575,0.279164); Multiplicities[2] = 217190;
+			parKaNegMom->SetParameters(253.536,0.589513,0.178808,0.0743182,0.612162); Multiplicities[3] = 51184;
+			parPrPosMom->SetParameters(30200.6,3.29956,0.236862,0.190743,0.684265); Multiplicities[4] = 6064105;
+			parPrNegMom->SetParameters(4.86563,1.59102,0.115168,0.0729325,3.3942); Multiplicities[5] = 1139;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else if (fEnergy < 7.0) /// PHSD no csr central events, b < 3 fm, fEnergy = 6.2 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(2907.1,7.34039,0.192883,0.283338,0.000931754); Multiplicities[0] = 8289950;
+			parPiNegMom->SetParameters(434.643,57.0644,0.194478,0.275712,-0.0728979); Multiplicities[1] = 9398261;
+			parKaPosMom->SetParameters(3030.57,0.431268,0.264635,0.102554,0.388718); Multiplicities[2] = 608249;
+			parKaNegMom->SetParameters(1194.21,0.430582,0.239526,0.0874055,0.502341); Multiplicities[3] = 240120;
+			parPrPosMom->SetParameters(24464.4,2.01624,0.334706,0.250743,0.412746); Multiplicities[4] = 4924589;
+			parPrNegMom->SetParameters(104.891,2.0149,0.141495,0.0947837,2.53473); Multiplicities[5] = 21688;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else if (fEnergy < 8.0) /// PHSD no csr central events, b < 3 fm, fEnergy = 7.6 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(3463.66,7.24569,0.190893,0.304263,0.0839204); Multiplicities[0] = 9906781;
+			parPiNegMom->SetParameters(638.648,40.2362,0.194759,0.301837,-0.1207); Multiplicities[1] = 11025250;
+			parKaPosMom->SetParameters(4243.36,0.373601,0.279679,0.0997516,0.401217); Multiplicities[2] = 852728;
+			parKaNegMom->SetParameters(1954.45,0.411682,0.258866,0.0941066,0.470275); Multiplicities[3] = 393033;
+			parPrPosMom->SetParameters(21992.6,1.39463,0.370946,0.254295,0.371529); Multiplicities[4] = 4435915;
+			parPrNegMom->SetParameters(210.959,1.4898,0.201572,0.123791,1.70536); Multiplicities[5] = 43113;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else if (fEnergy < 10.0) /// PHSD no csr central events, b < 3 fm, fEnergy = 8.8 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(6728.05,3.88388,0.190088,0.319898,0.124891); Multiplicities[0] = 10994546;
+			parPiNegMom->SetParameters(3648.45,8.36849,0.304356,0.177689,0.177577); Multiplicities[1] = 12124932;
+			parKaPosMom->SetParameters(5131.42,0.356848,0.289977,0.101518,0.39762); Multiplicities[2] = 1031859;
+			parKaNegMom->SetParameters(2595.77,0.383127,0.270511,0.0949794,0.464502); Multiplicities[3] = 522263;
+			parPrPosMom->SetParameters(20165.6,1.28612,0.388469,0.261465,0.353915); Multiplicities[4] = 4073272;
+			parPrNegMom->SetParameters(305.183,1.28427,0.245721,0.144331,1.35441); Multiplicities[5] = 62210;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+		
+		else /// PHSD no csr central events, b < 3 fm, fEnergy = 12.3 GeV, 10/10/2019, ~50k events
+		{
+			parPiPosMom->SetParameters(25403.9,0.930567,0.206834,0.368397,0.134282); Multiplicities[0] = 13619538;
+			parPiNegMom->SetParameters(1064.68,36.2707,0.326473,0.173008,0.228547); Multiplicities[1] = 14796114;
+			parKaPosMom->SetParameters(7276.52,0.328204,0.309239,0.104224,0.392577); Multiplicities[2] = 1465260;
+			parKaNegMom->SetParameters(4294.11,0.353445,0.293973,0.100527,0.443493); Multiplicities[3] = 864408;
+			parPrPosMom->SetParameters(16438.3,1.07511,0.419069,0.268969,0.330482); Multiplicities[4] = 3328879;
+			parPrNegMom->SetParameters(575.422,4.48476,0.290547,0.246113,0.770269); Multiplicities[5] = 117001;
+			parElPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parElNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuPosMom->SetParameters(0.,1.,1.,1.,1.);
+			parMuNegMom->SetParameters(0.,1.,1.,1.,1.);
+			parDeMom->SetParameters(0.,1.,1.,1.,1.);
+			parTrMom->SetParameters(0.,1.,1.,1.,1.);
+			parHe3Mom->SetParameters(0.,1.,1.,1.,1.);
+			parHe4Mom->SetParameters(0.,1.,1.,1.,1.);
+		}
+	}
+	
 	if ( (Generator == "LAQGSM") || (Generator == "QGSM") )
 	{
 		if (Tracking == "HP")
@@ -960,6 +1164,31 @@ void MpdPid::Init(TString Generator, TString Tracking, TString NSigPart)
 	fgaus2 = new TF2("fgaus2","[0]*TMath::Gaus(x,[1],[2])*TMath::Gaus(y,[3],[4])",-2.,10.,-1.,5.);
 	fasymgaus = new TF1("fasymgaus", this, &MpdPid::AsymGaus, -1., 5., 4, "MpdPid", "AsymGaus");
 	fasymgaus2 = new TF2("fasymgaus2", this, &MpdPid::AsymGaus2, -1., 5., -2., 10., 6, "MpdPid", "AsymGaus2");
+}
+
+Bool_t MpdPid::ReInitPartYield(Double_t *par, Int_t pdg)
+{
+	/// Number of parameters is always 5!
+	Bool_t ans = kFALSE;
+	switch (pdg)
+	{
+		case -11   : parElPosMom->SetParameters(par); ans = kTRUE; break;
+		case  11   : parElNegMom->SetParameters(par); ans = kTRUE; break;
+		case -13   : parMuPosMom->SetParameters(par); ans = kTRUE; break;
+		case  13   : parMuNegMom->SetParameters(par); ans = kTRUE; break;
+		case  211  : parPiPosMom->SetParameters(par); ans = kTRUE; break;
+		case -211  : parPiNegMom->SetParameters(par); ans = kTRUE; break;
+		case  321  : parKaPosMom->SetParameters(par); ans = kTRUE; break;
+		case -321  : parKaNegMom->SetParameters(par); ans = kTRUE; break;
+		case  2212 : parPrPosMom->SetParameters(par); ans = kTRUE; break;
+		case -2212 : parPrNegMom->SetParameters(par); ans = kTRUE; break;
+		case PDG_DEUTERON : parDeMom->SetParameters(par); ans = kTRUE; break;
+		case PDG_TRITON   : parTrMom->SetParameters(par); ans = kTRUE; break;
+		case PDG_HE3      : parHe3Mom->SetParameters(par); ans = kTRUE; break;
+		case PDG_HE4      : parHe4Mom->SetParameters(par); ans = kTRUE; break;
+		default: cout << "Incorrect PID species!" << endl;
+	}
+	return ans;
 }
 
 Double_t MpdPid::GetDedxElParam(Double_t p){

@@ -115,6 +115,9 @@ class MpdPid : public TObject
 	/// Returns the most probable pdg code
 	Long_t GetMaxProb();
 	
+	/// Change particle yield function parameters, if success returns kTRUE
+	Bool_t ReInitPartYield(Double_t*, Int_t);
+	
 	/// Return expected dE/dx values (variable: full momentum)
 	Double_t GetDedxPiParam(Double_t);
 	Double_t GetDedxPrParam(Double_t);
