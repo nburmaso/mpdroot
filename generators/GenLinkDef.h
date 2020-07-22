@@ -34,6 +34,7 @@
 #pragma link C++ class MpdMcDstGenerator+;
 #pragma link C++ class MpdDecayer+;
 #pragma link C++ class MpdTPythia8Generator+;
+#pragma link C++ class MpdSmashGenerator+;
 
 #pragma link C++ class map<TString, FairIon*>;
 

@@ -37,7 +37,7 @@ R__ADD_INCLUDE_PATH($VMCWORKDIR)
 #include "macro/mpd/geometry_stage1.C"
 //#include "macro/mpd/geometry_v2.C"
         
-#define HADGEN  // Choose generator: URQMD VHLLE FLUID PART ION BOX HSD LAQGSM HADGEN
+#define HADGEN  // Choose generator: URQMD VHLLE FLUID PART ION BOX HSD LAQGSM  SMASH
 #define GEANT3  // Choose: GEANT3 GEANT4
 
 // inFile - input file with generator data, default: auau.09gev.mbias.98k.ftn14
@@ -179,6 +179,20 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     MpdGeneralGenerator* generalHad = new MpdGeneralGenerator(hadGen);
     primGen->AddGenerator(generalHad);
 
+#else
+#ifdef SMASH
+    MpdSmashGenerator* smashGen = new MpdSmashGenerator(inFile);
+
+    smashGen->SetRandomRP( kTRUE ); // default is also kTRUE
+    if (nStartEvent > 0)
+        smashGen->SkipEvents(nStartEvent);
+    primGen->AddGenerator( smashGen );
+
+    // if nEvents is equal 0 then all events (start with nStartEvent) of the given file should be processed
+    if (nEvents == 0)
+        nEvents = smashGen->GetNeventsInTree() - nStartEvent;
+    cout << "runMC: MpdSmashGenerator: nEvents = " << nEvents << endl;
+
 #endif
 #endif
 #endif
@@ -189,6 +203,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 #endif
 #endif 
 #endif 
+#endif
 
     fRun->SetOutputFile(outFile.Data());
     
