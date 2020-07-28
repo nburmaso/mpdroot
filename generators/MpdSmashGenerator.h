@@ -48,42 +48,33 @@ public:
 
 private:
 
-    TFile* fInputFile; //!  Input file
-    TString fFileName; //!  Input file name
-    //    TChain *fDstTree; //!
-    TTree *fInputTree;
+    TFile   * fInputFile;   //!  Input file
+    TString fFileName;      //!  Input file name
+    TTree   *fInputTree;    //! Input SMASH tree
     //    TChain *fInputTree;
 
-    //    Double_t fPx[kBatyukConst]; //!
-    //    Double_t fPy[kBatyukConst]; //!
-    //    Double_t fPz[kBatyukConst]; //!
-    //    //Double_t fX[kBatyukConst]; //!  [fm] freezout
-    //    //Double_t fY[kBatyukConst]; //!  [fm] freezout
-    //    //Double_t fZ[kBatyukConst]; //!  [fm] freezout
-    //    Double_t fE[kBatyukConst]; //!
-    //    Int_t fPID[kBatyukConst]; //!  pdg
-    //    UInt_t fNpart; //!
-
-    // vars to be read from SMASH tree:
-    Double_t fImpPar;
-    Int_t fNpart;
-    Bool_t fEmptyEv;
-    Double_t fPx[MAX_N_PART], fPy[MAX_N_PART], fPz[MAX_N_PART];
-    Int_t fPID[MAX_N_PART];
-    Int_t fCharge[MAX_N_PART];
+    // Vars to be read from SMASH tree:
+    Double_t fImpPar;    //!
+    Int_t fNpart;        //!
+    Bool_t fEmptyEv;     //!
+    Double_t fPx[MAX_N_PART];  //!
+    Double_t fPy[MAX_N_PART];  //!
+    Double_t fPz[MAX_N_PART];  //!
+    Int_t fPID[MAX_N_PART];    //!
+    Int_t fCharge[MAX_N_PART]; //!
 
     //
     Int_t fEventNumber; //!
 
-    Bool_t    fIsRandomRP;   // random/fixed reaction plane
-    Double_t  fPsiRP;  // reaction plane angle
+    Bool_t    fIsRandomRP;  //! // random/fixed reaction plane
+    Double_t  fPsiRP;   //! // reaction plane angle
 
     TRandom3 *fRandom; //!
 
     MpdSmashGenerator(const MpdSmashGenerator&);
     MpdSmashGenerator& operator=(const MpdSmashGenerator&);
 
-    ClassDef(MpdSmashGenerator, 1);
+    ClassDef(MpdSmashGenerator, 2);
 
 };
 

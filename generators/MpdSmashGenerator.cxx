@@ -37,9 +37,17 @@ using namespace TMath;
 // -----   Default constructor   ------------------------------------------
 
 MpdSmashGenerator::MpdSmashGenerator()
-    : FairGenerator(),
-      fInputFile(NULL),
-      fFileName("") {
+    : FairGenerator()
+    , fInputFile(NULL)
+    , fFileName("")
+    , fImpPar (0)
+    , fNpart (0)
+    , fEmptyEv (false)
+
+    , fIsRandomRP(false)
+    , fPsiRP (0)
+    , fRandom (0)
+{
 }
 // ------------------------------------------------------------------------
 
@@ -48,11 +56,18 @@ MpdSmashGenerator::MpdSmashGenerator()
 // -----   Standard constructor   -----------------------------------------
 
 MpdSmashGenerator::MpdSmashGenerator(TString fileName)
-    : FairGenerator(),
-      fInputFile(NULL),
-      fFileName(fileName)
+    : FairGenerator()
+    , fInputFile(NULL)
+    , fFileName(fileName)
+
+    , fImpPar (0)
+    , fNpart (0)
+    , fEmptyEv (false)
+
+    , fIsRandomRP(false)
+    , fPsiRP (0)
+    , fRandom (0)
 {
-    //  fFileName = fileName;
     cout << "-I MpdSmashGenerator: Opening input file " << fFileName << endl;
     fInputFile = new TFile(fFileName.Data());
     if (!fInputFile) {
@@ -65,6 +80,7 @@ MpdSmashGenerator::MpdSmashGenerator(TString fileName)
     //    fInputTree->Add(fFileName);
 
     cout << "-I MpdSmashGenerator: Number of entries in tree: " << fInputTree->GetEntries() << endl;
+
 
     fInputTree->SetBranchAddress( "impact_b", &fImpPar );
     fInputTree->SetBranchAddress( "npart", &fNpart );
@@ -90,9 +106,9 @@ MpdSmashGenerator::MpdSmashGenerator(TString fileName)
 
 // -----   Destructor   ---------------------------------------------------
 
-MpdSmashGenerator::~MpdSmashGenerator() {
+MpdSmashGenerator::~MpdSmashGenerator()
+{
     delete fInputFile;
-    //    delete fDstTree;
     delete fRandom;
 }
 // ------------------------------------------------------------------------
