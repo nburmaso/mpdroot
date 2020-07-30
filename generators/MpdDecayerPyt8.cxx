@@ -93,8 +93,8 @@ void MpdDecayerPyt8::Init()
   fBranch = channel.bRatio();
 
   // Random number generator
-  //fRandom = new TRandom(0); // time-dependent seed
-  fRandom = gRandom;
+  fRandom = new TRandom(0); // time-dependent seed
+  //fRandom = gRandom;
 
   //fPythia8->Pythia8()->particleData.isResonance(113,kTRUE);
   fPythia8->Pythia8()->particleData.list(113);
