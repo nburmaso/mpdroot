@@ -62,6 +62,7 @@ MpdMcDstGenerator.cxx
 MpdDecayer.cxx
 MpdTPythia8Generator.cxx
 MpdSmashGenerator.cxx
+MpdDecayerPyt8.cxx
 )
 if(PLUTO_FOUND)
 #set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
@@ -71,7 +72,7 @@ EndIf(PLUTO_FOUND)
 Set(HEADERS)
 Set(LINKDEF GenLinkDef.h)
 Set(LIBRARY_NAME MpdGen)
-Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst EGPythia6)
+Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst EGPythia6 EGPythia8)
 
 GENERATE_LIBRARY()
 

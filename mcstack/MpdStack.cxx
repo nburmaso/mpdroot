@@ -8,6 +8,7 @@
 #include "MpdStack.h"
 
 #include "MpdDecayer.h"
+#include "MpdDecayerPyt8.h"
 #include "MpdMCTrack.h"
 #include "FairDetector.h"
 #include "FairMCPoint.h"
@@ -121,18 +122,22 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
 
   // --> Set argument variable
   ntr = trackId;
-
+  
   //AZ
-  if (fDecayFlag && !particle->GetPDG()->Stable() && particle->GetPDG()->DecayList()) {
+  if (fDecayFlag && (!particle->GetPDG()->Stable() || (particle->GetPdgCode() == 221) || (particle->GetPdgCode() == 111)) && particle->GetPDG()->DecayList()) {
     // Decay unstable particle
-    MpdDecayer::Instance()->Decay(particle);
-    Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
+    //MpdDecayer::Instance()->Decay(particle);
+    //Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
+    MpdDecayerPyt8::Instance()->Decay(particle);
+    Int_t npart = MpdDecayerPyt8::Instance()->ImportParticles(fDecays);
+    cout << " aaa " << npart << endl;
     // Copy decay products to vector to avoid TClonesArray overwriting
     // for recursive decays
     vector<TParticle> vDecays;
     
     for (Int_t j = 0; j < npart; ++j) {
       TParticle tpart = *((TParticle*) fDecays->UncheckedAt(j));
+      tpart.Print();
       vDecays.push_back(tpart);
     }
 
@@ -195,16 +200,20 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
   ntr = trackId;
 
   //AZ
-  if (fDecayFlag && !particle->GetPDG()->Stable() && particle->GetPDG()->DecayList()) {
+  if (fDecayFlag && (!particle->GetPDG()->Stable() || (particle->GetPdgCode() == 221) || (particle->GetPdgCode() == 111)) && particle->GetPDG()->DecayList()) {
     // Decay unstable particle 
-    MpdDecayer::Instance()->Decay(particle);
-    Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
+    //MpdDecayer::Instance()->Decay(particle);
+    //Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
+    MpdDecayerPyt8::Instance()->Decay(particle);
+    Int_t npart = MpdDecayerPyt8::Instance()->ImportParticles(fDecays);
+    cout << " bbb " << npart << endl;
     // Copy decay products to vector to avoid TClonesArray overwriting
     // for recursive decays
     vector<TParticle> vDecays;
 
     for (Int_t j = 0; j < npart; ++j) {
       TParticle tpart = *((TParticle*) fDecays->UncheckedAt(j));
+      tpart.Print();
       vDecays.push_back(tpart);
     }
     

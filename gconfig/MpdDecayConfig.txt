@@ -1,0 +1,8 @@
+# Change branching ratios of some channels
+# Lines with "#" - comments
+# Channel format - PDGmother:PDGdaughter1:PDGdaughter2:...:xBRscale;PDGmother:PDGdaughter1:...;
+# One line per each particle.
+# Daughters' order as in the Pythia8 decay table.
+# No spaces.
+223:11:-11:x10;223:111:11:-11:x10;
+113:11:-11:x10;

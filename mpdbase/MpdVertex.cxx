@@ -14,7 +14,8 @@ using std::endl;
 MpdVertex::MpdVertex() : TNamed("Vertex", "Global") {
   fX = fY = fZ = fChi2 = 0.;
   fNDF = fNTracks = 0;
-  for(Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
+  for (Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
+  fCovMatrix[0] = fCovMatrix[3] = fCovMatrix[5] = 1.0;
   fTrInd = new TArrayI(1);
 }
 // -------------------------------------------------------------------------
@@ -24,7 +25,8 @@ MpdVertex::MpdVertex(const char* name, const char* title)
   : TNamed(name, title) {
   fX = fY = fZ = fChi2 = 0.;
   fNDF = fNTracks = 0;
-  for(Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
+  for (Int_t i=0; i<6; i++) fCovMatrix[i] = 0;
+  fCovMatrix[0] = fCovMatrix[3] = fCovMatrix[5] = 1.0;
   fTrInd = new TArrayI(1);
 }
 // -------------------------------------------------------------------------
