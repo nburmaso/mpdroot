@@ -46,7 +46,7 @@ MpdDecayerPyt8* MpdDecayerPyt8::Instance()
 
 MpdDecayerPyt8::MpdDecayerPyt8():
   fPythia8(new TPythia8()),
-  fDebug(1),
+  fDebug(0),
   fLambda(NULL),
   fRandom(NULL)
 {

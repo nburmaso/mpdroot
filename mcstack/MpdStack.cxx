@@ -130,7 +130,6 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
     //Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
     MpdDecayerPyt8::Instance()->Decay(particle);
     Int_t npart = MpdDecayerPyt8::Instance()->ImportParticles(fDecays);
-    cout << " aaa " << npart << endl;
     // Copy decay products to vector to avoid TClonesArray overwriting
     // for recursive decays
     vector<TParticle> vDecays;
@@ -206,7 +205,6 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
     //Int_t npart = MpdDecayer::Instance()->ImportParticles(fDecays);
     MpdDecayerPyt8::Instance()->Decay(particle);
     Int_t npart = MpdDecayerPyt8::Instance()->ImportParticles(fDecays);
-    cout << " bbb " << npart << endl;
     // Copy decay products to vector to avoid TClonesArray overwriting
     // for recursive decays
     vector<TParticle> vDecays;
