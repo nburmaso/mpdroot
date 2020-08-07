@@ -1,0 +1,35 @@
+# Define compiler (g++ or clang)
+CXX = g++
+
+# Define compiler and linker flags
+CFLAGS = $(shell root-config --cflags) -O2 -fPIC -Wall -W -Woverloaded-virtual -Wno-deprecated-declarations
+CFLAGS += -pipe -std=c++11 -I.
+LIBS = $(shell root-config --libs)
+# Define include flags
+INCS = $(shell root-config --incdir)
+
+# Define output library
+MPDMINIDST = libMpdMiniDst.so
+
+# Compile all *.cxx classes in the directory
+SRC = $(shell find . -name "*.cxx")
+
+all: $(MPDMINIDST)
+
+# $(SRC:.cc=.o)
+$(MPDMINIDST): $(SRC:.cxx=.o) MpdMiniDst_Dict.C
+	$(CXX) $(CFLAGS) -shared $^ -o $(MPDMINIDST) $(LIBS)
+
+%.o: %.cxx
+	$(CXX) -fPIC $(CFLAGS) -c -o $@ $<
+
+MpdMiniDst_Dict.C: $(shell find . -name "*.h" ! -name "*LinkDef*")
+	rootcint -f $@ -c -DROOT_CINT -D__ROOT__ -I. -I$(INCS) $^ MpdMiniDstLinkDef.h
+
+.PHONY: clean distclean
+
+clean:
+	rm -vf *.o MpdMiniDst_Dict*
+
+distclean:
+	rm -vf *.o MpdMiniDst_Dict* $(MPDMINIDST)
