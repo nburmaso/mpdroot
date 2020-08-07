@@ -23,7 +23,7 @@ a) System has to have ROOT preinstalled (should work with versions 5 and 6).
 b) There is a Makefile stored in the **_MpdMiniEvent_** directory. In order to compile the codes one needs to run:
 
 ```
-make
+make -f MakefileStandalone
 ```
 
 c) Since it is the most commonly used, the **g++** compiler is used for the
