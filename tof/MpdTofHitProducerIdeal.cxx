@@ -57,7 +57,7 @@ assert(aExpDigits);
         aTofHits = new TClonesArray("MpdTofHit");
         FairRootManager::Instance()->Register("TOFHit", "Tof", aTofHits, kTRUE);
 
-	LOG(DEBUG)<<"[MpdTofHitProducerIdeal::Init] Initialization finished succesfully.";
+	LOG(INFO)<<"[MpdTofHitProducerIdeal::Init] Initialization finished succesfully.";
 
 return kSUCCESS;
 }

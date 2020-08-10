@@ -68,16 +68,14 @@ MpdEtofMatching::~MpdEtofMatching()
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus	  MpdEtofMatching::Init()
 {
-  	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofMatching::Init] Begin initialization.");
-
   	aMcPoints = 	(TClonesArray*) FairRootManager::Instance()->GetObject("ETOFPoint");
-    aMcTracks   = 	(TClonesArray*) FairRootManager::Instance()->GetObject("MCTrack");
+    	aMcTracks   = 	(TClonesArray*) FairRootManager::Instance()->GetObject("MCTrack");
 	aTofHits  = 	(TClonesArray*) FairRootManager::Instance()->GetObject("ETOFHit");
-    aKFectTracks   = (TClonesArray*) FairRootManager::Instance()->GetObject("EctTrack");
+    	aKFectTracks =  (TClonesArray*) FairRootManager::Instance()->GetObject("EctTrack");
 	
 	if(aMcPoints && aMcTracks) fUseMCData = true;
 	
-  	if(!aTofHits  || !aKFectTracks){ FairLogger::GetLogger()->Error(MESSAGE_ORIGIN, "Branch not found!"); return kERROR; }
+  	if(!aTofHits  || !aKFectTracks){ LOG(FATAL)<<"[MpdEtofMatching::Init] Branch not found!"; return kERROR; }
 
   	pKF = MpdKalmanFilter::Instance("KF","KF");
 	
@@ -90,7 +88,7 @@ InitStatus	  MpdEtofMatching::Init()
 //	MpdEtofGeoUtils::Instance()->ParseTGeoManager(fUseMCData, nullptr, false); 
 //	MpdEtofGeoUtils::Instance()->FindNeighborStrips(0.8, nullptr, nullptr, false);// 0.8 [cm] <--- thresh. distance between neighbor strips,  (see h1TestDistance histo)
 
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofMatching::Init] Initialization finished succesfully.");
+	LOG(INFO)<<"MpdEtofMatching initialization finished succesfully.";
 
 return kSUCCESS;
 }

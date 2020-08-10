@@ -97,6 +97,8 @@ assert(gGeoManager);
   	
   	while( TGeoNode *sectorNode = (TGeoNode*) it1->Next() )			// SECTORS vSector_#, DetectorBoxV_# +, StripBoxV_#, StripActiveGasV_# +
     	{
+		if(!TString(sectorNode->GetName()).Contains("tof1Sector")) continue;
+
     		TString PATH1 = pathTOF + "/" + sectorNode->GetName(); 
 		Int_t sectorID = sectorNode->GetNumber();  // sector [1,...,14]
 		nSectors++;

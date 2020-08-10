@@ -52,8 +52,6 @@ MpdEtofHitProducer::~MpdEtofHitProducer()
 //------------------------------------------------------------------------------------------------------------------------
 InitStatus		MpdEtofHitProducer::Init()
 {
-	FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdEtofHitProducer::Init] Begin initialization.");
-
     //	if(fOnlyPrimary) cout<<" Only primary particles are processed!!! \n"; // FIXME NOT used now ADDD
 
 	if(fUseMCData)
@@ -78,7 +76,7 @@ assert(aExpDigits);
 	MpdEtofGeoUtils::Instance()->FindNeighborStrips(0.8,  // 0.8 [cm] <--- thresh. distance between neighbor strips			
 							true); // forced
 
-        FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "[MpdTofHitProducer::Init] Initialization finished succesfully.");
+        LOG(INFO)<<"MpdTofHitProducer initialization finished succesfully.";
 
 return kSUCCESS;
 }
