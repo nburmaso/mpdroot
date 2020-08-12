@@ -135,13 +135,13 @@ void MpdDecayerPyt8::Decay(Int_t pdg, TLorentzVector* p)
     polarFlag = kTRUE;
     if (gRandom->Rndm() < fBranch) {
       // Anysotropic decay
-      cout << " ----------------- " << fBranch << endl;
+      //cout << " ----------------- " << fBranch << endl;
       new ((*fParticles)[0]) TParticle(*part); // store mother particle
       Gdecay (pdg, p);
       gRandom = saveRandom;
       return;
     } else {
-      cout << " ++++++++++ " << fBranch << endl;
+      //cout << " ++++++++++ " << fBranch << endl;
       // Force the other channels
       DecayChannel& channel = fLambda->channel(0);
       channel.bRatio(0.0);

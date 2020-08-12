@@ -379,7 +379,7 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
     pza1 = 0,
     //    Ekin = 0,
     //    Ekin1 = 0,
-    mass = 0;
+    mass = 0, pol0 = 0, pol1 = 0;
 
   Int_t  PDG=0;
   char ss[252];
@@ -480,6 +480,8 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
       
       if (!fQGSM_format_ID)
 	sscanf(&(ss[p_num]),"%g%g%g%g%g",&px,&py,&pz,&pz1,&mass);
+      else if (strlen(ss) > 105)
+	sscanf(&(ss[p_num]),"%g%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pol0,&pol1,&mass); //AZ - polarization data
       else
 	sscanf(&(ss[p_num]),"%g%g%g%g%g%g",&px,&py,&pz,&pz1,&pza1,&mass);
       
@@ -497,16 +499,17 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 	  primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
 	else
 	  primGen->AddTrack(PDG, px, py, pz1, 0., 0., 0.);
-	//AZ - add polarization for Lambda
-	/*
-	if (PDG == 3122) {
+	//AZ - add polarization for light hyperons (pdg == 31** and 32**)
+	//*
+	//if (PDG == 3122) {
+	if (TMath::Abs(PDG/100) == 31 || TMath::Abs(PDG/100) == 32) {
 	  Int_t nTr = gMC->GetStack()->GetNtrack();
 	  TParticle *part = ((MpdStack*)gMC->GetStack())->GetParticle(nTr-1);
-	  Double_t pol[3] = {-0.2};
+	  Double_t pol[3] = {pol1,0,0}; // polarization after rescattering
 	  pol[1] = TMath::Sqrt (1.0 - pol[0] * pol[0]);
 	  part->SetPolarisation(pol[0], pol[1], pol[2]);
 	}
-	*/
+	//*/
       }
     }
   }
