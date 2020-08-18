@@ -1,7 +1,7 @@
 // Geometry for pipe: aluminium + beryllium
-// Demezhan Myktybekov
+// Demezhan Myktybekov  myktybekov@jinr.ru
 // July 2020
-// myktybekov@jinr.ru
+
 
 
 //---------------------------
@@ -13,7 +13,8 @@
 #include "TGeoMedium.h"
 #include "TFile.h"
 
-#include "../mpdloadlibs.C"
+R__ADD_INCLUDE_PATH($VMCWORKDIR)
+#include "macro/mpd/mpdloadlibs.C"
 
 //Pipe's position
 const Double_t PIPE_Xpos = 0.0;
@@ -31,24 +32,12 @@ TGeoMedium *pMedSteel = 0;
 class FairGeoMedia;
 class FairGeoBuilder;
 
+
 void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild);
-/*
-void CreateBerylliumTube(TGeoVolume* mother_volume);
-void CreateAluminiumInnerSections(TGeoVolume* mother_volume);
-void CreateAluminiumAdaptersSmall(TGeoVolume* mother_volume, Double_t rmin, Double_t rmax, Bool_t is_outer_wall);
-void CreateAluminiumMiddleSections(TGeoVolume* mother_volume);
-void CreateAluminiumInnerFlanges(TGeoVolume* mother_volume);
-void CreateAluminiumOuterFlangesSmall(TGeoVolume* mother_volume, Double_t width, Double_t rmin, Double_t rmax);
-void CreateAluminiumOuterSectionsSmall(TGeoVolume *mother_volume, Double_t vol_width);
-void CreateAluminiumAdaptersBig(TGeoVolume *mother_volume, Double_t width, Double_t rmin, Double_t rmax);
-void CreateAluminiumOuterSectionsBig(TGeoVolume *mother_volume, Double_t vol_width);
-void CreateAluminiumOuterFlangesBig(TGeoVolume *mother_volume, Double_t vol_width);
-*/
+
+//__________________________________________________________________________
 void pipe_v2()
 {   
-    // Load necessary libraries
-    //gROOT->LoadMacro("$VMCWORKDIR/macro/mpd/mpdloadlibs.C");
-    //mpdloadlibs(); // load libraries
 
     // ----  set working directory  --------------------------------------------
     TString gPath = gSystem->Getenv("VMCWORKDIR");
@@ -206,6 +195,8 @@ void pipe_v2()
     TGLViewer *v = (TGLViewer*)gPad->GetViewer3D();
     v->SetStyle(TGLRnrCtx::kOutline);
 }
+
+//__________________________________________________________________________
 void DefineRequiredMedia(FairGeoMedia* geoMedia, FairGeoBuilder* geoBuild) 
 {
     //air medium
