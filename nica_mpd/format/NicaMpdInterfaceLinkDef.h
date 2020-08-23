@@ -39,5 +39,16 @@
 #pragma link C++ class UEvent+;
 #pragma link C++ class UParticle+;
 
+#pragma link C++ class NicaMpdDstMCEvent+;
+#pragma link C++ class NicaMpdMiniDstEvent+;
+#pragma link C++ class NicaMpdMiniDstEventInterface+;
+#pragma link C++ class NicaMpdMiniDstMcEvent+;
+#pragma link C++ class NicaMpdMiniDstMcEventInterface+;
+#pragma link C++ class NicaMpdMiniDstMcTrack+;
+#pragma link C++ class NicaMpdMiniDstMcTrackInterface+;
+#pragma link C++ class NicaMpdMiniDstTrack+;
+#pragma link C++ class NicaMpdMiniDstTrackInterface+;
+#pragma link C++ class NicaMpdMiniDstFullEvent+;
+#pragma link C++ class NicaMiniDstSource+;
 
 #endif /* INTERFACES_MPDROOT_NICAMPDINTERFACELINKDEF_H_ */

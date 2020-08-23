@@ -339,7 +339,7 @@ class MpdMiniEvent : public TObject {
   /// Energy deposit in each of 90 towers 0-44 for eta<0 and 45-89 for eta>0
   Float16_t fFHCalEnergyDeposit[90];
 
-  ClassDef(MpdMiniEvent, 1)
+  ClassDef(MpdMiniEvent, 2)
 };
 
 #endif // #define MpdMiniEvent_h

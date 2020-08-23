@@ -118,6 +118,7 @@ void NicaMpdEvent::OnlyGlobal() {
 		((NicaMpdEventInterface*)fSource)->OnlyGlobal();
 	}
 }
+
 Bool_t NicaMpdEvent::ExistInTree() const {
 	FairRootManager *manager = FairRootManager::Instance();
 	if(manager->CheckBranch("MPDEvent.")){

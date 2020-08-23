@@ -12,30 +12,43 @@
 #include "TVector3.h"
 #include "FairRunAna.h"
 #include "FairField.h"
+
 #include <iostream>
 
-MpdPIDOnTheFly::MpdPIDOnTheFly() :fEvent(NULL),fPID(NULL){
+MpdPIDOnTheFly::MpdPIDOnTheFly() :fEvent(nullptr),fPID(nullptr),fMiniTrack(nullptr){
 	fEventVector = new TVector3();
 	fMCVector = new TVector3();
+
 }
 
 InitStatus MpdPIDOnTheFly::Init() {
 	FairRootManager *manager = FairRootManager::Instance();
 	fEvent = (MpdEvent*)manager->GetObject("MPDEvent.");
+	if(fEvent==nullptr){
+	    fMiniTrack = (TClonesArray*)manager->GetObject("Track");
+	}
+
 	fPID = new MpdPid(0, 0, 0, 1, "DEFAULT", "CF", "pi+ka+el+pr");
 	return kSUCCESS;
 }
 
 void MpdPIDOnTheFly::Exec(Option_t* opt) {
-	TClonesArray *tracks = fEvent->GetGlobalTracks();
-	fEventVector->SetXYZ(fEvent->GetPrimaryVerticesX(),
-    		fEvent->GetPrimaryVerticesY(),
-			fEvent->GetPrimaryVerticesZ());
-	for(int i=0;i<tracks->GetEntriesFast();i++){
-		MpdTrack *track  = (MpdTrack*)tracks->UncheckedAt(i);
-		FillTrackPID(track);
-		FillTrackDCA(track, fEventVector,fMCVector);
-	}
+    if(fEvent){
+        TClonesArray *tracks = fEvent->GetGlobalTracks();
+        fEventVector->SetXYZ(fEvent->GetPrimaryVerticesX(),
+        fEvent->GetPrimaryVerticesY(),
+	    fEvent->GetPrimaryVerticesZ());
+        for(int i=0;i<tracks->GetEntriesFast();i++){
+            MpdTrack *track  = (MpdTrack*)tracks->UncheckedAt(i);
+            FillTrackPID(track);
+            FillTrackDCA(track, fEventVector,fMCVector);
+        }
+    }else{// this is minidst
+        for(int i=0;i<fMiniTrack->GetEntriesFast();i++){
+            MpdMiniTrack *track = (MpdMiniTrack*)fMiniTrack->UncheckedAt(i);
+            FillTrackPID(track);
+        }
+    }
 }
 
 void MpdPIDOnTheFly::FillTrackPID(MpdTrack* track) {
@@ -95,3 +108,33 @@ MpdPIDOnTheFly::~MpdPIDOnTheFly() {
 	// TODO Auto-generated destructor stub
 }
 
+void MpdPIDOnTheFly::FillTrackPID(MpdMiniTrack *track) {
+    Double_t p = track->gPtot();
+    Double_t dedx = track->dEdx()*1E-6;
+    track->setDedx(dedx*1E-6);
+    Double_t dedx_el = fPID->GetDedxElParam(p);
+    Double_t dedx_pi = fPID->GetDedxPiParam(p);
+    Double_t dedx_ka = fPID->GetDedxKaParam(p);
+    Double_t dedx_pr = fPID->GetDedxPrParam(p);
+    Double_t sigma_el = fPID->GetDedxWidthValue(p, 4)*dedx_el;
+    Double_t sigma_pi = fPID->GetDedxWidthValue(p, 1)*dedx_pi;
+    Double_t sigma_ka = fPID->GetDedxWidthValue(p, 2)*dedx_ka;
+    Double_t sigma_pr = fPID->GetDedxWidthValue(p, 3)*dedx_pr;
+    sigma_el = (dedx-dedx_el)/(sigma_el);
+    sigma_pi = (dedx-dedx_pi)/(sigma_pi);
+    sigma_ka = (dedx-dedx_ka)/(sigma_ka);
+    sigma_pr = (dedx-dedx_pr)/(sigma_pr);
+    if(TMath::IsNaN(sigma_el))
+        sigma_el = -1E+2;
+    if(TMath::IsNaN(sigma_pi))
+        sigma_pi = -1E+2;
+    if(TMath::IsNaN(sigma_ka))
+        sigma_ka = -1E+2;
+    if(TMath::IsNaN(sigma_pr))
+        sigma_pr = -1E+2;
+    track->setNSigmaElectron(sigma_el);
+    track->setNSigmaKaon(sigma_ka);
+    track->setNSigmaPion(sigma_pi);
+    track->setNSigmaProton(sigma_pr);
+    std::cout<<"SIG "<<sigma_pi<<" "<<p<<"\t"<<dedx<<" "<<dedx_pi<<std::endl;
+}

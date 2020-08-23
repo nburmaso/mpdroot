@@ -29,7 +29,7 @@ void NicaMpdMcEventInterface::ConnectToTree() {
 		fMcracks->DeleteClones();
 	}
 	fEvent = (FairMCEventHeader*)manager->GetObject("MCEventHeader.");
-	if(fEvent==NULL)
+	if(fEvent==nullptr)
 		fEvent = (FairMCEventHeader*)manager->GetObject("EventHeader.");
 	fMcracks->GetFromTree();
 }

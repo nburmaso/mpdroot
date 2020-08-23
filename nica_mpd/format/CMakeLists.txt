@@ -18,6 +18,9 @@ ${CMAKE_SOURCE_DIR}/base/sim
 ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/fairtools
 ${CMAKE_SOURCE_DIR}/mpdbase
+${CMAKE_SOURCE_DIR}/mpddst
+${CMAKE_SOURCE_DIR}/mpddst/mcDst
+${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
 ${CMAKE_SOURCE_DIR}/nicafemto/features
 ${CMAKE_SOURCE_DIR}/nicafemto/features
 ${CMAKE_SOURCE_DIR}/nicafemto/features/io
@@ -32,6 +35,7 @@ ${CMAKE_SOURCE_DIR}/nicafemto/dataformat/formats
 ${CMAKE_SOURCE_DIR}/nicafemto/dataformat/formats/fair
 ${CMAKE_SOURCE_DIR}/nicafemto/dataformat/detector
 ${CMAKE_SOURCE_DIR}/nica_mpd/format
+${CMAKE_SOURCE_DIR}/nica_mpd/format/minidst
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdmc
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/unigen
 ${CMAKE_SOURCE_DIR}/nica_mpd/format/combined
@@ -61,7 +65,15 @@ Link_Directories(${LINK_DIRECTORIES})
 set(SRCS
 combined/NicaMpdDstMCEvent.cxx
 mpdevent/NicaMpdEventInterface.cxx
+combined/NicaMpdMiniDstFullEvent.cxx
 combined/NicaMpdDstMCEventTpcPads.cxx
+minidst/NicaMpdMiniDstEvent.cxx
+minidst/NicaMpdMiniDstEventInterface.cxx
+minidst/NicaMpdMiniDstMcEvent.cxx
+minidst/NicaMpdMiniDstMcEventInterface.cxx
+minidst/NicaMpdMiniDstMcTrack.cxx
+minidst/NicaMpdMiniDstTrack.cxx
+minidst/NicaMiniDstSource.cxx
 mpdevent/NicaMpdEvent.cxx
 mpdevent/NicaMpdEventTpcPads.cxx
 mpdevent/NicaMpdTrack.cxx

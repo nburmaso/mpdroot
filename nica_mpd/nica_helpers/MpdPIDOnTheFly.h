@@ -12,13 +12,16 @@
 #include "MpdEvent.h"
 #include "MpdPid.h"
 #include "MpdTrack.h"
+#include "MpdMiniTrack.h"
 #include "TVector3.h"
 class MpdPIDOnTheFly : public FairTask{
 	MpdEvent *fEvent;
 	MpdPid *fPID;
 	TVector3 *fEventVector, *fMCVector;
+	TClonesArray *fMiniTrack;
     void FillTrackDCA(MpdTrack *track, TVector3 *recoVertex, TVector3 *mcVertex);
 	void FillTrackPID(MpdTrack *track);
+    void FillTrackPID(MpdMiniTrack *track);
 public:
 	MpdPIDOnTheFly();
     virtual InitStatus Init();

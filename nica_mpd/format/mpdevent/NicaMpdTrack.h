@@ -16,20 +16,20 @@
 
 
 class NicaMpdTrack : public NicaExpTrackHelix{
+protected:
 	TVector3 *fFirstPoint, *fLastPoint;
 	NicaTpcTrack *fTpcTrack;
 	NicaToFTrack *fToFTrack;
 	ULong64_t fHitsMap;
 	ULong64_t fSharedHitsMap;
-protected:
-	inline NicaTpcTrack *GetTpcTrack()const{return fTpcTrack;};
-	inline NicaToFTrack *GetToFTrack()const{return fToFTrack;};
 public:
 	NicaMpdTrack();
 	NicaMpdTrack(const NicaMpdTrack &other);
 	NicaMpdTrack &operator=(const NicaMpdTrack &other);
 	inline TVector3 *GetLastPoint()const{return fLastPoint;};
 	inline TVector3 *GetFirstPoint()const{return fFirstPoint;};
+    inline NicaTpcTrack *GetTpcTrack()const{return fTpcTrack;};
+    inline NicaToFTrack *GetToFTrack()const{return fToFTrack;};
 	TObject *GetDetTrack(const UInt_t detID)const;
 	inline ULong64_t GetHitMap()const{return fHitsMap;};
 	inline ULong64_t GetSharedHitMap()const{return fSharedHitsMap;};
