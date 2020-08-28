@@ -145,6 +145,7 @@ run_reco:ubuntu:
     - sed -i "s/\/opt\/fairroot\/install/\/cvmfs\/nica.jinr.ru\/$CI_ENVIRONMENT_NAME\/fairroot\/latest/g" SetEnv.sh
     - rm -rf /cvmfs/nica.jinr.ru/$CI_ENVIRONMENT_NAME/mpdroot/$CI_COMMIT_REF_NAME
     - source ./SetEnv.sh
+    - if [ $CI_ENVIRONMENT_NAME = "sl6" ]; then source /cvmfs/nica.jinr.ru/sl6/fairtest/AIO_export.sh; fi
     - rm -rf build
     - mkdir build
     - cd build
