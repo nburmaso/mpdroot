@@ -6,6 +6,10 @@ stages:
  - deploy
  
 before_script:
+ - export SIMPATH=/cvmfs/nica.jinr.ru/$OS_TYPE/fairsoft/mpd
+ - export FAIRROOTPATH=/cvmfs/nica.jinr.ru/$OS_TYPE/fairroot/mpd
+ - sed -i "s/\/opt\/fairsoft\/install/\/cvmfs\/nica.jinr.ru\/$OS_TYPE\/fairsoft\/mpd/g" SetEnv.sh
+ - sed -i "s/\/opt\/fairroot\/install/\/cvmfs\/nica.jinr.ru\/$OS_TYPE\/fairroot\/mpd/g" SetEnv.sh
  - source ./SetEnv.sh
  
 variables:
@@ -21,11 +25,13 @@ variables:
     - tags
 
 check_permissions:
+  image: git.jinr.ru:5005/nica/docker-images/centos7/base:latest
   variables:
+    OS_TYPE: "centos7"
     PERMISSIONS_MESSAGE_FAUILURE: "Permissions check: ${RED}FAILED${NC}. You don't have permission to change some files, please contact your project maintainers."
     PERMISSIONS_MESSAGE_SUCCESS: "Permissions check: ${GREEN}PASSED${NC}."
   tags:
-    - test
+    - docker
   stage: check_permissions
   script:
     - >
@@ -49,19 +55,25 @@ check_permissions:
   <<: *only-default
   
 build:centos:
+  image: git.jinr.ru:5005/nica/docker-images/centos7/base:latest
+  variables:
+    OS_TYPE: "centos7"
   tags:
-    - build
-    - centos
+    - docker
   <<: *build
 
 build:ubuntu:
+  image: git.jinr.ru:5005/nica/docker-images/ubuntu/base:latest
+  variables:
+    OS_TYPE: "ubuntu"
   tags: 
-    - build
-    - ubuntu
+    - docker
   <<: *build 
   
 .runMC_template: &runMC
   stage: test_runMC
+  tags:
+    - docker
   artifacts:
     paths:
       - macro/mpd/evetest.root
@@ -73,23 +85,25 @@ build:ubuntu:
   <<: *only-default
   
 runMC:centos:
-  tags:
-    - test
-    - centos
+  image: git.jinr.ru:5005/nica/docker-images/centos7/base:latest
+  variables:
+    OS_TYPE: "centos7"
   dependencies:
     - build:centos
   <<: *runMC
 
 runMC:ubuntu:
-  tags:
-    - test
-    - ubuntu
+  image: git.jinr.ru:5005/nica/docker-images/ubuntu/base:latest
+  variables:
+    OS_TYPE: "ubuntu"
   dependencies:
     - build:ubuntu
   <<: *runMC
   
 .run_reco_template: &run_reco
   stage: test_run_reco
+  tags:
+    - docker
   script:
     - source build/config.sh
     - root -b -q -l "$CI_PROJECT_DIR/macro/mpd/reco.C" | tee output.txt
@@ -98,18 +112,18 @@ runMC:ubuntu:
   <<: *only-default
   
 run_reco:centos:
-  tags:
-    - test
-    - centos
+  image: git.jinr.ru:5005/nica/docker-images/centos7/base:latest
+  variables:
+    OS_TYPE: "centos7"
   dependencies:
     - build:centos
     - runMC:centos
   <<: *run_reco
   
 run_reco:ubuntu:
-  tags:
-    - test
-    - ubuntu
+  image: git.jinr.ru:5005/nica/docker-images/ubuntu/base:latest
+  variables:
+    OS_TYPE: "ubuntu"
   dependencies:
     - build:ubuntu
     - runMC:ubuntu
