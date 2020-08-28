@@ -45,11 +45,11 @@ void NicaMpdMiniDstTrack::Update(MpdMiniTrack *track, NicaMpdMiniDstEvent::eMode
     GetDCA()->SetXYZ(origin.X()-vx, origin.Y()-vy,origin.Z());
     switch(mode){
     case NicaMpdMiniDstEvent::eMode::kGlobalTrack:{
-        GetDCA()->SetXYZ(0, 0, 0);
+        GetDCA()->SetXYZ(origin.X()-vx, origin.Y()-vy, origin.Z()-vz);
     }break;
     case NicaMpdMiniDstEvent::eMode::kPrimaryTrack:{
         GetDCA()->SetXYZ(0, 0, 0);
-        GetDCA()->SetXYZ(origin.X()-vx, origin.Y()-vy,origin.Z());
+        //GetDCA()->SetXYZ(origin.X()-vx, origin.Y()-vy,origin.Z());
     }break;
     }
    // fSharedHitsMap = track->topologyMap(0);
@@ -71,4 +71,5 @@ NicaMpdMiniDstTrackInterface::NicaMpdMiniDstTrackInterface() {
 NicaMpdMiniDstTrackInterface::~NicaMpdMiniDstTrackInterface() {
     // TODO Auto-generated destructor stub
 }
+
 

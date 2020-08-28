@@ -16,7 +16,8 @@
 #include <TChain.h>
 
 class NicaMiniDstSource : public FairSource{
-    TString fFileName;
+    Int_t fNFiles;
+    TString *fFileName;
     TChain *fChain;
     TClonesArray *fEvent;
     TClonesArray *fTracks;
@@ -28,6 +29,7 @@ public:
     NicaMiniDstSource();
     NicaMiniDstSource(const NicaMiniDstSource &other);
     NicaMiniDstSource(TString inFile);
+    virtual void AddFile(TString file);
     virtual Bool_t Init();
     virtual Int_t ReadEvent(UInt_t=0);
     virtual void Close();
@@ -48,3 +50,4 @@ public:
 };
 
 #endif /* MPDROOT_NICA_MPD_FORMAT_MPDMC_NICAMINIDSTSOURCE_H_ */
+

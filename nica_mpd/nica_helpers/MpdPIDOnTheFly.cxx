@@ -110,8 +110,8 @@ MpdPIDOnTheFly::~MpdPIDOnTheFly() {
 
 void MpdPIDOnTheFly::FillTrackPID(MpdMiniTrack *track) {
     Double_t p = track->gPtot();
-    Double_t dedx = track->dEdx()*1E-6;
-    track->setDedx(dedx*1E-6);
+    Double_t dedx = track->dEdx();
+    track->setDedx(track->dEdx());
     Double_t dedx_el = fPID->GetDedxElParam(p);
     Double_t dedx_pi = fPID->GetDedxPiParam(p);
     Double_t dedx_ka = fPID->GetDedxKaParam(p);
@@ -136,5 +136,5 @@ void MpdPIDOnTheFly::FillTrackPID(MpdMiniTrack *track) {
     track->setNSigmaKaon(sigma_ka);
     track->setNSigmaPion(sigma_pi);
     track->setNSigmaProton(sigma_pr);
-    std::cout<<"SIG "<<sigma_pi<<" "<<p<<"\t"<<dedx<<" "<<dedx_pi<<std::endl;
 }
+

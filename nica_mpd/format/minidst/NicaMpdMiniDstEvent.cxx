@@ -38,7 +38,8 @@ void NicaMpdMiniDstEvent::Update() {
     fVertexError->SetXYZT(vec.X(),vec.Y(),vec.Z(),0);
     fTotalTracksNo = interface->GetTotalTrackNo();
     fRunInfoId = event->runId();
-    fMagField->SetXYZ(0,0,event->bField());
+    fMagField->SetXYZ(0,0,event->bField()*0.1);
+    NicaHelix::SetMagField(event->bField()*0.1);
     NicaTrackClones *prim = interface->fTracks;
     fTotalTracksNo  = prim->GetEntriesFast();
     fTracks->ExpandCreateFast(fTotalTracksNo);
@@ -98,4 +99,5 @@ TString NicaMpdMiniDstEvent::GetFormatName() const {
 NicaMpdMiniDstEvent::~NicaMpdMiniDstEvent() {
 
 }
+
 
