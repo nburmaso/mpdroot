@@ -279,6 +279,10 @@ Bool_t MpdLAQGSMGenerator::GetEventHeader(char *ss)
       general_fgets(ss,250,fInputFile); 
       general_fgets(ss,250,fInputFile); 
     break;
+  case 4:
+      general_fgets(ss,250,fInputFile); 
+      general_fgets(ss,250,fInputFile); 
+    break;
   default:
     break;
   }
@@ -392,9 +396,11 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
   //Double_t projA,projZ,projEex, targA, targZ, targEex;
   Float_t projA,projZ,projEex, targA, targZ, targEex;
 
+  //cout <<"ss " <<ss <<endl;
+
   int bpos;
   sscanf(ss," %d %d %n", &eventId, &nTracks, &bpos);
- 
+  //cout <<"eventId " <<eventId <<" " <<nTracks <<" " <<fQGSM_format_ID <<endl;
   if (!fQGSM_format_ID)
     sscanf(&(ss[bpos]),"%g %g %g %g %g %g %g %g %g", &b, &bx, &by, &projA,&projZ,&projEex, &targA, &targZ, &targEex );
   else 
@@ -465,10 +471,14 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
       sscanf(ss," %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &iCode); 
     else{ 
       if(fQGSM_format_ID==4){	      
-	//		   cout << ss << endl;
+	//cout << ss << endl;
 	sscanf(ss," %d %d %d %d %d %g %g %g %g %g %g", &iCharge,&iLeptonic,&iStrange,&iBarionic, &PDG, &px, &py, &pz, &pz1, &pza1, &mass); 
-	//		   printf("!!!!!!!!!!!!!!!!!!!!!reading: %d %d %d %d %d %g %g %g %g %g %g\n", iCharge,iLeptonic,iStrange,iBarionic, PDG, px, py, pz, pz1, pza1, mass); 
-	primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
+	//printf("!!!!!!!!!!!!!!!!!!!!!reading: %d %d %d %d %d %g %g %g %g %g %g\n", iCharge,iLeptonic,iStrange,iBarionic, PDG, px, py, pz, pz1, pza1, mass); 
+	//primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
+	if (fUseColliderSystem)
+	  primGen->AddTrack(PDG, px, py, pz, 0., 0., 0.);
+	else
+	  primGen->AddTrack(PDG, px, py, pz1, 0., 0., 0.);
       }
       else
 	sscanf(ss," %d %d %d %d %d %d %d", &iCharge,&iLeptonic,&iStrange,&iBarionic, &io1, &io2, &io3); 
@@ -510,8 +520,8 @@ Bool_t MpdLAQGSMGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 	  part->SetPolarisation(pol[0], pol[1], pol[2]);
 	}
 	//*/
-      }
-    }
+      }//if (FindParticle (iCharge
+    }//if(fQGSM_format_ID!=4)
   }
   
   return kTRUE;
