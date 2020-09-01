@@ -610,8 +610,6 @@ void MpdTpcKalmanFilter::AddHits(Int_t indx0)
     TClonesArray &trHits = *track->GetTrHits();
     Int_t idOld = track->GetTrackID(); // 24.12.2018
     SetTrackID(track); // set track ID as ID of majority of its hits
-    if (track->GetTrackID() == 218 || idOld == 218) cout << " idddddd " << idOld << " " 
-							 << track->GetTrackID() << " " << nHits << " " << i << endl;
 
     Int_t nWrong = 0, motherID = track->GetTrackID();
     // Get track mother ID
@@ -1246,6 +1244,7 @@ void MpdTpcKalmanFilter::DoTracking(Int_t iPass)
       }
       */
     }
+    if (iPass == 0 && track->GetNofHits() < 10) fTrackCand->RemoveAt(i); //AZ - 190820
   }
   //fTracks->Compress();
   fTrackCand->Compress();
@@ -1685,10 +1684,12 @@ Bool_t MpdTpcKalmanFilter::BackTrace(MpdTpcKalmanTrack *track, TMatrixDSym &weig
     hit = (MpdKalmanHit*) track->GetHits()->UncheckedAt(i);
     lay0 = lay;
     lay = hit->GetLayer();
+    /*AZ-100620 - W.t.f. is this???
     if (!fUseMCHit && corDedx && i == ibeg) {
       Double_t cosTh = TMath::Cos(track->GetParam(3));
       hit->SetSignal(hit->GetSignal() * cosTh);
     }
+    */
     if (i == ibeg) continue; // skip first hit
 
     Double_t leng = track->GetLength(), stepBack = -1;
@@ -1864,7 +1865,8 @@ void MpdTpcKalmanFilter::RemoveDoubles(TClonesArray *tracks)
 
   for (Int_t i = 0; i < ntracks; i++) {
     MpdTpcKalmanTrack *tr = (MpdTpcKalmanTrack*) tracks->UncheckedAt(i);
-    Double_t quality = tr->GetNofHits() + TMath::Min(tr->GetChi2(),999.0) / 1000.0;
+    //AZ-190820 Double_t quality = tr->GetNofHits() + TMath::Min(tr->GetChi2(),999.0) / 1000.0;
+    Double_t quality = tr->GetNofHits() + (1 - TMath::Min(tr->GetChi2(),999.0) / 1000.0);
     qualMap.insert(pair<Double_t,MpdTpcKalmanTrack*>(-quality,tr));
   }
 
