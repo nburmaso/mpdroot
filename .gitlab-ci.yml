@@ -60,6 +60,7 @@ build:centos:
     OS_TYPE: "centos7"
   tags:
     - docker
+    - cvmfs
   <<: *build
 
 build:ubuntu:
@@ -68,12 +69,14 @@ build:ubuntu:
     OS_TYPE: "ubuntu"
   tags: 
     - docker
+    - cvmfs
   <<: *build 
   
 .runMC_template: &runMC
   stage: test_runMC
   tags:
     - docker
+    - cvmfs
   artifacts:
     paths:
       - macro/mpd/evetest.root
@@ -104,6 +107,7 @@ runMC:ubuntu:
   stage: test_run_reco
   tags:
     - docker
+    - cvmfs
   script:
     - source build/config.sh
     - root -b -q -l "$CI_PROJECT_DIR/macro/mpd/reco.C" | tee output.txt
