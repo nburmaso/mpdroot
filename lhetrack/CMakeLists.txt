@@ -108,6 +108,7 @@ MpdEctTrackFinderTof.h
 MpdMotherFitterPart.h
 #MpdMotherFitterTrac.h
 lhe.h
+MpdParticle.h
 MpdVector.h
 MpdVectorFinder.h
 MpdItsToTpcMatching.h
