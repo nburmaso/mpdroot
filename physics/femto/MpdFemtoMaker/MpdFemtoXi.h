@@ -214,8 +214,8 @@ class MpdFemtoXi : public MpdFemtoV0 {
     return momBac().Mag2();
   }
 
-  unsigned int trackTopologyMapBac(const int& i) {
-    return (mBachelor) ? mBachelor->topologyMap(i) : 0;
+  unsigned long trackTopologyMapBac() {
+    return (mBachelor) ? mBachelor->topologyMap() : 0;
   }
 
   unsigned short nHitsBac() const {

@@ -15,8 +15,8 @@ float MpdFemtoPair::mMaxDuInner = 0.8f;
 float MpdFemtoPair::mMaxDzInner = 3.0f;
 float MpdFemtoPair::mMaxDuOuter = 1.4f;
 float MpdFemtoPair::mMaxDzOuter = 3.2f;
-float MpdFemtoPair::mTpcRadiusMin = 60.f; //[cm]
-float MpdFemtoPair::mTpcRadiusMax = 190.f; //[cm]
+float MpdFemtoPair::mTpcRadiusMin = 34.f; //[cm]
+float MpdFemtoPair::mTpcRadiusMax = 163.f; //[cm]
 
 //_________________
 MpdFemtoPair::MpdFemtoPair() :
@@ -410,89 +410,89 @@ double MpdFemtoPair::qLongBf(double beta) const {
 //_________________
 double MpdFemtoPair::quality() const {
   // Estimation of track splitting
-  unsigned long mapMask0 = 0xFFFFFF00;
-  unsigned long mapMask1 = 0x1FFFFF;
-  unsigned long padRow1To24Track1 = mTrack1->topologyMap(0) & mapMask0;
-  unsigned long padRow25To45Track1 = mTrack1->topologyMap(1) & mapMask1;
-  unsigned long padRow1To24Track2 = mTrack2->topologyMap(0) & mapMask0;
-  unsigned long padRow25To45Track2 = mTrack2->topologyMap(1) & mapMask1;
-  // AND logic
-  unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
-  unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
-  // XOR logic
-  unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
-  unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
-  unsigned long bitI;
-  int ibits;
+  // unsigned long mapMask0 = 0xFFFFFF00;
+  // unsigned long mapMask1 = 0x1FFFFF;
+  // unsigned long padRow1To24Track1 = mTrack1->topologyMap(0) & mapMask0;
+  // unsigned long padRow25To45Track1 = mTrack1->topologyMap(1) & mapMask1;
+  // unsigned long padRow1To24Track2 = mTrack2->topologyMap(0) & mapMask0;
+  // unsigned long padRow25To45Track2 = mTrack2->topologyMap(1) & mapMask1;
+  // // AND logic
+  // unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
+  // unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
+  // // XOR logic
+  // unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
+  // unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
+  // unsigned long bitI;
+  // int ibits;
   int Quality = 0;
-  for (ibits = 8; ibits <= 31; ibits++) {
-    bitI = 0;
-    bitI |= 1UL << (ibits);
-    if (onePad1To24 & bitI) {
-      Quality++;
-      continue;
-    }// if ( onePad1To24 & bitI )
-    else {
-      if (bothPads1To24 & bitI) Quality--;
-    } //else {
-  } //for (ibits=8;ibits<=31;ibits++)
-  for (ibits = 0; ibits <= 20; ibits++) {
-    bitI = 0;
-    bitI |= 1UL << (ibits);
-    if (onePad25To45 & bitI) {
-      Quality++;
-      continue;
-    }//if ( onePad25To45 & bitI )
-    else {
-      if (bothPads25To45 & bitI) {
-	Quality--;
-      } //if ( bothPads25To45 & bitI )
-    } //else {
-  } //for (ibits=0;ibits<=20;ibits++)
+  // for (ibits = 8; ibits <= 31; ibits++) {
+  //   bitI = 0;
+  //   bitI |= 1UL << (ibits);
+  //   if (onePad1To24 & bitI) {
+  //     Quality++;
+  //     continue;
+  //   }// if ( onePad1To24 & bitI )
+  //   else {
+  //     if (bothPads1To24 & bitI) Quality--;
+  //   } //else {
+  // } //for (ibits=8;ibits<=31;ibits++)
+  // for (ibits = 0; ibits <= 20; ibits++) {
+  //   bitI = 0;
+  //   bitI |= 1UL << (ibits);
+  //   if (onePad25To45 & bitI) {
+  //     Quality++;
+  //     continue;
+  //   }//if ( onePad25To45 & bitI )
+  //   else {
+  //     if (bothPads25To45 & bitI) {
+  // 	Quality--;
+  //     } //if ( bothPads25To45 & bitI )
+  //   } //else {
+  // } //for (ibits=0;ibits<=20;ibits++)
   return ( (double) Quality / ((double) (mTrack1->nHits() + mTrack2->nHits())));
 }
 
 //_________________
 double MpdFemtoPair::quality2() const {
-  unsigned long mapMask0 = 0xFFFFFF00;
-  unsigned long mapMask1 = 0x1FFFFF;
-  unsigned long padRow1To24Track1 = mTrack1->topologyMap(0) & mapMask0;
-  unsigned long padRow25To45Track1 = mTrack1->topologyMap(1) & mapMask1;
-  unsigned long padRow1To24Track2 = mTrack2->topologyMap(0) & mapMask0;
-  unsigned long padRow25To45Track2 = mTrack2->topologyMap(1) & mapMask1;
+  // unsigned long mapMask0 = 0xFFFFFF00;
+  // unsigned long mapMask1 = 0x1FFFFF;
+  // unsigned long padRow1To24Track1 = mTrack1->topologyMap(0) & mapMask0;
+  // unsigned long padRow25To45Track1 = mTrack1->topologyMap(1) & mapMask1;
+  // unsigned long padRow1To24Track2 = mTrack2->topologyMap(0) & mapMask0;
+  // unsigned long padRow25To45Track2 = mTrack2->topologyMap(1) & mapMask1;
 
-  // AND logic
-  //unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
-  //unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
+  // // AND logic
+  // //unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
+  // //unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
 
-  // XOR logic
-  unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
-  unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
-  unsigned long bitI;
-  int ibits;
+  // // XOR logic
+  // unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
+  // unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
+  // unsigned long bitI;
+  // int ibits;
   int Quality = 0;
-  for (ibits = 8; ibits <= 31; ibits++) {
-    bitI = 0;
-    bitI |= 1UL << (ibits);
-    if (onePad1To24 & bitI) {
-      Quality++;
-      continue;
-    }
-    //else{
-    //if ( bothPads1To24 & bitI ) Quality--;
-    //}
-  }
-  for (ibits = 0; ibits <= 20; ibits++) {
-    bitI = 0;
-    bitI |= 1UL << (ibits);
-    if (onePad25To45 & bitI) {
-      Quality++;
-      continue;
-    }
-    //else{
-    //if ( bothPads25To45 & bitI ) Quality--;
-    //}
-  }
+  // for (ibits = 8; ibits <= 31; ibits++) {
+  //   bitI = 0;
+  //   bitI |= 1UL << (ibits);
+  //   if (onePad1To24 & bitI) {
+  //     Quality++;
+  //     continue;
+  //   }
+  //   //else{
+  //   //if ( bothPads1To24 & bitI ) Quality--;
+  //   //}
+  // }
+  // for (ibits = 0; ibits <= 20; ibits++) {
+  //   bitI = 0;
+  //   bitI |= 1UL << (ibits);
+  //   if (onePad25To45 & bitI) {
+  //     Quality++;
+  //     continue;
+  //   }
+  //   //else{
+  //   //if ( bothPads25To45 & bitI ) Quality--;
+  //   //}
+  // }
   return ( (double) Quality / ((double) (mTrack1->nHits() + mTrack2->nHits())));
 }
 
@@ -796,8 +796,8 @@ double MpdFemtoPair::dcaInsideTpc() const {
   double tInsideDist;
   //tMinDist = 999.;
 
-  double rMin = 60.;
-  double rMax = 190.;
+  double rMin = mTpcRadiusMin;
+  double rMax = mTpcRadiusMax;
   MpdFemtoPhysicalHelix tHelix1 = mTrack1->helix();
   MpdFemtoPhysicalHelix tHelix2 = mTrack2->helix();
   // --- One is a line and other one a helix
@@ -858,7 +858,7 @@ void MpdFemtoPair::calcMergingPar() const {
   mFracOfMergedRow = 0.;
   mWeightedAvSep = 0.;
   double tDist;
-  double tDistMax = 200.;
+  double tDistMax = mTpcRadiusMax;
   for (int ti = 0; ti < mTrack1->mNumberOfPadrows; ti++) {
 
     if ((mTrack1->sect()[ti] == mTrack2->sect()[ti]) &&

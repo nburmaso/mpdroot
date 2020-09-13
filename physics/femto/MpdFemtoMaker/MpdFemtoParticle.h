@@ -56,7 +56,7 @@ class MpdFemtoParticle {
   /// Number of points where perform calculations
   static const unsigned short mNumberOfPoints = 11;
   /// Total number of padrows in super sector
-  static const unsigned short mNumberOfPadrows = 45;
+  static const unsigned short mNumberOfPadrows = 53;
   /// Radius at each padrow
   static float tRowRadius[mNumberOfPadrows];
 
@@ -163,8 +163,8 @@ class MpdFemtoParticle {
     return mTrack ? mTrack->helix() : MpdFemtoPhysicalHelix();
   }
   /// Topology map of the track
-  unsigned int topologyMap(const unsigned int& word) const {
-    return mTrack ? mTrack->topologyMap(word) : 0;
+  unsigned long topologyMap() const {
+    return mTrack ? mTrack->topologyMap() : 0;
   }
   /// Number of hits of the track
   unsigned short nHits() const {

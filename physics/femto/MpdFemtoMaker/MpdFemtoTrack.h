@@ -368,13 +368,13 @@ class MpdFemtoTrack {
   float Chi2() const {
     return chi2();
   }
-  /// Topology map of 2 words
-  unsigned int topologyMap(const unsigned int& word) const {
-    return mMap[word];
+  /// Topology (hit) map
+  unsigned long topologyMap() const {
+    return mMap;
   }
-  /// Topology map of 2 words
-  unsigned int TopologyMap(const unsigned int& word) const {
-    return topologyMap(word);
+  /// Topology (hit) map
+  unsigned long TopologyMap() const {
+    return mMap;
   }
   /// Velocity of the track from TOF
   float beta() const {
@@ -731,13 +731,13 @@ class MpdFemtoTrack {
   void SetBField(const float& bField) {
     setMagneticField(bField);
   }
-  /// Set topology map (2 words)
-  void setTopologyMap(const int word, const unsigned int map) {
-    mMap[word] = map;
+  /// Set topology (hit) map
+  void setTopologyMap(const unsigned long &map) {
+    mMap = map;
   }
-  /// Set topology map (2 words)
-  void SetTopologyMap(const int word, const unsigned int map) {
-    setTopologyMap(word, map);
+  /// Set topology (hit) map
+  void SetTopologyMap(const unsigned int &map) {
+    setTopologyMap(map);
   }
   /// Set velocity (from TOF)
   void setBeta(const float &beta);
@@ -821,7 +821,7 @@ class MpdFemtoTrack {
   unsigned short mPidProbProton;
 
   /// Topology map
-  unsigned int mMap[2];
+  unsigned long mMap;
 
   /// Time-of-Flight information. 0 correseponds
   /// to the absence of the signal (compression = *20000)

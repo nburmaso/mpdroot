@@ -11,7 +11,7 @@ MpdFemtoTrack::MpdFemtoTrack() :
 mId(0), mFlag(0), mNHits(0), mNHitsPoss(0), mNHitsDedx(0), mChi2(0), mDedx(0),
 mNSigmaElectron(-30), mNSigmaPion(-30), mNSigmaKaon(-30), mNSigmaProton(-30),
 mPidProbElectron(0), mPidProbPion(0), mPidProbKaon(0), mPidProbProton(0),
-mMap{}, mTofBeta(0),
+mMap(0), mTofBeta(0),
 mPrimaryPx(0), mPrimaryPy(0), mPrimaryPz(0), mGlobalPx(0), mGlobalPy(0), mGlobalPz(0),
 mDcaX(-999), mDcaY(-999), mDcaZ(-999),
 mPrimaryVertexX(0), mPrimaryVertexY(0), mPrimaryVertexZ(0), mBField(0),
@@ -40,8 +40,7 @@ MpdFemtoTrack::MpdFemtoTrack(const MpdFemtoTrack& t) {
   mDcaX = t.mDcaX;
   mDcaY = t.mDcaY;
   mDcaZ = t.mDcaZ;
-  mMap[0] = t.mMap[0];
-  mMap[1] = t.mMap[1];
+  mMap = t.mMap;
   mTofBeta = t.mTofBeta;
   mPrimaryPx = t.mPrimaryPx;
   mPrimaryPy = t.mPrimaryPy;
@@ -80,8 +79,7 @@ MpdFemtoTrack& MpdFemtoTrack::operator=(const MpdFemtoTrack& trk) {
     mPidProbPion = trk.mPidProbPion;
     mPidProbKaon = trk.mPidProbKaon;
     mPidProbProton = trk.mPidProbProton;
-    mMap[0] = trk.mMap[0];
-    mMap[1] = trk.mMap[1];
+    mMap = trk.mMap;
     mTofBeta = trk.mTofBeta;
     mPrimaryPx = trk.mPrimaryPx;
     mPrimaryPy = trk.mPrimaryPy;

@@ -10,42 +10,42 @@
 
 //_________________
 double Triplet_Quality_Calc(MpdFemtoParticle* Track1, MpdFemtoParticle* Track2) {
-  unsigned long mapMask0 = 0xFFFFFF00;
-  unsigned long mapMask1 = 0x1FFFFF;
-  unsigned long padRow1To24Track1 = Track1->topologyMap(0) & mapMask0;
-  unsigned long padRow25To45Track1 = Track1->topologyMap(1) & mapMask1;
-  unsigned long padRow1To24Track2 = Track2->topologyMap(0) & mapMask0;
-  unsigned long padRow25To45Track2 = Track2->topologyMap(1) & mapMask1;
-  // AND logic
-  unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
-  unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
-  // XOR logic
-  unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
-  unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
-  unsigned long bitI;
-  int ibits;
+  // unsigned long mapMask0 = 0xFFFFFF00;
+  // unsigned long mapMask1 = 0x1FFFFF;
+  // unsigned long padRow1To24Track1 = Track1->topologyMap(0) & mapMask0;
+  // unsigned long padRow25To45Track1 = Track1->topologyMap(1) & mapMask1;
+  // unsigned long padRow1To24Track2 = Track2->topologyMap(0) & mapMask0;
+  // unsigned long padRow25To45Track2 = Track2->topologyMap(1) & mapMask1;
+  // // AND logic
+  // unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
+  // unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
+  // // XOR logic
+  // unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
+  // unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
+  // unsigned long bitI;
+  // int ibits;
   int Quality = 0;
   double normQual = 0.0;
-  for (ibits = 8; ibits <= 31; ibits++) {
-    bitI = 0;
-    bitI |= 1UL << (ibits);
-    if (onePad1To24 & bitI) {
-      Quality++;
-      continue;
-    } else {
-      if (bothPads1To24 & bitI) Quality--;
-    }
-  }
-  for (ibits = 0; ibits <= 20; ibits++) {
-    bitI = 0;
-    bitI |= 1UL << (ibits);
-    if (onePad25To45 & bitI) {
-      Quality++;
-      continue;
-    } else {
-      if (bothPads25To45 & bitI) Quality--;
-    }
-  }
+  // for (ibits = 8; ibits <= 31; ibits++) {
+  //   bitI = 0;
+  //   bitI |= 1UL << (ibits);
+  //   if (onePad1To24 & bitI) {
+  //     Quality++;
+  //     continue;
+  //   } else {
+  //     if (bothPads1To24 & bitI) Quality--;
+  //   }
+  // }
+  // for (ibits = 0; ibits <= 20; ibits++) {
+  //   bitI = 0;
+  //   bitI |= 1UL << (ibits);
+  //   if (onePad25To45 & bitI) {
+  //     Quality++;
+  //     continue;
+  //   } else {
+  //     if (bothPads25To45 & bitI) Quality--;
+  //   }
+  // }
   normQual = (double) Quality / ((double) (Track1->nHits() + Track2->nHits()));
   return ( normQual);
 
