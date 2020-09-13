@@ -360,8 +360,7 @@ MpdFemtoEvent* MpdFemtoMcDstReader::returnHbtEvent() {
     hbtTrack->setPrimaryVertex(0., 0., 0.);
     hbtTrack->setMagneticField(mMagField);
     // Set topology map (probably can insert probabilty function from data)
-    hbtTrack->setTopologyMap(0, 0.);
-    hbtTrack->setTopologyMap(1, 0.);
+    hbtTrack->setTopologyMap(0);
 
     hbtTrack->setBeta(particle->ptot() / particle->energy());
 

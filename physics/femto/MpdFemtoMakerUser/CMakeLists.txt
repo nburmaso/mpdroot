@@ -12,7 +12,8 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/kalman
  ${CMAKE_SOURCE_DIR}/physics/femto/MpdFemtoMaker
  ${CMAKE_SOURCE_DIR}/physics/femto/MpdFemtoMakerUser
- ${CMAKE_SOURCE_DIR}/mpddst/mcDst 
+ ${CMAKE_SOURCE_DIR}/mpddst/mcDst
+ ${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -53,6 +54,7 @@ MpdFemtoVertexMultAnalysis.cxx
 MpdFemtoFxtEventCutMonitor.cxx
 MpdFemtoFxtPairCutMonitor.cxx
 MpdFemtoFxtTrackCutMonitor.cxx
+MpdFemtoMiniDstReader.cxx
 )
 
 Set(HEADERS)
