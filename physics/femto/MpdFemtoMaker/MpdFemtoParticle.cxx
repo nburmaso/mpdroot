@@ -28,24 +28,26 @@ float MpdFemtoParticle::mPrimPpPar0 = 0.;
 float MpdFemtoParticle::mPrimPpPar1 = 0.;
 float MpdFemtoParticle::mPrimPpPar2 = 0.;
 
-float MpdFemtoParticle::mInnerTpcRadius = 50.f; //[cm]
-float MpdFemtoParticle::mOuterTpcRadius = 200.f; //[cm]
-float MpdFemtoParticle::mTpcHalfLength = 200.f; //[cm]
-float MpdFemtoParticle::tRowRadius[mNumberOfPadrows] = {60, 64.8, 69.6, 74.4, 79.2, 84, 88.8, 93.6, 98.8,
-							104, 109.2, 114.4, 119.6, 127.195, 129.195, 131.195,
-							133.195, 135.195, 137.195, 139.195, 141.195,
-							143.195, 145.195, 147.195, 149.195, 151.195,
-							153.195, 155.195, 157.195, 159.195, 161.195,
-							163.195, 165.195, 167.195, 169.195, 171.195,
-							173.195, 175.195, 177.195, 179.195, 181.195,
-							183.195, 185.195, 187.195, 189.195};
+float MpdFemtoParticle::mInnerTpcRadius = 34.f; //[cm]
+float MpdFemtoParticle::mOuterTpcRadius = 133.f; //[cm]
+float MpdFemtoParticle::mTpcHalfLength = 163.f; //[cm]
+
+// TODO: investigate pad sizes and pitches between them
+float MpdFemtoParticle::tRowRadius[mNumberOfPadrows] = { 34, 35.5, 37, 38.5, 40, 41.5, 43, 44.5,
+							 46, 47.5, 49, 50.5, 52, 53.5, 55, 56.5,
+							 58, 59.5, 61, 62.5, 64, 65.5, 67, 68.5,
+							 70, 71.5, 73,
+							 74.5, 76.6, 78.7, 80.8, 82.9, 85, 87.1,
+							 89.2, 91.3, 93.4, 95.5, 97.6, 99.7, 101.8,
+							 103.9, 106, 108.1, 110.2, 112.3, 114.4, 116.5,
+							 118.6, 120.7, 122.8, 124.9, 127 };
 
 //_________________
 int TpcLocalTransform(TVector3& xgl,
-        int& iSector,
-        int& iPadrow,
-        float& xlocal,
-        double& ttPhi);
+		      int& iSector,
+		      int& iPadrow,
+		      float& xlocal,
+		      double& ttPhi);
 
 //_________________
 MpdFemtoParticle::MpdFemtoParticle() :
@@ -965,17 +967,6 @@ void MpdFemtoParticle::calculateTpcExitAndEntrancePoints(MpdFemtoPhysicalHelix* 
   for (int i = irad; i < 11; i++) {
     tmpPosSample[i] = TVector3(-9999., -9999., -9999);
   }
-  /*
-  // Lets see if it will work out and move it to the protected area
-  static float tRowRadius[mNumberOfPadrows] = {60,64.8,69.6,74.4,79.2,84,88.8,93.6,98.8,
-  104,109.2,114.4,119.6,127.195,129.195,131.195,
-  133.195,135.195,137.195,139.195,141.195,
-  143.195,145.195,147.195,149.195,151.195,
-  153.195,155.195,157.195,159.195,161.195,
-  163.195,165.195,167.195,169.195,171.195,
-  173.195,175.195,177.195,179.195,181.195,
-  183.195,185.195,187.195,189.195};
-  */
 
   int tRow, tSect, tOutOfBound;
   double tLength, tPhi;
