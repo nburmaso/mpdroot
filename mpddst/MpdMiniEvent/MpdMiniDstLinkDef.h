@@ -20,6 +20,6 @@
 // Helper classes
 #pragma link C++ class MpdMiniHelix+;
 #pragma link C++ class MpdMiniPhysicalHelix+;
-#pragma link C++ class MpdMiniMessMgr+
+#pragma link C++ class MpdMiniMessMgr+;
 
 #endif
