@@ -72,6 +72,12 @@ class MpdMiniDstFillTask : public FairTask {
   /// Fill ECal-related information
   void isUseECal(Bool_t flag)      { fIsUseECal = flag; }
 
+  ///  Set how to fill nSigma(e,pi,K,p)
+  /// \par 0 use values from MpdDst (default)
+  /// \par 1 use values from special tables (cheat way)
+  void setNSigmaDedxEstimator(Int_t estimator) 
+  { fNSigmaDedxEstimator = (estimator==0 || estimator==1 ) ? estimator : 0; }
+
  private:
 
   /// Store/Not store track covariant matrix information
@@ -130,6 +136,11 @@ class MpdMiniDstFillTask : public FairTask {
   /// Mat for keeping MC track to barrel ECal cluster correpsondence
   std::map< Int_t, Int_t > fMcTrk2EcalCluster;
 
+  /// How to fill nSigma(e,pi,K,p)
+  /// \par 0 use values from MpdDst (default)
+  /// \par 1 use values from special tables (cheat way)
+  Int_t fNSigmaDedxEstimator;
+
   /// Turn-off ROOT streamers
   void streamerOff();
 
@@ -174,6 +185,10 @@ class MpdMiniDstFillTask : public FairTask {
   
   /// Check if the event event is okay (reasonabler reconstruction)
   Bool_t isGoodEvent();
+
+  /// Estimate nSigma value (cheat way). Returns vector with 
+  /// values for electron, pion, kaon and proton
+  std::vector< Double_t > nSigmaDedx(Double_t p, Double_t dEdx);
   
   ClassDef(MpdMiniDstFillTask, 0)
 };
