@@ -9,10 +9,13 @@
 #include <stdlib.h>
 
 #include <TMath.h>
+#include <TParticle.h>
+#include <TVirtualMC.h>
 
 #include "FairMCEventHeader.h"
 #include "MpdMCEventHeader.h"
 #include "MpdPHSDGenerator.h"
+#include "MpdStack.h"
 
 // ---------------------------------------------------------------------
 MpdPHSDGenerator::MpdPHSDGenerator()
@@ -28,6 +31,7 @@ MpdPHSDGenerator::MpdPHSDGenerator(const char *filename="phsd.dat.gz")
   
   fPsiRP=0.;
   fisRP=kTRUE; // by default RP is random
+  fHPol=kFALSE; // by default hyperons are not polarized
   frandom = new TRandom2();
   frandom->SetSeed(0);
 };
@@ -63,13 +67,21 @@ Bool_t MpdPHSDGenerator::ReadEvent(FairPrimaryGenerator *primGen)
   for(Int_t i=1; i<=fntr; i++)
   {
     Int_t ipdg; Float_t px,py,pz;
+    Float_t pol[3] = {0.,0.,0.};  // polarization
     /* read track */
     if(gzgets(fgzFile,fbuffer,256)==Z_NULL) {printf("-E- MpdPHSDGenerator: unexpected end of file %d/%d\n",i,fntr); exit(1);}
     /* scan values */
     int res=sscanf(fbuffer,"%d %*d %e %e %e",&ipdg,&px,&py,&pz);
     if (res!=4)  {printf("-E- MpdPHSDGenerator: selftest error in track, scan %d of 4\n",res); exit(1);}
     if (ipdg==0) {printf("-W- MpdPHSDGenerator: particle with pdg=0\n"); continue;}
-    
+
+    // read polarizarion -- extention of standart PHSD output
+    if (fHPol==kTRUE && (TMath::Abs(ipdg/100) == 31 || TMath::Abs(ipdg/100) == 32))
+    {
+      res=sscanf(fbuffer,"%*d %*d %*e %*e %*e %*e %*d %*d %*d %e %e %e",&pol[0],&pol[1],&pol[2]);
+      if (res!=3)  {printf("-E- MpdPHSDGenerator: no Hyperon polarization info\n",res); exit(1);}
+    }
+
     // replacement of heavy particles for Geant4
     // this decays will be improved in the next versions of PHSD
     if (ipdg==+413)  ipdg=+421;  // D*+     -> D0
@@ -95,6 +107,14 @@ Bool_t MpdPHSDGenerator::ReadEvent(FairPrimaryGenerator *primGen)
     
     /* add track to simulation */
     primGen->AddTrack(ipdg, px, py, pz, 0., 0., 0.);
+    
+    // add polarization for light hyperons (pdg == 31** and 32**)
+    if (fHPol==kTRUE && (TMath::Abs(ipdg/100) == 31 || TMath::Abs(ipdg/100) == 32))
+    {
+      Int_t nTr = gMC->GetStack()->GetNtrack();
+      TParticle *part = ((MpdStack*)gMC->GetStack())->GetParticle(nTr-1);
+      part->SetPolarisation(pol[0], pol[1], pol[2]);
+    }
   }
   
   return kTRUE;

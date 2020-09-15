@@ -150,6 +150,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
 
     MpdPHSDGenerator *hsdGen = new MpdPHSDGenerator(inFile.Data());
     //hsdGen->SetPsiRP(0.); // set fixed Reaction Plane angle [rad] instead of random
+    //hsdGen->WithHyperonPolarization(); // read extended output with hyperon polarizations
     primGen->AddGenerator(hsdGen);
     if (nStartEvent > 0) hsdGen->SkipEvents(nStartEvent);
 

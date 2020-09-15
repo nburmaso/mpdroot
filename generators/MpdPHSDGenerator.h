@@ -32,6 +32,8 @@ class MpdPHSDGenerator : public FairGenerator
 
   /** Set fixed reaction plane angle **/
   void SetPsiRP(Double_t PsiRP) {fPsiRP=PsiRP; fisRP=kFALSE;};
+  /** **/
+  void WithHyperonPolarization() {fHPol=kTRUE;};
 
  private:
   Int_t fntr; //! number of tracks in given event
@@ -44,6 +46,7 @@ class MpdPHSDGenerator : public FairGenerator
   TRandom2 *frandom; //!
   Double_t  fPsiRP;  //! reaction plane angle
   Bool_t    fisRP;   //! random/fixed reaction plane
+  Bool_t    fHPol;   //! with/without polarization info for Hyperons
 
   Bool_t ReadHeader(); //! read event header, return kTRUE if successful
   void   SkipTrack();  //! skip one track
