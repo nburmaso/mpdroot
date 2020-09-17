@@ -85,6 +85,11 @@ class MpdFemtoBasicPairCut : public MpdFemtoBasePairCut {
     mEta[0] = lo;
     mEta[1] = hi;
   }
+  /// Set cut on \Delta \Eta (min, max)
+  void setDEta(const float& lo, const float& hi) {
+      mDEta[0] = lo;
+      mDEta[1] = hi;  
+  }
   /// Set cut on the invariant relative momentum (min, max)
   void setQinv(const float& lo, const float& hi) {
     mQinv[0] = lo;
@@ -177,6 +182,8 @@ class MpdFemtoBasicPairCut : public MpdFemtoBasePairCut {
   float mRValueLo;
   /// Minimal azimuthal angle between two tracks estimated over several radial points in TPC
   float mDPhiStarMin[2];
+  /// Minimal and maximal value of \Delta \Eta
+  float mDEta[2];
   /// Number of pairs that passed cut
   long mNPairsPassed;
   /// Number of pairs that failed cut

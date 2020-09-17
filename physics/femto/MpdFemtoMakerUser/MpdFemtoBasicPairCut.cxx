@@ -50,8 +50,10 @@ MpdFemtoBasicPairCut::MpdFemtoBasicPairCut() : MpdFemtoBasePairCut() {
   mAverageSeparation[0] = -1e6;
   mAverageSeparation[1] = 1e6;
   mRValueLo = -1e6;
-  mDPhiStarMin[0] = -1e6;
-  mDPhiStarMin[1] = 1e6;
+  mDPhiStarMin[0] = 0.;
+  mDPhiStarMin[1] = 0.;
+  mDEta[0] = 0.;
+  mDEta[1] = 0.;
   mNPairsPassed = 0;
   mNPairsFailed = 0;
   mVerbose = false;
@@ -196,8 +198,8 @@ bool MpdFemtoBasicPairCut::pass(const MpdFemtoPair* pair) {
 		    (pair->nominalTpcAverageSeparation() >= mAverageSeparation[0]) &&
 		    (pair->nominalTpcAverageSeparation() <= mAverageSeparation[1]) &&
 		    (pair->rValue() >= mRValueLo) &&
-		    (dPhiStarMin >= mDPhiStarMin[0]) &&
-		    (dPhiStarMin <= mDPhiStarMin[1])
+		    ((dPhiStarMin <= mDPhiStarMin[0]) || (dPhiStarMin >= mDPhiStarMin[1])) && 
+		    ((pair->deltaEta() <= mDEta[0]) || (pair->deltaEta() >= mDEta[1]))
 		    );
 
   // Print pair parameters if requested
