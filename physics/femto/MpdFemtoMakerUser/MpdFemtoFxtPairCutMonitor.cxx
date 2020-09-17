@@ -57,7 +57,7 @@ mPtVsEta(nullptr) {
 		      60, -1.5, 1.5, 40, 0., 2.);
   mDEtaVsDPhiStarMin = new TH2F((s + n + "mDEtaVsDPhiStarMin").c_str(),
 				"#Delta#eta vs. #Delta#phi*min;#Delta#phi*min (rad);#Delta#eta",
-				40, -0.2, 0.2, 40, -0.2, 0.2);
+				200, -0.4, 0.4, 200, -0.4, 0.4);
 
   mPartMass = M_PION_PLUS;
 }
