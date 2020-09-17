@@ -387,7 +387,7 @@ double MpdFemtoPair::qLongPf() const {
 //_________________
 double MpdFemtoPair::qOutBf(double /* beta */) const {
   // Relative momentum long component in the boosted frame
-  return ( this->qOutCMS());
+   return ( this->qOutCMS());
 }
 
 //_________________
@@ -408,48 +408,83 @@ double MpdFemtoPair::qLongBf(double beta) const {
 }
 
 //_________________
+
 double MpdFemtoPair::quality() const {
-  // Estimation of track splitting
-  // unsigned long mapMask0 = 0xFFFFFF00;
-  // unsigned long mapMask1 = 0x1FFFFF;
-  // unsigned long padRow1To24Track1 = mTrack1->topologyMap(0) & mapMask0;
-  // unsigned long padRow25To45Track1 = mTrack1->topologyMap(1) & mapMask1;
-  // unsigned long padRow1To24Track2 = mTrack2->topologyMap(0) & mapMask0;
-  // unsigned long padRow25To45Track2 = mTrack2->topologyMap(1) & mapMask1;
-  // // AND logic
-  // unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
-  // unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
-  // // XOR logic
-  // unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
-  // unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
-  // unsigned long bitI;
-  // int ibits;
-  int Quality = 0;
-  // for (ibits = 8; ibits <= 31; ibits++) {
-  //   bitI = 0;
-  //   bitI |= 1UL << (ibits);
-  //   if (onePad1To24 & bitI) {
-  //     Quality++;
-  //     continue;
-  //   }// if ( onePad1To24 & bitI )
-  //   else {
-  //     if (bothPads1To24 & bitI) Quality--;
-  //   } //else {
-  // } //for (ibits=8;ibits<=31;ibits++)
-  // for (ibits = 0; ibits <= 20; ibits++) {
-  //   bitI = 0;
-  //   bitI |= 1UL << (ibits);
-  //   if (onePad25To45 & bitI) {
-  //     Quality++;
-  //     continue;
-  //   }//if ( onePad25To45 & bitI )
-  //   else {
-  //     if (bothPads25To45 & bitI) {
-  // 	Quality--;
-  //     } //if ( bothPads25To45 & bitI )
-  //   } //else {
-  // } //for (ibits=0;ibits<=20;ibits++)
-  return ( (double) Quality / ((double) (mTrack1->nHits() + mTrack2->nHits())));
+    // Estimation of track splitting
+
+    ULong_t hitMap1 = mTrack1->topologyMap();
+    ULong_t hitMap2 = mTrack2->topologyMap();
+
+    std::vector <Int_t> hitsOnPadrowTrack1;
+    std::vector <Int_t> hitsOnPadrowTrack2;
+
+    for (Int_t iRow = 0; iRow < MpdFemtoParticle::mNumberOfPadrows; iRow++) {
+        ULong64_t bit1 = hitMap1 & (1UL << iRow);
+        ULong64_t bit2 = hitMap2 & (1UL << iRow);
+
+        if (bit1 != 0)
+            hitsOnPadrowTrack1.push_back(iRow);
+        if (bit2 != 0)
+            hitsOnPadrowTrack2.push_back(iRow);
+    }
+    
+    Int_t quality = 0;
+    for (Int_t iPadrow = 0; iPadrow < MpdFemtoParticle::mNumberOfPadrows; iPadrow++) {
+               
+        auto hit1 = std::find(hitsOnPadrowTrack1.begin(), hitsOnPadrowTrack1.end(), iPadrow);
+        auto hit2 = std::find(hitsOnPadrowTrack2.begin(), hitsOnPadrowTrack2.end(), iPadrow);
+        
+        if (hit1 != hitsOnPadrowTrack1.end() && hit2 != hitsOnPadrowTrack2.end()) {
+        // Both tracks leave a hit on padrow ...
+            quality--;
+        }
+        
+        else if (hit1 != hitsOnPadrowTrack1.end() || hit2 != hitsOnPadrowTrack2.end()) {
+            // Neither track leaves a hit on padrow ...
+            quality++;        
+        }
+    }
+
+    // unsigned long mapMask0 = 0xFFFFFF00;
+    // unsigned long mapMask1 = 0x1FFFFF;
+    // unsigned long padRow1To24Track1 = mTrack1->topologyMap(0) & mapMask0;
+    // unsigned long padRow25To45Track1 = mTrack1->topologyMap(1) & mapMask1;
+    // unsigned long padRow1To24Track2 = mTrack2->topologyMap(0) & mapMask0;
+    // unsigned long padRow25To45Track2 = mTrack2->topologyMap(1) & mapMask1;
+    // // AND logic
+    // unsigned long bothPads1To24 = padRow1To24Track1 & padRow1To24Track2;
+    // unsigned long bothPads25To45 = padRow25To45Track1 & padRow25To45Track2;
+    // // XOR logic
+    // unsigned long onePad1To24 = padRow1To24Track1 ^ padRow1To24Track2;
+    // unsigned long onePad25To45 = padRow25To45Track1 ^ padRow25To45Track2;
+    // unsigned long bitI;
+    // int ibits;
+    // int Quality = 0;
+    // for (ibits = 8; ibits <= 31; ibits++) {
+    //   bitI = 0;
+    //   bitI |= 1UL << (ibits);
+    //   if (onePad1To24 & bitI) {
+    //     Quality++;
+    //     continue;
+    //   }// if ( onePad1To24 & bitI )
+    //   else {
+    //     if (bothPads1To24 & bitI) Quality--;
+    //   } //else {
+    // } //for (ibits=8;ibits<=31;ibits++)
+    // for (ibits = 0; ibits <= 20; ibits++) {
+    //   bitI = 0;
+    //   bitI |= 1UL << (ibits);
+    //   if (onePad25To45 & bitI) {
+    //     Quality++;
+    //     continue;
+    //   }//if ( onePad25To45 & bitI )
+    //   else {
+    //     if (bothPads25To45 & bitI) {
+    // 	Quality--;
+    //     } //if ( bothPads25To45 & bitI )
+    //   } //else {
+    // } //for (ibits=0;ibits<=20;ibits++)
+    return ( (double) quality / ((double) (mTrack1->nHits() + mTrack2->nHits())));
 }
 
 //_________________
