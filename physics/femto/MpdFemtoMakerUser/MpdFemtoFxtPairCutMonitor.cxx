@@ -195,7 +195,7 @@ void MpdFemtoFxtPairCutMonitor::fill(const MpdFemtoPair* pair) {
 							 pair->track1()->track()->bField() * 0.1 /* in Tesla */
 							 );
 
-  mDEtaVsDPhiStarMin->Fill(dPhiStarMin, pair->eta());
+  mDEtaVsDPhiStarMin->Fill(dPhiStarMin, pair->deltaEta());
 }
 
 //_________________
