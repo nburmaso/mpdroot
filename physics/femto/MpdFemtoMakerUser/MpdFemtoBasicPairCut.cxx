@@ -165,9 +165,10 @@ bool MpdFemtoBasicPairCut::pass(const MpdFemtoPair* pair) {
 							 pair->track1()->track()->bField() * 0.1 /* in Tesla */
 							 );
 
-
-
-
+// Selecting dEta_dPhiStarMin square ...
+  Double_t dEta = pair->deltaEta();  
+  Bool_t isInside = (dEta >= mDEta[0] && dEta <= mDEta[1] && dPhiStarMin >= mDPhiStarMin[0] && dPhiStarMin <= mDPhiStarMin[1]);
+  
   bool mGoodPair = (
 		    (pair->quality() >= mQuality[0]) &&
 		    (pair->quality() <= mQuality[1]) &&
@@ -198,8 +199,7 @@ bool MpdFemtoBasicPairCut::pass(const MpdFemtoPair* pair) {
 		    (pair->nominalTpcAverageSeparation() >= mAverageSeparation[0]) &&
 		    (pair->nominalTpcAverageSeparation() <= mAverageSeparation[1]) &&
 		    (pair->rValue() >= mRValueLo) &&
-		    ((dPhiStarMin <= mDPhiStarMin[0]) || (dPhiStarMin >= mDPhiStarMin[1])) && 
-		    ((pair->deltaEta() <= mDEta[0]) || (pair->deltaEta() >= mDEta[1]))
+                    !isInside
 		    );
 
   // Print pair parameters if requested
