@@ -151,11 +151,11 @@ run_reco:ubuntu:
       if [ $CI_ENVIRONMENT_NAME = "sl6" ]; then
         sed -i "s/\/opt\/fairsoft\/install/\/cvmfs\/nica.jinr.ru\/sl6\/fairtest\/fairsoft\/install/g" SetEnv.sh
         sed -i "s/\/opt\/fairroot\/install/\/cvmfs\/nica.jinr.ru\/sl6\/fairtest\/fairroot\/install/g" SetEnv.sh
-        source ./SetEnv.sh
         source /cvmfs/nica.jinr.ru/sl6/fairtest/AIO_export.sh
+        source ./SetEnv.sh
       else
-        sed -i "s/\/opt\/fairsoft\/install/\/cvmfs\/nica.jinr.ru\/$CI_ENVIRONMENT_NAME\/fairsoft\/latest/g" SetEnv.sh
-        sed -i "s/\/opt\/fairroot\/install/\/cvmfs\/nica.jinr.ru\/$CI_ENVIRONMENT_NAME\/fairroot\/latest/g" SetEnv.sh
+        sed -i "s/\/opt\/fairsoft\/install/\/cvmfs\/nica.jinr.ru\/$CI_ENVIRONMENT_NAME\/fairsoft\/jun19p1/g" SetEnv.sh
+        sed -i "s/\/opt\/fairroot\/install/\/cvmfs\/nica.jinr.ru\/$CI_ENVIRONMENT_NAME\/fairroot\/v18.2.0/g" SetEnv.sh
         source ./SetEnv.sh
       fi;
     - rm -rf build
