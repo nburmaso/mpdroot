@@ -14,32 +14,12 @@ ${CMAKE_SOURCE_DIR}/base/steer
 ${CMAKE_SOURCE_DIR}/base/sim
 ${CMAKE_SOURCE_DIR}/base/source
 ${CMAKE_SOURCE_DIR}/fairtools
-${CMAKE_SOURCE_DIR}/nicafemto/features
-${CMAKE_SOURCE_DIR}/nicafemto/features/io
-${CMAKE_SOURCE_DIR}/nicafemto/features/hist
-${CMAKE_SOURCE_DIR}/nicafemto/features/std
-${CMAKE_SOURCE_DIR}/nicafemto/unigen
-${CMAKE_SOURCE_DIR}/nicafemto/dataformat
-${CMAKE_SOURCE_DIR}/nicafemto/dataformat/formats
-${CMAKE_SOURCE_DIR}/nicafemto/dataformat/detector
-${CMAKE_SOURCE_DIR}/nicafemto/dataformat/compound
-${CMAKE_SOURCE_DIR}/nicafemto/cuts
-${CMAKE_SOURCE_DIR}/nicafemto/cuts/eventcuts
-${CMAKE_SOURCE_DIR}/nicafemto/cuts/trackcuts
-${CMAKE_SOURCE_DIR}/nicafemto/cuts/trackcuts/detector
-${CMAKE_SOURCE_DIR}/nicafemto/cuts/twotrackcuts
-${CMAKE_SOURCE_DIR}/nica_mpd/format
-${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
-${CMAKE_SOURCE_DIR}/nica_mpd/format/mpd
-${CMAKE_SOURCE_DIR}/nica_mpd/format/combined
-${CMAKE_SOURCE_DIR}/nica_mpd/format/kalman
-${CMAKE_SOURCE_DIR}/nica_mpd/format/kalmandst
+${NICAFEMTO_FEATURES}
+${NICAFEMTO_DATA}
+${NICAFEMTO_CUTS}
+${NICAFEMTO_MPDFORMAT}
 ${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
-${CMAKE_SOURCE_DIR}/nica_mpd/cuts
-${CMAKE_SOURCE_DIR}/nica_mpd/cuts/trackcuts
-${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts
-${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/tpc_modular
-${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/tpc_cylinder
+${NICAFEMTO_MPDCUTS}
 ${CMAKE_SOURCE_DIR}/mpdbase
 )
 
@@ -67,6 +47,7 @@ trackcuts/MpdTrackFirstPointCut.cxx
 trackcuts/MpdNSigmaCut.cxx
 trackcuts/MpdPadsEdgeSectorCut.cxx
 trackcuts/MpdHitsEdgeSectorCut.cxx
+trackcuts/MpdBasicTrackCut.cxx
 #paircuts/MpdTwoTrackSharedQualityCut.cxx
 paircuts/MpdAlicePairQuality.cxx
 paircuts/MpdDeltaEtaDeltaPhiStarCut.cxx
@@ -88,6 +69,10 @@ paircuts/tpc_cylinder/MpdPairTpcSeparationSimpleCut.cxx
 paircuts/tpc_cylinder/MpdPairTpcEntrySimpleCut.cxx
 paircuts/tpc_cylinder/MpdCylinderTpcPairCut.cxx
 
+cutmonitors/MpdKinMonitor.cxx
+cutmonitors/MpdTofMonitor.cxx
+cutmonitors/MpdTpcMonitor.cxx
+cutmonitors/MpdDcaMonitor.cxx
 )
 
 Set(HEADERS )
