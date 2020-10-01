@@ -12,9 +12,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class MpdPIDOnTheFly+;
-#pragma link C++ class NicaPairAnaDebugger+;
-#pragma link C++ class MpdSharedHitMap+;
-#pragma link C++ class MpdHitsOnTheFly+;
+#pragma link C++ class MpdPIDOnTheFly + ;
+#pragma link C++ class NicaPairAnaDebugger + ;
+#pragma link C++ class MpdSharedHitMap + ;
+#pragma link C++ class MpdHitsOnTheFly + ;
 #pragma link C++ namespace MpdDetectorID;
+#pragma link C++ namespace NicaMpdConst;
 #endif /* INTERFACES_MPDROOT_NICAMPDINTERFACELINKDEF_H_ */

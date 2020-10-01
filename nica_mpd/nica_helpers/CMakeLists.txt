@@ -22,7 +22,6 @@ ${CMAKE_SOURCE_DIR}/mpddst
 ${CMAKE_SOURCE_DIR}/mpddst/mcDst
 ${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
 ${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
-${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
 ${NICAFEMTO_FEATURES}
 ${NICAFEMTO_DATA}
 ${NICAFEMTO_CUTS}
@@ -51,8 +50,8 @@ set(SRCS
 MpdPIDOnTheFly.cxx
 NicaPairAnaDebugger.cxx
 MpdSharedHitMap.cxx
-MpdDetectorID.cxx
 MpdHitsOnTheFly.cxx
+NicaMpdConst.cxx
 )
 
 Set(HEADERS )

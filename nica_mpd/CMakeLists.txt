@@ -8,9 +8,11 @@ include(NicaFemto)
 SetHeaderVariables(${CMAKE_SOURCE_DIR}/nicafemto)
 set(NICAFEMTO_MPDCUTS 
     ${CMAKE_SOURCE_DIR}/nica_mpd/cuts
-    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts
-    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/tpc_cylinder
-    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/tpc_modular
+    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/common
+    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/common/tpc_cylinder
+    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/full
+    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/full/tpc_modular
+    ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/paircuts/minidst
     ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/trackcuts
     ${CMAKE_SOURCE_DIR}/nica_mpd/cuts/cutmonitors
 )
@@ -18,6 +20,7 @@ set(NICAFEMTO_MPDCUTS
 set(NICAFEMTO_MPDFORMAT
     ${CMAKE_SOURCE_DIR}/nica_mpd/format/combined
     ${CMAKE_SOURCE_DIR}/nica_mpd/format/minidst
+    ${CMAKE_SOURCE_DIR}/nica_mpd/format/hbtformat
     ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdevent
     ${CMAKE_SOURCE_DIR}/nica_mpd/format/mpdmc
     ${CMAKE_SOURCE_DIR}/nica_mpd/format/unigen

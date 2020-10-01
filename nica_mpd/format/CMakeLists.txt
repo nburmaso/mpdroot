@@ -22,6 +22,7 @@ ${CMAKE_SOURCE_DIR}/mpddst
 ${CMAKE_SOURCE_DIR}/mpddst/mcDst
 ${CMAKE_SOURCE_DIR}/mpddst/MpdMiniEvent
 ${NICAFEMTO_FEATURES}
+${NICAFEMTO_MPDHELPERS}
 ${CMAKE_SOURCE_DIR}/nicafemto/nicagenerators
 ${CMAKE_SOURCE_DIR}/nicafemto/nicagenerators/readers
 ${CMAKE_SOURCE_DIR}/nicafemto/nicagenerators/writers
@@ -64,6 +65,7 @@ mpdevent/NicaMpdTrack.cxx
 mpdevent/NicaMpdTrackInterface.cxx
 mpdevent/NicaMpdTrackTpcPads.cxx
 mpdevent/NicaTpcSectorGeo.cxx
+mpdevent/NicaTrackTpcPads.cxx
 mpdmc/NicaMpdMcEvent.cxx
 mpdmc/NicaMpdMcEventInterface.cxx
 mpdmc/NicaMpdMcTrack.cxx
@@ -82,7 +84,7 @@ unigen/UParticle.cxx
 Set(HEADERS )
 Set(LINKDEF NicaMpdInterfaceLinkDef.h)
 Set(LIBRARY_NAME NicaMpdFormat)
-Set(DEPENDENCIES NicaFeatures NicaGen NicaDataFormat MpdDst MpdBase tpc MpdMCStack)
+Set(DEPENDENCIES NicaFeatures NicaGen NicaDataFormat MpdDst MpdBase tpc MpdMCStack NicaMpdHelper)
 
 GENERATE_LIBRARY()
 

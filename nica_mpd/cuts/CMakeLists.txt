@@ -18,7 +18,7 @@ ${NICAFEMTO_FEATURES}
 ${NICAFEMTO_DATA}
 ${NICAFEMTO_CUTS}
 ${NICAFEMTO_MPDFORMAT}
-${CMAKE_SOURCE_DIR}/nica_mpd/nica_helpers
+${NICAFEMTO_MPDHELPERS}
 ${NICAFEMTO_MPDCUTS}
 ${CMAKE_SOURCE_DIR}/mpdbase
 )
@@ -41,7 +41,6 @@ Link_Directories(${LINK_DIRECTORIES})
 # List of source files
 set(SRCS
 trackcuts/MpdTpcBasicCut.cxx
-trackcuts/MpdTpcProbCut.cxx
 trackcuts/MpdTrackChargeCut.cxx
 trackcuts/MpdTrackFirstPointCut.cxx
 trackcuts/MpdNSigmaCut.cxx
@@ -49,25 +48,34 @@ trackcuts/MpdPadsEdgeSectorCut.cxx
 trackcuts/MpdHitsEdgeSectorCut.cxx
 trackcuts/MpdBasicTrackCut.cxx
 #paircuts/MpdTwoTrackSharedQualityCut.cxx
-paircuts/MpdAlicePairQuality.cxx
-paircuts/MpdDeltaEtaDeltaPhiStarCut.cxx
-paircuts/MpdHelixSep.cxx
-paircuts/MpdPairSharedHitsCut.cxx
-paircuts/MpdSplittedPairsCut.cxx
-paircuts/MpdStarPairQualityCut.cxx
-paircuts/MpdPairDeltaDCA.cxx
 
-paircuts/tpc_modular/MpdModularTpcPairCut.cxx
-paircuts/tpc_modular/MpdNominalTpcPairDistanceCut.cxx
-paircuts/tpc_modular/MpdPairKalmanPadsCuts.cxx
-paircuts/tpc_modular/MpdPairSharedPadsCut.cxx
-paircuts/tpc_modular/MpdPairTpcEntranceCut.cxx
-paircuts/tpc_modular/MpdTpcPairSeparationCut.cxx
 
-paircuts/tpc_cylinder/MpdPairTpcSimpleCut.cxx
-paircuts/tpc_cylinder/MpdPairTpcSeparationSimpleCut.cxx
-paircuts/tpc_cylinder/MpdPairTpcEntrySimpleCut.cxx
-paircuts/tpc_cylinder/MpdCylinderTpcPairCut.cxx
+
+paircuts/common/MpdPairDeltaPhiStarDeltaEtaCut.cxx
+paircuts/common/MpdSplittedPairsCut.cxx
+paircuts/common/MpdPairDeltaDCA.cxx
+paircuts/common/tpc_cylinder/MpdPairTpcSimpleCut.cxx
+paircuts/common/tpc_cylinder/MpdPairTpcSeparationSimpleCut.cxx
+paircuts/common/tpc_cylinder/MpdPairTpcEntrySimpleCut.cxx
+paircuts/common/tpc_cylinder/MpdCylinderTpcPairCut.cxx
+
+
+paircuts/full/tpc_modular/MpdModularTpcPairCut.cxx
+paircuts/full/tpc_modular/MpdPairSharedPadsCut.cxx
+paircuts/full/tpc_modular/MpdPairTpcEntranceCut.cxx
+paircuts/full/tpc_modular/MpdTpcPairSeparationCut.cxx
+paircuts/full/MpdDeltaEtaDeltaPhiStarAdvancedCut.cxx
+paircuts/full/MpdAlicePairQuality.cxx
+paircuts/full/MpdDeltaEtaDeltaPhiStarAdvancedCut.cxx
+paircuts/full/MpdHelixSep.cxx
+paircuts/full/MpdNominalTpcPairPadsDistanceCut.cxx
+paircuts/full/MpdPairSharedHitsCut.cxx
+paircuts/full/MpdStarPairQualityCut.cxx
+paircuts/full/MpdTpcPadsPairCut.cxx
+
+paircuts/minidst/MpdFemtoPairCut.cxx
+paircuts/minidst/MpdSharedPadsCut.cxx
+paircuts/minidst/MpdPairTpcEntranceNomininalCut.cxx
 
 cutmonitors/MpdKinMonitor.cxx
 cutmonitors/MpdTofMonitor.cxx

@@ -37,8 +37,6 @@ void NicaMpdTrack::Update(MpdTrack* track) {
   fTpcTrack->SetPidProb(track->GetTPCPidProbPion(), track->GetTPCPidProbKaon(),
                         track->GetTPCPidProbProton(),
                         track->GetTPCPidProbElectron());
-  SetPidProb(track->GetPidProbPion(), track->GetPidProbKaon(),
-             track->GetPidProbProton(), track->GetPidProbProton());
   fToFTrack->SetBeta(track->GetTofBeta());
   fToFTrack->SetMass2(track->GetTofMass2());
   fTpcTrack->SetDeDx(track->GetdEdXTPC());
