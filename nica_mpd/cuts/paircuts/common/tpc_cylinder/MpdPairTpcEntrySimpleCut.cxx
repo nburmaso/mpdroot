@@ -15,9 +15,6 @@ MpdPairTpcEntrySimpleCut::MpdPairTpcEntrySimpleCut()
   SetUnitName("Tpc Entry Sep R [cm]", XYZ());
   SetUnitName("Tpc Entry Sep XY [cm]", XY());
   SetUnitName("Tpc Entry Sep Z [cm]", Z());
-  SetMinMax(0, 1E+5, 0);
-  SetMinMax(1, 1E+5, 0);
-  SetMinMax(2, 1E+5, 0);
 }
 
 MpdPairTpcEntrySimpleCut::~MpdPairTpcEntrySimpleCut() {}

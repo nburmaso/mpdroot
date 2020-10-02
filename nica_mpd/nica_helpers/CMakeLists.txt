@@ -52,6 +52,7 @@ NicaPairAnaDebugger.cxx
 MpdSharedHitMap.cxx
 MpdHitsOnTheFly.cxx
 NicaMpdConst.cxx
+NicaTpcSectorGeo.cxx
 )
 
 Set(HEADERS )

@@ -35,6 +35,7 @@ void NicaMpdTrackTpcPads::CopyData(NicaTrack* other) {
   NicaMpdTrack::CopyData(other);
   NicaMpdTrackTpcPads* track = (NicaMpdTrackTpcPads*)other;
   *fPads = *track->fPads;
+  fPads->Reset();
 }
 
 void NicaMpdTrackTpcPads::CalculatePads(Bool_t shift) {

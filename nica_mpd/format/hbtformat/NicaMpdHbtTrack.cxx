@@ -15,18 +15,19 @@
 NicaMpdHbtTrack::NicaMpdHbtTrack() : fPads(new NicaTrackTpcPads()) {}
 
 void NicaMpdHbtTrack::CopyData(NicaTrack *track) {
-  NicaExpTrack::CopyData(track);
+  NicaExpTrackHelix::CopyData(track);
   NicaMpdHbtEvent *event = (NicaMpdHbtEvent *)GetEvent();
   // calculate pads
+  GetPadsInfo()->Reset();
   GetPadsInfo()->Calculate(GetHelix(), event->GetVertex());
 }
 
 NicaMpdHbtTrack::NicaMpdHbtTrack(const NicaMpdHbtTrack &other)
-    : NicaExpTrack(other), fPads(new NicaTrackTpcPads(*other.fPads)) {}
+    : NicaExpTrackHelix(other), fPads(new NicaTrackTpcPads(*other.fPads)) {}
 
 NicaMpdHbtTrack &NicaMpdHbtTrack::operator=(const NicaMpdHbtTrack &other) {
   if (this == &other) return *this;
-  NicaExpTrack::operator=(other);
+  NicaExpTrackHelix::operator=(other);
   *fPads = *other.fPads;
   return *this;
 }

@@ -7,17 +7,12 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "NicaMpdHbtComplexEvent.h"
-#include "NicaMpdDstMCEvent.h"
 #include "NicaMpdHbtEvent.h"
+#include "NicaMpdMiniDstMcEvent.h"
 
 NicaMpdHbtComplexEvent::NicaMpdHbtComplexEvent()
-    : NicaComplexEvent(new NicaMpdHbtEvent(), new NicaMpdDstMCEvent()) {}
+    : NicaComplexEvent(new NicaMpdHbtEvent(), new NicaMpdMiniDstMcEvent()) {}
 
 NicaMpdHbtComplexEvent::~NicaMpdHbtComplexEvent() {
   // TODO Auto-generated destructor stub
-}
-
-NicaMpdHbtComplexEvent::NicaMpdHbtComplexEvent(
-    const NicaMpdHbtComplexEvent &other) {
-  // TODO Auto-generated constructor stub
 }

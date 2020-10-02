@@ -12,18 +12,12 @@
 #include "NicaExpEvent.h"
 class NicaPackage;
 class NicaMpdHbtEvent : public NicaExpEvent {
-  Double_t fR;
-
  public:
   NicaMpdHbtEvent();
   NicaMpdHbtEvent(const NicaMpdHbtEvent &other);
   NicaMpdHbtEvent &operator=(const NicaMpdHbtEvent &other);
   virtual void CreateSource();
-  // set optimal radius
-  void SetR(Double_t R) { fR = R; };
-  // get optimal value of radius
-  void GetR() const { return fR; };
-  virtual Bool_t AreCompatible(const NicaEvent *buffered) const;
+  virtual Bool_t IsCompatible(const NicaEvent *buffered) const;
   virtual NicaPackage *Report() const;
   virtual ~NicaMpdHbtEvent();
   ClassDef(NicaMpdHbtEvent, 1)

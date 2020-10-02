@@ -9,6 +9,7 @@
 #include "NicaTrackTpcPads.h"
 
 #include <TLorentzVector.h>
+#include <iostream>
 #include "NicaTpcSectorGeo.h"
 
 NicaTrackTpcPads::NicaTrackTpcPads() : fNominalHelix(new NicaHelix()) {
@@ -31,15 +32,15 @@ NicaTrackTpcPads::NicaTrackTpcPads(const NicaTrackTpcPads &other)
 void NicaTrackTpcPads::Calculate(NicaHelix *helix, TLorentzVector *vector) {
   if (AreCalculated()) return;  // pads are calculated
   NicaTpcSectorGeo *sec = NicaTpcSectorGeo::Instance();
-  NicaHelix Helix = NicaHelix(*helix);
+  *fNominalHelix = *helix;
   if (vector) {
-    Helix.Shift(-vector->X(), -vector->Y(), -vector->Z());
-    sec->CalculatePads(&Helix, fPaths, fPadsNo);
+    fNominalHelix->Shift(-vector->X(), -vector->Y(), -vector->Z());
+    sec->CalculatePads(fNominalHelix, fPaths, fPadsNo);
   } else {
-    sec->CalculatePads(&Helix, fPaths, fPadsNo);
+    sec->CalculatePads(fNominalHelix, fPaths, fPadsNo);
   }
   for (int i = fPadsNo[0]; i < fPadsNo[1]; i++) {
-    TVector3 glob = Helix.Evaluate(fPaths[i]);
+    TVector3 glob = fNominalHelix->Evaluate(fPaths[i]);
     TVector3 loc;
     fPadID[i] = sec->Global2Local(glob, loc, -1);
   }

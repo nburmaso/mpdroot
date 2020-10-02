@@ -64,7 +64,6 @@ mpdevent/NicaMpdEventTpcPads.cxx
 mpdevent/NicaMpdTrack.cxx
 mpdevent/NicaMpdTrackInterface.cxx
 mpdevent/NicaMpdTrackTpcPads.cxx
-mpdevent/NicaTpcSectorGeo.cxx
 mpdevent/NicaTrackTpcPads.cxx
 mpdmc/NicaMpdMcEvent.cxx
 mpdmc/NicaMpdMcEventInterface.cxx
@@ -79,6 +78,9 @@ unigen/NicaUnigenTrack.cxx
 unigen/NicaUnigenTrackInterface.cxx
 unigen/UEvent.cxx
 unigen/UParticle.cxx
+hbtformat/NicaMpdHbtComplexEvent.cxx
+hbtformat/NicaMpdHbtEvent.cxx
+hbtformat/NicaMpdHbtTrack.cxx
 )
 
 Set(HEADERS )

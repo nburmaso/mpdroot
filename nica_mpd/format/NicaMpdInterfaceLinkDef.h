@@ -19,7 +19,6 @@
 #pragma link C++ class NicaMpdTrack + ;
 #pragma link C++ class NicaMpdTrackInterface + ;
 #pragma link C++ class NicaMpdTrackTpcPads + ;
-#pragma link C++ class NicaTpcSectorGeo + ;
 #pragma link C++ class NicaTrackTpcPads + ;
 
 #pragma link C++ class NicaMpdDstMCEvent + ;
@@ -39,6 +38,10 @@
 #pragma link C++ class NicaUnigenTrackInterface + ;
 #pragma link C++ class UEvent + ;
 #pragma link C++ class UParticle + ;
+
+#pragma link C++ class NicaMpdHbtComplexEvent + ;
+#pragma link C++ class NicaMpdHbtEvent + ;
+#pragma link C++ class NicaMpdHbtTrack + ;
 
 #pragma link C++ class NicaMpdDstMCEvent + ;
 #pragma link C++ class NicaMpdMiniDstEvent + ;

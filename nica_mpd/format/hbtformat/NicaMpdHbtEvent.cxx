@@ -11,27 +11,24 @@
 #include "NicaPackage.h"
 #include "NicaParameter.h"
 
-NicaMpdHbtEvent::NicaMpdHbtEvent()
-    : NicaExpEvent("NicaMpdHbtTrack"), fR(50.0) {}
+NicaMpdHbtEvent::NicaMpdHbtEvent() : NicaExpEvent("NicaMpdHbtTrack") {}
 
-Bool_t NicaMpdHbtEvent::AreCompatible(const NicaEvent* buffered) const {
+Bool_t NicaMpdHbtEvent::IsCompatible(const NicaEvent* buffered) const {
   if (buffered->InheritsFrom("NicaMpdMiniDstEvent")) return kTRUE;
   return kFALSE;
 }
 
 NicaPackage* NicaMpdHbtEvent::Report() const {
   NicaPackage* rep = NicaEvent::Report();
-  rep->AddObject(new NicaParameterDouble("R", fR));
   return rep;
 }
 
 NicaMpdHbtEvent::NicaMpdHbtEvent(const NicaMpdHbtEvent& other)
-    : NicaExpEvent(other), fR(other.fR) {}
+    : NicaExpEvent(other) {}
 
 NicaMpdHbtEvent& NicaMpdHbtEvent::operator=(const NicaMpdHbtEvent& other) {
   if (this == &other) return *this;
   NicaExpEvent::operator=(other);
-  fR = other.fR;
   return *this;
 }
 
