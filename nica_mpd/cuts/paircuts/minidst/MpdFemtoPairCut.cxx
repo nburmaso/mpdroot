@@ -14,6 +14,7 @@ MpdFemtoPairCut::MpdFemtoPairCut(Int_t size) : NicaTwoTrackCut(size) {}
 MpdFemtoPairCut::~MpdFemtoPairCut() {}
 
 Bool_t MpdFemtoPairCut::Init(Int_t task_id) {
-  return FormatInhertis("NicaMpdHbtEvent", task_id, kBuffered);
+  return FormatInhertis("NicaMpdHbtEvent", task_id,
+                        ENicaFormatDepth::kBuffered);
 }
-}  // namespace MpdFemtoMiniDst
+}  // namespace MpdHbtDst

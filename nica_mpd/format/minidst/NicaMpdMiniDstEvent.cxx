@@ -53,6 +53,7 @@ void NicaMpdMiniDstEvent::Update() {
     mpd_track->Update((MpdMiniTrack *)prim->UncheckedAt(i), fMode);
     mpd_track->GetLink()->Clear();
     mpd_track->GetLink()->SetLink(0, i);
+    mpd_track->SetPrimary();
     mpd_track->SetID(i);
   }
   TClonesArray *tof_info = interface->fTofInfo->GetArray();

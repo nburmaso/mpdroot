@@ -32,6 +32,7 @@ void NicaMpdTrack::Update(MpdTrack* track) {
     SetCharge(-1);
   else
     SetCharge(1);
+  SetPrimary();
   SetNHits(track->GetNofHits());
   fTpcTrack->SetNHits(track->GetNofHits());  //! FIXME
   fTpcTrack->SetPidProb(track->GetTPCPidProbPion(), track->GetTPCPidProbKaon(),

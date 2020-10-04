@@ -65,10 +65,11 @@ void MpdPairDeltaPhiStarDeltaEtaCut::SetDeltaPhiStarCut(Double_t min,
 }
 
 Bool_t MpdPairDeltaPhiStarDeltaEtaCut::Init(Int_t task_id) {
-  Bool_t fine = FormatInhertis("NicaExpEvent", task_id, kBuffered);
+  Bool_t fine =
+      FormatInhertis("NicaExpEvent", task_id, ENicaFormatDepth::kBuffered);
   const NicaExpEvent *ev =
       (const NicaExpEvent *)NicaDataFormatManager::Instance()->GetFormat(
-          task_id, kBuffered);
+          task_id, ENicaFormatDepth::kBuffered);
   fMagField = ev->GetMagField()->Z();
   return fine;
 }

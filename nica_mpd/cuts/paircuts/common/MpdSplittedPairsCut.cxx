@@ -23,7 +23,8 @@ Bool_t MpdSplittedPairsCut::Pass(NicaTwoTrack *pair) {
 }
 
 Bool_t MpdSplittedPairsCut::Init(Int_t task_id) {
-  return FormatInhertis("NicaComplexEvent", task_id, kBuffered);
+  return FormatInhertis("NicaComplexEvent", task_id,
+                        ENicaFormatDepth::kBuffered);
 }
 
 MpdSplittedPairsCut::~MpdSplittedPairsCut() {}

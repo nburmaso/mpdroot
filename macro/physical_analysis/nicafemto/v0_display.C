@@ -26,14 +26,20 @@ void v0_display() {
   gStyle->SetOptStat(0);
   NicaAnaFile *f = new NicaAnaFile("v0.root");
   f->SwitchPackage(0);  // switch to first task v0 without TOF
-  TH2D *armenteros_tpc = (TH2D *)f->GetHistogramPassed(kTwoTrackUpdate, 0, 1);
-  TH1D *mass_tpc = (TH1D *)f->GetHistogramPassed(kTwoTrackUpdate, 0, 0);
-  TH1D *mass_tpc_failed = (TH1D *)f->GetHistogramFailed(kTwoTrackUpdate, 0, 0);
+  TH2D *armenteros_tpc =
+      (TH2D *)f->GetHistogramPassed(ENicaCutUpdate::kTwoTrackUpdate, 0, 1);
+  TH1D *mass_tpc =
+      (TH1D *)f->GetHistogramPassed(ENicaCutUpdate::kTwoTrackUpdate, 0, 0);
+  TH1D *mass_tpc_failed =
+      (TH1D *)f->GetHistogramFailed(ENicaCutUpdate::kTwoTrackUpdate, 0, 0);
   mass_tpc->Add(mass_tpc_failed);
   f->SwitchPackage(1);  // switch to first task v0 with TOF
-  TH2D *armenteros_tof = (TH2D *)f->GetHistogramPassed(kTwoTrackUpdate, 0, 1);
-  TH1D *mass_tof = (TH1D *)f->GetHistogramPassed(kTwoTrackUpdate, 0, 0);
-  TH1D *mass_tof_failed = (TH1D *)f->GetHistogramFailed(kTwoTrackUpdate, 0, 0);
+  TH2D *armenteros_tof =
+      (TH2D *)f->GetHistogramPassed(ENicaCutUpdate::kTwoTrackUpdate, 0, 1);
+  TH1D *mass_tof =
+      (TH1D *)f->GetHistogramPassed(ENicaCutUpdate::kTwoTrackUpdate, 0, 0);
+  TH1D *mass_tof_failed =
+      (TH1D *)f->GetHistogramFailed(ENicaCutUpdate::kTwoTrackUpdate, 0, 0);
   mass_tof->Add(mass_tof_failed);
 
   TCanvas *c = new TCanvas();

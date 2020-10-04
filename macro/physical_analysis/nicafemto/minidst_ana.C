@@ -29,7 +29,7 @@ NicaFemtoBasicAna *PrepPionAna() {
   ana->SetFormat(new NicaMpdMiniDstFullEvent());
   ana->SetPdg(211);
   NicaFemtoWeightGeneratorLednicky weight;
-  weight.SetPairType(weight.PionPlusPionPlus());
+  weight.SetPairType(ENicaFemtoPairType::kPionPlusPionPlus);
   weight.SetStrongOff();
   weight.SetCoulOn();
   weight.SetQuantumOn();
@@ -40,8 +40,9 @@ NicaFemtoBasicAna *PrepPionAna() {
   lcms.SetSourceModel(gaus);
   ana->SetFreezoutGenerator(lcms);
   // analysis in LCMS frame kt bins 0.2-0.4 and 0.4-0.6
-  NicaFemtoCorrFuncKt kt(NicaFemto1DCF("cf", 100, 0, .15, kLCMS),
-                         {0.2, 0.4, 0.6});
+  NicaFemtoCorrFuncKt kt(
+      NicaFemto1DCF("cf", 100, 0, .15, ENicaFemtoKinematics::kLCMS),
+      {0.2, 0.4, 0.6});
   ana->SetCorrFctn(kt);
   ana->SetOption(NicaTwoTrackAna::BackgroundOptionMixed());
   ana->SetMixSize(5);

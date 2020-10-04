@@ -12,14 +12,15 @@
 #include "NicaExpTrack.h"
 
 MpdDcaMonitor::MpdDcaMonitor()
-    : NicaPropertyMonitorXY("DCA_{xy} [cm]", "DCA_{z} [cm]", kTrackUpdate) {
+    : NicaPropertyMonitorXY("DCA_{xy} [cm]", "DCA_{z} [cm]",
+                            ENicaCutUpdate::kTrackUpdate) {
   SetXaxis(100, 0, 10);
   SetYaxis(200, -10, 10);
 }
 
 void MpdDcaMonitor::Update(Bool_t passed, TObject *obj) {
   switch (fFormatType) {
-    case kReco: {
+    case ENicaFormatType::kReco: {
       NicaExpTrack *track = (NicaExpTrack *)obj;
       Double_t dcaxy = track->GetDCA()->Pt();
       if (passed) {
@@ -28,7 +29,7 @@ void MpdDcaMonitor::Update(Bool_t passed, TObject *obj) {
         fHistoFailed->Fill(track->GetDCA()->Pt(), track->GetDCA()->Z());
       }
     } break;
-    case kComplexReco: {
+    case ENicaFormatType::kComplexReco: {
       NicaComplexTrack *z_track = (NicaComplexTrack *)obj;
       NicaExpTrack *track = (NicaExpTrack *)z_track->GetRealTrack();
       Double_t dcaxy = track->GetDCA()->Pt();

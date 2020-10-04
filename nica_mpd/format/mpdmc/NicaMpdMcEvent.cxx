@@ -8,72 +8,72 @@
  */
 #include "NicaMpdMcEvent.h"
 
-#include "FairRootManager.h"
 #include <iostream>
+#include "FairRootManager.h"
 #include "NicaMpdMcEventInterface.h"
 
-NicaMpdMcEvent::NicaMpdMcEvent(): NicaMCEvent("NicaMpdMcTrack"){
-}
+NicaMpdMcEvent::NicaMpdMcEvent() : NicaMCEvent("NicaMpdMcTrack") {}
 
-NicaMpdMcEvent::NicaMpdMcEvent(TString trackname): NicaMCEvent(trackname){
-}
+NicaMpdMcEvent::NicaMpdMcEvent(TString trackname) : NicaMCEvent(trackname) {}
 
-NicaMpdMcEvent::NicaMpdMcEvent(const NicaMpdMcEvent& other) :NicaMCEvent(other){
-}
+NicaMpdMcEvent::NicaMpdMcEvent(const NicaMpdMcEvent &other)
+    : NicaMCEvent(other) {}
 
 void NicaMpdMcEvent::Update() {
-	FairMCEventHeader *event = (FairMCEventHeader*)((NicaMpdMcEventInterface*)fSource)->fEvent;
-	TClonesArray *tracks = (TClonesArray*)((NicaMpdMcEventInterface*)fSource)->fMcracks->GetArray();
-	fB = event->GetB();
-	fVertex->SetXYZT(event->GetX(),event->GetY(),event->GetZ(),event->GetT());
-	fTracks->Clear();
-	fTotalTracksNo = tracks->GetEntriesFast();
-	fTracks->ExpandCreateFast(fTotalTracksNo);
-	for(int i=0;i<tracks->GetEntriesFast();i++){
-		MpdMCTrack *track = (MpdMCTrack*)tracks->UncheckedAt(i);
-		NicaMCTrack *mc = (NicaMCTrack*)fTracks->UncheckedAt(i);
-		mc->GetMomentum()->SetPxPyPzE(track->GetPx(),track->GetPy(),track->GetPz(),track->GetEnergy());
-		mc->SetMotherIndex(track->GetMotherId());
-		if(track->GetMotherId()==-1){
-			mc->SetPrimary(kTRUE);
-		}else{
-			mc->SetPrimary(kFALSE);
-		}
-		mc->SetCharge(CalculateCharge(track->GetPdgCode()));
-		mc->SetPdg(track->GetPdgCode());
-		mc->GetStartPosition()->SetXYZT(track->GetStartX(),track->GetStartY(),track->GetStartZ(),track->GetStartT());
-		mc->GetLink()->Clear();
-		mc->GetLink()->SetLink(0,i);
-		mc->SetID(i);
-	}
+  FairMCEventHeader *event =
+      (FairMCEventHeader *)((NicaMpdMcEventInterface *)fSource)->fEvent;
+  TClonesArray *tracks = (TClonesArray *)((NicaMpdMcEventInterface *)fSource)
+                             ->fMcracks->GetArray();
+  fB = event->GetB();
+  fVertex->SetXYZT(event->GetX(), event->GetY(), event->GetZ(), event->GetT());
+  fTracks->Clear();
+  fTotalTracksNo = tracks->GetEntriesFast();
+  fTracks->ExpandCreateFast(fTotalTracksNo);
+  for (int i = 0; i < tracks->GetEntriesFast(); i++) {
+    MpdMCTrack *track = (MpdMCTrack *)tracks->UncheckedAt(i);
+    NicaMCTrack *mc = (NicaMCTrack *)fTracks->UncheckedAt(i);
+    mc->GetMomentum()->SetPxPyPzE(track->GetPx(), track->GetPy(),
+                                  track->GetPz(), track->GetEnergy());
+    mc->SetCharge(CalculateCharge(track->GetPdgCode()));
+    mc->SetPdg(track->GetPdgCode());
+    mc->GetStartPosition()->SetXYZT(track->GetStartX(), track->GetStartY(),
+                                    track->GetStartZ(), track->GetStartT());
+    mc->GetLink()->ClearLinks();
+    mc->GetLink()->SetLink(0, i);
+    if (track->GetMotherId() == -1) {
+      mc->SetPrimary();
+    } else {
+      if (track->GetMotherId() == -2)
+        mc->SetSecondary(kFALSE);
+      else {
+        mc->SetMotherIndex(track->GetMotherId());
+      }
+    }
+    mc->SetID(i);
+  }
 }
 
-void NicaMpdMcEvent::Clear(Option_t* opt) {
-	NicaMCEvent::Clear(opt);
-}
+void NicaMpdMcEvent::Clear(Option_t *opt) { NicaMCEvent::Clear(opt); }
 
-void NicaMpdMcEvent::Print() {
-}
+void NicaMpdMcEvent::Print() {}
 
 void NicaMpdMcEvent::CreateSource() {
-	std::cout<<"Create source"<<std::endl;
-	fSource = new NicaMpdMcEventInterface();
+  std::cout << "Create source" << std::endl;
+  fSource = new NicaMpdMcEventInterface();
 }
 
-NicaMpdMcEvent::~NicaMpdMcEvent() {
-}
+NicaMpdMcEvent::~NicaMpdMcEvent() {}
 
-TString NicaMpdMcEvent::GetFormatName() const{
-	return "NicaMpdMcEvent";
-}
+TString NicaMpdMcEvent::GetFormatName() const { return "NicaMpdMcEvent"; }
 
 Bool_t NicaMpdMcEvent::ExistInTree() const {
-	FairRootManager *manager = FairRootManager::Instance();
-	Int_t header = manager->CheckBranch("MCEventHeader.")+ manager->CheckBranch("EventHeader.");
-	if(header >1) header = 1;
-	Int_t tracks = manager->CheckBranch("MCTrack");
-	if((header+tracks)==2){
-		return kTRUE;
-	}
-	return kFALSE;
+  FairRootManager *manager = FairRootManager::Instance();
+  Int_t header = manager->CheckBranch("MCEventHeader.") +
+                 manager->CheckBranch("EventHeader.");
+  if (header > 1) header = 1;
+  Int_t tracks = manager->CheckBranch("MCTrack");
+  if ((header + tracks) == 2) {
+    return kTRUE;
+  }
+  return kFALSE;
 }

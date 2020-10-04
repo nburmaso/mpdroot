@@ -15,18 +15,17 @@ void NicaMpdMiniDstTrack::Update(MpdMiniTrack *track,
   TVector3 gMom, mom;
   TVector3 dca = track->origin();
   gMom = track->gMom();
+  SetPrimary();
   switch (mode) {
     case NicaMpdMiniDstEvent::eMode::kGlobalTrack: {
       mom = track->gMom();
-      SetPrimary(kFALSE);
+      SetGlobal(kTRUE);
     } break;
     case NicaMpdMiniDstEvent::eMode::kPrimaryTrack: {
       if (track->isPrimary()) {
         mom = track->pMom();
-        SetPrimary(kTRUE);
       } else {
         mom = track->gMom();
-        SetPrimary(kFALSE);
       }
 
     } break;
@@ -37,7 +36,9 @@ void NicaMpdMiniDstTrack::Update(MpdMiniTrack *track,
   SetID(track->id());
   SetCharge(track->charge());
   SetNHits(track->nHits());
-  SetPrimary(track->isPrimary());
+  if (!track->isPrimary()) {
+    SetGlobal(kTRUE);
+  }
   SetChi2(track->chi2());
   fTpcTrack->SetNHits(track->nHits());  //! FIXME
   fTpcTrack->SetDeDx(track->dEdx());

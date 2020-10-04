@@ -11,14 +11,15 @@
 #include "NicaMpdTrack.h"
 
 MpdTofMonitor::MpdTofMonitor()
-    : NicaPropertyMonitorXY("p [GeV/c]", "m^{2}_{TOF}", kTrackUpdate) {
+    : NicaPropertyMonitorXY("p [GeV/c]", "m^{2}_{TOF}",
+                            ENicaCutUpdate::kTrackUpdate) {
   SetXaxis(100, 0, 4);
   SetYaxis(150, -0.25, 1.25);
 }
 
 void MpdTofMonitor::Update(Bool_t passed, TObject *obj) {
   switch (fFormatType) {
-    case kReco: {
+    case ENicaFormatType::kReco: {
       NicaMpdTrack *track = static_cast<NicaMpdTrack *>(obj);
       if (passed) {
         fHistoPassed->Fill(track->GetMomentum()->P(),
@@ -28,7 +29,7 @@ void MpdTofMonitor::Update(Bool_t passed, TObject *obj) {
                            track->GetToFTrack()->GetMass2());
       }
     } break;
-    case kComplexReco: {
+    case ENicaFormatType::kComplexReco: {
       NicaComplexTrack *complex_track = static_cast<NicaComplexTrack *>(obj);
       NicaMpdTrack *track =
           static_cast<NicaMpdTrack *>(complex_track->GetRealTrack());

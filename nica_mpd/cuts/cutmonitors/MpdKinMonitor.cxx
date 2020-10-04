@@ -9,7 +9,8 @@
 #include "MpdKinMonitor.h"
 
 MpdKinMonitor::MpdKinMonitor()
-    : NicaPropertyMonitorXY("#eta []", "p_{T} [GeV/c]", kTrackUpdate) {
+    : NicaPropertyMonitorXY("#eta []", "p_{T} [GeV/c]",
+                            ENicaCutUpdate::kTrackUpdate) {
   SetXaxis(200, -2, 2);
   SetYaxis(200, 0, 4);
 }

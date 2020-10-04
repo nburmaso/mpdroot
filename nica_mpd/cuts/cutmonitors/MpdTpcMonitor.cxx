@@ -12,7 +12,8 @@
 #include "NicaMpdTrack.h"
 
 MpdTpcMonitor::MpdTpcMonitor()
-    : NicaPropertyMonitorXY("p [GeV/c]", "dEdX [AU]", kTrackUpdate) {
+    : NicaPropertyMonitorXY("p [GeV/c]", "dEdX [AU]",
+                            ENicaCutUpdate::kTrackUpdate) {
   SetXaxis(100, 0, 4);
   SetYaxis(100, 0, 1E+5);
 }
@@ -23,7 +24,7 @@ Bool_t MpdTpcMonitor::Init(Int_t task_id) {
 
 void MpdTpcMonitor::Update(Bool_t passed, TObject *obj) {
   switch (fFormatType) {
-    case kReco: {
+    case ENicaFormatType::kReco: {
       NicaMpdTrack *track = static_cast<NicaMpdTrack *>(obj);
       if (passed) {
         fHistoPassed->Fill(track->GetMomentum()->P(),
@@ -33,7 +34,7 @@ void MpdTpcMonitor::Update(Bool_t passed, TObject *obj) {
                            track->GetTpcTrack()->GetDeDx());
       }
     } break;
-    case kComplexReco: {
+    case ENicaFormatType::kComplexReco: {
       NicaComplexTrack *complex_track = static_cast<NicaComplexTrack *>(obj);
       NicaMpdTrack *track =
           static_cast<NicaMpdTrack *>(complex_track->GetRealTrack());

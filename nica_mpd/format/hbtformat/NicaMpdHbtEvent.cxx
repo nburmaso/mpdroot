@@ -33,7 +33,8 @@ NicaMpdHbtEvent& NicaMpdHbtEvent::operator=(const NicaMpdHbtEvent& other) {
 }
 
 void NicaMpdHbtEvent::CreateSource() {
-  NicaCout::PrintInfo("Cannot create source for NicaMpdHbtEvent", kLessError);
+  NicaCout::PrintInfo("Cannot create source for NicaMpdHbtEvent",
+                      ENicaInfo::kLessError);
 }
 
 NicaMpdHbtEvent::~NicaMpdHbtEvent() {}

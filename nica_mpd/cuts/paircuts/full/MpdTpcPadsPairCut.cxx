@@ -13,6 +13,7 @@ MpdTpcPadsPairCut::MpdTpcPadsPairCut(Int_t size) : NicaTwoTrackCut(size) {}
 MpdTpcPadsPairCut::~MpdTpcPadsPairCut() {}
 
 Bool_t MpdPadsFormat::MpdTpcPadsPairCut::Init(Int_t task_id) {
-  return FormatInhertis("NicaMpdEventTpcPads", task_id, kBuffered);
+  return FormatInhertis("NicaMpdEventTpcPads", task_id,
+                        ENicaFormatDepth::kBuffered);
 }
 }  // namespace MpdPadsFormat
