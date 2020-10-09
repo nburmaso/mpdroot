@@ -255,8 +255,30 @@ MpdFemtoEvent* MpdFemtoMiniDstReader::returnHbtEvent() {
       }
 
       // Hidden info should be used for the MC data
-      MpdFemtoHiddenInfo *hiddenInfo = nullptr;
-      hbtTrack->setHiddenInfo( hiddenInfo );
+      MpdFemtoModelHiddenInfo *hiddenInfo = new MpdFemtoModelHiddenInfo();
+      
+      Int_t mcTrackId = -1; // filled later with real index of corresp. Monte-Carlo track ...
+      
+      if (hbtTrack->IsPrimary()) {        
+         mcTrackId = miniTrack->mcTrackIndex();
+      
+        if (mcTrackId != -1) {
+         MpdMiniMcTrack *mcTrack = miniDst->mcTrack(mcTrackId);
+         
+         // Setting momentum ...
+         hiddenInfo->setTrueMomentum(mcTrack->px(), mcTrack->py(), mcTrack->pz());
+         
+         // Setting emission point ...
+         hiddenInfo->setEmissionPoint(mcTrack->x(), mcTrack->y(), mcTrack->z(), mcTrack->t());
+         
+         // Setting pdg ..
+         hiddenInfo->setPdgPid(mcTrack->pdgId());
+         hiddenInfo->setOrigin(0);
+        }
+      }
+
+      if (hiddenInfo)
+        hbtTrack->setHiddenInfo( hiddenInfo );
 
       // Check if a front-loaded cut exists. The mTrackCut
       // is inherited from MpdFemtoBaseReader

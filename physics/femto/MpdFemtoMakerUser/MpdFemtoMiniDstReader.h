@@ -25,12 +25,14 @@
 #include "MpdFemtoXi.h"
 #include "MpdFemtoEnumeration.h"
 #include "MpdFemtoString.h"
+#include "MpdFemtoModelHiddenInfo.h"
 
 // MpdMiniDst headers
 #include "MpdMiniDst.h"
 #include "MpdMiniDstReader.h"
 #include "MpdMiniEvent.h"
 #include "MpdMiniTrack.h"
+#include "MpdMiniMcTrack.h"
 #include "MpdMiniBTofPidTraits.h"
 
 // ROOT haders
