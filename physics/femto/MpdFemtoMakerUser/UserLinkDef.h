@@ -29,5 +29,7 @@
 #pragma link C++ class MpdFemtoMiniDstReader+;
 #pragma link C++ class MpdFemtoAverageSeparation+;
 
+#pragma link C++ class MpdFemtoModelCorrFctnMomResolution+;
+
 #endif
 
