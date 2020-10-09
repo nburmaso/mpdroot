@@ -27,6 +27,7 @@
 #pragma link C++ class MpdFemtoFxtTrackCutMonitor+;
 #pragma link C++ class MpdFemtoKtPairCut+;
 #pragma link C++ class MpdFemtoMiniDstReader+;
+#pragma link C++ class MpdFemtoAverageSeparation+;
 
 #endif
 

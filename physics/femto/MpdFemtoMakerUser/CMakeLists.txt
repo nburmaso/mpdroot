@@ -55,6 +55,7 @@ MpdFemtoFxtEventCutMonitor.cxx
 MpdFemtoFxtPairCutMonitor.cxx
 MpdFemtoFxtTrackCutMonitor.cxx
 MpdFemtoMiniDstReader.cxx
+MpdFemtoAverageSeparation.cxx
 )
 
 Set(HEADERS)
