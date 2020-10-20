@@ -40,4 +40,8 @@ void geometry_stage1(FairRunSim *fRun) {
   FairDetector *mcord = new MpdMcord("MCORD",kTRUE);
   mcord->SetGeometryFileName("mcord_v3.root");
   fRun->AddModule(mcord);
+
+  FairDetector *Cpc = new MpdCpc("CPC",kTRUE);
+  Cpc->SetGeometryFileName("simple1_v2.root");
+  fRun->AddModule(Cpc);
 }

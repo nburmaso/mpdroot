@@ -48,7 +48,7 @@ public:
    	// Registers the hit collection in the ROOT manager.
   	virtual void Register();
 
-  	// Accessor to the hit collection 
+  	// Accessor to the hit collection
   	virtual TClonesArray* GetCollection(Int_t iColl) const;
 
    	// Screen output of hit collection.
@@ -64,10 +64,10 @@ public:
 
 	// Constructs the CPC geometry
  	virtual void ConstructGeometry();
-	
+
 	// Construct the geometry from an ASCII geometry file
 	virtual void ConstructAsciiGeometry();
-	
+
 	// Check whether a volume is sensitive.
 	// The decision is based on the volume name. Only used in case
 	// of GDML and ROOT geometry.
@@ -75,7 +75,9 @@ public:
 	// @value         kTRUE if volume is sensitive, else kFALSE
 	virtual Bool_t CheckIfSensitive(std::string name);
 
-  
+  	TClonesArray* fCpcCollection;      //! Hit collection
+
+
 private:
 
 	// Track information to be stored until the track leaves the active volume.
@@ -88,22 +90,36 @@ private:
   	Double32_t     fELoss;             //!  energy loss
 
   	Int_t fPosIndex;                   //!
-  	TClonesArray* fCpcCollection;      //! Hit collection
+
 
 
 	// Adds a MpdCpcPoint to the HitCollection
-  	MpdCpcPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss); 
- 
-	// Resets the private members for the track parameters
+  	MpdCpcPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss, Int_t GetCpcID, Int_t RingID, Int_t CellID); 
+
+ 	 Int_t GetVolumeID(TString volname);
+ 	 Int_t GetCpcID(TString volname);
+ 	 Int_t GetRingID(TString volname);
+ 	 Int_t GetCellID(TString volname);
+
+// Resets the private members for the track parameters
   	void ResetParameters();
 
 
-  ClassDef(MpdCpc,1) 
+ // TClonesArray *fCpcCollection;
+  Int_t fCpcID;          //!  number of detector 1 or 2
+  Int_t fRingID;         //!  ring id
+  Int_t fCellID;         //!  cell id in ring
+  Int_t currentTrackID; //!
+  Int_t currentEvent;   //! current event
+  Bool_t fNewTrack;
+  //  const double nan; //!
+
+  ClassDef(MpdCpc,1)
 
 };
 
 //------------------------------------------------------------------------------------------------------------------------
-inline void MpdCpc::ResetParameters() 
+inline void MpdCpc::ResetParameters()
 {
 	fTrackID = fVolumeID = 0;
 	fPos.SetXYZM(0.0, 0.0, 0.0, 0.0);

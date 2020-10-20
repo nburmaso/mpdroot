@@ -14,8 +14,7 @@
 using namespace std;
 
 //------------------------------------------------------------------------------------------------------------------------
-class MpdCpcPoint : public FairMCPoint
-{
+class MpdCpcPoint : public FairMCPoint {
 
 public:
 
@@ -28,17 +27,29 @@ public:
    *@param length   Track length since creation [cm]
    *@param eLoss    Energy deposit [GeV]
    **/
-  MpdCpcPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss);
- MpdCpcPoint(const MpdCpcPoint& point):FairMCPoint(point) { *this = point; }
+  MpdCpcPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t tof, Double_t length, Double_t eLoss, Int_t CpcID, Int_t RingID, Int_t CellID);
+ //MpdCpcPoint(const MpdCpcPoint& point):FairMCPoint(point) { *this = point; }
 
-  	MpdCpcPoint();	
+  Double_t GetDetectorID(){return fDetectorID;}
+
+  	MpdCpcPoint();
   	virtual ~MpdCpcPoint();
 
-	// Output to screen 
+	// Output to screen
   	virtual void Print(const Option_t* opt) const;
+	Int_t GetCpcID(){return fCpcID;}
+	Int_t GetRingID(){return fRingID;}
+	Int_t GetCellID(){return fCellID;}
+	Double_t GeteLoss(){return feLoss;}
+
 
   ClassDef(MpdCpcPoint,1)
+  double fDetectorID;
 
+  Int_t fCpcID;
+  Int_t fRingID;
+  Int_t fCellID;
+  Double_t feLoss;
 };
 
 //------------------------------------------------------------------------------------------------------------------------

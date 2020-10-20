@@ -11,4 +11,9 @@
 #pragma link C++ class  MpdCpcContFact+;
 #pragma link C++ class  MpdCpcHit+;
 #pragma link C++ class  MpdCpcHitProducer+;
+#pragma link C++ class	CpcDigi+ ;
+#pragma link C++ class	CpcDigiPar+ ;
+#pragma link C++ class	CpcDigiProducer+ ;
+#pragma link C++ class	CpcDigiScheme+ ;
+#pragma link C++ class	CpcTstSim+ ;
 #endif
