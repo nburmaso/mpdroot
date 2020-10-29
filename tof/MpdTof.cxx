@@ -298,8 +298,7 @@ MpdTofPoint* 		MpdTof::AddPoint(Int_t trackID, Int_t detID, TVector3 pos, TVecto
 //--------------------------------------------------------------------------------------------------------------------------------------
 Bool_t 			MpdTof::CheckIfSensitive(string name)
 {
-	TString tsname = name;
-	if(tsname.Contains("Active")) return kTRUE;
+    if(name.find("Active") != string::npos) return kTRUE;
   
 return kFALSE;
 }

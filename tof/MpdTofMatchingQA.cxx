@@ -221,7 +221,7 @@ void	MpdTofMatchingQA::Finish()
 	}
 
 	// write histo to file
-	LOG(DEBUG2)<<"[MpdTofMatchingQA::Finish] Update  "<<fFlnm.Data()<<" file. "<<FairLogger::endl;
+	LOG(DEBUG2)<<"[MpdTofMatchingQA::Finish] Update  "<<fFlnm.Data()<<" file. ";
 	auto tmp = gFile;
 	TFile file(fFlnm.Data(), "RECREATE");
 	fList.Write(); 

@@ -128,16 +128,16 @@ assert(gGeoManager);
 				TVector3 A,B,C,D; // detector edges
 				auto Z_range = make_pair(1.e+10, -1.e+10), Phi_range(Z_range);
 			
-				local[0] = -dX;	local[1] = -dY +1.3-0.12; local[2] = +dZ;
+				local[0] = -dX;	local[1] = -dY +1.3-0.26; local[2] = +dZ;
 				localToMaster(matrix, local, A, Z_range, Phi_range);
 
-				local[0] = +dX;	local[1] = -dY +1.3-0.12; local[2] = +dZ;
+				local[0] = +dX;	local[1] = -dY +1.3-0.26; local[2] = +dZ;
 				localToMaster(matrix, local, B, Z_range, Phi_range);	
 
-				local[0] = +dX;	local[1] = -dY +1.3-0.12; local[2] = -dZ;
+				local[0] = +dX;	local[1] = -dY +1.3-0.26; local[2] = -dZ;
 				localToMaster(matrix, local, C, Z_range, Phi_range);	
 
-				local[0] = -dX;	local[1] = -dY +1.3-0.12; local[2] = -dZ;
+				local[0] = -dX;	local[1] = -dY +1.3-0.26; local[2] = -dZ;
 				localToMaster(matrix, local, D, Z_range, Phi_range);					
 				
 				if(pQA) pQA->FillDetectorsMap(A, B, C, D);
