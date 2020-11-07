@@ -100,6 +100,8 @@ void MpdTpcSectorGeo::Init()
     fPhi0 = -((TGeoPgon*)shape)->Phi1() * TMath::DegToRad();
     Double_t loc[3] = {100, 0, 10}, glob[3] = {0};
     gGeoManager->FindNode(loc[0],loc[1],loc[2]);
+    if (TString(gGeoManager->GetPath()).Contains("row")) gGeoManager->CdUp();
+    if (TString(gGeoManager->GetPath()).Contains("sec")) gGeoManager->CdUp();
     gGeoManager->LocalToMaster(loc,glob);
     fPhi0 += TMath::ATan2 (glob[1],glob[0]); // due to rotation
     // Extract sensitive volume Z-coordinates

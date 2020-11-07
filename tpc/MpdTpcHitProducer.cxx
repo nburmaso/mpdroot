@@ -93,11 +93,15 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
 
   //fhLays->Reset();
  
-  static Int_t first = 1;
+  static Int_t first = 1, version3 = 0;
   static Double_t rMin = 99999.0, rMax = 0.0, dR;
   Int_t lay, layMax = 0, nPoints = fPointArray->GetEntriesFast();
   if (first) {
     first = 0;
+    TpcPoint *point = (TpcPoint*) fPointArray->First();
+    TVector3 posOut;
+    point->PositionOut(posOut);
+    if (posOut != TVector3(0,0,0)) version3 = 1; // sectored and layered sensitive volume 
     FairRuntimeDb* rtdb = FairRun::Instance()->GetRuntimeDb();
     //rtdb->printParamContexts();
     //cout << rtdb->findContainer("TpcGeoPar") << " " << rtdb->findContainer("TpcContFact:") << endl;
@@ -162,6 +166,7 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
   //Double_t rMin = 34.19, rMax = 99.81, dR = (rMax-rMin)/50; // 1.3124; // new version (with dead material)
   // !!!!!!!!!
   
+  if (version3) { ExecNew(); return; } // sectored and layered sensitive volume
   if (fModular) { ExecModular(); return; } // emulate geometry of readout chambers
 
   TVector3 p3, p30, p3err(0.05, 0., 0.1); // R-Phi error 500 um, Z error 1 mm
@@ -670,6 +675,52 @@ Bool_t MpdTpcHitProducer::Interpolate(Int_t np, Int_t& ibeg, Double_t *yp, Doubl
   if (TMath::Abs(zhit) > fZtpc + 1) return kFALSE;
 
   return kTRUE;
+}
+
+//---------------------------------------------------------------------------
+
+void MpdTpcHitProducer::ExecNew() 
+{
+  // Sectored and layered sensitive volume
+
+  MpdTpcSectorGeo *secGeo = MpdTpcSectorGeo::Instance();
+
+  Int_t nPoints = fPointArray->GetEntriesFast(), nHits = 0, lay = 0;
+  //TVector3 p3, p30, p3local, p3local0, pmom3, pmom3loc, p3extr, p3err(0.05, 0., 0.1); // X error 500 um, Z error 1 mm
+  TVector3 p3, p3out, p3local, p3err(0.05, 0., 0.1); // X error 500 um, Z error 1 mm
+  //multiset<Int_t> layset;
+  //multimap<Int_t,Int_t> midIndx;
+  cout << " MC poins: " << nPoints << endl;
+
+  for (Int_t j = 0; j < nPoints; ++j ) {
+  //for (Int_t j = 0; j < 1000; ++j ) {
+    TpcPoint* point = (TpcPoint*) fPointArray->UncheckedAt(j);
+    //if (point->GetTrackID() != 1) continue; ///
+    if (point->GetTrackID() < 0) continue; /// strange case - protection
+    point->Position(p3);
+    point->PositionOut(p3out);
+    p3 += p3out;
+    p3 *= 0.5;
+    Int_t padID = secGeo->Global2Local(p3, p3local);
+    //if (padID < 0) {cout << j << " " << p3.X() << " " << p3.Y() << " " << p3local.X() << " " << p3local.Y() << endl; continue; }// outside sector boundaries
+    if (padID < 0) continue; // outside sector boundaries
+    //point->Momentum(pmom3);
+    //pmom3loc.SetXYZ(0.,0.,0.);
+    //if (point->GetTrackID() <= 2 && point->GetTrackID() > 0) printf("%2d %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f %6d %4d %4d\n", point->GetTrackID(), p3.X(), p3.Y(), p3.Z(), p3local.X(), p3local.Y(), p3local.Z(), padID, TpcPadID::numberToPadID(padID).row(), TpcPadID::numberToPadID(padID).sector());
+    lay = secGeo->PadRow(padID);
+    //layMax = TMath::Max (lay, layMax);
+    //MpdTpcHit *hit = AddRawHit(j, point->GetDetectorID(), p3, p3err, j, point->GetTrackID());
+    MpdTpcHit *hit = AddRawHit(nHits++, padID, p3, p3err, j, point->GetTrackID());
+    hit->SetLayer(lay);
+    hit->SetLocalPosition(p3local); // point position
+    //cout << p3local.X() << " " << p3local.Y() << " " << p3local.Z() << " " << hit->GetLocalY() << endl;
+    hit->SetEnergyLoss(point->GetEnergyLoss());
+    hit->SetStep(point->GetStep());
+    hit->SetModular(1); // modular geometry flag
+    hit->SetLength(point->GetLength()); 
+    //midIndx.insert(pair<Int_t,Int_t>(point->GetTrackID(),nHits-1));
+  } // for (Int_t j = 0; j < nPoints;
+
 }
 
 //___________________________________________________________________________

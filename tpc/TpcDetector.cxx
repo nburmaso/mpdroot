@@ -19,6 +19,10 @@
 
 // This Class' Header ------------------
 #include "TpcDetector.h"
+#include "MpdTpcSectorGeo.h" //AZ
+#include "MpdStack.h"
+#include "TpcGeo.h"
+#include "TpcPoint.h"
 
 // C/C++ Headers ----------------------
 #include <iostream>
@@ -27,10 +31,8 @@ using namespace std;
 // Collaborating Class Headers --------
 #include "TClonesArray.h"
 #include "FairRootManager.h"
-#include "TpcPoint.h"
 #include "TVirtualMC.h"
 #include "TLorentzVector.h"
-#include "TpcGeo.h"
 #include "FairGeoLoader.h"
 #include "FairGeoInterface.h"
 #include "FairGeoNode.h"
@@ -43,12 +45,14 @@ using namespace std;
 #include <TSystem.h>
 #include "FairGeoNode.h"
 #include "FairGeoVolume.h"
+#include "FairGeoMedia.h"
 #include "FairVolume.h"
-#include "MpdStack.h"
 
 #include "TGeoManager.h"
 #include "TGDMLParse.h"
-#include "FairGeoMedia.h"
+#include "TGeoPgon.h" //AZ
+#include "TGeoTrd1.h" //AZ
+#include "TGeoTube.h" //AZ
 
 // Class Member definitions -----------
 
@@ -103,54 +107,107 @@ void TpcDetector::Register() {
 
 }
 
+//-----------------------------------------------------------------------------
+
 Bool_t
 TpcDetector::ProcessHits( FairVolume *v)
 {
-  // create Hit for every MC step
-  Double_t time   = gMC->TrackTime() * 1.0e09;
-  Double_t length = gMC->TrackLength();
-  TLorentzVector pos;
-  gMC->TrackPosition(pos);
-  //  pos.Print();
-  TLorentzVector mom;
-  gMC->TrackMomentum(mom);
-  //  mom.Print();
-  Double_t eLoss = gMC->Edep();
-  Int_t trackID  = gMC->GetStack()->GetCurrentTrackNumber();
-  Int_t volumeID = v->getMCid();
+  // Create Point at volume exit or at track end or after large step
 
-  if (eLoss > 0) { //AZ
-    TpcPoint* p=AddHit(trackID, volumeID, pos.Vect(), mom.Vect(), time, length, eLoss);
-    p->SetStep(gMC->TrackStep());
-
-    ((MpdStack*)gMC->GetStack())->AddPoint(kTPC);
-
+  // Set parameters at entrance of volume. Reset ELoss.
+  if (gMC->IsTrackEntering() || gMC->IsNewTrack()) {
+    fELoss  = 0.;
+    fNSteps = 0;
+    fTime   = gMC->TrackTime() * 1.0e09;
+    fLength = gMC->TrackLength();
+    gMC->TrackPosition(fPos);
+    gMC->TrackMomentum(fMom);
+    // Make small step forward
+    TVector3 mom = fMom.Vect();
+    if (mom.Mag() > 0.0001) {
+      mom.SetMag(0.0005); // step 5 um
+      TVector3 pos = fPos.Vect();
+      pos += mom;
+      fPos.SetVect(pos);
+    }
   }
-  //  p->Print("");
+
+  // Sum energy loss for all steps in the active volume
+  fELoss += gMC->Edep();
+  ++fNSteps;
+	
+  // Create TpcPoint at exit of active volume or at track end or after large step
+  //if (fELoss > 0 && (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared() ||
+  //		     gMC->TrackLength()-fLength > gMC->MaxStep()-0.1)) {
+  if (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared() ||
+      gMC->TrackLength()-fLength > gMC->MaxStep()-0.1) {
+
+    if (!TString(gMC->CurrentVolPath()).Contains("row")) return kTRUE;
+    if (fELoss > 0) {
+      Int_t sector = 0, padrow = 0;
+      gMC->CurrentVolOffID(0, padrow); 
+      gMC->CurrentVolOffID(1, sector); 
+      //cout << sector << " " << padrow << " " << gMC->CurrentVolPath() << endl;
+      Int_t trackID  = gMC->GetStack()->GetCurrentTrackNumber();
+      //Int_t volumeID = v->getMCid();
+      Int_t volumeID = sector * 100 + padrow;
+      TVector3 vposIn = fPos.Vect();
+      gMC->TrackPosition(fPos);
+      // At exit, make small step backward
+      if (gMC->IsTrackExiting()) {
+	TLorentzVector lmom;
+	gMC->TrackMomentum(lmom);
+	TVector3 mom = lmom.Vect();
+	if (mom.Mag() > 0.0001) {
+	mom.SetMag(0.0005); // step 5 um
+	TVector3 pos = fPos.Vect();
+	pos -= mom;
+	fPos.SetVect(pos);
+	}
+      }
+      TpcPoint* p = AddHit(trackID, volumeID, vposIn, fMom.Vect(), fPos.Vect(), fTime, fLength, fELoss);
+      p->SetStep(gMC->TrackLength()-fLength);
+      ((MpdStack*)gMC->GetStack())->AddPoint(kTPC);
+    } // if (fELoss > 0) 
+      
+    // Save tracks parameters
+    fELoss  = 0.;
+    fNSteps = 0;
+    fTime   = gMC->TrackTime() * 1.0e09;
+    fLength = gMC->TrackLength();
+    gMC->TrackPosition(fPos);
+    gMC->TrackMomentum(fMom);
+  }
 
   return kTRUE;
 }
 
+//-----------------------------------------------------------------------------
 
 TClonesArray* TpcDetector::GetCollection(Int_t iColl) const {
   if (iColl == 0) return fTpcPointCollection;
   else return NULL;
 }
 
+//-----------------------------------------------------------------------------
 
-TpcPoint* TpcDetector::AddHit(Int_t trackID, Int_t detID, TVector3 pos,
-    TVector3 mom, Double_t time, Double_t length,
-    Double_t eLoss) {
+TpcPoint* TpcDetector::AddHit(Int_t trackID, Int_t detID, TVector3 posIn, TVector3 mom, 
+			      TVector3 posOut, Double_t time, Double_t length, Double_t eLoss) 
+{
   TClonesArray& clref = *fTpcPointCollection;
   Int_t size = clref.GetEntriesFast();
-  return new(clref[size]) TpcPoint(trackID, detID, pos, mom,
-      time, length, eLoss);
+  return new(clref[size]) TpcPoint(trackID, detID, posIn, mom, posOut,
+				   time, length, eLoss);
 }
+
+//-----------------------------------------------------------------------------
 
 void TpcDetector::Reset() {
   fTpcPointCollection->Delete();
   //ResetParameters();
 }
+
+//-----------------------------------------------------------------------------
 
 void TpcDetector::Print() const
 {
@@ -160,6 +217,8 @@ void TpcDetector::Print() const
         if(fVerboseLevel > 1)
                 for(Int_t i=0; i<nHits; i++) (*fTpcPointCollection)[i]->Print();
 }
+
+//-----------------------------------------------------------------------------
 
 void TpcDetector::ConstructGeometry() {
     TString fileName = GetGeometryFileName();
@@ -181,6 +240,9 @@ void TpcDetector::ConstructGeometry() {
     {
       LOG(FATAL) << "Geometry format of TPC file " << fileName.Data() << " not supported.";
     }
+
+    //AZ - Subdivide sensitive volume into layers according to padrow structure
+    DivideSensVol();
 }
 
 // -----   ConstructAsciiGeometry   -------------------------------------------
@@ -401,6 +463,77 @@ Bool_t TpcDetector::CheckIfSensitive(std::string name) {
   //  }
   //  return kFALSE;
 }
-//---------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+
+void TpcDetector::DivideSensVol() 
+{
+  // Divide sensitive volume into sectors and layers according to the padrow structure
+
+  MpdTpcSectorGeo *secGeo = MpdTpcSectorGeo::Instance();
+  Int_t nRows[2] = {secGeo->NofRowsReg(0), secGeo->NofRowsReg(1)};
+  Int_t nSec = secGeo->NofSectors();
+  Double_t dPhi = secGeo->Dphi();
+
+  // Get size along Z
+  TString volName = "tpc01sv";
+  TGeoVolume *sv = gGeoManager->GetVolume(volName);
+  TGeoShape *shape = sv->GetShape();
+  Double_t dZ = ((TGeoTube*)shape)->GetDZ();
+  
+  Double_t phi1 = ((TGeoPgon*)shape)->Phi1();
+  Double_t loc[3] = {100, 0, 10}, glob[3] = {0};
+  TGeoNode *sensNode = gGeoManager->FindNode(loc[0],loc[1],loc[2]);
+  gGeoManager->LocalToMaster(loc,glob);
+  phi1 += -TMath::ATan2 (glob[1],glob[0]) * TMath::RadToDeg(); // due to rotation
+  if (TMath::Abs(phi1-dPhi*TMath::RadToDeg()/2) > 0.001)
+    Fatal("TpcDetector::DivideSensVol()"," !!! Inconsistent sens. volume parameters !!! ");
+
+  TGeoMedium *medium = sv->GetMedium();
+  TGeoVolume *tpcVol = sv; //new TGeoVolume("tpc01sv_new", tpcVolOrig->GetShape(), medium);
+  Double_t dx1 = secGeo->GetMinY() * TMath::Tan(dPhi/2);
+  Double_t dx2 = secGeo->GetMaxY() * TMath::Tan(dPhi/2);
+  Double_t dy = dZ, dz = (secGeo->GetMaxY() - secGeo->GetMinY()) / 2.;
+  Double_t rad = (secGeo->GetMaxY() + secGeo->GetMinY()) / 2.;
+  TGeoVolume *tpcsec = gGeoManager->MakeTrd1("tpc01sv_sec", medium, dx1, dx2, dy, dz), *vol = NULL;
+
+  // The code below is based on TGeoTrd1::Divide()
+  Int_t ndiv = nRows[0] + nRows[1];
+  Double_t start = -dz, end = dz, dx1n, dx2n, zmax, step = secGeo->PadHeight(), zmin = start - step;
+  for (Int_t id = 0; id < ndiv; ++id) {
+    zmin += step;
+    if (id == nRows[0]) step = secGeo->PadHeight(1);
+    zmax = zmin + step;
+    dx1n = 0.5 * (dx1 * (dz - zmin) + dx2 * (dz + zmin)) / dz;
+    dx2n = 0.5 * (dx1 * (dz - zmax) + dx2 * (dz + zmax)) / dz;
+    shape = new TGeoTrd1(dx1n, dx2n, dy, step/2.);
+    vol = new TGeoVolume("tpc01sv_row", shape, tpcsec->GetMedium());
+    TGeoHMatrix *matr = new TGeoHMatrix();
+    Double_t transl[3] = {0.0, 0.0, zmin+step/2};
+    matr->SetTranslation(transl);
+    tpcsec->AddNode(vol, id+1, matr);
+  }
+
+  phi1 *= TMath::DegToRad();
+
+  for (Int_t isec = 0; isec < nSec; ++isec) {
+    //AZ Double_t phi = dPhi * isec;
+    Double_t phi = dPhi * isec - phi1;
+    TGeoTranslation t(rad*TMath::Cos(phi), rad*TMath::Sin(phi), 0.);
+    TGeoRotation r;
+    Double_t phiDeg = TMath::RadToDeg() * phi;
+    //r.SetAngles(90,phiDeg+90,0,0,90,phiDeg);
+    r.SetAngles(90,phiDeg-90,0,0,90,phiDeg);
+    TGeoCombiTrans c(t,r);
+    TGeoHMatrix *matr = new TGeoHMatrix(c);
+    //gGeoManager->RegisterMatrix(matr);
+    //  AddNode(const TGeoVolume* vol, Int_t copy_no, TGeoMatrix* mat = 0, Option_t* option = "")
+    tpcVol->AddNode(tpcsec, isec+1, matr);
+  }
+
+  ExpandNode(sensNode);
+
+}
+
+//-----------------------------------------------------------------------------
 ClassImp(TpcDetector)

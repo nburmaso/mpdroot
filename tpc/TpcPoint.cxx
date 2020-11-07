@@ -29,12 +29,18 @@
 // Class Member definitions -----------
 
 TpcPoint::TpcPoint()
-  : FairMCPoint()
+  : FairMCPoint(),
+    fXout(fX),
+    fYout(fY),
+    fZout(fZ)
 {}
 
-TpcPoint::TpcPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom,
-             Double_t tof, Double_t length, Double_t eLoss)
-  : FairMCPoint(trackID, detID, pos, mom, tof, length, eLoss)
+TpcPoint::TpcPoint(Int_t trackID, Int_t detID, TVector3 posIn, TVector3 mom,
+		   TVector3 posOut, Double_t tof, Double_t length, Double_t eLoss)
+  : FairMCPoint(trackID, detID, posIn, mom, tof, length, eLoss),
+    fXout(posOut.X()),
+    fYout(posOut.Y()),
+    fZout(posOut.Z())
 {}
 
 void 

@@ -57,6 +57,7 @@ MpdTpcDigitizerAZlt.cxx
 #MpdTpcClusterFinderAZ.cxx
 MpdTPCpid.cxx
 MpdTpcClusterFinderMlem.cxx
+MpdTpcFastDigitizer.cxx
 )
 
 Set(HEADERS)

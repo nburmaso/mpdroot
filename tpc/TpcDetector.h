@@ -22,10 +22,11 @@
 #include "FairDetector.h"
 
 // Collaborating Class Headers -------
-#include <ostream> // remove if you do not need streaming op
-#include "TVector3.h"
 #include "TGeoMedium.h"
+#include <TLorentzVector.h>
+#include "TVector3.h"
 #include <map>
+#include <ostream> // remove if you do not need streaming op
 
 using namespace std;
 
@@ -88,9 +89,11 @@ public:
 
   void EndOfEvent();
 
-  TpcPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos,
-		   TVector3 mom, Double_t time, Double_t length,
-		   Double_t eLoss);
+  TpcPoint* AddHit(Int_t trackID, Int_t detID, TVector3 posIn, TVector3 mom, 
+		   TVector3 posOut, Double_t time, Double_t length, Double_t eLoss);
+
+  void DivideSensVol(); //AZ - divide sen. vol. according to padrow structure
+
   // Operators
 
 
@@ -106,6 +109,12 @@ private:
 
   // Private Data Members ------------
   TClonesArray  *fTpcPointCollection;
+  TLorentzVector	fPos;       //!  position
+  TLorentzVector	fMom;       //!  momentum
+  Double_t	fTime;              //!  time
+  Double_t	fLength;            //!  length
+  Double_t	fELoss;             //!  energy loss
+  Int_t         fNSteps;            //!  number of steps
 
   // Private Methods -----------------
 
