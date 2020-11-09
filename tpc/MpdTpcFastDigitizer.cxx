@@ -262,7 +262,7 @@ void MpdTpcFastDigitizer::Exec(Option_t* opt)
     for ( ; it != pointID.end(); ++it) {
       TpcPoint* curPoint = (TpcPoint*) fMCPointArray->UncheckedAt(it->second);
       prePoint = curPoint;
-      if (fastDigi) FastDigi(curPoint); // fast digitizer
+      if (fastDigi) FastDigi(iSec, curPoint); // fast digitizer
       else TpcProcessing(prePoint, curPoint, iSec, it->second, nPoints);
     }
     
@@ -967,11 +967,26 @@ void MpdTpcFastDigitizer::Finish() {
 
 //---------------------------------------------------------------------------
 
-void MpdTpcFastDigitizer::FastDigi(const TpcPoint* curPoint)
+void MpdTpcFastDigitizer::FastDigi(Int_t isec, const TpcPoint* curPoint)
 {
   // Interface to fast digitizer
-}
 
+  MpdTpcSectorGeo* secGeo = MpdTpcSectorGeo::Instance();
+  TVector3 mom3, pin, pout, xyzLoc;
+  curPoint->Momentum(mom3);
+  curPoint->Position(pin);
+  curPoint->PositionOut(pout);
+  pin += pout;
+  pin *= 0.5;
+  Double_t zHit0 = pin.Z();
+  Double_t dip = (TMath::PiOver2() - mom3.Theta()) * TMath::RadToDeg();
+  Double_t cross = (mom3.Phi() - secGeo->SectorAngle(isec)) * TMath::RadToDeg();
+  Double_t tbin = secGeo->Z2TimeBin(zHit0) - 0.4935;
+  Int_t padID = secGeo->Global2Local(pin, xyzLoc, isec % secGeo->NofSectors());
+  Double_t yHit0 = xyzLoc.X();
+  Int_t row0 = secGeo->PadRow(padID);
+  Double_t pad0 = (yHit0 - 0.5) / secGeo->PadWidth(0) + secGeo->NPadsInRows()[row0] + 0.5;
+}
 
 //---------------------------------------------------------------------------
 

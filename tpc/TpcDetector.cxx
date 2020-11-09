@@ -152,6 +152,7 @@ TpcDetector::ProcessHits( FairVolume *v)
       //Int_t volumeID = v->getMCid();
       Int_t volumeID = sector * 100 + padrow;
       TVector3 vposIn = fPos.Vect();
+      TVector3 vmomIn = fMom.Vect();
       gMC->TrackPosition(fPos);
       // At exit, make small step backward
       if (gMC->IsTrackExiting()) {
@@ -165,7 +166,10 @@ TpcDetector::ProcessHits( FairVolume *v)
 	fPos.SetVect(pos);
 	}
       }
-      TpcPoint* p = AddHit(trackID, volumeID, vposIn, fMom.Vect(), fPos.Vect(), fTime, fLength, fELoss);
+      gMC->TrackMomentum(fMom);
+      vmomIn += fMom.Vect();
+      vmomIn *= 0.5;
+      TpcPoint* p = AddHit(trackID, volumeID, vposIn, vmomIn, fPos.Vect(), fTime, fLength, fELoss);
       p->SetStep(gMC->TrackLength()-fLength);
       ((MpdStack*)gMC->GetStack())->AddPoint(kTPC);
     } // if (fELoss > 0) 

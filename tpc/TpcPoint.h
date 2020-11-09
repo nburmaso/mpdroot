@@ -53,7 +53,7 @@ public:
   Double_t GetXout() const { return fXout; }
   Double_t GetYout() const { return fYout; }
   Double_t GetZout() const { return fZout; }
-  void PositionOut(TVector3& pos) { pos.SetXYZ(fXout, fYout, fZout); }
+  void PositionOut(TVector3& pos) const { pos.SetXYZ(fXout, fYout, fZout); }
   void SetPositionOut(const TVector3& pos);
 
 private:

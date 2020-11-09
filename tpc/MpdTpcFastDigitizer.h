@@ -71,7 +71,7 @@ private:
     void Check4Edge(UInt_t iSec, TpcPoint* &prePoint, TpcPoint* virtPoint); // check for edge-effect
     Double_t Polya(); // gas gain fluctuations
     void SignalShaping(); // electronics response
-    void FastDigi(const TpcPoint* curPoint); // interface to fast digitizer
+    void FastDigi(Int_t isec, const TpcPoint* curPoint); // interface to fast digitizer
     void SetFastDigi(Bool_t fast = kTRUE) { fastDigi = fast; } // set fast digitizer flag
 
 private:
