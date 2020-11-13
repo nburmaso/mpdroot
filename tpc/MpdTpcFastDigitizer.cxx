@@ -44,6 +44,9 @@
 #include <vector>
 #include <algorithm>
 
+// Fast digitization model Header
+#include <fastdigimodel/TpcFastDigiModelWrapper.h>
+
 // Class Member definitions -----------
 
 using namespace std;
@@ -200,7 +203,12 @@ InitStatus MpdTpcFastDigitizer::Init()
   fPRF = padResponseFunction();
   nOverlapDigit = 0;
   nAllLightedDigits = 0;
-  
+
+  if (fastDigi) {
+    gSystem->Load("$VMCWORKDIR/tpc/fastdigimodel/libmodel_1.so");
+    TpcFastDigiModelWrapper::model_init(1);
+  }
+
   cout << "-I- MpdTpcFastDigitizer: Initialization successful." << endl;
   return kSUCCESS;
 }
@@ -892,7 +900,8 @@ void MpdTpcFastDigitizer::TpcProcessing(const TpcPoint* prePoint, const TpcPoint
 
 //---------------------------------------------------------------------------
 void MpdTpcFastDigitizer::Finish() {
-    
+    if (fastDigi) TpcFastDigiModelWrapper::model_free();
+
     cout << "Digitizer work time = " << ((Float_t)tAll) / CLOCKS_PER_SEC << endl;
     
     if (fMakeQA) {
@@ -978,14 +987,47 @@ void MpdTpcFastDigitizer::FastDigi(Int_t isec, const TpcPoint* curPoint)
   curPoint->PositionOut(pout);
   pin += pout;
   pin *= 0.5;
-  Double_t zHit0 = pin.Z();
-  Double_t dip = (TMath::PiOver2() - mom3.Theta()) * TMath::RadToDeg();
-  Double_t cross = (mom3.Phi() - secGeo->SectorAngle(isec)) * TMath::RadToDeg();
-  Double_t tbin = secGeo->Z2TimeBin(zHit0) - 0.4935;
   Int_t padID = secGeo->Global2Local(pin, xyzLoc, isec % secGeo->NofSectors());
+  if (padID < 0) return;
+  Double_t zHit0 = pin.Z();
+  Double_t secAng = secGeo->SectorAngle(isec%secGeo->NofSectors());
+  TVector3 sec3(TMath::Cos(secAng),TMath::Sin(secAng),0.0);
+  TVector3 vecxy(pin.X(), pin.Y(), 0.0);
+  if (vecxy * mom3 < 0) mom3 *= -1; // particle goes inward - change direction
+  Double_t dip = (TMath::PiOver2() - mom3.Theta()) * TMath::RadToDeg();
+  mom3.SetZ(0.0);
+  //Double_t cross = (mom3.Phi() - sec3.Phi()) * TMath::RadToDeg();
+  Double_t cross = TMath::Sign (mom3.Angle(sec3),sec3.Cross(mom3).Z()) * TMath::RadToDeg();
+  Double_t tbin = secGeo->Z2TimeBin(zHit0) - 0.4935;
   Double_t yHit0 = xyzLoc.X();
   Int_t row0 = secGeo->PadRow(padID);
   Double_t pad0 = (yHit0 - 0.5) / secGeo->PadWidth(0) + secGeo->NPadsInRows()[row0] + 0.5;
+
+  vector<float> input{static_cast<float>(cross),
+                      static_cast<float>(dip),
+                      static_cast<float>(tbin),
+                      static_cast<float>(pad0)};
+  vector<float> output(128);
+  TpcFastDigiModelWrapper::model_run(input.data(), output.data(), 4, 128);
+    
+  for (int ii_pad = 0; ii_pad < 8; ii_pad++)
+    for (int ii_time = 0; ii_time < 16; ii_time++) {
+      Int_t i_pad = static_cast<Int_t>(pad0) + ii_pad - 3;
+      Int_t i_time = static_cast<Int_t>(tbin) + ii_time - 7;
+      if (i_pad >= 0
+          && i_pad < secGeo->NPadsInRows()[row0] * 2
+          && i_time >=0
+          && i_time < fSecGeo->GetNTimeBins()) {
+        fDigits4dArray[row0][i_pad][i_time].signal += output[ii_pad * 16 + ii_time];
+        auto origin = curPoint->GetTrackID();
+        auto it = fDigits4dArray[row0][i_pad][i_time].origins.find(origin);
+        if (it != fDigits4dArray[row0][i_pad][i_time].origins.end()) {
+          it->second += output[ii_pad * 16 + ii_time];
+        } else {
+          fDigits4dArray[row0][i_pad][i_time].origins.insert(pair<Int_t, Float_t>(origin, output[ii_pad * 16 + ii_time]));
+        }
+      }
+    }
 }
 
 //---------------------------------------------------------------------------

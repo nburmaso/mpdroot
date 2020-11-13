@@ -25,6 +25,7 @@ Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
  ${ROOT_LIBRARY_DIR}
  ${FAIRROOT_LIBRARY_DIR}
+ ${CMAKE_SOURCE_DIR}/tpc/fastdigimodel
 )
  
 link_directories(${LINK_DIRECTORIES})
@@ -58,11 +59,15 @@ MpdTpcDigitizerAZlt.cxx
 MpdTPCpid.cxx
 MpdTpcClusterFinderMlem.cxx
 MpdTpcFastDigitizer.cxx
+fastdigimodel/TpcFastDigiModelWrapper.cxx
 )
 
 Set(HEADERS)
 Set(LINKDEF tpcLinkDef.h)
 Set(LIBRARY_NAME tpc)
 Set(DEPENDENCIES ${FFTW_LIBRARY} Core Base Tof)
+#Set(DEPENDENCIES ${FFTW_LIBRARY} Core Base Tof model_1)
+
+#configure_file("fastdigimodel/libmodel_1.so" ${LIBRARY_OUTPUT_PATH} COPYONLY)
 
 GENERATE_LIBRARY()

@@ -55,6 +55,7 @@ public:
     void SetDistribute(Bool_t opt = kFALSE) { fDistribute = opt; }
     void SetResponse(Bool_t opt = kFALSE) { fResponse = opt; }
     void SetOnlyPrimary(Bool_t opt = kFALSE) { fOnlyPrimary = opt; }
+    void SetFastDigi(Bool_t fast = kTRUE) { fastDigi = fast; } // set fast digitizer flag
 
     virtual InitStatus Init();
     virtual void Exec(Option_t* opt);
@@ -72,7 +73,6 @@ private:
     Double_t Polya(); // gas gain fluctuations
     void SignalShaping(); // electronics response
     void FastDigi(Int_t isec, const TpcPoint* curPoint); // interface to fast digitizer
-    void SetFastDigi(Bool_t fast = kTRUE) { fastDigi = fast; } // set fast digitizer flag
 
 private:
 
