@@ -9,11 +9,12 @@
 #ifndef NICAMPDMINIDSTMCEVENTINTERFACE_H_
 #define NICAMPDMINIDSTMCEVENTINTERFACE_H_
 
-#include "NicaMCEventInterface.h"
+
 #include "MpdMiniMcEvent.h"
-#include "MpdMiniMcTrack.h"
+#include "NicaMCEventInterface.h"
 #include "NicaTrackClones.h"
 
+class NicaTrackClones;
 class NicaMpdMiniDstMcEvent;
 
 class NicaMpdMiniDstMcEventInterface : public NicaMCEventInterface {

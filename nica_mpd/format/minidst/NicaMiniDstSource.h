@@ -9,11 +9,12 @@
 #ifndef NICAMINIDSTSOURCE_H_
 #define NICAMINIDSTSOURCE_H_
 
-#include "FairFileSource.h"
-#include "MpdMiniEvent.h"
-#include "MpdMiniMcEvent.h"
-#include <TClonesArray.h>
-#include <TChain.h>
+#include <FairSource.h>
+#include <TString.h>
+
+
+class TChain;
+class TClonesArray;
 
 class NicaMiniDstSource : public FairSource{
     Int_t fNFiles;

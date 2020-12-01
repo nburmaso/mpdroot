@@ -11,10 +11,7 @@
 #include <TParticlePDG.h>
 
 NicaMpdMiniDstMcTrack::NicaMpdMiniDstMcTrack() {
-    // TODO Auto-generated constructor stub
-
 }
 
 NicaMpdMiniDstMcTrack::~NicaMpdMiniDstMcTrack() {
-    // TODO Auto-generated destructor stub
 }

@@ -9,10 +9,10 @@
 #ifndef INTERFACES_MPDROOT_NICAMPDDSTMCEVENT_H_
 #define INTERFACES_MPDROOT_NICAMPDDSTMCEVENT_H_
 
+
+#include <TString.h>
+
 #include "NicaComplexEvent.h"
-#include "NicaMCEvent.h"
-#include "NicaMpdEvent.h"
-#include "NicaMpdTrack.h"
 
 class NicaMpdDstMCEvent : public NicaComplexEvent{
 public:

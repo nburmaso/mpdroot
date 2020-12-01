@@ -6,11 +6,18 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaUnigenSource.h"
-#include "FairRootManager.h"
-#include "FairLogger.h"
-#include <TBranch.h>
+
+#include <FairLogger.h>
+#include <FairRootManager.h>
+#include <RtypesCore.h>
+#include <stddef.h>
+#include <TChain.h>
+#include <TLorentzVector.h>
 #include <fstream>
+#include <iostream>
+
 #include "UEvent.h"
 #include "UParticle.h"
 
@@ -28,7 +35,6 @@ NicaUnigenSource::NicaUnigenSource(const NicaUnigenSource& source) {
 }
 
 NicaUnigenSource::~NicaUnigenSource() {
-	if(fUnigenChain) delete fUnigenChain;
 }
 
 Bool_t NicaUnigenSource::Init() {

@@ -6,11 +6,27 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaMpdMiniDstEvent.h"
-#include "FairLogger.h"
-#include "FairRootManager.h"
+
+#include <FairLogger.h>
+#include <FairRootManager.h>
+#include <RtypesCore.h>
+#include <TClonesArray.h>
+#include <TLorentzVector.h>
+#include <TObjArray.h>
+#include <TString.h>
+#include <TVector3.h>
+
 #include "MpdMiniBTofPidTraits.h"
+#include "MpdMiniEvent.h"
 #include "MpdMiniTrack.h"
+#include "NicaToFTrack.h"
+#include "NicaTrack.h"
+#include "NicaTrackClones.h"
+#include "NicaHelix.h"
+#include "NicaLink.h"
+#include "NicaMpdTrack.h"
 #include "NicaMpdMiniDstEventInterface.h"
 #include "NicaMpdMiniDstTrack.h"
 

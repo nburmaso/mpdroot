@@ -11,10 +11,15 @@
 /**
  *class  only for reading pure unigen files
  */
-#include "FairFileSource.h"
-#include <TChain.h>
 
-#include "UEvent.h"
+
+#include <TString.h>
+#include <FairSource.h>
+
+
+class TChain;
+class UEvent;
+
 class NicaUnigenSource : public FairSource{
 	TChain *fUnigenChain;
 	TString fFileName;

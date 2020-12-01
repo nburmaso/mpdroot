@@ -9,6 +9,8 @@
 #include "MpdDeltaEtaDeltaPhiStarAdvancedCut.h"
 
 #include "NicaMpdTrackTpcPads.h"
+#include "NicaTwoTrack.h"
+
 namespace MpdPadsFormat {
 MpdDeltaEtaDeltaPhiStarAdvancedCut::MpdDeltaEtaDeltaPhiStarAdvancedCut()
     : MpdTpcPadsPairCut(3) {

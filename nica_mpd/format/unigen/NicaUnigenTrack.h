@@ -10,9 +10,6 @@
 #ifndef NICAUNIGENTRACK_H_
 #define NICAUNIGENTRACK_H_
 
-#include <iostream>
-
-#include "UParticle.h"
 #include "NicaMCTrack.h"
 /**
  * class for representation of track from unigen in "fake" format

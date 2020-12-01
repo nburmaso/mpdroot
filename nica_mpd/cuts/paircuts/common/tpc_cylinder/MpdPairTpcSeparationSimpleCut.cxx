@@ -9,6 +9,7 @@
 #include "MpdPairTpcSeparationSimpleCut.h"
 
 #include "NicaTpcSectorGeo.h"
+#include "NicaTwoTrack.h"
 
 MpdPairTpcSeparationSimpleCut::MpdPairTpcSeparationSimpleCut(
     Int_t averaging_steps)

@@ -6,7 +6,16 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaGeneratorReadUnigen.h"
+
+#include <TBranch.h>
+#include <TTree.h>
+
+#include "NicaGeneratorParametersArray.h"
+#include "NicaGeneratorRead.h"
+#include "UEvent.h"
+#include "UParticle.h"
 
 
 Int_t NicaGeneratorReadUnigen::ReadEvent() {

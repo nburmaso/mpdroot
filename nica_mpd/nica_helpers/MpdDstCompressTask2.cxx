@@ -6,10 +6,19 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "MpdDstCompressTask2.h"
-#include "NicaHelix.h"
-#include "MpdHelix.h"
+
+#include <FairRootManager.h>
+#include <FairLogger.h>
+#include <TCollection.h>
+#include <TMath.h>
+#include <TObjArray.h>
 #include <TVector3.h>
+
+#include "MpdKalmanTrack.h"
+#include "MpdTrack.h"
+#include "NicaHelix.h"
 
 MpdDstCompressTask2::MpdDstCompressTask2() :
 fUseMC(kFALSE),

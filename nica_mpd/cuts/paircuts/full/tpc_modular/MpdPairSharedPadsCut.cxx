@@ -10,6 +10,8 @@
 
 #include "NicaMpdTrackTpcPads.h"
 #include "NicaTpcTrack.h"
+#include "NicaTwoTrack.h"
+
 namespace MpdPadsFormat {
 MpdPairSharedPadsCut::MpdPairSharedPadsCut(Bool_t shift)
     : MpdModularTpcPairCut(2), fShift(shift) {

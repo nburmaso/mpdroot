@@ -10,6 +10,7 @@
 
 #include "NicaMpdTrackTpcPads.h"
 #include "NicaTpcTrack.h"
+#include "NicaTwoTrack.h"
 namespace MpdPadsFormat {
 MpdHelixSep::MpdHelixSep() : MpdTpcPadsPairCut(1) {
   SetUnitName("DistQuality[%");

@@ -11,6 +11,8 @@
 #include "NicaComplexTrack.h"
 #include "NicaExpTrack.h"
 
+#include <TH1.h>
+
 MpdDcaMonitor::MpdDcaMonitor()
     : NicaPropertyMonitorXY("DCA_{xy} [cm]", "DCA_{z} [cm]",
                             ENicaCutUpdate::kTrackUpdate) {

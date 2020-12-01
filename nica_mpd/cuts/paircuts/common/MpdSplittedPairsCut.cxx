@@ -7,6 +7,7 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "MpdSplittedPairsCut.h"
+#include "NicaTwoTrack.h"
 
 MpdSplittedPairsCut::MpdSplittedPairsCut() : NicaTwoTrackCut(1) {
   fReject = kTRUE;

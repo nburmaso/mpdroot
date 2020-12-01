@@ -9,6 +9,7 @@
 #include "MpdPairDeltaDCA.h"
 
 #include "NicaMpdTrack.h"
+#include "NicaTwoTrack.h"
 
 MpdPairDeltaDCA::MpdPairDeltaDCA() : NicaTwoTrackCut(3) {
   SetUnitName("#DeltaDCA_{xy} [cm]", DeltaDCAxy());

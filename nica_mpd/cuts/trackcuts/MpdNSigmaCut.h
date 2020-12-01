@@ -10,7 +10,8 @@
 #define INTERFACES_MPDROOT_CUTS_TRACKCUTS_MPDNSIGMACUT_H_
 
 #include "NicaTrackCut.h"
-#include "TF1.h"
+
+class TF1;
 
 class MpdNSigmaCut : public NicaTrackCut{
 	TF1 *parElBB; TF1 *parPiBB; TF1 *parKaBB; TF1 *parPrBB;

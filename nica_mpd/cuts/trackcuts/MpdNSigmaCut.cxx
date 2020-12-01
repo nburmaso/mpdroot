@@ -10,6 +10,7 @@
 #include "NicaExpTrack.h"
 #include "NicaMpdConst.h"
 #include "NicaTpcTrack.h"
+#include <TF1.h>
 
 MpdNSigmaCut::MpdNSigmaCut() : NicaTrackCut(4) {
   SetUnitName("pion_sigma [#sigma]", SigmaPion());

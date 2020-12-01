@@ -9,10 +9,10 @@
 #ifndef NICAROOT_CUTS_TRACKCUTS_NICATRACKTPCBASICCUT_H_
 #define NICAROOT_CUTS_TRACKCUTS_NICATRACKTPCBASICCUT_H_
 
+
+#include <TString.h>
+
 #include "NicaTrackTpcCut.h"
-#include "NicaTpcTrack.h"
-#include "NicaTrackCut.h"
-#include "NicaMpdTrack.h"
 
 class MpdTcpCalibratedCut : public NicaTrackTpcCut{
 private:

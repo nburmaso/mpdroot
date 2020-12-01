@@ -10,6 +10,9 @@
 #include "MpdNominalTpcPairPadsDistanceCut.h"
 
 #include "NicaMpdTrackTpcPads.h"
+#include "NicaTwoTrack.h"
+#include "NicaEvent.h"
+
 namespace MpdPadsFormat {
 MpdNominalTpcPairPadsDistanceCut::MpdNominalTpcPairPadsDistanceCut(Int_t size)
     : MpdTpcPadsPairCut(size),

@@ -6,10 +6,15 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaMiniDstSource.h"
-#include <TList.h>
-#include "FairLogger.h"
-#include "FairRootManager.h"
+
+#include <FairLogger.h>
+#include <FairRootManager.h>
+#include <TChain.h>
+#include <TClonesArray.h>
+#include <TTree.h>
+#include <fstream>
 
 NicaMiniDstSource::NicaMiniDstSource() : NicaMiniDstSource("data.root") {}
 
@@ -100,7 +105,6 @@ NicaMiniDstSource::NicaMiniDstSource(const NicaMiniDstSource &other) {
 }
 
 NicaMiniDstSource::~NicaMiniDstSource() {
-  if (fChain) delete fChain;
   if (fFileName) delete[] fFileName;
 }
 

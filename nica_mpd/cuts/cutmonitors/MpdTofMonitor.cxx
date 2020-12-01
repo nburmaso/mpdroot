@@ -9,6 +9,7 @@
 #include "MpdTofMonitor.h"
 #include "NicaComplexTrack.h"
 #include "NicaMpdTrack.h"
+#include <TH1.h>
 
 MpdTofMonitor::MpdTofMonitor()
     : NicaPropertyMonitorXY("p [GeV/c]", "m^{2}_{TOF}",

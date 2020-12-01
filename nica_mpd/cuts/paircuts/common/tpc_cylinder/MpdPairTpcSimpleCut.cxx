@@ -7,6 +7,8 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "MpdPairTpcSimpleCut.h"
+#include "NicaHelix.h"
+#include "NicaEvent.h"
 
 TVector3 MpdPairTpcSimpleCut::PosNominal(NicaExpTrackHelix *track,
                                          Double_t R) const {

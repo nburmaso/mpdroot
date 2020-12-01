@@ -7,6 +7,8 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "MpdModularTpcPairCut.h"
+#include "NicaTwoTrack.h"
+
 namespace MpdPadsFormat {
 MpdModularTpcPairCut::MpdModularTpcPairCut(Int_t size)
     : MpdTpcPadsPairCut(size) {}

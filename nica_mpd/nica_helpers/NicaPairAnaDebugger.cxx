@@ -6,11 +6,17 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaPairAnaDebugger.h"
-#include "NicaComplexTrack.h"
+
+#include <iostream>
+
+#include "NicaMemoryMapManager.h"
 #include "NicaCutCollection.h"
 #include "NicaCutContainer.h"
-#include "NicaMemoryMapManager.h"
+#include "NicaComplexTrack.h"
+#include "NicaEvent.h"
+#include "NicaTrack.h"
 
 NicaPairAnaDebugger::NicaPairAnaDebugger() {}
 

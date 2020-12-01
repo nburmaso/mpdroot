@@ -9,6 +9,8 @@
 #include "MpdPairSharedHitsCut.h"
 
 #include "NicaMpdTrack.h"
+#include "NicaTwoTrack.h"
+
 namespace MpdPadsFormat {
 MpdPairSharedHitsCut::MpdPairSharedHitsCut() : MpdTpcPadsPairCut(1) {
   SetUnitName("SharedHits[%]");

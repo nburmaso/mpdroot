@@ -9,12 +9,11 @@
 #ifndef _NICAGENERATORREADUNIGEN_H_
 #define _NICAGENERATORREADUNIGEN_H_
 
-#include "NicaGeneratorReadTree.h"
-#include <TTree.h>
-#include <TBranch.h>
+#include <TString.h>
 
-#include "UEvent.h"
-#include "UParticle.h"
+#include "NicaGeneratorReadTree.h"
+
+class UEvent;
 
 
 /**

@@ -6,11 +6,17 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaMpdMiniDstEventInterface.h"
-#include "MpdMiniTrack.h"
-#include "NicaMpdMiniDstTrack.h"
-#include "FairRootManager.h"
+
+#include <FairRootManager.h>
+#include <TClonesArray.h>
+#include <TObject.h>
+
 #include "MpdMiniBTofPidTraits.h"
+#include "MpdMiniTrack.h"
+#include "NicaTrackInterface.h"
+#include "NicaMpdMiniDstTrack.h"
 
 NicaMpdMiniDstEventInterface::NicaMpdMiniDstEventInterface():fEvent(nullptr),fTracks(nullptr) {
     fEvent = new NicaTrackClones("MpdMiniEvent","Event","event");

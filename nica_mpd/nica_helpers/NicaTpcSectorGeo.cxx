@@ -3,19 +3,16 @@
 /// MPD TPC sector geometry description
 /// \author Alexander Zinchenko (LHEP, JINR, Dubna)
 
-#include "TpcGas.h"
-//#include "TpcGeoPar.h"
-//#include "FairGeoNode.h"
-//#include "FairRunAna.h"
-//#include "FairRuntimeDb.h"
-
-#include <TGeoManager.h>
-#include <TGeoPgon.h>
-#include <TGeoTube.h>
-#include <TMath.h>
-#include <TSystem.h>
-#include <Riostream.h>
 #include "NicaTpcSectorGeo.h"
+
+#include <RtypesCore.h>
+#include <TMath.h>
+#include <TMathBase.h>
+#include <TString.h>
+#include <cstdlib>
+#include <iostream>
+
+#include "NicaHelixBase.h"
 
 using std::cout;
 using std::endl;

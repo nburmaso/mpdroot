@@ -6,10 +6,12 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaMpdHbtEvent.h"
 
-#include "NicaPackage.h"
-#include "NicaParameter.h"
+
+#include "NicaCout.h"
+#include "NicaStd.h"
 
 NicaMpdHbtEvent::NicaMpdHbtEvent() : NicaExpEvent("NicaMpdHbtTrack") {}
 

@@ -6,7 +6,20 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaMpdMiniDstTrack.h"
+
+
+#include <TLorentzVector.h>
+#include <TVector3.h>
+
+#include "MpdMiniTrack.h"
+#include "NicaExpTrack.h"
+#include "NicaToFTrack.h"
+#include "NicaTpcTrack.h"
+#include "NicaEvent.h"
+#include "NicaTrack.h"
+#include "NicaHelix.h"
 
 NicaMpdMiniDstTrack::NicaMpdMiniDstTrack() {}
 

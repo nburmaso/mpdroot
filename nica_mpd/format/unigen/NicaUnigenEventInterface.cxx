@@ -9,6 +9,7 @@
 #include "NicaUnigenEventInterface.h"
 #include "FairRootManager.h"
 #include "NicaUnigenTrackInterface.h"
+#include "UEvent.h"
 
 NicaUnigenEventInterface::NicaUnigenEventInterface() :fEvent(NULL){
 	fEvent = new UEvent();

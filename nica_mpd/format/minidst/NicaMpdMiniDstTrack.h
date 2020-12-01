@@ -9,11 +9,11 @@
 #ifndef MPDROOT_NICA_MPD_FORMAT_MINIDST_NICAMPDMINIDSTTRACK_H_
 #define MPDROOT_NICA_MPD_FORMAT_MINIDST_NICAMPDMINIDSTTRACK_H_
 
-#include "NicaMpdTrack.h"
-#include "MpdMiniTrack.h"
-#include "NicaMpdMiniDstEvent.h"
-#include "MpdMiniBTofPidTraits.h"
 #include "NicaTrackInterface.h"
+#include "NicaMpdTrack.h"
+#include "NicaMpdMiniDstEvent.h"
+
+class MpdMiniTrack;
 
 class NicaMpdMiniDstTrack : public NicaMpdTrack{
 

@@ -9,8 +9,9 @@
 #ifndef NICAUNIGENTRACKINTERFACE_H_
 #define NICAUNIGENTRACKINTERFACE_H_
 
-#include "UParticle.h"
 #include "NicaMCTrackInterface.h"
+#include "UParticle.h"
+
 /**
  * interface to UParticle
  */

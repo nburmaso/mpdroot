@@ -9,9 +9,12 @@
 #ifndef _NICAGENERATORWRITEUNIGEN_H_
 #define _NICAGENERATORWRITEUNIGEN_H_
 
-#include "UEvent.h"
-#include "UParticle.h"
+#include <FairTask.h>
+
 #include "NicaGeneratorWrite.h"
+
+class UEvent;
+
 /**
  * default class for saving data in unigen format
  */

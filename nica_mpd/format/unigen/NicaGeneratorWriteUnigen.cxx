@@ -6,8 +6,15 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "NicaGeneratorWriteUnigen.h"
+
+#include <FairLogger.h>
+#include <TTree.h>
+
+#include "NicaGeneratorParametersArray.h"
 #include "NicaRunSim.h"
+#include "UEvent.h"
 
 NicaGeneratorWriteUnigen::NicaGeneratorWriteUnigen() :NicaGeneratorWrite(4,3,1,0,9,9,0,0){
 	fEvent = new UEvent();

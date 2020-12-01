@@ -9,8 +9,10 @@
 #ifndef MPDROOT_NICA_MPD_CUTS_TRACKCUTS_MPDHITSEDGESECTORCUT_H_
 #define MPDROOT_NICA_MPD_CUTS_TRACKCUTS_MPDHITSEDGESECTORCUT_H_
 
+
 #include "NicaTrackCut.h"
-#include "NicaTpcSectorGeo.h"
+
+class NicaTpcSectorGeo;
 
 class MpdHitsEdgeSectorCut  : public NicaTrackCut{
 	Double_t fEdge;

@@ -10,6 +10,7 @@
 #include "NicaComplexTrack.h"
 #include "NicaDataFormatManager.h"
 #include "NicaMpdTrack.h"
+#include <TH1.h>
 
 MpdTpcMonitor::MpdTpcMonitor()
     : NicaPropertyMonitorXY("p [GeV/c]", "dEdX [AU]",

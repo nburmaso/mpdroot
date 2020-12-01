@@ -10,10 +10,8 @@
 #ifndef NICAUNIGENEVENT_H_
 #define NICAUNIGENEVENT_H_
 
-#include "UEvent.h"
-#include "UParticle.h"
-#include "NicaUnigenTrack.h"
 #include "NicaMCEvent.h"
+
 /**
  * class used for representation of unigen event in "fake" format
  */

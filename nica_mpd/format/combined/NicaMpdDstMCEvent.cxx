@@ -6,11 +6,19 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
-#include "NicaMpdDstMCEvent.h"
-#include "MpdMCTrack.h"
 
+#include "NicaMpdDstMCEvent.h"
+
+#include <stddef.h>
+#include <TClonesArray.h>
+#include <TObjArray.h>
+
+#include "MpdTrack.h"
+#include "NicaComplexTrack.h"
+#include "NicaEvent.h"
+#include "NicaTrack.h"
+#include "NicaMpdEvent.h"
 #include "NicaMpdMcEvent.h"
-#include "NicaTpcTrack.h"
 
 NicaMpdDstMCEvent::NicaMpdDstMCEvent() :NicaComplexEvent(new NicaMpdEvent(), new NicaMpdMcEvent()){
 }

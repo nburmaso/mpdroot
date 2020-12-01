@@ -7,6 +7,9 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "MpdKinMonitor.h"
+#include <TH1.h>
+#include <TLorentzVector.h>
+#include "NicaTrack.h"
 
 MpdKinMonitor::MpdKinMonitor()
     : NicaPropertyMonitorXY("#eta []", "p_{T} [GeV/c]",

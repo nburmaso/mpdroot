@@ -7,15 +7,14 @@
  *		Warsaw University of Technology, Faculty of Physics
  */
 #include "NicaMpdTrack.h"
+#include "NicaDataFormat.h"
 #include <Rtypes.h>
 #include <iostream>
-#include "NicaDetectorID.h"
-NicaMpdTrack::NicaMpdTrack()
-    : NicaExpTrackHelix(), fHitsMap(0), fSharedHitsMap(0) {
+NicaMpdTrack::NicaMpdTrack() : NicaExpTrackHelix(), fHitsMap(0), fSharedHitsMap(0) {
   fFirstPoint = new TVector3();
-  fLastPoint = new TVector3();
-  fTpcTrack = new NicaTpcTrack();
-  fToFTrack = new NicaToFTrack();
+  fLastPoint  = new TVector3();
+  fTpcTrack   = new NicaTpcTrack();
+  fToFTrack   = new NicaToFTrack();
 }
 
 NicaMpdTrack::~NicaMpdTrack() {
@@ -35,58 +34,53 @@ void NicaMpdTrack::Update(MpdTrack* track) {
   SetPrimary();
   SetNHits(track->GetNofHits());
   fTpcTrack->SetNHits(track->GetNofHits());  //! FIXME
-  fTpcTrack->SetPidProb(track->GetTPCPidProbPion(), track->GetTPCPidProbKaon(),
-                        track->GetTPCPidProbProton(),
-                        track->GetTPCPidProbElectron());
+  fTpcTrack->SetPidProb(
+    track->GetTPCPidProbPion(), track->GetTPCPidProbKaon(), track->GetTPCPidProbProton(), track->GetTPCPidProbElectron());
   fToFTrack->SetBeta(track->GetTofBeta());
   fToFTrack->SetMass2(track->GetTofMass2());
   fTpcTrack->SetDeDx(track->GetdEdXTPC());
   fToFTrack->SetFlag(track->GetTofFlag());
-  fTpcTrack->SetSigma(track->GetNSigmaPion(), track->GetNSigmaKaon(),
-                      track->GetNSigmaProton(), track->GetNSigmaProton());
+  fTpcTrack->SetSigma(track->GetNSigmaPion(), track->GetNSigmaKaon(), track->GetNSigmaProton(), track->GetNSigmaProton());
   SetChi2(track->GetChi2());
   GetDCA()->SetXYZ(track->GetDCAX(), track->GetDCAY(), track->GetDCAZ());
-  fFirstPoint->SetXYZ(track->GetFirstPointX(), track->GetFirstPointY(),
-                      track->GetFirstPointZ());
-  fLastPoint->SetXYZ(track->GetLastPointX(), track->GetLastPointY(),
-                     track->GetLastPointZ());
-  fSharedHitsMap = track->GetSharedHitMap();
-  fHitsMap = track->GetLayerHitMap();
+  fFirstPoint->SetXYZ(track->GetFirstPointX(), track->GetFirstPointY(), track->GetFirstPointZ());
+  fLastPoint->SetXYZ(track->GetLastPointX(), track->GetLastPointY(), track->GetLastPointZ());
+  fSharedHitsMap   = track->GetSharedHitMap();
+  fHitsMap         = track->GetLayerHitMap();
   NicaHelix* helix = GetHelix();
-  TVector3 mom = GetMomentum()->Vect();
+  TVector3 mom     = GetMomentum()->Vect();
   helix->SetParams(*fFirstPoint, mom, fCharge);
 }
 
 void NicaMpdTrack::CopyData(NicaTrack* other) {
-  NicaMpdTrack* track = (NicaMpdTrack*)other;
-  *fFirstPoint = *track->fFirstPoint;
-  *fLastPoint = *track->fLastPoint;
-  *fTpcTrack = *track->fTpcTrack;
-  *fToFTrack = *track->fToFTrack;
-  fHitsMap = track->fHitsMap;
-  fSharedHitsMap = track->fSharedHitsMap;
+  NicaMpdTrack* track = (NicaMpdTrack*) other;
+  *fFirstPoint        = *track->fFirstPoint;
+  *fLastPoint         = *track->fLastPoint;
+  *fTpcTrack          = *track->fTpcTrack;
+  *fToFTrack          = *track->fToFTrack;
+  fHitsMap            = track->fHitsMap;
+  fSharedHitsMap      = track->fSharedHitsMap;
   NicaExpTrackHelix::CopyData(track);
 }
 
-NicaMpdTrack::NicaMpdTrack(const NicaMpdTrack& other)
-    : NicaExpTrackHelix(other) {
-  fFirstPoint = new TVector3(*other.fFirstPoint);
-  fLastPoint = new TVector3(*other.fLastPoint);
-  fTpcTrack = new NicaTpcTrack(*other.fTpcTrack);
-  fToFTrack = new NicaToFTrack(*other.fToFTrack);
-  fHitsMap = other.fHitsMap;
+NicaMpdTrack::NicaMpdTrack(const NicaMpdTrack& other) : NicaExpTrackHelix(other) {
+  fFirstPoint    = new TVector3(*other.fFirstPoint);
+  fLastPoint     = new TVector3(*other.fLastPoint);
+  fTpcTrack      = new NicaTpcTrack(*other.fTpcTrack);
+  fToFTrack      = new NicaToFTrack(*other.fToFTrack);
+  fHitsMap       = other.fHitsMap;
   fSharedHitsMap = other.fSharedHitsMap;
 }
 
 NicaMpdTrack& NicaMpdTrack::operator=(const NicaMpdTrack& other) {
   if (this == &other) return *this;
   NicaExpTrackHelix::operator=(other);
-  *fFirstPoint = *other.fFirstPoint;
-  *fLastPoint = *other.fLastPoint;
-  *fTpcTrack = *other.fTpcTrack;
-  *fToFTrack = *other.fToFTrack;
-  fHitsMap = other.fHitsMap;
-  fSharedHitsMap = other.fSharedHitsMap;
+  *fFirstPoint               = *other.fFirstPoint;
+  *fLastPoint                = *other.fLastPoint;
+  *fTpcTrack                 = *other.fTpcTrack;
+  *fToFTrack                 = *other.fToFTrack;
+  fHitsMap                   = other.fHitsMap;
+  fSharedHitsMap             = other.fSharedHitsMap;
   return *this;
 }
 
@@ -121,8 +115,6 @@ TObject* NicaMpdTrack::GetDetTrack(const UInt_t detID) const {
     case NicaDetectorID::kTOF: {
       return fToFTrack;
     } break;
-    default:
-      return nullptr;
-      break;
+    default: return nullptr; break;
   }
 }

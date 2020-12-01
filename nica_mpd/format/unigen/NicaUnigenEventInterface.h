@@ -9,10 +9,9 @@
 #ifndef NICAUNIGENEVENTINTERFACE_H_
 #define NICAUNIGENEVENTINTERFACE_H_
 
-#include <TObject.h>
-
-#include "NicaUnigenEvent.h"
 #include "NicaEventInterface.h"
+#include "UEvent.h"
+#include "UParticle.h"
 
 /**
  * event interface for UnigenData

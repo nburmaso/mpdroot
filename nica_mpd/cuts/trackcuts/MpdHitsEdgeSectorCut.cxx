@@ -6,9 +6,26 @@
  *		E-mail: daniel.wielanek@gmail.com
  *		Warsaw University of Technology, Faculty of Physics
  */
+
 #include "MpdHitsEdgeSectorCut.h"
-#include <bitset>
+
+#include <Rtypes.h>
+#include <RtypesCore.h>
+#include <stddef.h>
+#include <TMath.h>
+#include <TMathBase.h>
+#include <TVector2.h>
+#include <TVector3.h>
+
+#include "NicaCut.h"
+#include "NicaExpTrack.h"
+#include "NicaPackage.h"
+#include "NicaHelix.h"
+#include "NicaParameter.h"
+#include "NicaMpdTrack.h"
 #include "NicaMpdTrackTpcPads.h"
+#include "NicaTrackTpcPads.h"
+#include "NicaTpcSectorGeo.h"
 
 MpdHitsEdgeSectorCut::MpdHitsEdgeSectorCut() : NicaTrackCut(1) {
   SetUnitName("Hit Edge Cut [cm]", 0);

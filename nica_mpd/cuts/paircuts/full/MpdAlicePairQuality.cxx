@@ -9,6 +9,7 @@
 #include "MpdAlicePairQuality.h"
 
 #include "NicaMpdTrack.h"
+#include "NicaTwoTrack.h"
 namespace MpdPadsFormat {
 MpdAlicePairQuality::MpdAlicePairQuality() : MpdTpcPadsPairCut(1) {
   SetUnitName("Q_{ALICE}[%]");

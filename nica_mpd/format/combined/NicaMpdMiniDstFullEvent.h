@@ -9,10 +9,10 @@
 #ifndef NICAMPDMINIDSTFULLEVENT_H_
 #define NICAMPDMINIDSTFULLEVENT_H_
 
+#include <TString.h>
+
 #include "NicaComplexEvent.h"
-#include "NicaMCEvent.h"
-#include "NicaMpdEvent.h"
-#include "NicaMpdTrack.h"
+
 class NicaMpdMiniDstFullEvent : public NicaComplexEvent{
 public:
     NicaMpdMiniDstFullEvent();

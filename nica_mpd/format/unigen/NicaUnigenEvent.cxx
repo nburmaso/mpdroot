@@ -8,8 +8,21 @@
  */
 
 #include "NicaUnigenEvent.h"
-#include "FairRootManager.h"
+
+#include <FairRootManager.h>
+#include <RtypesCore.h>
+#include <TClonesArray.h>
+#include <TDatabasePDG.h>
+#include <TLorentzVector.h>
+#include <TParticlePDG.h>
+
+#include "NicaEventInterface.h"
+#include "NicaMCTrack.h"
+#include "NicaTrack.h"
+#include "NicaLink.h"
 #include "NicaUnigenEventInterface.h"
+#include "UEvent.h"
+#include "UParticle.h"
 
 NicaUnigenEvent::NicaUnigenEvent() : NicaMCEvent("NicaUnigenTrack") {}
 

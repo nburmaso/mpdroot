@@ -9,6 +9,7 @@
 #include "MpdPairTpcEntrySimpleCut.h"
 
 #include "NicaTpcSectorGeo.h"
+#include "NicaTwoTrack.h"
 
 MpdPairTpcEntrySimpleCut::MpdPairTpcEntrySimpleCut()
     : MpdPairTpcSimpleCut(3), fRmin(40.3) {

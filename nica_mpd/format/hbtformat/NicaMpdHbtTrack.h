@@ -10,7 +10,9 @@
 #define NICAMPDHBTTRACK_H_
 
 #include "NicaExpTrack.h"
-#include "NicaTrackTpcPads.h"
+
+class NicaTrackTpcPads;
+
 class NicaMpdHbtTrack : public NicaExpTrackHelix {
   NicaTrackTpcPads *fPads;
 

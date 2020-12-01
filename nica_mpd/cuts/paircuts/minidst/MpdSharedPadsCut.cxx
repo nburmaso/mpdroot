@@ -9,6 +9,8 @@
 #include "MpdSharedPadsCut.h"
 #include "NicaMpdHbtTrack.h"
 #include "NicaTrackTpcPads.h"
+#include "NicaTwoTrack.h"
+
 namespace MpdHbtDst {
 MpdSharedPadsCut::MpdSharedPadsCut() : MpdFemtoPairCut(2) {
   SetUnitName("SharedPads [N]", SharedPadsNo());

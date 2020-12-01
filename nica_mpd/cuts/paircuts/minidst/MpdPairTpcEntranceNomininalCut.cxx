@@ -9,6 +9,7 @@
 #include "MpdPairTpcEntranceNomininalCut.h"
 #include "NicaMpdHbtTrack.h"
 #include "NicaTrackTpcPads.h"
+#include "NicaTwoTrack.h"
 
 namespace MpdHbtDst {
 MpdPairTpcEntranceNomininalCut::MpdPairTpcEntranceNomininalCut()

@@ -10,7 +10,6 @@
 #define NICAMPDMINIDSTMCTRACK_H_
 
 #include "NicaMCTrack.h"
-#include "MpdMiniMcTrack.h"
 #include "NicaMCTrackInterface.h"
 
 class NicaMpdMiniDstMcTrack : public NicaMCTrack{
