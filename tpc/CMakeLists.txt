@@ -58,6 +58,7 @@ MpdTpcDigitizerAZlt.cxx
 #MpdTpcClusterFinderAZ.cxx
 MpdTPCpid.cxx
 MpdTpcClusterFinderMlem.cxx
+MpdTpcEDepParams.cxx
 MpdTpcFastDigitizer.cxx
 fastdigimodel/TpcFastDigiModelWrapper.cxx
 )

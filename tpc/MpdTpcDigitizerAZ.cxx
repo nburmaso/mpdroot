@@ -81,6 +81,9 @@ MpdTpcDigitizerAZ::MpdTpcDigitizerAZ()
   fDigits4dArray(NULL) 
   
 {
+  cout << "!!! The task MpdTpcDigitizerAZ is deprecated !!! Use MpdTpcDigitizerAZlt instead !!! " << endl;
+  exit(0);
+
   fInputBranchName = "TpcPoint";
   fOutputBranchName = "MpdTpcDigit";
   
