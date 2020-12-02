@@ -285,7 +285,11 @@ void MpdTpcFastDigitizer::Exec(Option_t* opt)
 	  if (fDigits4dArray[iRow][iPad][iTime].signal > fNoiseThreshold) {
 	    Int_t outSize = fDigits->GetEntriesFast();
 	    Int_t id = CalcOrigin(fDigits4dArray[iRow][iPad][iTime]);
-	    if (id >= 0) new((*fDigits)[outSize]) MpdTpcDigit(id, iPad, iRow, iTime, iSec, fDigits4dArray[iRow][iPad][iTime].signal);
+	    if (id >= 0) {
+	      Double_t ampl = fDigits4dArray[iRow][iPad][iTime].signal;
+	      if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
+	      new((*fDigits)[outSize]) MpdTpcDigit(id, iPad, iRow, iTime, iSec, ampl);
+	    }
 	  }
 	  //if (fDigits4dArray[iRow][iPad][iTime].signal > 0.0) {
 	  if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) {
@@ -1009,7 +1013,11 @@ void MpdTpcFastDigitizer::FastDigi(Int_t isec, const TpcPoint* curPoint)
                       static_cast<float>(pad0)};
   vector<float> output(128);
   TpcFastDigiModelWrapper::model_run(input.data(), output.data(), 4, 128);
-    
+  Double_t sum = 0.0, scale = 3.10417e+03 / 3.0e-6 * 1.878, coef = curPoint->GetEnergyLoss() * scale; // dedx-to-ADC conversion
+  for (Int_t ii = 0; ii < 128; ++ii) sum += output[ii];
+  coef /= sum;
+  if (Int_t (yHit0 / secGeo->PadWidth(0) + secGeo->NPadsInRows()[row0]) < 0) return; //AZ - 301120
+  
   for (int ii_pad = 0; ii_pad < 8; ii_pad++)
     for (int ii_time = 0; ii_time < 16; ii_time++) {
       Int_t i_pad = static_cast<Int_t>(pad0) + ii_pad - 3;
@@ -1018,13 +1026,18 @@ void MpdTpcFastDigitizer::FastDigi(Int_t isec, const TpcPoint* curPoint)
           && i_pad < secGeo->NPadsInRows()[row0] * 2
           && i_time >=0
           && i_time < fSecGeo->GetNTimeBins()) {
-        fDigits4dArray[row0][i_pad][i_time].signal += output[ii_pad * 16 + ii_time];
+	Float_t signal = output[ii_pad * 16 + ii_time] * coef;
+	if (signal < 0.1) continue;
+        //fDigits4dArray[row0][i_pad][i_time].signal += output[ii_pad * 16 + ii_time];
+        fDigits4dArray[row0][i_pad][i_time].signal += signal;
         auto origin = curPoint->GetTrackID();
         auto it = fDigits4dArray[row0][i_pad][i_time].origins.find(origin);
         if (it != fDigits4dArray[row0][i_pad][i_time].origins.end()) {
-          it->second += output[ii_pad * 16 + ii_time];
+          //it->second += output[ii_pad * 16 + ii_time];
+          it->second += signal;
         } else {
-          fDigits4dArray[row0][i_pad][i_time].origins.insert(pair<Int_t, Float_t>(origin, output[ii_pad * 16 + ii_time]));
+          //fDigits4dArray[row0][i_pad][i_time].origins.insert(pair<Int_t, Float_t>(origin, output[ii_pad * 16 + ii_time]));
+          fDigits4dArray[row0][i_pad][i_time].origins.insert(pair<Int_t, Float_t>(origin, signal));
         }
       }
     }

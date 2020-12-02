@@ -40,6 +40,10 @@
 #include <set>
 #include <vector>
 
+static clock_t tStartMlem = 0;
+static clock_t tFinishMlem = 0;
+static clock_t tAllMlem = 0;
+
 using namespace std;
 
 static Bool_t SortPix(const MpdTpcClusterFinderMlem::pixel i, 
@@ -73,6 +77,8 @@ void MpdTpcClusterFinderMlem::FinishTask()
     //fPrimArray[i]->Delete();
     delete [] fDigiSet[i];
   }
+
+  cout << "MLEM cluster finder work time = " << ((Float_t)tAllMlem) / CLOCKS_PER_SEC << endl;
 }
 
 //__________________________________________________________________________
@@ -117,6 +123,8 @@ InitStatus MpdTpcClusterFinderMlem::Init()
 void MpdTpcClusterFinderMlem::Exec(Option_t* opt)
 {
 
+  tStartMlem = clock();
+
   fClusArray->Delete();
   fHitArray->Delete();
   const Int_t nSec = fgkNsec2 / 2; // number of TPC readout sectors
@@ -152,6 +160,9 @@ void MpdTpcClusterFinderMlem::Exec(Option_t* opt)
 
   // Find hits
   FindHits();
+
+  tFinishMlem = clock();
+  tAllMlem = tAllMlem + (tFinishMlem - tStartMlem);
 }
 
 //__________________________________________________________________________
