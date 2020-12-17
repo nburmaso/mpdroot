@@ -313,7 +313,8 @@ void MpdTpcClusterFinderMlem::FindHits()
       else ipadv = (ipad-2 == 0) ? ipad - 1 : ipad + 1;
       fFlags[ipadv][itime] = -1;
       //if (clus->GetNumPads() == 1) fCharges[ipadv][itime] = 20; // below threshold
-      if (clus->GetNumPads() == 1) fCharges[ipadv][itime] = TMath::Min(29.0,fCharges[ipad][itime]*0.1); // below threshold
+      //AZ-161220 if (clus->GetNumPads() == 1) fCharges[ipadv][itime] = TMath::Min(29.0,fCharges[ipad][itime]*0.1); // below threshold
+      if (clus->GetNumPads() == 1) fCharges[ipadv][itime] = TMath::Min(2.0,fCharges[ipad][itime]*0.1); // below threshold
       //else fCharges[ipadv][itime] = fCharges[ipad][itime] * 0.9;
       else {
 	ipadn = (ipad-2 == 0) ? ipad + 1 : ipad - 1;
@@ -609,21 +610,24 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
     //fCharges[ipad][itime] = clus->Adc(jdig);
     //fFlags[ipad][itime] = 1;
     //fDigis[ipad][itime] = jdig;
+    //cout << " digis: " << jdig << " " << ipad << " " << itime << " " << fCharges[ipad][itime] << endl;
     if (fCharges[ipad][itime] < 0.1) continue;
     pixel pix;
     pix.ix = hXY->GetXaxis()->FindBin(itime+0.1);
     pix.iy = hXY->GetYaxis()->FindBin(ipad+0.1);
+    if (hXY->GetBinContent(pix.ix,pix.iy) > 0.1) continue; //AZ-161220
     pix.qq = fCharges[ipad][itime];
     pix.vis = 0;
     //if (pix.qq < fgkOvfw) bins.push_back(pix);
     bins.push_back(pix);
     pixels[1].push_back(pix);
     pixels[0].push_back(pix);
+    hXY->SetBinContent(pix.ix,pix.iy,pix.qq); //AZ-161220
     if (hOvfw && fCharges[ipad][itime] > fgkOvfw - 1) hOvfw->Fill(itime+0.1,ipad+0.1,fCharges[ipad][itime]);
     // Consider edge effect
     //*
     if (edge && (ipad-2 == 0 || ipad-2 == 2*fSecGeo->NPadsInRows()[clus->Row()] - 1)) { // extra shift
-      //cout << " Edge: " << ipad << " " << pix.iy << " " << hXY->GetYaxis()->GetBinCenter(pix.iy) << endl;
+      //cout << " Edge: " << ipad << " " << pix.iy << " " << pix.ix << " " << hXY->GetYaxis()->GetBinCenter(pix.iy) << endl;
       if (ipad-2 == 0) {
 	--pix.iy;
 	fDigis[ipad-1][itime] = fDigis[ipad][itime];
@@ -634,6 +638,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
       if (hXY->GetBinContent(pix.ix,pix.iy) > 0.1) continue;
       pixels[1].push_back(pix);
       pixels[0].push_back(pix);
+      hXY->SetBinContent(pix.ix,pix.iy,pix.qq); //AZ-161220
       //cout << " Edge: " << clus->Row() << " " << clus->GetId() << " " << ipad << endl; 
     }
     //*/
@@ -701,7 +706,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
 	  y0 = ymin + hMlem[icur]->GetYaxis()->GetBinWidth(1) * (ij / ndiv + 0.5);
 	  pix.ix = hMlem[icur]->GetXaxis()->FindBin(x0);
 	  pix.iy = hMlem[icur]->GetYaxis()->FindBin(y0);
-	  //cout << xc << " " << yc << " " << x0 << " " << y0 << endl;
+	  //cout << xc << " " << yc << " " << x0 << " " << y0 << " " << pix.ix << " " << pix.iy << endl;
 	}
 	pix.qq = 1.0;
 	//if (npix == 0) pix.qq = 9746;
@@ -814,6 +819,21 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   localMax.clear();
   Int_t npix = pixels[icur].size();
 
+  //test
+  Double_t qmx = -1;
+  int ipmx, itmx, iii;
+  for (Int_t ipix = 0; ipix < npix; ++ipix) {
+    //cout << " pix: " << ipix << " " << pixels[icur][ipix].ix - 1 << " " << pixels[icur][ipix].iy - 1 << endl;
+    if (pixels[icur][ipix].qq > qmx) {
+      qmx = pixels[icur][ipix].qq;
+      ipmx = pixels[icur][ipix].iy - 1;
+      itmx = pixels[icur][ipix].ix - 1;
+      iii = ipix;
+    }
+  }
+  //cout << " aaaa " << qmx << " " << ipmx << " " << itmx << " " << iii << endl;
+  //test
+
   for (Int_t ipix = 0; ipix < npix; ++ipix) {
     ipad = pixels[icur][ipix].iy - 1;
     Int_t itime = pixels[icur][ipix].ix - 1;
@@ -925,19 +945,19 @@ void MpdTpcClusterFinderMlem::PeakAndValley(const vector<pixel> &pixels, multima
 
   // Remove failed peaks
   /*
-  multimap<Double_t,Int_t>::iterator it = localMax.begin();
+  multimap<Double_t,Int_t>::iterator itt = localMax.begin();
   //for ( ; it != localMax.end(); ++it) cout << it->second << " ";
   //cout << endl;
 
-  it = localMax.begin();
-  for ( ; it != localMax.end(); ++it) {
-    Int_t ipix = it->second;
+  itt = localMax.begin();
+  for ( ; itt != localMax.end(); ++itt) {
+    Int_t ipix = itt->second;
     Int_t ipad = pixels[ipix].iy - 1;
     Int_t itime = pixels[ipix].ix - 1;
-    //cout << " Before: " << ipix << " " << itime << " " << ipad << " " << it->first << endl;
+    cout << " Before: " << ipix << " " << itime << " " << ipad << " " << itt->first << " " << flags[ipad][itime] << endl;
     if (flags[ipad][itime] > 0) continue;
     //cout << " Before: " << idig << " " << itime << " " << ipad << " " << it->first << ", ";
-    localMax.erase(it);
+    //localMax.erase(it1);
     //cout << " After: " << it->first << endl;
   }
   */
@@ -996,7 +1016,6 @@ void MpdTpcClusterFinderMlem::GetResponse(const MpdTpc2dCluster* clus, TH2D *hXY
   const Double_t tanDipC[2][3] = {{0.00168453, -0.000124739, 2.09058e-07},
 				  {0.0188111, -0.000514421, 1.30111e-06}};
 
-  
   // Dip and crossing angle estimates assuming straight tracks from Z=0 for now
   Double_t padMean = (hXY->GetYaxis()->GetXmin() + hXY->GetYaxis()->GetXmax()) / 2;
   Double_t timeMean = (hXY->GetXaxis()->GetXmin() + hXY->GetXaxis()->GetXmax()) / 2;

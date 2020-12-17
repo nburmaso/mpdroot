@@ -183,7 +183,8 @@ InitStatus MpdTpcFastDigitizer::Init()
   ioman->Register(fOutputBranchName, "TPC", fDigits, fPersistence);
   
   //AZ fNoiseThreshold = 1000.0; // electrons    
-  fNoiseThreshold = 30.0; // ADC counts
+  //fNoiseThreshold = 30.0; // ADC counts
+  fNoiseThreshold = 3.0; // ADC counts
   //AZ fGain = 5000.0; //electrons
   fGain = 1000.0; //electrons
   if (fResponse) {
@@ -287,7 +288,18 @@ void MpdTpcFastDigitizer::Exec(Option_t* opt)
 	    Int_t id = CalcOrigin(fDigits4dArray[iRow][iPad][iTime]);
 	    if (id >= 0) {
 	      Double_t ampl = fDigits4dArray[iRow][iPad][iTime].signal;
-	      if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
+	      if (fastDigi) {
+		//if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
+		// IR03 new scale and rounding 
+		//Double_t ScaleFactor = 20./(550.*1.25); // 687.5
+		// В старой шкале пик от mip для 15mm пэда был 687 канале,
+		// тогда среднее (As=1.3MP) от рел-роста 1.01 в канале 550.*1.25*1.3,
+		// а в правильной шкале должен быть в 75 канале
+		Double_t ScaleFactor = 75./(550.*1.25*1.3); // 19-MAR-2020 Movchan
+		// S.Movchan denies: if( iRow >= 26) ScaleFactor *=(1.2/1.8);
+		ampl *= ScaleFactor;
+		if( ampl > 1023.1) ampl = 1023.1;
+	      }
 	      new((*fDigits)[outSize]) MpdTpcDigit(id, iPad, iRow, iTime, iSec, ampl);
 	    }
 	  }
@@ -464,6 +476,7 @@ void MpdTpcFastDigitizer::SignalShaping()
   static Double_t *reFilt = NULL, *imFilt = NULL;
   static TVirtualFFT *fft[2] = {NULL,NULL};
   const Double_t sigma = 190./2/TMath::Sqrt(2*TMath::Log(2)), sigma2 = sigma * sigma; // FWHM = 190 ns
+  const Int_t maxTimeBin = MpdTpcSectorGeo::Instance()->TimeMax() / MpdTpcSectorGeo::Instance()->TimeBin() + 1;
 
   if (first == 0) {
     first = 1;
@@ -490,20 +503,57 @@ void MpdTpcFastDigitizer::SignalShaping()
   Double_t *imSig = new Double_t [nbins];
   Double_t *reTot = new Double_t [nbins];
   Double_t *imTot = new Double_t [nbins];
+  map<Int_t,Int_t> cumul; // cumulative active time bin counter
 
   //AZ Int_t nRows = MpdTpcSectorGeo::Instance()->NofRows();
-  for (UInt_t iRow = 0; iRow < nRows; ++iRow) {
-    for (UInt_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
+  for (Int_t iRow = 0; iRow < nRows; ++iRow) {
+    for (Int_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
+      memset(reSig,0,sizeof(Double_t)*nbins);
       Int_t fired = 0;
-      for (UInt_t iTime = 0; iTime < nbins; ++iTime) {
-	//if (fDigits4dArray[iRow][iPad][iTime].signal > 0) {
-	if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) {
-	  // Fired channel
-	  fired = 1;
-	  reSig[iTime] = fDigits4dArray[iRow][iPad][iTime].signal;
-	} else reSig[iTime] = 0;
+      Int_t ntbins = 0;
+
+      //for (Int_t iTime = 0; iTime < nbins; ++iTime) {
+      for (Int_t iTime = 0; iTime < maxTimeBin; ++iTime) {
+        //if (fDigits4dArray[iRow][iPad][iTime].signal > 0) {
+        if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) {
+          // Fired channel
+          fired = 1;
+          if (ntbins == 0) cumul.clear();
+          reSig[iTime] = fDigits4dArray[iRow][iPad][iTime].signal;
+          cumul[iTime] = ++ntbins;
+        }
       }
       if (!fired) continue;
+
+      // !!! Formally expand each time bin backward by 3 bins (and forward if the next time bin is far enough) !!!
+      for (map<Int_t,Int_t>::iterator mit = cumul.begin(); mit != cumul.end(); ++mit) {
+        Int_t tbin = mit->first;
+        Int_t orig = fDigits4dArray[iRow][iPad][tbin].origin;
+	
+        for (Int_t it = 1; it < 4; ++it) {
+          Int_t iTime = tbin - it;
+          if (iTime < 0) break;
+          if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) break;
+          fDigits4dArray[iRow][iPad][iTime].origin = orig;
+          fDigits4dArray[iRow][iPad][iTime].origins[orig] = 1.0; // 1.0 - some amplitude
+	}
+	// Expand forward if needed
+        map<Int_t,Int_t>::iterator next = cumul.upper_bound(tbin);
+        if (next == cumul.end() || next->first - tbin > 4) {
+          Int_t nexp = (next == cumul.end()) ? 4 : next->first - tbin - 3;
+          nexp = TMath::Min (nexp, 4);
+          // Expand
+          for (Int_t it = 1; it < nexp; ++it) {
+            Int_t iTime = tbin + it;
+            //if (iTime >= nbins) break;
+            if (iTime >= maxTimeBin) break;
+            //if (CalcOrigin(fDigits4dArray[iRow][iPad][iTime]) >= 0) break;
+            fDigits4dArray[iRow][iPad][iTime].origin = orig;
+            fDigits4dArray[iRow][iPad][iTime].origins[orig] = 1.0; // 1.0 - some amplitude 
+          }
+        }
+      }
+
       // Fourier transform
       fft[0]->SetPoints(reSig);
       fft[0]->Transform();
@@ -511,30 +561,41 @@ void MpdTpcFastDigitizer::SignalShaping()
       // Convolution
       //for (Int_t i = 0; i < nbins; ++i) {
       for (Int_t i = 0; i < n2; ++i) {
-	Double_t re = reSig[i] * reFilt[i] - imSig[i] * imFilt[i];
-	Double_t im = reSig[i] * imFilt[i] + imSig[i] * reFilt[i];
-	reTot[i] = re / nbins;
-	imTot[i] = im / nbins;
+        Double_t re = reSig[i] * reFilt[i] - imSig[i] * imFilt[i];
+        Double_t im = reSig[i] * imFilt[i] + imSig[i] * reFilt[i];
+        reTot[i] = re / nbins;
+        imTot[i] = im / nbins;
       }
-      // Inverse Fourier transform
+      // Inverse Fourier transform 
       if (!fft[1]) fft[1] = TVirtualFFT::FFT(1, &nbins, "C2R ES K");
       //if (!fft[1]) fft[1] = TVirtualFFT::FFT(1, &nbins, "C2R EX K");
       fft[1]->SetPointsComplex(reTot,imTot);
       fft[1]->Transform();
       fft[1]->GetPoints(reTot);
 
-      for (Int_t i = 0; i < nbins; ++i) {
-	if (fDigits4dArray[iRow][iPad][i].origin < 0) continue; // !!! do not add extra time bins due to shaping !!!
-	Int_t i1 = i;
-	if (i1 <= icent) i1 += icent;
-	else i1 -= (icent + 1);
-	Double_t ampl = reTot[i1];
-	//
-	// Scale factor to adjust ADC counts
-	ampl /= 30.0;
-	if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
-	//
-	fDigits4dArray[iRow][iPad][i].signal = ampl;
+      //AZ for (Int_t i = 0; i < nbins; ++i) {
+      for (Int_t i = 0; i < maxTimeBin; ++i) {
+        if (fDigits4dArray[iRow][iPad][i].origin < 0) continue; // !!! do not add extra time bins due to shaping !!!
+        Int_t i1 = i;
+        if (i1 <= icent) i1 += icent;
+        else i1 -= (icent + 1);
+        Double_t ampl = reTot[i1];
+        //
+        // Scale factor to adjust ADC counts
+        ampl /= 30.0;
+        //IR 11-MAR-2020 if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
+        //
+        // IR03 new scale and rounding
+        //Double_t ScaleFactor = 20./(550.*1.25); // 687.5
+        // В старой шкале пик от mip для 15mm пэда был 687 канале,
+        // тогда среднее (As=1.3MP) от рел-роста 1.01 в канале 550.*1.25*1.3,
+        // а в правильной шкале должен быть в 75 канале
+        Double_t ScaleFactor = 75./(550.*1.25*1.3); // 19-MAR-2020 Movchan
+        // S.Movchan denies: if( iRow >= 26) ScaleFactor *=(1.2/1.8);
+        ampl *= ScaleFactor;
+        if( ampl > 1023.1) ampl = 1023.1;
+        //
+        fDigits4dArray[iRow][iPad][i].signal = ampl;
       }
     }
   }
@@ -542,6 +603,7 @@ void MpdTpcFastDigitizer::SignalShaping()
   delete [] imSig;
   delete [] reTot;
   delete [] imTot;
+
 }
 
 //---------------------------------------------------------------------------

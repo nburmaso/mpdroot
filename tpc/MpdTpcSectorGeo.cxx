@@ -110,7 +110,8 @@ void MpdTpcSectorGeo::Init()
     //fZmax = fZmin + 2 * ((TGeoTube*)shape)->GetDZ();
     fZmax = 170.; 
     cout << " ***** TPC sensitive volume: " << sv->GetName() << ", shape: " << shape->ClassName() 
-	 << ", inner radius: " << fYsec[0] << ", outer radius: " << fYsec[2] 
+      //AZ << ", inner radius: " << fYsec[0] << ", outer radius: " << fYsec[2] 
+	 << ", inner radius: " << ((TGeoPgon*)shape)->Rmin(0) << ", outer radius: " << ((TGeoPgon*)shape)->Rmax(0) 
 	 << ", Zmin, Zmax: " << fZmin << ", " << fZmax << endl;
   } else Fatal("MpdTpcSectorGeo::Init()"," !!! Unknown sensitive volume shape !!! ");
 

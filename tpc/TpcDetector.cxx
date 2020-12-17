@@ -105,14 +105,20 @@ void TpcDetector::Register() {
 
 }
 
-<<<<<<< HEAD
 //-----------------------------------------------------------------------------
 
 Bool_t
 TpcDetector::ProcessHits( FairVolume *v)
 {
   // Create Point at volume exit or at track end or after large step
-
+  /*
+  if (!TString(gMC->CurrentVolPath()).Contains("row")) {
+    TLorentzVector pos;
+    gMC->TrackPosition(pos);
+    cout << gMC->CurrentVolPath() << " " << pos.Vect().Pt() << endl;
+  }
+  if (!TString(gMC->CurrentVolPath()).Contains("row")) return kTRUE;
+  */
   // Set parameters at entrance of volume. Reset ELoss.
   if (gMC->IsTrackEntering() || gMC->IsNewTrack()) {
     fELoss  = 0.;
@@ -132,27 +138,12 @@ TpcDetector::ProcessHits( FairVolume *v)
   }
 
   Double_t eLoss = gMC->Edep();
-  /*
-=======
-Bool_t TpcDetector::ProcessHits( FairVolume *v)
-{
-  // Create Hit for every MC step
 
-  Double_t time   = gMC->TrackTime() * 1.0e09;
-  Double_t length = gMC->TrackLength();
-  TLorentzVector pos;
-  gMC->TrackPosition(pos);
-  //  pos.Print();
-  TLorentzVector mom;
-  gMC->TrackMomentum(mom);
-  //  mom.Print();
-  Double_t eLoss = gMC->Edep();
-  Int_t trackID  = gMC->GetStack()->GetCurrentTrackNumber();
-  Int_t volumeID = v->getMCid();
-  */
   if (eLoss > 0) { //AZ
     //AZ - dE/dx simulation from the new prescription
     //cout << " xxxxxxxxxxxxx " << gMC->TrackMass() << endl;
+    TLorentzVector mom;
+    gMC->TrackMomentum(mom);
     Double_t betgam = mom.Vect().Mag() / gMC->TrackMass();
     //cout << betgam << " " << mom.Beta() * mom.Gamma() << endl;
     if (betgam > 0.01) {
@@ -164,17 +155,9 @@ Bool_t TpcDetector::ProcessHits( FairVolume *v)
 	//cout << " xxxxxx " << gMC->Edep() << " " << eLoss << endl;
       } 
     }
-    /*
-    //AZ
-    TpcPoint* p = AddHit(trackID, volumeID, pos.Vect(), mom.Vect(), time, length, eLoss);
-    p->SetStep(gMC->TrackStep());
-
-    ((MpdStack*)gMC->GetStack())->AddPoint(kTPC);
->>>>>>> tpcDedx
-	  */
   }
+
   // Sum energy loss for all steps in the active volume
-  //fELoss += gMC->Edep();
   fELoss += eLoss;
   ++fNSteps;
 	
@@ -182,9 +165,9 @@ Bool_t TpcDetector::ProcessHits( FairVolume *v)
   //if (fELoss > 0 && (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared() ||
   //		     gMC->TrackLength()-fLength > gMC->MaxStep()-0.1)) {
   if (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared() ||
-      gMC->TrackLength()-fLength > gMC->MaxStep()-0.1) {
+      //gMC->TrackLength()-fLength > gMC->MaxStep()-0.1) {
+      gMC->TrackLength()-fLength > 4.0-0.1) { // !!! hard-coded value
 
-    if (!TString(gMC->CurrentVolPath()).Contains("row")) return kTRUE;
     if (fELoss > 0) {
       Int_t sector = 0, padrow = 0;
       gMC->CurrentVolOffID(0, padrow); 
@@ -202,10 +185,10 @@ Bool_t TpcDetector::ProcessHits( FairVolume *v)
 	gMC->TrackMomentum(lmom);
 	TVector3 mom = lmom.Vect();
 	if (mom.Mag() > 0.0001) {
-	mom.SetMag(0.0005); // step 5 um
-	TVector3 pos = fPos.Vect();
-	pos -= mom;
-	fPos.SetVect(pos);
+	  mom.SetMag(0.0005); // step 5 um
+	  TVector3 pos = fPos.Vect();
+	  pos -= mom;
+	  fPos.SetVect(pos);
 	}
       }
       gMC->TrackMomentum(fMom);
@@ -529,35 +512,61 @@ void TpcDetector::DivideSensVol()
   
   Double_t phi1 = ((TGeoPgon*)shape)->Phi1();
   Double_t loc[3] = {100, 0, 10}, glob[3] = {0};
-  TGeoNode *sensNode = gGeoManager->FindNode(loc[0],loc[1],loc[2]);
+  //TGeoNode *sensNode = gGeoManager->FindNode(loc[0],loc[1],loc[2]);
   gGeoManager->LocalToMaster(loc,glob);
   phi1 += -TMath::ATan2 (glob[1],glob[0]) * TMath::RadToDeg(); // due to rotation
   if (TMath::Abs(phi1-dPhi*TMath::RadToDeg()/2) > 0.001)
     Fatal("TpcDetector::DivideSensVol()"," !!! Inconsistent sens. volume parameters !!! ");
 
   TGeoMedium *medium = sv->GetMedium();
-  TGeoVolume *tpcVol = sv; //new TGeoVolume("tpc01sv_new", tpcVolOrig->GetShape(), medium);
-  Double_t dx1 = secGeo->GetMinY() * TMath::Tan(dPhi/2);
-  Double_t dx2 = secGeo->GetMaxY() * TMath::Tan(dPhi/2);
-  Double_t dy = dZ, dz = (secGeo->GetMaxY() - secGeo->GetMinY()) / 2.;
-  Double_t rad = (secGeo->GetMaxY() + secGeo->GetMinY()) / 2.;
+  //TGeoVolume *tpcVol = sv; //new TGeoVolume("tpc01sv_new", tpcVolOrig->GetShape(), medium);
+  TGeoVolume *tpcVol = new TGeoVolume("tpc01sv_div", sv->GetShape(), medium);
+  gGeoManager->ReplaceVolume(sv, tpcVol);
+  TGeoNode *sensNode = gGeoManager->FindNode(loc[0],loc[1],loc[2]);
+
+  Int_t ib = 0, ie = nRows[0] + nRows[1];
+  Double_t rmin = secGeo->GetMinY();
+  Double_t rmax = secGeo->GetMaxY();
+  Double_t step = secGeo->PadHeight();
+  if (((TGeoPgon*)shape)->Rmin(0) < rmin-0.01) {
+    // Sensitive volume is thicker than readout chamber (along radius)
+    rmin = ((TGeoPgon*)shape)->Rmin(0);
+    --ib;
+    step = secGeo->GetMinY() - rmin;
+  }
+  if (((TGeoPgon*)shape)->Rmax(0) > rmax+0.01) {
+    rmax = ((TGeoPgon*)shape)->Rmax(0);
+    ++ie;
+  }
+  Double_t dx1 = rmin * TMath::Tan(dPhi/2);
+  Double_t dx2 = rmax * TMath::Tan(dPhi/2);
+  Double_t dy = dZ, dz = (rmax - rmin) / 2.;
+  Double_t rad = (rmax + rmin) / 2.;
   TGeoVolume *tpcsec = gGeoManager->MakeTrd1("tpc01sv_sec", medium, dx1, dx2, dy, dz), *vol = NULL;
 
   // The code below is based on TGeoTrd1::Divide()
-  Int_t ndiv = nRows[0] + nRows[1];
-  Double_t start = -dz, end = dz, dx1n, dx2n, zmax, step = secGeo->PadHeight(), zmin = start - step;
-  for (Int_t id = 0; id < ndiv; ++id) {
+  Double_t start = -dz, end = dz, dx1n, dx2n, zmax, zmin = start - step;
+  cout << step << " " << start << " " << dz << " " << rad << endl;
+  Double_t delta = (dx2 - dx1) / dz / 2; //AZ
+  Int_t ivol = 1;
+  
+  for (Int_t id = ib; id < ie; ++id) {
     zmin += step;
-    if (id == nRows[0]) step = secGeo->PadHeight(1);
+    if (id == 0) step = secGeo->PadHeight(0);
+    else if (id == nRows[0]) step = secGeo->PadHeight(1);
+    else if (id == nRows[0]+nRows[1]) step = rmax - secGeo->GetMaxY();
     zmax = zmin + step;
-    dx1n = 0.5 * (dx1 * (dz - zmin) + dx2 * (dz + zmin)) / dz;
-    dx2n = 0.5 * (dx1 * (dz - zmax) + dx2 * (dz + zmax)) / dz;
+    //AZ dx1n = 0.5 * (dx1 * (dz - zmin) + dx2 * (dz + zmin)) / dz;
+    //AZ dx2n = 0.5 * (dx1 * (dz - zmax) + dx2 * (dz + zmax)) / dz;
+    dx1n = dx1 + (zmin + dz) * delta;
+    dx2n = dx1 + (zmax + dz) * delta;
     shape = new TGeoTrd1(dx1n, dx2n, dy, step/2.);
     vol = new TGeoVolume("tpc01sv_row", shape, tpcsec->GetMedium());
     TGeoHMatrix *matr = new TGeoHMatrix();
     Double_t transl[3] = {0.0, 0.0, zmin+step/2};
     matr->SetTranslation(transl);
-    tpcsec->AddNode(vol, id+1, matr);
+    //matr->RegisterYourself(); //AZ
+    tpcsec->AddNode(vol, ivol++, matr);
   }
 
   phi1 *= TMath::DegToRad();
@@ -572,6 +581,7 @@ void TpcDetector::DivideSensVol()
     r.SetAngles(90,phiDeg-90,0,0,90,phiDeg);
     TGeoCombiTrans c(t,r);
     TGeoHMatrix *matr = new TGeoHMatrix(c);
+    //matr->RegisterYourself(); //AZ
     //gGeoManager->RegisterMatrix(matr);
     //  AddNode(const TGeoVolume* vol, Int_t copy_no, TGeoMatrix* mat = 0, Option_t* option = "")
     tpcVol->AddNode(tpcsec, isec+1, matr);
