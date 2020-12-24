@@ -28,8 +28,8 @@ using namespace std;
 
 ClassImp(MpdTofHitProducer)
 //------------------------------------------------------------------------------------------------------------------------
-MpdTofHitProducer::MpdTofHitProducer(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, const char *flnm)
-  : MpdTofHitProducerIdeal(name, useMCdata, verbose, test, true, flnm, false)
+MpdTofHitProducer::MpdTofHitProducer(const char *name, Bool_t useMCdata, Int_t verbose, Bool_t test, const char *flnm, double stripLength)
+  : MpdTofHitProducerIdeal(name, useMCdata, verbose, test, true, flnm, false), fStripLength(stripLength)
 {
 	pRandom = new TRandom2;
 }
@@ -61,7 +61,7 @@ InitStatus 	MpdTofHitProducer::Init()
 return kSUCCESS;
 }
 //------------------------------------------------------------------------------------------------------------------------
-Bool_t 	MpdTofHitProducer::HitExist(Double_t value, Int_t gap) // value - distance to the strip edge [cm]
+Bool_t 	MpdTofHitProducer::IsHitCreated(Double_t value, Int_t gap) // value - distance to the strip edge [cm]
 {
 	constexpr Double_t slope = (0.98 - 0.95)/0.2;
 	Double_t efficiency = (value > 0.2) ? 0.98 : ( 0.95 + slope*value);
@@ -81,7 +81,7 @@ Bool_t 	MpdTofHitProducer::HitExist(Double_t value, Int_t gap) // value - distan
 return false;	
 }
 //------------------------------------------------------------------------------------------------------------------------
-Bool_t 	MpdTofHitProducer::CrossHitExist(Double_t value, Int_t gap) // value - distance to the strip edge  [cm]
+Bool_t 	MpdTofHitProducer::IsCrossHitCreated(Double_t value, Int_t gap) // value - distance to the strip edge  [cm]
 {
 	constexpr Double_t slope = (0.3 - 0.0)/0.5;
 	Double_t efficiency = (value > 0.5) ? 0. : (0.3 - slope*value);
@@ -106,13 +106,39 @@ return false;
 //------------------------------------------------------------------------------------------------------------------------
 void 			MpdTofHitProducer::Exec(Option_t *option)
 {
-	static const TVector3 XYZ_err(fErrX, 0., fErrZ); // error for perpendicular Y axis strips
-
 	aTofHits->Clear();
 
-	TVector3 	mcPosition, smearedPosition, errRotated; 	
-    	int		nSingleHits = 0, nCrossHits = 0;
-	
+	TVector3 	mcPosition, hitPosition, hitPosError; 	
+    	int		nSingleHits = 0, nCrossHits = 0;	
+
+	auto SmearingAlongStrip = [this](const TGeoCombiTrans& matrix, const TVector3& point, TVector3& hit, TVector3& error)
+	{
+		// rotate stip to origin LRS (dX = fStripLength, dY = 0, dZ = strip step)  
+		Double_t local[3], master[3] = {point.X(), point.Y(), point.Z()};
+		matrix.MasterToLocal(master, local);
+
+		// smearing the hit position along x axis 
+		double Xsmeared, x = local[0]; size_t nTries = 0;
+		do
+		{ 
+			Xsmeared = pRandom->Gaus(x, fErrX);	
+			if(++nTries > 100) return false;
+		} 
+		while(fabs(Xsmeared) > fStripLength/2.); // check strip boundary exit
+
+		// rotete back to MRS
+		local[0] = Xsmeared; local[2] = 0.; // set the hit position to the strip center along z axis(at LRS)
+		matrix.LocalToMaster(local, master);
+		hit.SetXYZ(master[0], master[1], master[2]);
+
+		// rotate error vector
+		local[0] = fErrX; local[1] = 0.; local[2] = fErrZ;
+		matrix.LocalToMaster(local, master);
+		error.SetXYZ(master[0], master[1], master[2]); 
+
+		return true;
+	};
+
 	if(fUseMCData)
 	{	
 		for(Int_t pointIndex = 0, nTofPoint = aMcPoints->GetEntriesFast(); pointIndex < nTofPoint; pointIndex++ )  // cycle by TOF points
@@ -128,45 +154,49 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 			Double_t time = pRandom->Gaus(pPoint->GetTime(), fTimeSigma); // default 100 ps		
 			pPoint->Position(mcPosition);
 
-			const LStrip *pStrip = MpdTofGeoUtils::Instance()->FindStrip(suid);
-			double perpPhi = pStrip->perp.Phi(); // [rad]
-		
-			TVector3 posRotated(mcPosition);
-			posRotated.RotateZ(-perpPhi); // rotate to perpendicular Y axis LRS
-		
-			smearedPosition.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z()); // smearing along x axis
-			smearedPosition.RotateZ(perpPhi); // rotate to real strip orientation
-
-			errRotated = XYZ_err;
-			errRotated.RotateZ(perpPhi); // rotate to real strip orientation
+			auto pStrip = MpdTofGeoUtils::Instance()->FindStrip(suid);
+			if(! SmearingAlongStrip(pStrip->fMatrix, mcPosition, hitPosition, hitPosError))
+			{
+				pStrip->Dump(" [MpdTofHitProducer::Exec] -E- Invalid Rotation matrix.");
+				continue;
+			}
 
 			LStrip::Side_t side;
 			Double_t distance = pStrip->MinDistanceToEdge(&mcPosition, side); // [cm]
 
 			bool stripFired;
-			if(stripFired = HitExist(distance, gap))  // simulate hit efficiency
+			if(stripFired = IsHitCreated(distance, gap))  // simulate hit efficiency
 			{
-			 	AddHit(MpdTofPoint::ClearGap(suid), smearedPosition, errRotated, pointIndex, tid, time, MpdTofUtils::IsSingle); 	
-			 	nSingleHits++;		 	
+			 	AddHit(MpdTofPoint::ClearGap(suid), hitPosition, hitPosError, pointIndex, tid, time, MpdTofUtils::IsSingle); 	
+			 	nSingleHits++;			
 			} 
 		
-			if(pQA) pQA->FillHitEfficiency(stripFired, distance, gap, mcPosition, smearedPosition);
+			if(pQA)
+			{
+				if(stripFired) pQA->Point2HitSmearingTest(mcPosition, hitPosition);
+				pQA->HitGapEfficiencyTest(stripFired, distance, gap);
+				pQA->PositionInsideStripTest(pStrip->center, mcPosition, hitPosition);
+				pQA->RotationToOriginTest(pStrip->fMatrix, mcPosition, hitPosition);
+			}
 	
-	     		if(stripFired = CrossHitExist(distance, gap)) // simulate cross hit
+	     		if(stripFired = IsCrossHitCreated(distance, gap)) // simulate cross hit efficiency
         		{
         			Int_t crossSuid = (side == LStrip::kRight) ? pStrip->neighboring[LStrip::kRight] : pStrip->neighboring[LStrip::kLeft];
   
   				if(LStrip::kInvalid  == crossSuid) continue; // edge strip on detector
   			
   				pStrip = MpdTofGeoUtils::Instance()->FindStrip(crossSuid);
-        			smearedPosition.SetXYZ(pRandom->Gaus(posRotated.X(), fErrX), posRotated.Y(),  pStrip->center.Z());
-        			smearedPosition.RotateZ(perpPhi);
-        			
-        			AddHit(MpdTofPoint::ClearGap(crossSuid), smearedPosition, errRotated, pointIndex, tid, time, MpdTofUtils::IsDouble); 
+				if(! SmearingAlongStrip(pStrip->fMatrix, mcPosition, hitPosition, hitPosError))
+        			{
+					pStrip->Dump(" [MpdTofHitProducer::Exec] -E- Invalid Rotation matrix.");
+					continue;
+				}
+
+        			AddHit(MpdTofPoint::ClearGap(crossSuid), hitPosition, hitPosError, pointIndex, tid, time, MpdTofUtils::IsDouble); 
         			nCrossHits++;			
         		}
 
-        		if(pQA) pQA->FillCrossHitEfficiency(stripFired, distance, gap, mcPosition, smearedPosition);
+        		if(pQA) pQA->FillCrossHitEfficiency(stripFired, distance, gap, mcPosition, hitPosition);
 
 		}	// cycle by the TOF points
 	
@@ -185,7 +215,7 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 	if(fUseMCData && pQA)
 	{
 		pQA->FillNPointsHits(aMcPoints->GetEntriesFast(), Nhits);
-		pQA->FillHitDistance(aTofHits);
+		pQA->PointDistanceTest(aMcPoints);
 	}
 
 	LOG(DEBUG1)<<"[MpdTofHitProducer::Exec] single hits= "<<nSingleHits<<", cross hits= "<<nCrossHits<<", final hits= "<<Nhits;

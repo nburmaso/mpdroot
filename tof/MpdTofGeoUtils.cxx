@@ -85,8 +85,7 @@ assert(gGeoManager);
 	const TString pathTOF = "/cave_1/tof1_0";
 	gGeoManager->cd(pathTOF);
 
-	Double_t *X0Y0Z0 = new Double_t[3]; X0Y0Z0[0] = X0Y0Z0[1] = X0Y0Z0[2] = 0.; // center of sensetive detector
-	Double_t  *local = new Double_t[3], master[3],  dX, dY, dZ;
+	Double_t  *local = new Double_t[3](), master[3] = {0},  dX, dY, dZ;
 	int nSectors = 0, nDetectors = 0, nStrips = 0;
 
   	TObjArray *array = gGeoManager->GetCurrentVolume()->GetNodes();
@@ -117,10 +116,9 @@ assert(gGeoManager);
 
 				if(ofs.is_open()) ofs<<"\n\t\t DETECTOR: "<<detName.Data()<<", copy# "<<detectorID<<" path= "<<PATH3.Data();   
 				
-				gGeoManager->cd(PATH3);	
+				gGeoManager->cd(PATH3);	// cd to detector box node
 				
-				TGeoMatrix *matrix = gGeoManager->GetCurrentMatrix();	// calculate global TGeoHMatrix for current node
-				matrix->LocalToMaster(X0Y0Z0, master);			// 0.0.0. --> MRS			
+				TGeoMatrix *matrix = gGeoManager->GetCurrentMatrix();		
 															
 				TGeoBBox *box = (TGeoBBox*) gGeoManager->GetCurrentNode()->GetVolume()->GetShape(); 		
 				dX = box->GetDX(); dY = box->GetDY(); dZ = box->GetDZ();	
@@ -128,7 +126,7 @@ assert(gGeoManager);
 				TVector3 A,B,C,D; // detector edges
 				auto Z_range = make_pair(1.e+10, -1.e+10), Phi_range(Z_range);
 			
-				local[0] = -dX;	local[1] = -dY +1.3-0.26; local[2] = +dZ;
+				local[0] = -dX;	local[1] = -dY +1.3-0.26; local[2] = +dZ; // shift by Y to 1th gas sensitive layer of strips (for rough track propagate to plate)
 				localToMaster(matrix, local, A, Z_range, Phi_range);
 
 				local[0] = +dX;	local[1] = -dY +1.3-0.26; local[2] = +dZ;
@@ -143,7 +141,7 @@ assert(gGeoManager);
 				if(pQA) pQA->FillDetectorsMap(A, B, C, D);
 							
 				// Add Detector location interval to intervalTree
-				Int_t duid = MpdTofPoint::ClearGap(MpdTofPoint::GetSuid(sectorID, detectorID, 0)); // suid for 0th strip of the selected detector, gap reset to 0
+				Int_t duid = MpdTofPoint::ClearGap(MpdTofPoint::GetSuid72(sectorID, detectorID, 0)); // suid for 0th strip of the selected detector, gap reset to 0
 				LRectangle * det = new LRectangle(duid, A, B, C, D);
 				det->InitCenterPerp();
 				
@@ -171,13 +169,12 @@ assert(gGeoManager);
 					
 					gGeoManager->cd(PATH4);				// cd to strip sensitive gas node
 					
-		    			TGeoMatrix *matrix4 = gGeoManager->GetCurrentMatrix();	// calculate global TGeoHMatrix for current node
-					matrix4->LocalToMaster(X0Y0Z0, master);			// 0.0.0. --> MRS			
+		    			TGeoMatrix *matrix4 = gGeoManager->GetCurrentMatrix();			
 															
 					TGeoBBox *box4 = (TGeoBBox*) gGeoManager->GetCurrentNode()->GetVolume()->GetShape(); 		
 					dX = box4->GetDX(); dY = box4->GetDY(); dZ = box4->GetDZ();				
 					
-					Int_t suid = MpdTofPoint::GetSuid(sectorID, detectorID, stripID);
+					Int_t suid = MpdTofPoint::GetSuid72(sectorID, detectorID, stripID);
 
 					if(ofs.is_open())
 					{ 
@@ -186,9 +183,9 @@ assert(gGeoManager);
 					}	
 														
 					LStrip strip(suid, sectorID, detectorID, stripID);
-					strip.center.SetXYZ(master[0], master[1], master[2]);
+					strip.fMatrix = (*matrix4);
 
-					auto sZ_range = make_pair(1.e+10, -1.e+10), sPhi_range(sZ_range);
+					auto sZ_range = make_pair(1.e+10, -1.e+10), sPhi_range(sZ_range); // init by big values
 //
 //   ^ +Z   
 //   |     A             right side               B
@@ -211,7 +208,7 @@ assert(gGeoManager);
 					local[0] = -dX;	local[1] = -dY; local[2] = -dZ;
 					localToMaster(matrix4, local, strip.D, sZ_range, sPhi_range);
 					
-					strip.InitCenterPerp();
+					strip.InitCenterPerp(); // calc. strip center and perp. AFTER setup A,B,C,D
 					
 					if(pQA) pQA->FillStripsMap(strip.A, strip.B, strip.C, strip.D);
 
@@ -241,6 +238,8 @@ assert(IsUniqueUID);
     	mDetectorsPhi = TintervalTree(vDetectorsPhi);  	
     	
 	if(ofs.is_open()) ofs.close();
+
+	delete[] local;
 
 	LOG(DEBUG1)<<"[MpdTof::ParseTGeoManager] Sectors="<<nSectors<<", detectors="<<nDetectors<<", strips="<<nStrips<<".";
 }

@@ -62,8 +62,8 @@ public:
      	static bool	IsSameStrip(Int_t suid1, Int_t suid2);
      	static bool	IsSameGap(Int_t suid1, Int_t suid2);
   	static void	ParseSuid(Int_t suid, Int_t& sector, Int_t& detector, Int_t& gap, Int_t& strip);
-  	static Int_t	GetSuid(Int_t sector, Int_t detector, Int_t strip); // stripID [1,72]
-  	static Int_t	GetSuid(Int_t sector, Int_t detector, Int_t gap, Int_t strip); // stripID [1,24]
+  	static Int_t	GetSuid72(Int_t sector, Int_t detector, Int_t strip); // stripID [1,72]
+  	static Int_t	GetSuid24(Int_t sector, Int_t detector, Int_t gap, Int_t strip); // stripID [1,24]
   	
 ClassDef(MpdTofPoint,2)
 };

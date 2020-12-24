@@ -68,7 +68,7 @@ Bool_t  MpdEtof::ProcessHits(FairVolume* vol)
 		gMC->CurrentVolOffID(2, box);
 		gMC->CurrentVolOffID(3, sector);
 		
-		fVolumeID = MpdTofPoint::GetSuid(sector, box, detector, strip);							
+		fVolumeID = MpdTofPoint::GetSuid72(sector, box, strip);	// stub!!!						
 
 		AddPoint(fTrackID, fVolumeID, fPos.Vect(), fMom.Vect(), fTime, fLength, fELoss);
 

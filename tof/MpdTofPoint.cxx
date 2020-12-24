@@ -42,17 +42,17 @@ void		MpdTofPoint::ParseSuid(Int_t suid, Int_t& sector, Int_t& detector, Int_t& 
 	strip = GetStrip(suid);
 }
 //------------------------------------------------------------------------------------------------------------------------
-Int_t 		MpdTofPoint::GetSuid(Int_t sector, Int_t detector, Int_t strip) 
+Int_t 		MpdTofPoint::GetSuid72(Int_t sector, Int_t detector, Int_t strip) 
 {
 	const Int_t nStrips = 24;
 
 	Int_t gap = (strip -1) / nStrips +1;	// gap range [1,3]
 	strip = (strip-1) % nStrips + 1; 	// strip range [1,72]  -> [1,24]
 
-return GetSuid(sector, detector, gap, strip);
+return GetSuid24(sector, detector, gap, strip);
 }
 //------------------------------------------------------------------------------------------------------------------------
-Int_t 		MpdTofPoint::GetSuid(Int_t sector, Int_t detector, Int_t gap, Int_t strip) 
+Int_t 		MpdTofPoint::GetSuid24(Int_t sector, Int_t detector, Int_t gap, Int_t strip) 
   { 
 #ifdef DEBUG  	
  	Int_t suid =  (sector<<24) + (detector<<16) + (gap<<8) + strip; 

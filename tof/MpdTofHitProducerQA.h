@@ -8,6 +8,7 @@
 #include <TEfficiency.h>
 #include <TH2D.h>
 #include <TH1D.h>
+#include <TGeoMatrix.h>
 //------------------------------------------------------------------------------------------------------------------------
 class TClonesArray;
 class MpdTofHitProducerQA 
@@ -16,7 +17,8 @@ class MpdTofHitProducerQA
 
 	TH1D   			*hOccup, *htR, *hDistance;        	
         TH2D   			*hMergedTimes, *hNeighborPair, *hXYSmeared, *hXYSmeared2,*hXYSmearedCross, *hXYSmearedCross2, *hEtaPhi, *h2Strips, *h2Detectors, *hRZ;
-	TH2D			*hHitPointPerEvent, *hHitDistance;
+	TH2D			*hHitPointPerEvent = nullptr, *hPointDistanceSame = nullptr, *hPointDistanceDiff = nullptr, *hDevHitYZOrigin = nullptr, *hDevHitXZOrigin = nullptr;
+	TH2D			*hHitPositionInsideStrip = nullptr, *hMCPositionInsideStrip = nullptr, *hPointXZOrigin = nullptr, *hHitXZOrigin = nullptr, *hHitYZOrigin = nullptr;
 	TEfficiency		*effHitGap2, *effHitGap13, *effCrossHit;	
 	
         TString			fFlnm;
@@ -32,9 +34,14 @@ public :
 		
 	void		FillDetectorsMap(const TVector3& A, const TVector3& B, const TVector3& C, const TVector3& D);
 	void		FillStripsMap(const TVector3& A, const TVector3& B, const TVector3& C, const TVector3& D);
-	void		FillHitEfficiency(bool fired, Double_t distance, size_t gap, const TVector3& position, const TVector3& smearedPosition);
+
 	void		FillCrossHitEfficiency(bool fired, Double_t distance, size_t gap, const TVector3& position, const TVector3& smearedPosition);
-	void		FillHitDistance(const TClonesArray*);
+
+	void		Point2HitSmearingTest(const TVector3& mcPosition, const TVector3& hitPosition);
+	void		HitGapEfficiencyTest(bool fired, Double_t distance, Int_t gap);
+	void		PointDistanceTest(const TClonesArray*);
+	void		PositionInsideStripTest(const TVector3& stripCenter, const TVector3& mcPosition, const TVector3& hitPosition);
+	void		RotationToOriginTest(const TGeoCombiTrans& matrix, const TVector3& mcPosition, const TVector3& hitPosition);
 
 	inline void	FillOccupancy(Double_t occupancy){ hOccup->Fill(occupancy);}
 	inline void	FillMergedTimes(Double_t time1, Double_t time2){ hMergedTimes->Fill(time1, time2);}

@@ -4,6 +4,7 @@
 
 #include <TVector3.h>
 #include <TList.h>
+#include <TGeoMatrix.h>
 
 #include "IntervalTree.h"
 //------------------------------------------------------------------------------------------------------------------------
@@ -117,14 +118,14 @@ public:
 	}
 	//-----------------------------------------------------
 };
-class TGeoMatrix;
 //------------------------------------------------------------------------------------------------------------------------
 class LStrip : public LRectangle
 {
 public:
  	Int_t 		sectorID, detectorID, stripID; 
  	Int_t 		neighboring[2]; // dim same as  Side_t enum
- 	
+ 	TGeoCombiTrans 	fMatrix;
+	
  	LStrip();
   	LStrip(Int_t uid, Int_t sector, Int_t detector, Int_t strip);
  	
