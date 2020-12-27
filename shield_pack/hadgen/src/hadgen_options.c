@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <math.h>
 
+int abs (int);
+
 const char* hadgen_get_particle_name(int type) {
    static char _name[20];
    switch(type) {
@@ -79,7 +81,7 @@ int hadgen_get_pdg_code(int particle_type)
       case PARTICLE_K0Short:
          return 311;
       case PARTICLE_Gamma:
-         return 22;        
+         return 22;
       case PARTICLE_Deuterium:
          return hadgen_get_pdg_code_nuclei(2,1);
       case PARTICLE_Tritium:
@@ -127,7 +129,7 @@ const int Z_CODE = 10000;
 const int A_CODE = 10;
 const int NUCLEI_CODE = 1000000000;
 
-int hadgen_get_pdg_code_nuclei(float _A, float _Z) 
+int hadgen_get_pdg_code_nuclei(float _A, float _Z)
 {
 //    printf("pdg for %3.0f %3.0f", _A, _Z);
    int A = _A, Z = _Z;
@@ -224,7 +226,7 @@ void hadgen_set_aprojectile(float aproj) {
 void hadgen_set_zprojectile(float zproj) {
    hiproj.ZPROJ = zproj;
 }
-      
+
 int hadgen_get_randomseed() {
    return random.IXFIRS;
 }

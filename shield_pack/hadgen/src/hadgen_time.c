@@ -21,6 +21,9 @@
 static int timeout = 3;
 static pthread_t thread;
 
+void srand (unsigned int seed);
+int  rand (void);
+
 void hadgen_set_timeout(int sec) {
    if (sec < 0) sec = -sec;
    if (sec < 2) sec = 2;
@@ -73,21 +76,20 @@ int hadgen_start() {
    do {
       if ((long)status == 1) {
          // Bad parameters on initialization, cannot restart
-//         printf("HADGEN: bad parameters, cannot start\n");         
+//         printf("HADGEN: bad parameters, cannot start\n");
          return 1;
       }
       if (!first_start) {
          // change the random seed
-         time_t t = time(0);
-         srand(t);
-         unsigned long seed = rand();
+         srand(time(0));
+         int seed = rand();
          hadgen_set_randomseed(seed);
       }
       // start the computation
       pthread_create(&thread, &attr, hadgen_thread, 0);
       // arm the timer
       init_timer(timer, &t_spec);
-      // wait for the thread 
+      // wait for the thread
       pthread_join(thread, &status);
       // disarm the timer
       cancel_timer(timer);
@@ -105,7 +107,7 @@ void *hadgen_thread(void *p) {
    if (hadgen_initialize() != 0) pthread_exit((void*)1);
    int ss, ss2;
    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &ss);
-   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &ss); 
+   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &ss);
    // setup cleanup
    pthread_cleanup_push(hadgen_cleanup, 0);
    // start hadgen

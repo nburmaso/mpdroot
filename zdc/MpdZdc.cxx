@@ -1,11 +1,11 @@
 /*************************************************************************************
  *
  *         Class MpdZdc
- *         
+ *
  *  Adopted for MPD by:   Elena Litvinenko (EL)
  *  e-mail:   litvin@nf.jinr.ru
  *  Version:  8-Apr-2008
- *  Last update:  22-Feb-2012 (EL)  
+ *  Last update:  22-Feb-2012 (EL)
  *
  ************************************************************************************/
 
@@ -42,11 +42,11 @@
 MpdZdc::MpdZdc() {
   fZdcCollection        = new TClonesArray("MpdZdcPoint");
   volDetector = 0;
-  fPosIndex   = 0; 
-  // fpreflag = 0;  
+  fPosIndex   = 0;
+  // fpreflag = 0;
   //fpostflag = 0;
-  fEventID=-1; 
-  fHitNb=0; 
+  fEventID=-1;
+  fHitNb=0;
   fVSCVolId=0;
   fVSCHVolId=0;
   fVerboseLevel = 1;
@@ -60,10 +60,10 @@ MpdZdc::MpdZdc(const char* name, Bool_t active)
     fZdcCollection        = new TClonesArray("MpdZdcPoint");
     fPosIndex   = 0;
     volDetector = 0;
-    //fpreflag = 0;  
+    //fpreflag = 0;
     //fpostflag = 0;
     fEventID=-1;
-    fHitNb=0; 
+    fHitNb=0;
     fVSCVolId=0;
     fVSCHVolId=0;
     fVerboseLevel = 1;
@@ -78,7 +78,7 @@ MpdZdc::~MpdZdc() {
     fZdcCollection->Delete();
     delete fZdcCollection;
   }
-  
+
 }
 // -------------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ MpdZdc::~MpdZdc() {
 // -----   Public method Intialize   ---------------------------------------
 void MpdZdc::Initialize() {
   // Init function
-  
+
   FairDetector::Initialize();
   FairRun* sim = FairRun::Instance();
   FairRuntimeDb* rtdb=sim->GetRuntimeDb();
@@ -98,7 +98,7 @@ void MpdZdc::Initialize() {
 // -------------------------------------------------------------------------
 void MpdZdc::BeginEvent(){
   // Begin of the event
-  
+
 }
 
 //_____________________________________________________________________________
@@ -148,12 +148,12 @@ MpdZdcPoint* MpdZdc::GetHitH(Int_t vsch, Int_t modh) const
   MpdZdcPoint *hit;
   Int_t nofHits = fZdcCollection->GetEntriesFast();
   //cout <<"NAVetoHit: nofHits " <<nofHits << " vsc " << vsc << " mod " << mod <<endl;
-  
+
   //for (Int_t i=0; i<nofHits; i++) {
   //hit =  GetHit(i);
   //if(hit->GetCopyMotherH()<0 || hit->GetCopyH()<0) cout <<"GetHitH -59 -> " <<i <<" " <<hit->GetCopyMotherH() <<" " <<hit->GetEnergyLoss() <<" " <<hit->GetCopyH() <<endl;
   //}
-  
+
   for (Int_t i=0; i<nofHits; i++) {
     hit =  GetHit(i);
     //cout <<"fEdep " <<i <<" " <<hit->GetEdep() <<endl;
@@ -197,7 +197,7 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
 
 
   Double_t  QCF=1; //quenching for Birk
-  Double_t  BirkConst = 12.6; //0.126 mm/MeV for polystyrene 
+  Double_t  BirkConst = 12.6; //0.126 mm/MeV for polystyrene
   //0.126 *(0.1/0.001) = 12.6 cm/GeV
   //(0.126 mm/MeV - from Wikipedia, 0.07943mm/MeV  in Geant4)
 
@@ -208,13 +208,13 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
   if (lEDEBUGcounter<1)
     std::cout << "EDEBUG-- MpdZdc::ProcessHits: entered" << gMC->CurrentVolPath() << endl;
 #endif
-  
+
   if (gMC->CurrentVolID(copyNoVSC) != fVSCVolId &&
       gMC->CurrentVolID(copyNoVSCH) != fVSCHVolId) {
     return kFALSE;
   }
-  
-  /*  
+
+  /*
   if (gMC->CurrentVolID(copyNoVSC) == fVSCVolId) {
     gMC->CurrentVolOffID(1, slice);
     gMC->CurrentVolOffID(2, module);
@@ -271,7 +271,7 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
 
       gMC->TrackPosition(tPos);
       gMC->TrackMomentum(tMom);
-      length += gMC->TrackStep();    
+      length += gMC->TrackStep();
 
       //fELoss +=gMC->Edep();
 //Birk corrections
@@ -282,90 +282,90 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
 
 
       if ( gMC->IsTrackStop() || gMC->IsTrackDisappeared() ) {
-	
-	part    = gMC->GetStack()->GetCurrentTrack();
-	charge = part->GetPDG()->Charge() / 3. ;
-	
-	// Create MpdZdcPoint
-	fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
-	//time    = gMC->TrackTime() * 1.0e09;
-	//length  = gMC->TrackLength();
-	//gMC->TrackPosition(tPos);
-	//gMC->TrackMomentum(tMom);
-	//gMC->CurrentVolOffID(2, module);
-	//gMC->CurrentVolOffID(1, slice);
-	
-	if(fELoss>0) {
-	  
-	  //std::cout << "INSIDE MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  <<tMom.Pz() <<" " << ivol <<" " <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
-	    
-	  //cout <<"CHECK INSIDE ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<copyNoVZDCCom <<" " <<copyNoVMODCom <<" " <<copyNoVTYVECCom <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
+
+    part    = gMC->GetStack()->GetCurrentTrack();
+    charge = part->GetPDG()->Charge() / 3. ;
+
+    // Create MpdZdcPoint
+    fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
+    //time    = gMC->TrackTime() * 1.0e09;
+    //length  = gMC->TrackLength();
+    //gMC->TrackPosition(tPos);
+    //gMC->TrackMomentum(tMom);
+    //gMC->CurrentVolOffID(2, module);
+    //gMC->CurrentVolOffID(1, slice);
+
+    if(fELoss>0) {
+
+      //std::cout << "INSIDE MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  <<tMom.Pz() <<" " << ivol <<" " <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
+
+      //cout <<"CHECK INSIDE ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<copyNoVZDCCom <<" " <<copyNoVMODCom <<" " <<copyNoVTYVECCom <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
 
 
-	  /*
-	  if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {//module
-	    if ( !GetHit(slice,module,zdc) ) {
-	      //cout <<"INSIDE NO GETHIT 1-> " <<slice <<" " <<module <<" " <<zdc <<endl;
-	      //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      //cout <<"INSIDE NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	    }
-	    else {
-	      //cout <<"INSIDE GETHIT 1-> " <<slice <<" " <<module  <<" " <<zdc <<endl;
-	      GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      //cout <<"INSIDE GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	    }
-	  }//if(copyNoVTYVECCom==copyNoVTYVEC	  
-	  */
+      /*
+      if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {//module
+        if ( !GetHit(slice,module,zdc) ) {
+          //cout <<"INSIDE NO GETHIT 1-> " <<slice <<" " <<module <<" " <<zdc <<endl;
+          //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          //cout <<"INSIDE NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+        }
+        else {
+          //cout <<"INSIDE GETHIT 1-> " <<slice <<" " <<module  <<" " <<zdc <<endl;
+          GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          //cout <<"INSIDE GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+        }
+      }//if(copyNoVTYVECCom==copyNoVTYVEC
+      */
 
-	  if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {//module
-	    if ( !GetHit(slice,module,zdc) ) {
-	      //cout <<"INSIDE NO GETHIT 1-> " <<slice <<" " <<module <<" " <<zdc <<endl;
-	      //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      AddHit(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      //cout <<"INSIDE NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	    }
-	    else {
-	      //cout <<"INSIDE GETHIT 1-> " <<slice <<" " <<module  <<" " <<zdc <<endl;
-	      GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      //cout <<"INSIDE GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	    }
-	  }//if(copyNoVTYVECCom==copyNoVTYVEC	  
+      if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {//module
+        if ( !GetHit(slice,module,zdc) ) {
+          //cout <<"INSIDE NO GETHIT 1-> " <<slice <<" " <<module <<" " <<zdc <<endl;
+          //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          AddHit(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          //cout <<"INSIDE NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+        }
+        else {
+          //cout <<"INSIDE GETHIT 1-> " <<slice <<" " <<module  <<" " <<zdc <<endl;
+          GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          //cout <<"INSIDE GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+        }
+      }//if(copyNoVTYVECCom==copyNoVTYVEC
 
-	  /*	  
-	  if(copyNoVTYVECCom==slice_h && copyNoVMODCom==module_h && copyNoVZDCCom==zdc_h) {//module with hole
-	    if ( !GetHitH(slice_h,module_h) ) {
-	      cout <<"INSIDE NO GetHitH 1-> " <<slice_h <<" " <<module_h <<" " <<zdc_h  <<endl;
-	      //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, -59, -59, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      cout <<"INSIDE NO GetHitH 2-> " <<slice_h <<" "<<module_h <<" " <<zdc_h <<endl;
-	    }
-	    else {
-	      cout <<"INSIDE GetHitH 1-> " <<slice_h <<" "<<module_h <<" " <<zdc_h <<endl;
-	      GetHitH(slice_h,module_h)->AddVSCH(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      cout <<"INSIDE GetHitH 2-> " <<slice_h <<" "<<module_h <<" " <<zdc_h <<endl;
-	    }
-	  }//if(copyNoVTYVECCom==copyNoVTYVEC	  
-	  */
+      /*
+      if(copyNoVTYVECCom==slice_h && copyNoVMODCom==module_h && copyNoVZDCCom==zdc_h) {//module with hole
+        if ( !GetHitH(slice_h,module_h) ) {
+          cout <<"INSIDE NO GetHitH 1-> " <<slice_h <<" " <<module_h <<" " <<zdc_h  <<endl;
+          //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, -59, -59, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          cout <<"INSIDE NO GetHitH 2-> " <<slice_h <<" "<<module_h <<" " <<zdc_h <<endl;
+        }
+        else {
+          cout <<"INSIDE GetHitH 1-> " <<slice_h <<" "<<module_h <<" " <<zdc_h <<endl;
+          GetHitH(slice_h,module_h)->AddVSCH(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          cout <<"INSIDE GetHitH 2-> " <<slice_h <<" "<<module_h <<" " <<zdc_h <<endl;
+        }
+      }//if(copyNoVTYVECCom==copyNoVTYVEC
+      */
 
-	  /*	  
-	    std::cout << "INSIDE MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  << ivol << "=="<< gMC->CurrentVolID(copyNo) << ","<< copyNo <<"   "  <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
-	    
-	    cout <<"CHECK INSIDE ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<module <<" " <<slice <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
-	    AddHit(fTrackID, ivol, slice, module, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	  */
-	  /*	  
-	    std::cout << "INSIDE MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  << ivol << "=="<< gMC->CurrentVolID(copyNo) << ","<< copyNo <<"   "  <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
-	    
-	    cout <<"CHECK INSIDE ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<module <<" " <<slice <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
-	    AddHit(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	  */
+      /*
+        std::cout << "INSIDE MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  << ivol << "=="<< gMC->CurrentVolID(copyNo) << ","<< copyNo <<"   "  <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
 
-	}//if(fELoss>0)
+        cout <<"CHECK INSIDE ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<module <<" " <<slice <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
+        AddHit(fTrackID, ivol, slice, module, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+      */
+      /*
+        std::cout << "INSIDE MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  << ivol << "=="<< gMC->CurrentVolID(copyNo) << ","<< copyNo <<"   "  <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
+
+        cout <<"CHECK INSIDE ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<module <<" " <<slice <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
+        AddHit(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+      */
+
+    }//if(fELoss>0)
       }//if ( gMC->IsTrackStop() || gMC->IsTrackDisappeared() )
     }//if ( gMC->IsTrackInside())
-      
+
     if ( gMC->IsTrackExiting()) {
       //if (gMC->Edep() <= 0. ) return kFALSE;
       //if (gMC->Edep() > 0. ) fELoss += gMC->Edep();
@@ -391,79 +391,79 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
 
       if(fELoss>0) {
 
-	
-	//std::cout << "EXIT MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  <<tMom.Pz() <<" " << ivol <<" " <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
-	
-	//cout <<"CHECK EXIT ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<copyNoVZDCCom <<" " <<copyNoVMODCom <<" " <<copyNoVTYVECCom <<" " <<slice <<" " <<module <<" " <<zdc <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
 
-	/*
-	if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {
-	  cout <<"EXIT slice module " <<slice <<" " <<module <<" "  <<zdc <<endl;
-	  if ( !GetHit(slice,module,zdc) ) {
-	      cout <<"EXIT NO GETHIT 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	      //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      cout <<"EXIT NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	  }
-	  else {
-	    cout <<"EXIT GetHit 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	    GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	    cout <<"EXIT GetHit 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	  }
-	}//if(copyNoVTYVECCom==copyNoVTYVEC	  
-	*/
+    //std::cout << "EXIT MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  <<tMom.Pz() <<" " << ivol <<" " <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
 
-	if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {
-	  //cout <<"EXIT slice module " <<slice <<" " <<module <<" "  <<zdc <<endl;
-	  if ( !GetHit(slice,module,zdc) ) {
-	    //cout <<"EXIT NO GETHIT 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	      //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      AddHit(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	      //cout <<"EXIT NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	  }
-	  else {
-	    //cout <<"EXIT GetHit 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	    GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	    //cout <<"EXIT GetHit 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
-	  }
-	}//if(copyNoVTYVECCom==copyNoVTYVEC	  
+    //cout <<"CHECK EXIT ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<copyNoVZDCCom <<" " <<copyNoVMODCom <<" " <<copyNoVTYVECCom <<" " <<slice <<" " <<module <<" " <<zdc <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
 
-	/*
-	if(copyNoVTYVECCom==slice_h && copyNoVMODCom==module_h && copyNoVZDCCom==zdc_h) {
-	  cout <<"EXIT slice_h module_h " <<slice <<" " <<module <<" "  <<slice_h <<" " <<module_h  <<" " <<zdc <<" " <<zdc_h <<endl;
-	  if ( !GetHitH(slice_h,module_h) ) {
-	    cout <<"EXIT NO GetHitH cxx 1 -> " <<slice_h <<" " <<module_h <<" " <<zdc_h <<endl;
-	    //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, -59, -59, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	    new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	    cout <<"EXIT NO GetHitH cxx 2 -> " <<slice_h <<" " <<module_h <<" " <<zdc_h <<endl;
-	  }
-	  else {
-	    cout <<"EXIT GetHitH cxx 1 -> " <<slice_h <<" " <<module_h  <<" " <<zdc_h <<endl;
-	    GetHitH(slice_h,module_h)->AddVSCH(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	    cout <<"EXIT GetHitH cxx 2 -> "  <<slice_h <<" " <<module_h <<" " <<zdc_h <<endl;
-	  }
-	}//if(copyNoVTYVECCom==copyNoVTYVEC	  
-	*/
+    /*
+    if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {
+      cout <<"EXIT slice module " <<slice <<" " <<module <<" "  <<zdc <<endl;
+      if ( !GetHit(slice,module,zdc) ) {
+          cout <<"EXIT NO GETHIT 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+          //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          cout <<"EXIT NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+      }
+      else {
+        cout <<"EXIT GetHit 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+        GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+        cout <<"EXIT GetHit 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+      }
+    }//if(copyNoVTYVECCom==copyNoVTYVEC
+    */
 
-	/*
+    if(copyNoVTYVECCom==slice && copyNoVMODCom==module && copyNoVZDCCom==zdc) {
+      //cout <<"EXIT slice module " <<slice <<" " <<module <<" "  <<zdc <<endl;
+      if ( !GetHit(slice,module,zdc) ) {
+        //cout <<"EXIT NO GETHIT 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+          //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, -59, -59, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          AddHit(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+          //cout <<"EXIT NO GETHIT 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+      }
+      else {
+        //cout <<"EXIT GetHit 1-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+        GetHit(slice,module,zdc)->AddVSC(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+        //cout <<"EXIT GetHit 2-> " <<slice <<" "<<module <<" " <<zdc <<endl;
+      }
+    }//if(copyNoVTYVECCom==copyNoVTYVEC
+
+    /*
+    if(copyNoVTYVECCom==slice_h && copyNoVMODCom==module_h && copyNoVZDCCom==zdc_h) {
+      cout <<"EXIT slice_h module_h " <<slice <<" " <<module <<" "  <<slice_h <<" " <<module_h  <<" " <<zdc <<" " <<zdc_h <<endl;
+      if ( !GetHitH(slice_h,module_h) ) {
+        cout <<"EXIT NO GetHitH cxx 1 -> " <<slice_h <<" " <<module_h <<" " <<zdc_h <<endl;
+        //new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, -59, -59, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+        new((*fZdcCollection)[fHitNb++]) MpdZdcPoint(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+        cout <<"EXIT NO GetHitH cxx 2 -> " <<slice_h <<" " <<module_h <<" " <<zdc_h <<endl;
+      }
+      else {
+        cout <<"EXIT GetHitH cxx 1 -> " <<slice_h <<" " <<module_h  <<" " <<zdc_h <<endl;
+        GetHitH(slice_h,module_h)->AddVSCH(fTrackID, ivol, slice_h, module_h, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+        cout <<"EXIT GetHitH cxx 2 -> "  <<slice_h <<" " <<module_h <<" " <<zdc_h <<endl;
+      }
+    }//if(copyNoVTYVECCom==copyNoVTYVEC
+    */
+
+    /*
       std::cout << "EXIT MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  << ivol << "=="<< gMC->CurrentVolID(copyNo) << ","<< copyNo <<"   "  <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
       cout <<"CHECK EXIT ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<module <<" " <<slice <<" " <<tPos.X() <<" " <<tPos.Y() <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
 
-	AddHit(fTrackID, ivol, slice, module, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	*/
-	/*
+    AddHit(fTrackID, ivol, slice, module, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
+    */
+    /*
       std::cout << "EXIT MpdZdc::ProcessHits: TrackID:" <<part->GetPdgCode() <<" " << fTrackID << "  " <<fELoss <<" " << gMC->CurrentVolPath() << " " << tPos.Z() <<"   "  << ivol << "=="<< gMC->CurrentVolID(copyNo) << ","<< copyNo <<"   "  <<gMC->CurrentVolOffName(2) << " " <<gMC->CurrentVolOffName(1) << " " << gMC->CurrentVolOffName(0) <<std::endl;
       cout <<"CHECK EXIT ivol,copyNo,iCell " <<part->GetPdgCode() <<" " << fTrackID <<" " <<ivol <<" " <<module <<" " <<slice <<" " <<tPos.X() <<" " <<tPos.Y() <<" " <<tPos.Z() <<" " <<tMom.Pz() <<" " <<fELoss <<endl;
 
       AddHit(fTrackID, ivol, slice, module, zdc, TVector3(tPos.X(), tPos.Y(), tPos.Z()),TVector3(tMom.Px(), tMom.Py(), tMom.Pz()),time, length, fELoss);
-	*/
+    */
 
       }//if(fELoss>0)
     }//if ( gMC->IsTrackExiting()) {
 
 
-      Int_t points = gMC->GetStack()->GetCurrentTrack()->GetMother(1);  
+      Int_t points = gMC->GetStack()->GetCurrentTrack()->GetMother(1);
 //       Int_t nZdcPoints = (points & (1<<30)) >> 30;
 //       nZdcPoints ++;
 //       if (nZdcPoints > 1) nZdcPoints = 1;
@@ -476,15 +476,15 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
       ((MpdStack*)gMC->GetStack())->AddPoint(kZDC);
 
       //}
-      //}   
-//     Int_t copyNo;  
+      //}
+//     Int_t copyNo;
 //     gMC->CurrentVolID(copyNo);
 //     TString nam = gMC->GetMC()->GetName();
     //    cout<<"name "<<gMC->GetMC()->GetName()<<endl;
     //    ResetParameters();
-      
+
     return kTRUE;
-  
+
 }
 
 // ----------------------------------------------------------------------------
@@ -514,7 +514,7 @@ TClonesArray* MpdZdc::GetCollection(Int_t iColl) const {
 void MpdZdc::Print() const {
     Int_t nHits = fZdcCollection->GetEntriesFast();
     cout << "-I- MpdZdc: " << nHits << " points registered in this event."
- 	<< endl;
+    << endl;
 
     if (fVerboseLevel>1)
       for (Int_t i=0; i<nHits; i++) (*fZdcCollection)[i]->Print();
@@ -526,7 +526,7 @@ void MpdZdc::Print() const {
 // -----   Public method Reset   ----------------------------------------------
 void MpdZdc::Reset() {
    fZdcCollection->Delete();
- 
+
   fPosIndex = 0;
 }
 
@@ -552,31 +552,31 @@ void MpdZdc::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset ) {
  // -----   Public method ConstructGeometry   ----------------------------------
 void MpdZdc::ConstructGeometry() {
 
-	TString fileName = GetGeometryFileName();
-	if(fileName.EndsWith(".root")) 
-	{
-		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "Constructing ZDC geometry from ROOT file %s", fileName.Data());
-		ConstructRootGeometry();
-	}
-	/*
-	else if ( fileName.EndsWith(".geo") ) 
-	{
-		FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "Constructing ZDC geometry from ASCII file %s", fileName.Data());
-		ConstructAsciiGeometry();
-	}
-	else	FairLogger::GetLogger()->Fatal(MESSAGE_ORIGIN, "Geometry format of ZDC file %S not supported.", fileName.Data());    
-	*/
-	
+    TString fileName = GetGeometryFileName();
+    if(fileName.EndsWith(".root"))
+    {
+        LOG(INFO) << "Constructing ZDC geometry from ROOT file " << fileName.Data();
+        ConstructRootGeometry();
+    }
+    /*
+    else if ( fileName.EndsWith(".geo") )
+    {
+        FairLogger::GetLogger()->Info(MESSAGE_ORIGIN, "Constructing ZDC geometry from ASCII file %s", fileName.Data());
+        ConstructAsciiGeometry();
+    }
+    else	FairLogger::GetLogger()->Fatal(MESSAGE_ORIGIN, "Geometry format of ZDC file %S not supported.", fileName.Data());
+    */
+
  FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   MpdZdcGeo*      zdcGeo = new MpdZdcGeo();
   zdcGeo->setGeomFile(GetGeometryFileName());
   geoFace->addGeoModule(zdcGeo);
-	
+
   Bool_t rc = geoFace->readSet(zdcGeo);
   if (rc) zdcGeo->create(geoLoad->getGeoBuilder());
   TList* volList = zdcGeo->getListOfVolumes();
-	
+
 
   // store geo parameter
   FairRun *fRun = FairRun::Instance();
@@ -604,7 +604,7 @@ void MpdZdc::ConstructGeometry() {
 
   ProcessNodes ( volList );
 }
-  
+
 //Check if Sensitive-----------------------------------------------------------
 Bool_t MpdZdc::CheckIfSensitive(std::string name) {
     TString tsname = name;
@@ -614,12 +614,12 @@ Bool_t MpdZdc::CheckIfSensitive(std::string name) {
     return kFALSE;
 }
 //-----------------------------------------------------------------------------
- 
+
 
 // -----   Private method AddHit   --------------------------------------------
 MpdZdcPoint* MpdZdc::AddHit(Int_t trackID, Int_t detID, Int_t copyNo, Int_t copyNoMother, Int_t copyNoZdc,
-			    TVector3 pos, TVector3 mom, Double_t time, 
-			    Double_t length, Double_t eLoss) {
+                TVector3 pos, TVector3 mom, Double_t time,
+                Double_t length, Double_t eLoss) {
   TClonesArray& clref = *fZdcCollection;
   Int_t size = clref.GetEntriesFast();
 

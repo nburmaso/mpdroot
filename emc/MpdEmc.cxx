@@ -26,16 +26,16 @@ MpdEmc::MpdEmc() :
   FairDetector("EMC", kTRUE, kECAL) {
   /** create your collection for data points */
   fMpdEmcPointCollection = new TClonesArray("MpdEmcPoint");
-  
+
 }
 
 MpdEmc::MpdEmc(const char* name, Bool_t active)
   : FairDetector(name, active, kECAL) {
   fMpdEmcPointCollection = new TClonesArray("MpdEmcPoint");
   fVerboseLevel=1;
-  
+
 }
- 
+
 MpdEmc::~MpdEmc() {
    if (fMpdEmcPointCollection) {
      fMpdEmcPointCollection->Delete();
@@ -52,9 +52,9 @@ void MpdEmc::Initialize()
 }
 */
 
- 
+
 Bool_t  MpdEmc::ProcessHits(FairVolume* vol)
-{ 
+{
 
 
   /** This method is called from the MC stepping */
@@ -68,7 +68,7 @@ Bool_t  MpdEmc::ProcessHits(FairVolume* vol)
   }
 #endif
 #undef EDEBUG
- 
+
   //Set parameters at entrance of volume. Reset ELoss.
   if ( gMC->IsTrackEntering() ) {
     fELoss  = 0.;
@@ -79,53 +79,53 @@ Bool_t  MpdEmc::ProcessHits(FairVolume* vol)
   }
 
   // Sum energy loss for all steps in the active volume
-  
+
   fELoss += gMC->Edep();
-    
+
   // Create MpdEmcPoint at exit of active volume
   if (gMC->IsTrackExiting() || gMC->IsTrackStop()  ||     gMC->IsTrackDisappeared()  )
   {
     fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
     fVolumeID = vol->getMCid();
-   
+
 
     if (fELoss == 0. ) return kFALSE;
 
     AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
-	   TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
-	   fELoss);
-    
+       TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength,
+       fELoss);
+
 // Increment number of tutorial det points in TParticle
-//    printf("Name x, y, z %s %f %f %f \n", vol->GetName(), fPos.X(), fPos.Y(), fPos.Z());     
+//    printf("Name x, y, z %s %f %f %f \n", vol->GetName(), fPos.X(), fPos.Y(), fPos.Z());
 
     MpdStack* stack = (MpdStack*) gMC->GetStack();
     stack->AddPoint(kECAL);
   }
-  
+
   return kTRUE;
 }
- 
+
 void MpdEmc::EndOfEvent() {
 
   Print();
-  
+
   fMpdEmcPointCollection->Clear();
-  
+
 }
 
 
 
 void MpdEmc::Register() {
 
-/** This will create a branch in the output tree called  
+/** This will create a branch in the output tree called
     MpdEmcPoint, setting the last parameter to kFALSE means:
-    this collection will not be written to the file, it will exist 
-    only during the simulation. 
+    this collection will not be written to the file, it will exist
+    only during the simulation.
 */
- 
+
   FairRootManager::Instance()->Register("EmcPoint", "MpdEmc",
-					fMpdEmcPointCollection, kTRUE);
- 
+                    fMpdEmcPointCollection, kTRUE);
+
 }
 
 
@@ -141,7 +141,7 @@ void MpdEmc::Reset() {
 void MpdEmc::Print() const {
     Int_t nHits = fMpdEmcPointCollection->GetEntriesFast();
     cout << "-I- MpdEmc: " << nHits << " points registered in this event."
- 	<< endl;
+    << endl;
 
     if (fVerboseLevel>1)
       for (Int_t i=0; i<nHits; i++) (*fMpdEmcPointCollection)[i]->Print();
@@ -153,23 +153,23 @@ void MpdEmc::ConstructGeometry() {
     TString fileName = GetGeometryFileName();
 
     if ( fileName.EndsWith(".root") ) {
-        gLogger->Info(MESSAGE_ORIGIN,
-            "Constructing EMC geometry from ROOT file %s",
-            fileName.Data());
+        LOG(INFO) <<
+            "Constructing EMC geometry from ROOT file " <<
+            fileName.Data();
         ConstructRootGeometry();
     }
     else if ( fileName.EndsWith(".geo") ) {
-        gLogger->Info(MESSAGE_ORIGIN,
-            "Constructing EMC geometry from ASCII file %s",
-            fileName.Data());
+        LOG(INFO) <<
+            "Constructing EMC geometry from ASCII file " <<
+            fileName.Data();
         ConstructAsciiGeometry();
     }
     else {
-        gLogger->Fatal(MESSAGE_ORIGIN,
-            "Geometry format of EMC file %s not supported.",
-            fileName.Data());
+        LOG(FATAL) <<
+            "Geometry format of EMC file " <<
+            fileName.Data() << " not supported.";
     }
-} 
+}
 
 
 
@@ -180,7 +180,7 @@ void MpdEmc::ConstructAsciiGeometry() {
   MpdEmcGeo*  Geo  = new MpdEmcGeo();
   Geo->setGeomFile(GetGeometryFileName());
   geoFace->addGeoModule(Geo);
-  
+
   Bool_t rc = geoFace->readSet(Geo);
   if (rc) Geo->create(geoLoad->getGeoBuilder());
   TList* volList = Geo->getListOfVolumes();
@@ -195,7 +195,7 @@ void MpdEmc::ConstructAsciiGeometry() {
   TListIter iter(volList);
   FairGeoNode* node   = NULL;
   FairGeoVolume *aVol=NULL;
-  
+
   while( (node = (FairGeoNode*)iter.Next()) ) {
     aVol = dynamic_cast<FairGeoVolume*> ( node );
     if ( node->isSensitive()  ) {
@@ -206,7 +206,7 @@ void MpdEmc::ConstructAsciiGeometry() {
   }
   par->setChanged();
   par->setInputVersion(fRun->GetRunId(),1);
-  
+
   ProcessNodes ( volList );
 }
 
@@ -218,17 +218,17 @@ Bool_t MpdEmc::CheckIfSensitive(std::string name) {
         return kTRUE;
     }
     return kFALSE;
-} 
+}
 
 
-MpdEmcPoint* MpdEmc::AddHit(Int_t trackID, Int_t detID, 
-					    TVector3 pos, TVector3 mom, 
-					    Double_t time, Double_t length,
-					    Double_t ELoss) {
+MpdEmcPoint* MpdEmc::AddHit(Int_t trackID, Int_t detID,
+                        TVector3 pos, TVector3 mom,
+                        Double_t time, Double_t length,
+                        Double_t ELoss) {
   TClonesArray& clref = *fMpdEmcPointCollection;
   Int_t size = clref.GetEntriesFast();
   return new(clref[size]) MpdEmcPoint(trackID, detID, pos, mom,
-					      time, length, ELoss);
+                          time, length, ELoss);
 }
 
 ClassImp(MpdEmc)
