@@ -69,9 +69,10 @@ std::ofstream fout_v("log.txt");
 //__________________________________________________________________________
 MpdVectorFinder::MpdVectorFinder(const char *name, Bool_t sa, Int_t iVerbose) 
  :FairTask("MpdVectorFinder", iVerbose),
-  fExact(0),
+  fNPass(6),
+  fExact(0), //(0),
   fNTracks(0),
-  fNPass(2),
+  fTrackExact(NULL),
   fGeo(0),
   fSa(sa) // by default its + tpc tracking is done
 {
@@ -84,6 +85,7 @@ MpdVectorFinder::MpdVectorFinder(const char *name, Bool_t sa, Int_t iVerbose)
   //fKHits[0] = f2DHits[0]; //work
   fTracks = new TClonesArray("MpdItsKalmanTrack", 100);
   fTrackCand = new TClonesArray("MpdItsKalmanTrack", 100);
+  if (fExact) fTrackExact = new TClonesArray("MpdItsKalmanTrack", 100);
   fHistoDir = 0x0;
   fhLays = new TH1F("hLaysITS","ITS layers",10,0,10);
   fLayPointers = 0x0;
@@ -299,32 +301,35 @@ void MpdVectorFinder::FillGeoScheme()
 //__________________________________________________________________________
 InitStatus MpdVectorFinder::ReInit() 
 {
-  fItsPoints = (TClonesArray *) FairRootManager::Instance()->GetObject("StsPoint");
-  fItsHits =(TClonesArray *) FairRootManager::Instance()->GetObject("StsHit");
+  FairRootManager *manager = FairRootManager::Instance();
+
+  fItsPoints = (TClonesArray *) manager->GetObject("StsPoint");
+  fItsHits =(TClonesArray *) manager->GetObject("StsHit");
   if (fItsPoints == 0x0 || fItsHits == 0x0) return kERROR;
-  fTpcTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("TpcKalmanTrack");
-  fMCTracks =(TClonesArray *) FairRootManager::Instance()->GetObject("MCTrack");
+  fTpcTracks =(TClonesArray *) manager->GetObject("TpcKalmanTrack");
+  fMCTracks =(TClonesArray *) manager->GetObject("MCTrack");
 
-  FairRootManager::Instance()->Register("ItsTrack", "Its", fTracks, kTRUE);
-  FairRootManager::Instance()->Register("ItsTrackCand", "ItsCand", fTrackCand, kTRUE);
+  manager->Register("ItsTrack", "Its", fTracks, kTRUE);
+  manager->Register("ItsTrackCand", "ItsCand", fTrackCand, kTRUE);
+  if (fTrackExact) manager->Register("ItsTrackExact", "ItsCand", fTrackExact, kTRUE);
 
-  FairRootManager::Instance()->Register("ItsKHits", "ItsKalHits", fKHits1, kFALSE);
+  manager->Register("ItsKHits", "ItsKalHits", fKHits1, kFALSE);
 
-  FairRootManager::Instance()->Register("CellTrack0", "Its0", fKHits[0], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack1", "Its1", fKHits[1], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack2", "Its2", fKHits[2], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack3", "Its3", fKHits[3], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack4", "Its4", fKHits[4], kFALSE);
+  manager->Register("CellTrack0", "Its0", fKHits[0], kFALSE);
+  manager->Register("CellTrack1", "Its1", fKHits[1], kFALSE);
+  manager->Register("CellTrack2", "Its2", fKHits[2], kFALSE);
+  manager->Register("CellTrack3", "Its3", fKHits[3], kFALSE);
+  manager->Register("CellTrack4", "Its4", fKHits[4], kFALSE);
 
-  FairRootManager::Instance()->Register("CellTrack_0", "Its0_2D", f2DHits[0], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack_1", "Its1_2D", f2DHits[1], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack_2", "Its2_2D", f2DHits[2], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack_3", "Its3_2D", f2DHits[3], kFALSE);
-  FairRootManager::Instance()->Register("CellTrack_4", "Its4_2D", f2DHits[4], kFALSE); 
+  manager->Register("CellTrack_0", "Its0_2D", f2DHits[0], kFALSE);
+  manager->Register("CellTrack_1", "Its1_2D", f2DHits[1], kFALSE);
+  manager->Register("CellTrack_2", "Its2_2D", f2DHits[2], kFALSE);
+  manager->Register("CellTrack_3", "Its3_2D", f2DHits[3], kFALSE);
+  manager->Register("CellTrack_4", "Its4_2D", f2DHits[4], kFALSE); 
 
   //fNPass = 2; // 2 prochoda
   //fNPass = 3;
-  fNPass = 5;
+  fNPass = 6;
   fout_v << "- ReInit - done" << endl;
   return kSUCCESS;
 }
@@ -343,6 +348,7 @@ void MpdVectorFinder::Reset()
   fKHits1->Delete();
   fTracks->Delete();
   fTrackCand->Delete();
+  if (fTrackExact) fTrackExact->Delete();
   delete [] fLayPointers;
   fLayPointers = NULL;
   fCellMap.clear();
@@ -391,8 +397,10 @@ void MpdVectorFinder::Exec(Option_t * option)
   /// 0 - primary tracks, 5-layer - tight cuts
   //  1 - primary tracks, 5-layer - loose cuts
   /// 2 - primary tracks, 4-layer
-  /// 3 - secondary tracks, 5-layer
-  /// 4 - secondary tracks, 4-layer
+  /// 3 - secondary tracks, 5-layer - tight cuts
+  /// 4 - secondary tracks, 5-layer - loose cuts
+  /// 5 - secondary tracks, 4-layer
+  if (fTrackExact) fTrackExact->Delete();
   
   for (Int_t i = 0; i < fNPass; ++i) {
     
@@ -402,6 +410,7 @@ void MpdVectorFinder::Exec(Option_t * option)
     }
     fTrackCand->Delete(); //AZ-29.02.20
     fCellMap.clear();
+    fVectorCands.clear();
     ///
 
     MakeTrackCandidates(i);// 21.02
@@ -484,7 +493,9 @@ void MpdVectorFinder::Build2DHits()
     //AZ Double_t meas[2] = {xloc + h->GetDx() * errX, z + dZ * errZ};
     Double_t meas[2] = {xloc + h->GetDx() * errX, posLoc[2] + h->GetDz() * errZ};
     //AZ Double_t err[2] = {errX, errZ};
-    Double_t err[2] = {errX*1.2, errZ*1.2}; // effective measure
+    //AZ-161020 Double_t err[2] = {errX*1.2, errZ*1.2}; // effective measure
+    Double_t err[2] = {errX*1.4, errZ*1.4}; // effective measure
+    if (lay > 2) { err[0] *= 2; err[1] *= 2; } //AZ-161020 - thick layers
     Double_t cossin[2] = {TMath::Cos(fStereoA[0]), TMath::Sin(fStereoA[0])}; /// wtf is this
     MpdVector *hit = 0x0;//ms
     MpdItsHit5spd *hsts = h;
@@ -533,8 +544,11 @@ void MpdVectorFinder::Build2DHits()
 void MpdVectorFinder::MakeTrackCandidates(Int_t iPass)
 {
   // Read 2D Hits and create trackCandidates from 2D Hits at first(last) layer 
-  Int_t n = 5 - iPass; // last layer
-  n = TMath::Min (n, 4);
+  //Int_t n = 5 - iPass; // last layer
+  //n = TMath::Min (n, 4);
+  const Int_t layNo[9] = {4, 4, 3, 4, 4, 3};
+ 		    
+  Int_t n = layNo[iPass];
   Int_t nKH = 0, nHits = f2DHits[n]->GetEntriesFast();
 
   if (iPass < 3) {
@@ -564,7 +578,7 @@ void MpdVectorFinder::MakeTrackCandidates(Int_t iPass)
     } // for (Int_t i = 0; ih < nHits; ++i)
   } else {/// added 29.1.2020
     // 4th and 5th pass are done for secondary particles
-    n = 5 - iPass + 2;
+    //n = 5 - iPass + 2;
     nHits = f2DHits[n]->GetEntriesFast();
     /// First hit of track candidate is a hit from 1st layer
     for (Int_t i = 0; i < nHits; ++i) {
@@ -601,9 +615,11 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 
   fout_v << "(transverse angle, longitudinal angle, z | MCtrackID)" << endl;
 
-  Int_t n = 4 - iPass + 2;
+  //Int_t n = 4 - iPass + 2;
+  const Int_t layNo[9] = {0, 0, 0, 3, 3, 2};
 
-  for (Int_t i234 = n; i234 >= 0; i234--) { /// loop over layers 3-0
+  //for (Int_t i234 = n; i234 >= 0; i234--) { /// loop over layers 3-0
+  for (Int_t i234 = layNo[iPass]; i234 >= 0; i234--) { /// loop over layers 3-0
     Int_t nKH = 0, iprint = 0;
     cout << " AZsec: " << i234 << " " << f2DHits[i234]->GetEntriesFast() << endl; //AZ
     Double_t rmean = 0; //AZ
@@ -626,73 +642,142 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
     rmean /= zMultimapHits[i234].size(); //AZ
     
     int nTracks = fKHits[i234 + 1]->GetEntriesFast(); /// was -1
-    cout << "secondary nTracks for layer " << i234+1 << ": " << nTracks << endl;
+    cout << "secondary nTracks for layer " << i234+1 << ": " << nTracks << " " << rmean << endl;
 
     for (Int_t i = 0; i < nTracks; i++) {
       MpdVector *cand = (MpdVector*) fKHits[i234 + 1]->UncheckedAt(i); /// was -1
       TVector3 meas = cand->GetMeas();
 
       MpdItsHit5spd *h = (MpdItsHit5spd*) fItsHits->UncheckedAt(cand->GetIndex(0));
+      Int_t trID0 = ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetTrackID()))->GetTrackID();
       
-      Double_t epsz, epst, pt = 0, epst_lower, epst_upper;
+      Double_t pt = 0, epst_lower, epst_upper;
       //AZ Double_t epsz_lower = 5e-2, epsz_upper = 5e-2;
       //Double_t epsz_lower = 3, epsz_upper = 3;
       Double_t epsz_lower = 5, epsz_upper = 5, dphi = 0;
       MpdVector *prev = cand->GetPrevTrackPointer(), *preprev = NULL;
+      vector<pair<Double_t,Double_t> > epst(2,pair<Double_t,Double_t>(999,999)); // for fine structure (2 branches)
       
       if (prev != NULL) {
 	preprev = prev->GetPrevTrackPointer();
+	Double_t circle[3] = {0};
 
 	if (preprev == NULL) {
 	//if (1) {
 	  // Use primary vertex
 	  ///fout_v << cand->GetPrevTrackPointer() << endl;
-	  pt = EvalPt(prev, cand); /// 0-4-5 instead of 0-5-4
+	  MpdVector zeroV;
+	  pt = EvalPt(prev, cand, &zeroV, circle);
 	  if (TMath::Abs(pt) < 0.02) continue;
-	  //pt = TMath::Sign (TMath::Max(0.02,TMath::Abs(pt)), pt);
-	  ///fout_v << "pt " << pt << endl;
-	  //Double_t par0 = 0.00371767;
-	  Double_t par0 = 0.00414299;
-	  //if (i234 < 2) par0 = 0.00243389;
-	  if (i234 < 2) par0 = 0.0033302;
-	  Double_t ptt = TMath::Abs(pt);
-	  dphi = TMath::Sign(par0,pt) / TMath::Max(ptt,0.01); 
-	  ptt = TMath::Min (0.1, ptt);
-	  //epst_upper = epst_lower = 0.1;
-	  //if (i234 < 2) epst_upper = epst_lower = 0.2;
-	  epst_upper = 0.005 / TMath::Power (ptt-0.01, 7./8);
-	  epst_lower = 0.012 / TMath::Power (ptt-0.01, 1./2);
-	  if (i234 < 2) {
-	    epst_upper = 0.007 / TMath::Power (ptt-0.01, 2./2);
-	    epst_lower = 0.009 / TMath::Power (ptt-0.01, 2./3);
+	  if (!PropagateHelix(rmean, meas, circle, dphi)) continue;
+	  Double_t ptabs = TMath::Abs(pt);
+	  if (i234 == 2) {
+	    // First region
+	    Double_t ptmin1 = TMath::Max (ptabs,0.1);
+	    ptmin1 = TMath::Min (ptmin1, 0.2);
+	    Double_t eps1 = 0.1 / TMath::Power (ptmin1-0.01, 0.3);
+	    Double_t ptmin2 = TMath::Max (ptabs,0.1);
+	    ptmin2 = TMath::Min (ptmin2, 0.3);
+	    Double_t eps2 = 0.04 / TMath::Power (ptmin2-0.01, 0.8);
+	    epst_lower = (pt > 0) ? eps1 : eps2;
+	    epst_upper = (pt > 0) ? eps2 : eps1;
+	    epst[0].first = -epst_lower;
+	    epst[0].second = epst_upper;
+	    //Second region
+	    ptmin1 = TMath::Max (ptabs, 0.02);
+	    Double_t phicor = 0.0569913 / TMath::Power (ptmin1-0.01+0.0627805, 0.894263);
+	    if (pt < 0) phicor = -phicor;
+	    eps1 = 0.01;
+	    eps2 = 0.06;
+	    epst_lower = (pt > 0) ? eps2 : eps1;
+	    epst_upper = (pt > 0) ? eps1 : eps2;
+	    epst[1].first = -epst_lower + phicor;
+	    epst[1].second = epst_upper + phicor;
+	  } else if (i234 == 1) {
+	    // First region
+	    Double_t eps1 = 0.004 / TMath::Power (ptabs-0.01, 1.2);
+	    eps1 = TMath::Max (eps1, 0.03);
+	    Double_t eps2 = 0.1;
+	    epst_lower = (pt > 0) ? eps2 : eps1;
+	    epst_upper = (pt > 0) ? eps1 : eps2;
+	    epst[0].first = -epst_lower;
+	    epst[0].second = epst_upper;
+	    // Second region
+	    Double_t ptmin1 = TMath::Max (ptabs, 0.02);
+	    Double_t phicor = 0.0276577 / TMath::Power (ptmin1-0.01, 0.827315);
+	    if (pt < 0) phicor = -phicor;
+	    Double_t ptmax1 = TMath::Min (ptmin1, 0.3);
+	    eps1 = 0.04 / TMath::Power (ptmax1-0.01, 0.5);
+	    eps1 = TMath::Min (eps1, 0.1);
+	    eps2 = 0.017 / TMath::Power (ptmin1-0.01, 0.4);
+	    eps2 = TMath::Min (eps2, 0.08);
+	    epst_lower = (pt > 0) ? eps2 : eps1;
+	    epst_upper = (pt > 0) ? eps1 : eps2;
+	    epst[1].first = -epst_lower + phicor;
+	    epst[1].second = epst_upper + phicor;
 	  }
-	  // epst_upper *= 2; //AZ
-	  //epst_lower *= 2; //AZ
-	  epsz_lower = epsz_upper = 1.;
-	  //epsz_upper *= 2; //AZ
-	  //epsz_lower *= 2; //AZ
+	  //epst_lower = epst_upper = 5 * epst_upper;
+	  //if (i234 == 1) epst_lower = epst_upper = 0.02 / TMath::Power (ptt-0.01, 2./3);
+	  //epsz_lower = epsz_upper = 1.;
+          Double_t ptt1 = TMath::Min (0.1, ptabs);
+	  epsz_lower = epsz_upper = 0.7 / TMath::Power (ptt1-0.015, 0.5);
+	  if (i234 == 1) epsz_lower = epsz_upper = 1.5;
+	  //epsz_lower = epsz_upper = 5 * epsz_upper;
 	} else {
 	  // Do not use primary vertex
-	  Double_t circle[3] = {0};
+	  //Double_t circle[3] = {0};
 	  pt = EvalPt(preprev, prev, cand, circle);
 	  if (TMath::Abs(pt) < 0.02) continue;
 	  if (!PropagateHelix(rmean, meas, circle, dphi)) continue;
 	  Double_t ptt = TMath::Abs(pt);
 	  ptt = TMath::Min (0.1, ptt);
-	  epst_lower = epst_upper = 0.1;
-	  //epst_lower = epst_upper = 0.008 / TMath::Power (ptt-0.01, 1./2);
+	  //epst_lower = epst_upper = 0.1;
+	  epst_lower = epst_upper = 0.04 / TMath::Power (ptt-0.01, 0.2);
 	  //if (i234 == 0) epst_lower = epst_upper = 0.02 / TMath::Power (ptt-0.01, 2./3);
 	  epsz_lower = epsz_upper = 1.;
+	  if (iPass == 3) {
+	    epst_lower /= 2;
+	    epst_upper /= 2;
+	    epsz_lower /= 2;
+	    epsz_upper /= 2;
+	  }
 	  if (i234 == 0) {
-	    epst_lower = epst_upper = 0.2;
+	    /*
+	    //epst_lower = epst_upper = 0.2;
+	    Double_t ptt1 = TMath::Abs(pt);
+	    ptt1 = TMath::Min (0.15, ptt1);
+	    ptt1 = TMath::Max (0.05, ptt1);
+	    //epst_lower = 0.025 / TMath::Power (ptt-0.01, 2./3);
+	    //epst_upper = 0.02 / TMath::Power (ptt-0.01, 2./3);
+	    epst_lower = 0.02 / TMath::Power (ptt-0.01, 2./3);
+	    epst_upper = 0.025 / TMath::Power (ptt-0.01, 2./3);
+	    */
+	    epst_lower = 0.1;
+	    epst_upper = 0.15;
 	    epsz_lower = epsz_upper = 1.5;
 	  }
+	  epst[0].first = -epst_lower;
+	  epst[0].second = epst_upper;
 	}
 	
       } else {
 	// First window
 	epst_lower = epst_upper = 0.3; //5e-1;
-	epsz_lower = epsz_upper = 2.5; //1.;
+	if (i234 == 2) epst_lower = epst_upper = 0.4; 
+	//epst_lower = epst_upper = epst_upper*5;
+	//epsz_lower = epsz_upper = 4.0; //1.;
+	//if (i234 == 2) epsz_lower = epsz_upper = 6.0; 
+	epsz_lower = epsz_upper = 10.0; //1.;
+	if (i234 == 2) epsz_lower = epsz_upper = 20.0; 
+	if (iPass == 3) {
+	  epst_lower /= 2;
+	  epst_upper /= 2;
+	  epsz_lower /= 2;
+	  epsz_upper /= 2;
+	}
+	//epsz_lower = epsz_upper = epsz_upper*5;
+	epst[0].first = -epst_lower;
+	epst[0].second = epst_upper;
       }
 
       Double_t lastTrackZ = meas[2];
@@ -708,16 +793,17 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
       multimap<Float_t, MpdVector*>::iterator ittop = zMultimapHits[i234].upper_bound(lastTrackZ + epsz_upper + deltaZ);
 
       Double_t lastTrackT = 0;
-      if (preprev) lastTrackT = dphi; // circle from 3 hits
+      //AZ if (preprev) lastTrackT = dphi; // circle from 3 hits
+      if (prev) lastTrackT = dphi; //AZ-141020 - circle from 2 hits and (0,0) or from 3 hits 
       else {
 	lastTrackT = TMath::ATan2(meas[1], meas[0]);
 	lastTrackT -= dphi;
       }
       
-      //multimap<Float_t, MpdVector*>::iterator ittlow = tMultimapHits[i234].lower_bound(lastTrackT - epst);
-      //multimap<Float_t, MpdVector*>::iterator itttop = tMultimapHits[i234].upper_bound(lastTrackT + epst);
-      multimap<Float_t, MpdVector*>::iterator ittlow = tMultimapHits[i234].lower_bound(lastTrackT - epst_lower);
-      multimap<Float_t, MpdVector*>::iterator itttop = tMultimapHits[i234].upper_bound(lastTrackT + epst_upper);
+      //multimap<Float_t, MpdVector*>::iterator ittlow = tMultimapHits[i234].lower_bound(lastTrackT - epst_lower);
+      //multimap<Float_t, MpdVector*>::iterator itttop = tMultimapHits[i234].upper_bound(lastTrackT + epst_upper);
+      multimap<Float_t, MpdVector*>::iterator ittlow = tMultimapHits[i234].lower_bound(lastTrackT + epst[0].first);
+      multimap<Float_t, MpdVector*>::iterator itttop = tMultimapHits[i234].upper_bound(lastTrackT + epst[0].second);
 
       set<MpdVector*> z, t, intersect;
       for (multimap<Float_t, MpdVector*>::iterator itr = itlow; itr != ittop; ++itr) {
@@ -726,11 +812,25 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
       for (multimap<Float_t, MpdVector*>::iterator itr = ittlow; itr != itttop; ++itr) {
 	t.insert((*itr).second);
       }
-      
+
+      if (epst[1].first < 900) {
+	// Fine structure - second region
+	//lastTrackT = epst[1][2];
+	ittlow = tMultimapHits[i234].lower_bound(lastTrackT + epst[1].first);
+	itttop = tMultimapHits[i234].upper_bound(lastTrackT + epst[1].second);
+
+	for (multimap<Float_t, MpdVector*>::iterator itr = ittlow; itr != itttop; ++itr) 
+	  t.insert((*itr).second);
+      }
+
       set_intersection(z.begin(), z.end(), t.begin(), t.end(), std::inserter(intersect, intersect.begin()));
+
       for (set<MpdVector*>::iterator itr = intersect.begin(); itr != intersect.end(); ++itr) {
 	MpdVector *track = (*itr);  
 	if (track->GetKalmanHit()->GetFlag() < 0) continue; //AZ
+	MpdItsHit5spd *hh = (MpdItsHit5spd*) fItsHits->UncheckedAt(track->GetIndex(0));
+	Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(hh->GetTrackID()))->GetTrackID();
+	if (fExact && trID != trID0) continue; // exact ID match
 	
 	MpdVector *trNew = NULL;
 	trNew = new ((*fKHits[i234])[nKH++]) MpdVector(*track); /// was h->Layer()
@@ -749,8 +849,6 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 	//AZ
 	//trNew->SetDeltaZ(trNew->GetDeltaZ()/TMath::Abs(trNew->GetDist()-trNew->GetPrevTrackPointer()->GetDist()));
 	trNew->SetDeltaZ(trNew->GetDeltaZ()/(trNew->GetMeas()-trNew->GetPrevTrackPointer()->GetMeas()).Pt());
-	MpdItsHit5spd *hh = (MpdItsHit5spd*) fItsHits->UncheckedAt(track->GetIndex(0));
-	Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(hh->GetTrackID()))->GetTrackID();
 	//cout << " AZ1-TrackID: " << trID << " " << i234 << endl;
 	///
 	
@@ -759,9 +857,10 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 	if (i234 == 0) {
 	  Int_t f = 0;
 	  
-	  Int_t l = iPass - 3;
+	  //AZ Int_t l = iPass - 3;
 
-	  for (int j = 0; j < 4 - l; j++) {
+	  //AZ for (int j = 0; j < 4 - l; j++) {
+	  for (int j = 0; j <= layNo[iPass]; j++) {
 	    trackID = ((MpdItsHit5spd*) fItsHits->UncheckedAt(trNew->GetIndex(0)))->GetTrackID();
 	    Int_t tempTrackID = MCtrackID;
 	    MCtrackID = ((MpdStsPoint*) fItsPoints->UncheckedAt(trackID))->GetTrackID();
@@ -800,9 +899,10 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 	  }
 	  count += f;
 	}
-      }
-    }
-  }
+      } // for (set<MpdVector*>::iterator itr = intersect.begin();
+    } // for (Int_t i = 0; i < nTracks;
+  } // for (Int_t i234 = n; i234 >= 0;
+  
   fout_v << "Count of false reconstructed tracks " << count << endl;
   fout_v << "- ExtendSecondaryTracks - done" << endl;
 }
@@ -812,7 +912,8 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
 {
   /// Extend cell tracks to layers 4-1 
-  
+  /// pass 2 - start from the last but one layer
+
   const Int_t nSigm = 3;
   int count = 0;
   Double_t  errZ = 0.001, errX = 0.001;/// 10um for Z and X // 250um in Z, 23um in R-Phi (local X)
@@ -850,6 +951,7 @@ void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
     for (Int_t i = 0; i < nTracks; i++) {
       MpdVector *cand = (MpdVector*) fKHits[i234 + 1]->UncheckedAt(i); /// was -1
       MpdItsHit5spd *h = (MpdItsHit5spd*) fItsHits->UncheckedAt(cand->GetIndex(0));
+      Int_t trID0 = ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetTrackID()))->GetTrackID();
       
       if (i234 == 3) {
 	///fout_v << h->GetTrackID() << endl;
@@ -864,14 +966,17 @@ void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
 	if (TMath::Abs(pt) < 0.02) continue;
 	//pt = TMath::Sign (TMath::Max(0.02,TMath::Abs(pt)), pt);
 	///fout_v << "pt " << pt << endl;
-	Double_t par0 = 0.00371767;
-	if (i234 < 2) par0 = 0.00243389;
+	//Double_t par0 = 0.00371767;
+	Double_t par0 = 0.00601267; //AZ-131020: new geometry
+	//if (i234 < 2) par0 = 0.00243389;
+	if (i234 < 2) par0 = 0.0013629; //AZ-131020: new geometry
 	Double_t ptt = TMath::Abs(pt);
 	dphi = TMath::Sign(par0,pt) / TMath::Max(ptt,0.01); 
-	if (iPass > 0) ptt = TMath::Min (0.1, ptt);
+	//if (iPass > 0) ptt = TMath::Min (0.1, ptt);
+	if (iPass > 0) ptt = TMath::Min (0.2, ptt); //AZ-131020: new geometry
 	
-	//AZ epst = 15e-3 / TMath::Abs(pt); //10, 6.8 upper bound for transverse angle/// 4.5e-3 // 5e-3
-	epst = 0.002 / TMath::Power (ptt-0.01, 2./3);
+	//epst = 0.002 / TMath::Power (ptt-0.01, 2./3);
+	epst = 0.002 / TMath::Power (ptt-0.015, 7./8); //AZ-131020: new geometry
 	if (iPass == 0) epst = TMath::Min (epst, 0.01);
 	//else if (ptt < 0.1) epst *= 2;
 	//AZ epsl = 1e-2;//5e-3;//4, 15 /// 5e-3
@@ -885,6 +990,7 @@ void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
 	epsl = 0.01; //0.05; //2e-2;
 	if (iPass > 0) {
 	  epst = 0.2; //0.2;
+	  if (iPass == 2) epst = 0.3; //AZ - 131020: new geo - larger distance to previous layer
 	  epsl = 0.05; //0.05;
 	}
       }
@@ -915,6 +1021,9 @@ void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
       ///fout_v << "layer " << i234 << " long in window " << l.size() << " transverse in window " << t.size() << " intersection " << intersect.size() << " pt " << pt << endl;
       for (set<MpdVector*>::iterator itr = intersect.begin(); itr != intersect.end(); ++itr) {
 	MpdVector *track = (*itr);  
+	MpdItsHit5spd *hh = (MpdItsHit5spd*) fItsHits->UncheckedAt(track->GetIndex(0));
+	Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(hh->GetTrackID()))->GetTrackID();
+	if (fExact && trID != trID0) continue; // exact ID match
       
 	MpdVector *trNew = NULL;
 	trNew = new ((*fKHits[i234])[nKH++]) MpdVector(*track); /// was h->Layer()
@@ -989,64 +1098,99 @@ void MpdVectorFinder::GetTrackSeeds(Int_t iPass)
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
   Int_t nCand = 0;
   TVector3 vert(0.,0.,0.), pmom;
-  Int_t nTracks = fKHits[0]->GetEntriesFast();
- 
-  fout_v << "seed ITS tracks:"<< nTracks << " fCellMap size " << fCellMap.size() << endl;
-  
   MpdKalmanHit hit;
   hit.SetType(MpdKalmanHit::kFixedR);
+
+  Int_t layEnd = 0;
+  if (iPass == fNPass-2) layEnd = 1;
+  set<MpdVector*> setVecs;
   
-  for (Int_t itr = 0; itr < nTracks; ++itr) {
-    MpdVector *track1 = (MpdVector*) fKHits[0]->UncheckedAt(itr);
-    // Check if this track has not been checked already during earlier passes
-    
-    /// if (/*iPass &&*/ fCellMap.find(track5->GetCode()) != fCellMap.end()) {
-    ///   cout << " Found: " << track5->GetCode() << " " << fCellMap[track5->GetCode()] << endl;
-    ///   continue;
-    /// }
-    fCellMap.insert(pair<TString,Int_t>(track1->GetCode(),1));
-    ///fout_v << "track " << itr << "; track1 code " << track1->GetCode() << endl; /// TODO not useful
+  // Loop over last layers
+
+  for (Int_t lay = 0; lay <= layEnd; ++lay) {
+    Int_t nTracks = fKHits[lay]->GetEntriesFast();
  
-    MpdVector *track2 = track1->GetPrevTrackPointer();
-    MpdVector *track3 = track2->GetPrevTrackPointer();
-    MpdVector *track4 = track3->GetPrevTrackPointer();
-    MpdVector *track5 = track4->GetPrevTrackPointer();
+    fout_v << "seed ITS tracks:"<< nTracks << " fCellMap size " << fCellMap.size() << endl;
+  
+    for (Int_t itr = 0; itr < nTracks; ++itr) {
+      map<Int_t,MpdVector*> mapTr;
+      MpdVector *vec = (MpdVector*) fKHits[lay]->UncheckedAt(itr);
+      if (lay && setVecs.count(vec)) continue; // hit has been already considered 
+      mapTr[vec->GetLayer()] = vec;
 
-    ///fout_v << "x measure first - last: " << track1->GetMeas().X() << " " << track5->GetMeas().X() << endl;
-
-    //AZ MpdItsKalmanTrack *track = new ((*fTrackCand)[nCand++]) MpdItsKalmanTrack(*track1, vert, iPass); ///TODO vert is not used?
-    ///fout_v << "trcand noftrhits " << track->GetNofTrHits() << endl; /// track->GetNofTrHits mostly = 5
+      // Check if this track has not been checked already during earlier passes
     
-    //AZ Double_t pt = EvalPt(track2,track1); /// TODO maybe some other hits should be used for pt evaluation
-    Double_t pt = 0;
-    if (track5) pt = EvalPt(track5,track4,track1); /// TODO maybe some other hits should be used for pt evaluation - AZ
-    else pt = EvalPt(track4,track3,track1); //AZ
-    if (TMath::Abs(pt) < 0.025) continue; //AZ
+      /// if (/*iPass &&*/ fCellMap.find(track5->GetCode()) != fCellMap.end()) {
+      ///   cout << " Found: " << track5->GetCode() << " " << fCellMap[track5->GetCode()] << endl;
+      ///   continue;
+      /// }
+      fCellMap.insert(pair<TString,Int_t>(vec->GetCode(),1));
+      ///fout_v << "track " << itr << "; track1 code " << track1->GetCode() << endl; /// TODO not useful
+ 
+      for (Int_t jl = 0; jl < 4; ++jl) {
+	vec = vec->GetPrevTrackPointer();
+	if (vec == NULL) break;
+	mapTr[vec->GetLayer()] = vec;
+	// Save vector from layer 1 not to double-use it
+	if (layEnd > 0 && vec->GetLayer() == 1) setVecs.insert(vec);
+      }
+      //MpdVector *track2 = track1->GetPrevTrackPointer();
+      //MpdVector *track3 = track2->GetPrevTrackPointer();
+      //MpdVector *track4 = track3->GetPrevTrackPointer();
+      //MpdVector *track5 = track4->GetPrevTrackPointer();
 
-    MpdItsKalmanTrack *track = new ((*fTrackCand)[nCand++]) MpdItsKalmanTrack(*track1, vert); ///TODO vert is not used?
-    
-    fout_v << "GetTrackSeeds::pt " << pt << endl;
+      ///fout_v << "x measure first - last: " << track1->GetMeas().X() << " " << track5->GetMeas().X() << endl;
 
-    TVector3 v1 = track1->GetMeas();
-    TVector3 v2 = track2->GetMeas();
-    TVector3 v3 = track3->GetMeas();
-    TVector3 v4 = track4->GetMeas();
+      //AZ MpdItsKalmanTrack *track = new ((*fTrackCand)[nCand++]) MpdItsKalmanTrack(*track1, vert, iPass); ///TODO vert is not used?
+      ///fout_v << "trcand noftrhits " << track->GetNofTrHits() << endl; /// track->GetNofTrHits mostly = 5
     
-    Double_t phiOut;
-    Double_t phiIn;
-    Double_t rOut;
-    Double_t rIn;
-    
-    if (track5 != 0) {
-      TVector3 v5 = track5->GetMeas();
+      //AZ Double_t pt = EvalPt(track2,track1); /// TODO maybe some other hits should be used for pt evaluation
+      Double_t pt = 0;
+      //if (track5) pt = EvalPt(track5,track4,track1); /// TODO maybe some other hits should be used for pt evaluation - AZ
+      //else pt = EvalPt(track4,track3,track1); //AZ
+      //AZ-241020 if (mapTr.count(4)) pt = EvalPt(mapTr[4],mapTr[3],mapTr.begin()->second); /// TODO maybe some other hits should be used for pt evaluation - AZ
+      //AZ-241020 else pt = EvalPt(mapTr[3],mapTr[2],mapTr.begin()->second); //AZ
+      MpdVector* vecs[3];
+      Int_t iv = 2;
+      map<Int_t,MpdVector*>::reverse_iterator rmit = mapTr.rbegin();
+      if (mapTr.size() == 5) ++rmit; // skip one hit
+      for ( ; rmit != mapTr.rend(); ++rmit) {
+	vecs[iv--] = rmit->second;
+	if (iv < 0) break;
+      }
+      pt = EvalPt(vecs[2],vecs[1],vecs[0]); //AZ
 
-      phiOut = v4.Phi(); /// was v3 & v4
-      phiIn = v5.Phi();
-      rOut = v4.Pt();
-      rIn = v5.Pt();
+      if (TMath::Abs(pt) < 0.025) continue; //AZ
+
+      //MpdItsKalmanTrack *track = new ((*fTrackCand)[nCand++]) MpdItsKalmanTrack(*track1, vert); ///TODO vert is not used?
+      MpdItsKalmanTrack *track = new ((*fTrackCand)[nCand++]) MpdItsKalmanTrack(*(mapTr.begin()->second), vert); ///TODO vert is not used?
+      fVectorCands.push_back(mapTr);
+      
+      fout_v << "GetTrackSeeds::pt " << pt << endl;
+
+      //TVector3 v1 = track1->GetMeas();
+      //TVector3 v2 = track2->GetMeas();
+      //TVector3 v3 = track3->GetMeas();
+      //TVector3 v4 = track4->GetMeas();
+      
+      Double_t phiOut, phiIn, rOut, rIn;
+      map<Int_t,MpdVector*>::reverse_iterator mit = mapTr.rbegin();
+      MpdVector *vecStart = mit->second;
+      ++mit;
+      MpdVector *vecNext = mit->second;
+    
+      TVector3 vstart = vecStart->GetMeas();
+      TVector3 vnext = vecNext->GetMeas();
+      TVector3 dv = vstart - vnext;
+      
+      phiOut = vnext.Phi();
+      phiIn = vstart.Phi();
+      rOut = vnext.Pt();
+      rIn = vstart.Pt();
       ///fout_v << v1.Pt() << " " << v2.Pt() << endl; /// 17.1.2019
 
-      track->SetUniqueID(itr+1);
+      //AZ track->SetUniqueID(itr+1);
+      track->SetUniqueID(nCand);
       ///cout << itr + 1 << endl;
       ///<  parametrs track  in TPC:
       ///< 0: RPhi - coordinate in R-Phi direction
@@ -1060,89 +1204,66 @@ void MpdVectorFinder::GetTrackSeeds(Int_t iPass)
       // TODO don't quite understand this
       
       //AZ track->SetParam (3, TMath::PiOver2() - track5->GetCosSin(1)); //longitudinal angL
-      if (iPass < 3) track->SetParam (3, TMath::PiOver2() - track5->GetCosSin(1)); //AZ
+      //if (iPass < 3) track->SetParam (3, TMath::PiOver2() - track5->GetCosSin(1)); //AZ
+      if (iPass < 3) track->SetParam (3, TMath::PiOver2() - mapTr.rbegin()->second->GetCosSin(1)); //AZ
+      //if (0); //AZ-241020 (iPass < 3) track->SetParam (3, TMath::PiOver2() - vecStart->GetCosSin(1)); //AZ
       else {
 	//if (-track1->GetDeltaZ() >= 0) track->SetParam (3, TMath::PiOver2() - TMath::ATan(-track1->GetDeltaZ())); //AZ
 	//else track->SetParam (3, TMath::PiOver2() - (TMath::Pi()+TMath::ATan(-track1->GetDeltaZ()))); //AZ
 	//AZ track->SetParam (3, TMath::PiOver2() - (v2-v1).Theta());
-	track->SetParam (3, TMath::PiOver2() - (v5-v4).Theta());
+	//track->SetParam (3, TMath::PiOver2() - (v5-v4).Theta());
+	track->SetParam (3, TMath::PiOver2() - dv.Theta());
       }
-      track->SetParam (2, (v5 - v4).Phi()); //Phi - rough estimate /// was v2 - v1
+      track->SetParam (2, dv.Phi()); //Phi - rough estimate
 
       // Adjust Phi
       Double_t bz = FairRunAna::Instance()->GetField()->GetBz(0., 0., 0.);
       Double_t factor = 0.003 * bz / 10.; // 0.3 * 0.01 * 5kG / 10
       Double_t rCirc = TMath::Abs (pt / factor);
-      Double_t ph = TMath::ASin ((v5 - v4).Pt() / 2 / rCirc); /// v4 - v5 /// was v3 - v4 // v1 - v2
+      Double_t ph = TMath::ASin (dv.Pt() / 2 / rCirc); /// v4 - v5 /// was v3 - v4 // v1 - v2
+      //AZ-241020 track->SetParam (2, track->GetParam(2) + TMath::Sign(ph,pt));// - TMath::Sign(ph,pt)
       track->SetParam (2, track->GetParam(2) + TMath::Sign(ph,pt));// - TMath::Sign(ph,pt)
-      track->SetParam (1, v5.Z()); // Z - coordinate
+      track->SetParam (1, vstart.Z()); // Z - coordinate
       track->SetParam (0, phiIn*rIn); /// phiIn*rIn // length of circle arc angle phiIn
       fout_v << " trackcand num: " << itr + 1 << " track parameters: " 
 	     << track->GetParam(0) << " " << track->GetParam(1) << " " << track->GetParam(2) << " " << track->GetParam(3) << " " << track->GetParam(4) << endl;
 
       Double_t parOut[4] = {rOut,phiOut,0.,0.};
       Double_t parIn[4] = {rIn,phiIn,0.,0.};
-      EvalCovar(parOut,parIn,track,track5); /// was track4 /// asuming evalcovar works correctly
+      //EvalCovar(parOut,parIn,track,track5); /// was track4 /// asuming evalcovar works correctly
+      EvalCovar(parOut,parIn,track,vecStart); /// was track4 /// asuming evalcovar works correctly
       track->SetPosNew(track->GetPos());
       track->SetParamNew(*track->GetParam()); 
       track->SetDirection(MpdKalmanTrack::kOutward);
-    } else { /// added 27.1.20
-      phiOut = v3.Phi();
-      phiIn = v4.Phi();
-      rOut = v3.Pt();
-      rIn = v4.Pt();
 
-      ///fout_v << v1.Pt() << " " << v2.Pt() << endl; /// 17.1.2019
-
-      track->SetUniqueID(itr+1);
-      ///cout << itr + 1 << endl;
-      ///<  parametrs track  in TPC:
-      ///< 0: RPhi - coordinate in R-Phi direction
-      ///< 1: Z - longitudinal coordinate
-      ///< 2: Phi - local azimuthal angle
-      ///< 3: Theta - local dip angle (angle w.r.t. the transverse plane)
-      ///< 4: q/Pt - signed inverse Pt
-      track->SetPos(rIn);//<- ispravleno!
-      track->SetParam (4, 1./pt); // q/Pt
-      //AZ track->SetParam (3, TMath::PiOver2() - track4->GetCosSin(1)); //longitudinal angL
-      if (iPass < 3) track->SetParam (3, TMath::PiOver2() - track4->GetCosSin(1)); //AZ
-      else track->SetParam (3, TMath::PiOver2() - (v4-v3).Theta());
-      track->SetParam (2, (v4 - v3).Phi()); //Phi - rough estimate
-
-      // Adjust Phi
-      Double_t bz = FairRunAna::Instance()->GetField()->GetBz(0., 0., 0.);
-      Double_t factor = 0.003 * bz / 10.; // 0.3 * 0.01 * 5kG / 10
-      Double_t rCirc = TMath::Abs (pt / factor);
-      Double_t ph = TMath::ASin ((v4 - v3).Pt() / 2 / rCirc);
-      track->SetParam (2, track->GetParam(2) + TMath::Sign(ph,pt));// - TMath::Sign(ph,pt)
-      track->SetParam (1, v4.Z()); // Z - coordinate
-      track->SetParam (0, phiIn*rIn); /// phiIn*rIn // length of circle arc angle phiIn
-      fout_v << " trackcand num: " << itr + 1 << " track parameters: " 
-	     << track->GetParam(0) << " " << track->GetParam(1) << " " << track->GetParam(2) << " " << track->GetParam(3) << " " << track->GetParam(4) << endl;
-
-      Double_t parOut[4] = {rOut,phiOut,0.,0.};
-      Double_t parIn[4] = {rIn,phiIn,0.,0.};
-      EvalCovar(parOut,parIn,track,track4); /// asuming evalcovar works correctly
-      track->SetPosNew(track->GetPos());
-      track->SetParamNew(*track->GetParam()); 
-      track->SetDirection(MpdKalmanTrack::kOutward);
-    }
-
-    hit.SetPos(rIn + 5.0);///track5->GetMeas().Pt() /// rIn - 0.5 // point further than 5th layer 
-    MpdKalmanFilter::Instance()->PropagateToHit(track,&hit,kFALSE);
-    ///fout_v << "GetTrackSeeds " << hit.GetPos() << " " << track->GetPos() << endl;
-    ///fout_v << nCand-1 << " " << track->GetTrackID() << endl;
-    ///fout_v << track->GetHits()->GetEntriesFast() << " " << track->GetTrHits()->GetEntriesFast() << endl;
-    
-    /// TODO 11.7.2019 where does Chi2 come from here
-
-    track->GetHits()->Clear();
-    /// track->GetChi2() equals 0 here
-    track->SetChi2Its(track->GetChi2()); // temporary storage
-    track->SetChi2(0.);
-    track->SetDirection(MpdKalmanTrack::kInward); /// was kOutward
-    
-  }
+      hit.SetPos(rIn+5.0);///track5->GetMeas().Pt() /// rIn - 0.5 // point further than 5th layer 
+      MpdKalmanFilter::Instance()->PropagateToHit(track,&hit,kFALSE);
+      ///fout_v << "GetTrackSeeds " << hit.GetPos() << " " << track->GetPos() << endl;
+      ///fout_v << nCand-1 << " " << track->GetTrackID() << endl;
+      ///fout_v << track->GetHits()->GetEntriesFast() << " " << track->GetTrHits()->GetEntriesFast() << endl;
+      
+      /// TODO 11.7.2019 where does Chi2 come from here
+      
+      track->GetHits()->Clear();
+      /// track->GetChi2() equals 0 here
+      track->SetChi2Its(track->GetChi2()); // temporary storage
+      track->SetChi2(0.);
+      track->SetDirection(MpdKalmanTrack::kInward); /// was kOutward
+      
+      Int_t trackID = ((MpdItsHit5spd*) fItsHits->UncheckedAt(vecStart->GetIndex(0)))->GetTrackID();
+      track->SetTrackID(((MpdStsPoint*) fItsPoints->UncheckedAt(trackID))->GetTrackID()); 
+      
+      if (fTrackExact) {
+	// For QA
+	MpdItsKalmanTrack *trE = new ((*fTrackExact)[fTrackExact->GetEntriesFast()]) MpdItsKalmanTrack(*track);
+	//Int_t nh = (Bool_t)track1 + (Bool_t)track2 + (Bool_t)track3 + (Bool_t)track4 + (Bool_t)track5;
+	Int_t nh = mapTr.size();
+	trE->SetNofHits(nh);
+	trE->SetNofIts(iPass);
+	trE->SetLastLay(mapTr.begin()->first);
+      }
+    } // for (Int_t itr = 0; itr < nTracks; 
+  } // for (Int_t lay = 0; lay <= layEnd;
 
   fout_v << " Number of ITS track candidates: " << nCand << endl;
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
@@ -1278,9 +1399,11 @@ void MpdVectorFinder::EvalCovar(Double_t *parOut, Double_t *parIn, MpdItsKalmanT
   Double_t pOut = TMath::Cos(phiOut) * cosPhi + TMath::Sin(phiOut) * sinPhi;
   Double_t pIn = TMath::Cos(phiIn) * cosPhi + TMath::Sin(phiIn) * sinPhi;
   ww(2,2) = (pOut * pOut + pIn * pIn) / dist2 * ww(0,0); // <PhiPhi>
-  ww(2,2) *= 2.; // extra factor of 2
+  //cout << ww(2,2) << " " << ww(0,0)*2/dist2 << endl;
+  ww(2,2) = ww(0,0)*2/dist2; //AZ-251020
+  //ww(2,2) *= 2.; // extra factor of 2
   ww(2,2) *= 50.; //AZ
-
+  
   Double_t tanThe = TMath::Tan(track->GetParam(3));
   Double_t dRad = parOut[0] - parIn[0];
   Double_t denom = dRad * (1.+tanThe*tanThe);
@@ -1353,7 +1476,12 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
     if ((iok == -1) || (track->GetNofHits() < 3)) {
       fTrackCand->RemoveAt(i);
       continue;
-    } else if ((iPass < 3) && ((track->GetNofHits() < 4) || (track->GetNofHits() == 4) && (track->Pt() < 0.1))) {
+      //AZ-161020 } else if ((iPass < 3) && ((track->GetNofHits() < 4) || (track->GetNofHits() == 4) && (track->Pt() < 0.1))) {
+      //} else if ((iPass < 4) && ((track->GetNofHits() < 4) || (track->GetNofHits() == 4) && (track->Pt() < 0.1))) {
+    } else if ((iPass == fNPass-3) && (track->GetNofHits() < 5)) {
+      fTrackCand->RemoveAt(i);
+      continue;
+    } else if ((iPass < fNPass-1) && ((track->GetNofHits() < 4) || (track->GetNofHits() == 4) && (track->Pt() < 0.1))) {
       fTrackCand->RemoveAt(i);
       continue;
     }
@@ -1386,9 +1514,11 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
 
     // Propagate track to the beam line   
     /// fSa stands for Stand Alone Flag. If it's value == 1 then no matching is done.
-    if (fSa) GoToBeamLine(track);
-
+    Bool_t okk = kTRUE;
+    if (fSa) okk = GoToBeamLine(track);
+    if (!okk) fTrackCand->RemoveAt(i);
   } // for (Int_t i = 0; i < nCand;
+
   fTrackCand->Compress();
   fout_v << "DoTracking candidates after removal " <<  fTrackCand->GetEntriesFast() << endl;
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
@@ -1396,17 +1526,80 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
     
 //__________________________________________________________________________
 
-void MpdVectorFinder::GoToBeamLine(MpdItsKalmanTrack *track)
+Bool_t MpdVectorFinder::GoToBeamLine(MpdItsKalmanTrack *track)
 {
   // Go to beam line
 
-  Double_t vert[3] = {0.0,0.0,0.0};
+  Double_t vert[3] = {0.0, 0.0, 0.0};
+  TString mass2 = "0.0194797849"; // pion mass squared
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07};
+  MpdKalmanGeoScheme *geoScheme = MpdKalmanFilter::Instance()->GetGeo();
+  MpdKalmanHit *hitp;
+  TMatrixD param(5,1);
+  TMatrixDSym weight(5), pointWeight(5);
 
+  if (track->GetDirection() == MpdKalmanTrack::kOutward) {
+    // Going outward - refit inward
+    track->SetDirection(MpdKalmanTrack::kInward);
+    TMatrixDSym *w = track->GetWeight();
+    Int_t nHits = track->GetNofHits(), nHits2 = nHits * nHits;
+    track->SetParam(*track->GetParamNew());
+    track->SetPos(track->GetPosNew());
+    track->SetNode(track->GetNodeNew());
+    track->SetChi2(0);
+    
+    for (Int_t i = 0; i < 5; ++i) {
+      for (Int_t j = i; j < 5; ++j) {
+	if (j == i) (*w)(i,j) /= nHits2;
+	else (*w)(i,j) = (*w)(j,i) = 0.;
+      }
+    }
+    //(*w)(4,4) = 1 / track->GetParamNew(4) / track->GetParamNew(4);
+    Int_t ibeg = track->GetHits()->GetEntriesFast() - 1, iend = -1, iDir = -1;
+
+    for (Int_t i = ibeg; i != iend; i+=iDir) {
+      hitp = (MpdKalmanHit*) track->GetHits()->UncheckedAt(i);
+      if (!MpdKalmanFilter::Instance()->PropagateToHit(track, hitp, kFALSE, kTRUE)) return kFALSE;
+      if (1./TMath::Abs(track->GetParamNew(4)) < 0.025) return kFALSE;
+      //MpdKalmanFilter::Instance()->PropagateToHit(track, hitp, kFALSE, kTRUE);
+      Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(track, hitp, pointWeight, param);
+      track->SetChi2(track->GetChi2()+dChi2);
+      weight = *track->GetWeight();
+      weight += pointWeight;
+      track->SetWeight(weight);
+      track->SetParamNew(param);
+
+      // Add scattering in Si
+      Int_t lay = hitp->GetLayer();
+      cout << " aaaa " << hitp->GetPos() << " " << lay << " " << dChi2 << " " << 1/param(4,0) << endl;
+      Double_t x0 = 9.36; // rad. length
+      TMatrixDSym *cov = track->Weight2Cov();
+      Double_t th = track->GetParamNew(3);
+      Double_t cosTh = TMath::Cos(th);
+      TVector3 norm = geoScheme->Normal(hitp);
+      //norm[2] = 0.0;
+      norm.SetMag(1.0);
+      MpdKalmanTrack trTmp(*track);
+      trTmp.SetParam(*trTmp.GetParamNew());
+      TVector3 mom3 = trTmp.Momentum3();
+      //mom3[2] = 0.0;
+      mom3.SetMag(1.0);
+      Double_t cosPhi = norm.Dot(mom3);
+      //Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, thick[lay]*3/x0/cosPhi, mass2);
+      Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, x0, 2*thick[lay]/cosPhi, mass2);
+      (*cov)(2,2) += (angle2 / cosTh / cosTh);
+      (*cov)(3,3) += angle2;
+      Int_t iok = 0;
+      MpdKalmanFilter::Instance()->MnvertLocal(cov->GetMatrixArray(), 5, 5, 5, iok);
+      track->SetWeight(*cov);
+    }
+  } // if (track->GetDirection() == MpdKalmanTrack::kOutward)
+  
   //AZ track->SetParam(*track->GetParamNew());
   //AZ track->SetPos(track->GetPosNew());
 
-  Double_t pos = track->GetPos();
-  TMatrixD par = *track->GetParam();
+  Double_t pos = track->GetPosNew();
+  TMatrixD par = *track->GetParamNew();
   TMatrixDSym cov = *track->Weight2Cov();
   Double_t leng = track->GetLength();
   TString nodeNew = track->GetNodeNew();
@@ -1416,6 +1609,7 @@ void MpdVectorFinder::GoToBeamLine(MpdItsKalmanTrack *track)
   hit.SetType(MpdKalmanHit::kFixedR);
   hit.SetPos(fPipeR);
   Int_t iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
+  //if (1./TMath::Abs(track->GetParamNew(4)) < 0.025) return kFALSE;
   if (iok != 1) {
     // Restore track
     track->SetParam(par);
@@ -1444,10 +1638,14 @@ void MpdVectorFinder::GoToBeamLine(MpdItsKalmanTrack *track)
 
   hit.SetPos(0.);
   hit.SetMeas(0,track->GetParam(2)); // track Phi
+  pos = track->GetPosNew(); //AZ-231020
   //fout_v << i << " " << track->GetTrackID() << " " << track->GetLength() << " " << ((MpdKalmanHitR*)track->GetHits()->First())->GetLength() << endl;
-  iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
+  iok = 0; //AZ-231020 MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
   if (iok != 1) MpdKalmanFilter::Instance()->FindPca(track, vert);
+  track->SetNode(track->GetNodeNew()); //AZ-231020
+  track->SetPos(pos); //AZ-231020  
   track->SetParam(*track->GetParamNew()); // !!! track params at PCA
+  return kTRUE;
 }
 
 //__________________________________________________________________________
@@ -1458,6 +1656,8 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
   /// (might not work when propagating outward!!!)
 
   TString mass2 = "0.0194797849"; // pion mass squared
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07};
+  MpdKalmanGeoScheme *geoScheme = MpdKalmanFilter::Instance()->GetGeo();
   
   Int_t layMax = ((MpdKalmanHit*)fKHits1->First())->GetLayer();
   
@@ -1479,6 +1679,7 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
 
   /// TODO what is happening here?
   ///fout_v << track->GetUniqueID() << endl;
+  /*AZ-211020
   MpdVector *cellTr = NULL;
 
   MpdVector *tracks[5];
@@ -1496,16 +1697,23 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
   for (Int_t i = 1; i <= 4 - l; i++) { // for layers 2-5
     tracks[i] = (MpdVector*) fKHits[i]->UncheckedAt(tracks[i - 1]->GetPrevTrackPointer()->GetUniqueID());
   }
+  */
   
-  for (Int_t lay = 4 - l; lay >= 0; lay--) {
-    // Get CellTrack from the inner layer
-    cellTr = (MpdVector*) fKHits[lay]->UncheckedAt(tracks[lay]->GetUniqueID()); // for layers 1-5
+  //for (Int_t lay = 4 - l; lay >= 0; lay--) {
+  // Get CellTrack from the inner layer
+    //cellTr = (MpdVector*) fKHits[lay]->UncheckedAt(tracks[lay]->GetUniqueID()); // for layers 1-5
 
+  map<Int_t,MpdVector*> &mapTr = fVectorCands[track->GetUniqueID()-1];
+  
+  for (map<Int_t,MpdVector*>::reverse_iterator mit = mapTr.rbegin(); mit != mapTr.rend(); ++mit) {
+  //for (map<Int_t,MpdVector*>::iterator mit = mapTr.begin(); mit != mapTr.end(); ++mit) {
+    
     ///if (lay == 0)
     ///  fout_v << "pt " << EvalPt(cellTr,cellTr->GetPrevTrackPointer()) << endl; 
 
     ///MpdKalmanHit *hit = (MpdKalmanHit*) fKHits1->UncheckedAt(cellTr->GetIndex(0));
-    MpdKalmanHit *hit = cellTr->GetKalmanHit();
+    //AZ MpdKalmanHit *hit = cellTr->GetKalmanHit();
+    MpdKalmanHit *hit = mit->second->GetKalmanHit();
     ///fout_v << hit << " " << hit->GetUniqueID() << endl;
     ///fout_v << track->GetPos() << " " << TMath::Sqrt(cellTr->GetMeas()[0] * cellTr->GetMeas()[0] + cellTr->GetMeas()[1] * cellTr->GetMeas()[1] + cellTr->GetMeas()[2] * cellTr->GetMeas()[2]) << endl;
     // Propagate to hit (if it is not very close to the track)
@@ -1532,7 +1740,6 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
       Double_t step = track->GetLength() - leng;
 	
       /// fout_v << "!!!kalmanfiltercell" << " " << hit->GetLayer() << " " << track->GetLength() << " " << leng << " " << step << " " << " " << TMath::Sqrt(hit->GetMeas(0) * hit->GetMeas(0) + hit->GetMeas(1) * hit->GetMeas(1)) << " " << track->GetPosNew() << " " << track->GetUniqueID() << endl;
-      Int_t lay1 = hit->GetLayer();
     } // if (TMath::Abs(hit->GetPos()-track->GetPosNew()) > 1.e-4)
  
     // Exclude used hits!
@@ -1559,13 +1766,27 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
     }
 
     // Add scattering in Si
+    Int_t lay = hit->GetLayer();
     if (1) {
       Double_t x0 = 9.36; // rad. length
       //Double_t x0 = 30420; // rad. length of Air
       TMatrixDSym *cov = track->Weight2Cov();
       Double_t th = track->GetParamNew(3);
       Double_t cosTh = TMath::Cos(th);
-      Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, 0.005*2/x0, mass2);
+      TVector3 norm = geoScheme->Normal(hit);
+      //norm[2] = 0.0;
+      norm.SetMag(1.0);
+      MpdKalmanTrack trTmp(*track);
+      trTmp.SetParam(*trTmp.GetParamNew());
+      TVector3 mom3 = trTmp.Momentum3();
+      //mom3[2] = 0.0;
+      mom3.SetMag(1.0);
+      Double_t cosPhi = norm.Dot(mom3);
+      //AZ Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, 0.005*2/x0, mass2);
+      //Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, thick[lay]*2/x0, mass2); //AZ-161020
+      //Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, thick[lay]*3/x0, mass2); //AZ-231020
+      //Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, thick[lay]*3/x0/cosPhi, mass2); //AZ-231020
+      Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, x0, 3*thick[lay]/cosPhi, mass2); //AZ-231020
       (*cov)(2,2) += (angle2 / cosTh / cosTh);
       (*cov)(3,3) += angle2;
       Int_t iok = 0;
@@ -1573,7 +1794,7 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
       track->SetWeight(*cov);
     }
 
-    Int_t lay1 = hit->GetLayer();
+    /*
     Double_t nCables = 0, x0 = 0.0116 * 2 / 9.36; // in rad. length - 116um cable per side
     // Find number of cables crossed
     TString path = gGeoManager->GetPath();
@@ -1588,7 +1809,7 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
     gGeoManager->LocalToMaster(v7,v77);
     Double_t zTr = TMath::Abs (v77[2]); // global Z
     map<Double_t,Double_t>::iterator it;
-    for (it = fCables[lay1/2].begin(); it != fCables[lay1/2].end(); ++it) {
+    for (it = fCables[lay/2].begin(); it != fCables[lay/2].end(); ++it) {
       if (zTr < it->first || zTr > it->second) continue;
       ++nCables;
     }
@@ -1605,8 +1826,10 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
       MpdKalmanFilter::Instance()->MnvertLocal(cov->GetMatrixArray(), 5, 5, 5, iok);
       track->SetWeight(*cov);
     }
-  } // for (Int_t lay = 0; lay < 5; ++ lay)
-   //AZ return 0;
+    */
+    //} // for (Int_t lay = 0; lay < 5; ++ lay)
+  } // for (map<Int_t,MpdVector*>::reverse_iterator mit = mapTr.rbegin();
+  //AZ return 0;
   return ok;
 }
 
@@ -1693,6 +1916,7 @@ Bool_t MpdVectorFinder::AreTracksDoubles(MpdItsKalmanTrack *tr1, MpdItsKalmanTra
       }
 
       if (hit2->GetLayer() > hit1->GetLayer()) break; // already closer to beam /// was < /// what does this do?
+      //if (hit2->GetLayer() < hit1->GetLayer()) break; // already closer to beam /// was < /// what does this do?
     }
 
     if ((nh1 - i - 1) + limCommonPoint - nHitsCommon > nh1) return kFALSE; // there'll be not enough common hits already
@@ -1708,8 +1932,10 @@ Int_t MpdVectorFinder::TrackID(MpdKalmanHit *hit, Int_t indx)
 {
   /// Return track ID of the hit
 
-  FairHit *h = (FairHit*) fItsHits->UncheckedAt(hit->GetIndex(indx));
-  return ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetRefIndex()))->GetTrackID();
+  //AZ-141020 FairHit *h = (FairHit*) fItsHits->UncheckedAt(hit->GetIndex(indx));
+  //AZ-141020 return ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetRefIndex()))->GetTrackID();
+  MpdItsHit5spd *h = (MpdItsHit5spd*) fItsHits->UncheckedAt(hit->GetIndex(indx));
+  return ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetTrackID()))->GetTrackID();
 }
 
 //__________________________________________________________________________
@@ -1787,7 +2013,8 @@ void MpdVectorFinder::StoreTracks()
     MpdItsKalmanTrack *track = (MpdItsKalmanTrack*) fTrackCand->UncheckedAt(i);
     track->Weight2Cov();
     
-    MpdVector *cellTr = (MpdVector*) fKHits[0]->UncheckedAt(track->GetUniqueID()-1);
+    //AZ-211020 MpdVector *cellTr = (MpdVector*) fKHits[0]->UncheckedAt(track->GetUniqueID()-1);
+    MpdVector *cellTr = (MpdVector*) fVectorCands[track->GetUniqueID()-1].begin()->second;
     
     /// added 16/9/2019, changing uniqueid
     //AZ track->SetUniqueID(i + 1); /// uniqueid cannot be 0

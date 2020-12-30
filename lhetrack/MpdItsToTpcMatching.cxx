@@ -120,6 +120,27 @@ void MpdItsToTpcMatching::Reset()
 
 //__________________________________________________________________________
 
+void MpdItsToTpcMatching::GetItsTracks(multimap <Float_t, MpdItsKalmanTrack*> &multimapIts,
+				       multimap <Float_t, MpdItsKalmanTrack*> &multimapItsPhi)
+{
+  /// Get ITS tracks linked to their outer hit positions (rphi and z)
+
+  Int_t n = fItsTracks->GetEntriesFast();
+  Float_t phi;
+  MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
+  
+  for (Int_t i = 0; i < n; i++) {
+    MpdItsKalmanTrack *track = (MpdItsKalmanTrack*) fItsTracks->UncheckedAt(i);
+    MpdKalmanHit *hit = (MpdKalmanHit*) track->GetTrHits()->First();
+    TVector3 pos = geo->GlobalPos(hit);
+    cout << pos.Pt() << " -aaaaaaaaaa- " << pos.Z() << endl;
+    multimapIts.insert(pair<Float_t,MpdItsKalmanTrack*>(pos.Z(),track));
+  }
+
+}
+
+//__________________________________________________________________________
+
 void MpdItsToTpcMatching::RefitItsTo27(multimap <Float_t, MpdItsKalmanTrack*> &multimapIts,
 				       multimap <Float_t, MpdItsKalmanTrack*> &multimapItsPhi)
 {
@@ -255,6 +276,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
   multimap <Float_t, MpdTpcKalmanTrack*> multimapTpc, multimapTpcPhi;
 
   RefitItsTo27(multimapIts, multimapItsPhi);
+  //GetItsTracks(multimapIts, multimapItsPhi);
   RefitTpcTo27(multimapTpc, multimapTpcPhi);
 
   Int_t n = fItsTracks->GetEntriesFast();
@@ -264,6 +286,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 
   Float_t epsz = 2.5; //0.5;/// TODO should it depend on pt as well?
   Float_t epsphi = 2.5; //0.5;//0.2 for phi, 0.5 for rphi;
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07};
 
   Int_t k = 0, tpck = 0;
 
@@ -318,6 +341,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
       mom3.SetMag(1.0);
 
       TString mass2 = "0.0194797849"; // pion mass squared
+      /*
       if (fMCTracks) {
 	// Get particle mass - ideal PID
 	MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(temp->GetTrackID());
@@ -331,6 +355,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 	  }
 	}
       }
+      */
       //AZ
 
       Int_t hitindex = 0;
@@ -339,7 +364,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
       for (Int_t i = 0; i < (itits->second)->GetHits()->GetEntriesFast(); i++) {
         MpdKalmanHit* hitTmp = ((MpdKalmanHit*) (itits->second)->GetHits()->UncheckedAt(i));
 	///cout << "temp " << temp->GetNofHits() << " " << temp->GetNofIts() << " " << temp->GetNofTrHits()<< endl;
-
+	
 	Bool_t ok = MpdKalmanFilter::Instance()->PropagateToHit(temp, hitTmp, kFALSE, kTRUE); // propagate tpc track to its hits
 	Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(temp, hitTmp, pointWeight, param); 
 
@@ -364,7 +389,8 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 
 	// AZ - Add multiple scattering in the sensor
 	norm = MpdKalmanFilter::Instance()->GetGeo()->Normal(hitTmp);
-	Double_t step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	//Double_t step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	Double_t step = thick[hitTmp->GetLayer()] / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
 	Double_t x0 = 9.36; // rad. length
 	TMatrixDSym *cov = temp->Weight2Cov();
 	Double_t th = temp->GetParamNew(3);

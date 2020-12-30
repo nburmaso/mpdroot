@@ -52,7 +52,7 @@ class MpdVectorFinder :public FairTask
   void Finish();
   void Reset();
   void FillGeoScheme(); // fill Kalman filter geometry manager   
-  void GoToBeamLine(MpdItsKalmanTrack *track); // go to beam line
+  Bool_t GoToBeamLine(MpdItsKalmanTrack *track); // go to beam line
 
  private:
 
@@ -112,6 +112,7 @@ class MpdVectorFinder :public FairTask
   TClonesArray *fTpcTracks; //!< array of TPC tracks
   TClonesArray *fMCTracks; //!< array of MC tracks
   TClonesArray *fTrackCand; //!< array of track candidates
+  TClonesArray *fTrackExact; //!< array of track candidates
   //TClonesArray *fSTSTrackMatch;
   TClonesArray *fTracks; //! ITS tracks
   Int_t *fLayPointers; //!< locations of hits from different layers             
@@ -133,6 +134,7 @@ class MpdVectorFinder :public FairTask
   std::map<Int_t,Int_t> fId2Id[5]; //!< STS hit ID to Kalman hit ID for layers 1-5
   std::map<TString,Int_t> fCellMap;
   //FairVertex *fPrimVtx;
+  std::vector<std::map<Int_t,MpdVector*> > fVectorCands; //!< vector combinations built
 
  private:
   // Some constants                                                             

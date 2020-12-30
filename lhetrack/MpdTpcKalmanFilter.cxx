@@ -377,6 +377,8 @@ void MpdTpcKalmanFilter::FillGeoScheme()
     Double_t phi1 = ((TGeoPgon*)shape)->Phi1();
     Double_t loc[3] = {100, 0, 10}, glob[3] = {0};
     gGeoManager->FindNode(loc[0],loc[1],loc[2]);
+    if (TString(gGeoManager->GetPath()).Contains("row")) gGeoManager->CdUp(); // layered geometry
+    if (TString(gGeoManager->GetPath()).Contains("sec")) gGeoManager->CdUp();
     gGeoManager->LocalToMaster(loc,glob);
     phi1 += -TMath::ATan2 (glob[1],glob[0]) * TMath::RadToDeg(); // due to rotation
     if (TMath::Abs(phi1-dPhi*TMath::RadToDeg()/2) > 0.001) 

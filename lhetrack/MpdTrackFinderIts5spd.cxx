@@ -603,6 +603,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 
   const Int_t maxBr = 24, maxBrLay = 2000; // max number of branches
   //const Int_t maxBr = 100, maxBrLay = 1000; // max number of branches
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07}; // layer thicknesses
 
   MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
 
@@ -631,6 +632,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
   branch[0] = *track;
 
   TString mass2 = "0.0194797849"; // pion mass squared
+  /*
   if (fMCTracks) {
     // Get particle mass - ideal PID
     MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
@@ -644,9 +646,10 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
       }
     }
   }
+  */
 
-// cout << "##### Cycle start ##### " << endl;
-//  cout << " layBeg, LayEnd: " << layBeg << " " << layEnd << endl;
+  // cout << "##### Cycle start ##### " << endl;
+  //  cout << " layBeg, LayEnd: " << layBeg << " " << layEnd << endl;
  
   for (Int_t lay = layBeg; lay != layEnd; lay+=dLay) {
     Int_t nLay = GetNofHitsInLayer(lay);
@@ -726,7 +729,8 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 	  MpdKalmanHit *hit = (MpdKalmanHit*) fKHits->UncheckedAt(it1->second);
 	  if (it1 == ret.first) {
 	    norm = geo->Normal(hit);
-	    step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	    //step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	    step = thick[hit->GetLayer()] / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
 	  }	       
 	  // Exclude used hits
 	  if (hit->GetFlag() & MpdKalmanHit::kUsed) continue;
@@ -789,7 +793,8 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 	if (!MpdKalmanFilter::Instance()->PropagateToHit(curTr,&hitTmp,kTRUE,kTRUE)) { }
 
 	// Add multiple scattering in the sensor
-	Double_t x0 = 9.36, step = 0.005 * 4.0; // rad. length
+	//Double_t x0 = 9.36, step = 0.005 * 4.0; // rad. length
+	Double_t x0 = 9.36, step = thick[lay] * 4.0; // rad. length
 	TMatrixDSym *cov = curTr->Weight2Cov();
 	Double_t th = curTr->GetParamNew(3);
 	Double_t cosTh = TMath::Cos(th);

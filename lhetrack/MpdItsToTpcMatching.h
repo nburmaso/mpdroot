@@ -50,6 +50,7 @@ class MpdItsToTpcMatching :public FairTask
    **/
   void SetParContainers();
 
+  void GetItsTracks(std::multimap <Float_t, MpdItsKalmanTrack*> &m, std::multimap <Float_t, MpdItsKalmanTrack*> &mPhi);
   void RefitItsTo27(std::multimap <Float_t, MpdItsKalmanTrack*> &m, std::multimap <Float_t, MpdItsKalmanTrack*> &mPhi);
   void RefitTpcTo27(std::multimap <Float_t, MpdTpcKalmanTrack*> &m, std::multimap <Float_t, MpdTpcKalmanTrack*> &mPhi);
   void Exec(Option_t * option);
