@@ -74,7 +74,8 @@ class MpdItsToTpcMatching :public FairTask
   TClonesArray *fTracksRefit; //! array of refit ITS tracks
   TClonesArray *fTpcTracksRefit; //! array of refit TPC tracks;
   TClonesArray *fKHits; //! array of Kalman hits from Vector Finder
-
+  std::set<Int_t> fTpcIndSet; //! unmatched TPC track indices
+  
   ClassDef(MpdItsToTpcMatching,0); 
 };
 

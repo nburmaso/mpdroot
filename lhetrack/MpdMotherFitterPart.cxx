@@ -449,6 +449,8 @@ Double_t MpdMotherFitterPart::FindVertex(vector<MpdParticle*> vDaught, TVector3 
       //chi21.Print();
       TMatrixD dx = xk;
       dx -= xk0;
+      //Double_t dxMax = dx.Max();
+      //if (dxMax > 7*TMath::Sqrt(cov.Max())) return -cutChi2; //AZ-050121 
       TMatrixD tmp42(cov,TMatrixD::kMult,dx);
       TMatrixD chi22(dx,TMatrixD::kTransposeMult,tmp42);
       //chi22.Print();
@@ -842,6 +844,7 @@ Double_t MpdMotherFitterPart::Chi2Vertex(MpdParticle* part, const MpdVertex *vtx
   Double_t vpos[3] = {vtx->GetX(), vtx->GetY(), vtx->GetZ()};
   TMatrixD xk(3,1), xk0(3,1), ck0(5,1), a(5,3), b(5,3), c(3,3);
   TMatrixFSym cov(3);
+  cov.SetTol(1.e-10); //AZ-311220
 
   xk0.SetMatrixArray(vpos);
   vtx->CovMatrix(cov);

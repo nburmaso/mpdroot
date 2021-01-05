@@ -48,7 +48,7 @@ class MpdTrackFinderIts5spd :public FairTask
   void Finish();
   void Reset();
   void FillGeoScheme(); // fill Kalman filter geometry manager   
-  void Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t charge); // refit track
+  Bool_t Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t charge); // refit track
 
  private:
 

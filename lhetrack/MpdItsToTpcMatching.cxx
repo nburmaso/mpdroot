@@ -196,6 +196,8 @@ void MpdItsToTpcMatching::RefitTpcTo27(multimap <Float_t, MpdTpcKalmanTrack*> &m
   // Propagate TPC track ro R = 27 cm
   
   Int_t n = fTpcTracks->GetEntriesFast();
+  fTpcIndSet.clear();
+  
   Float_t phi;
   cout << "fTpcTracks " << n << endl;
   cout << "refit TPC" << endl;
@@ -258,6 +260,7 @@ void MpdItsToTpcMatching::RefitTpcTo27(multimap <Float_t, MpdTpcKalmanTrack*> &m
     if (TMath::Abs(TMath::Pi() - phi) < TMath::Pi() / 9.0)
       ///multimapTpcPhi.insert(pair<Float_t, MpdTpcKalmanTrack*>(phi - TMath::Sign(1, phi) * 2 * TMath::Pi(), track));
       multimapTpcPhi.insert(pair<Float_t, MpdTpcKalmanTrack*>((*parNew)(0,0) - TMath::Sign(1, phi) * 2 * TMath::Pi() * track->GetPosNew(), track));
+    fTpcIndSet.insert(i); // store TPC track indices
   }
 }
 
@@ -519,6 +522,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 	
 	//AZ if (track->GetNofHits() > 2) {
 	/// writing to TpcTracksRefit
+	fTpcIndSet.erase(track->GetUniqueID()-1); // exclude matched TPC track
 	track->SetUniqueID(std::get<1>(tupl)->GetTrackID()); /// ITS track ID
 	//cout << "its and tpc track id equal " << track->GetTrackID() << " " << track->GetUniqueID() << endl;
 
@@ -543,7 +547,8 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 	  //AZ new ((*fTpcTracksRefit)[matchedCount]) MpdItsKalmanTrack(*temp); /// *std::get<1>(tupl)
 	new ((*fTpcTracksRefit)[matchedCount]) MpdItsKalmanTrack(*track); //AZ
 	trtr->SetChi2(temp->GetChi2Its()); //AZ
-	trtr->SetUniqueID(std::get<1>(tupl)->GetTrackID());
+	//AZ-010121 trtr->SetUniqueID(std::get<1>(tupl)->GetTrackID());
+	trtr->SetUniqueID(std::get<1>(tupl)->GetTrackID()+1); //AZ - to avoid 0 
 	delete track;
       }
       matchedCount++;
@@ -597,6 +602,14 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
     delete track; //AZ
   }
 
+  // Add TPC-only tracks to the same container
+  Int_t nout = fTpcTracksRefit->GetEntriesFast();
+  
+  for (set<Int_t>::iterator sit = fTpcIndSet.begin(); sit != fTpcIndSet.end(); ++sit) {
+    MpdTpcKalmanTrack *tr = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(*sit);
+    new ((*fTpcTracksRefit)[nout++]) MpdItsKalmanTrack(*tr);
+  }
+  
   cout << "fItsTracks size " << fItsTracks->GetEntriesFast() << endl;
   cout << "Its tracks without match: " << k << endl;
   cout << "Overall possible tpc+its tracks: " << tpck << endl;
@@ -604,6 +617,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
   cout << "Overall good matched tracks: " << qualTr << endl;
   cout << "Overall used ITS hits when matching: " << usedItsHits << endl;
   cout << "wrongMatch: " << wrongMatch << endl;
+  cout << "leftover unmatched TPC tracks: " << fTpcIndSet.size() << endl;
 
   fout_v_match << "fItsTracks size " << fItsTracks->GetEntriesFast() << endl;
   fout_v_match << "Its tracks without match: " << k << endl;

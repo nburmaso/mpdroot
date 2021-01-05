@@ -73,8 +73,8 @@ InitStatus MpdItsHitProducer5spd::Init() {
   // Create and register output array
   fDigiArray = new TClonesArray("MpdItsHit5spd");
   
-  ioman->Register("StsHit","Sts",fDigiArray,kTRUE);
-  //ioman->Register("StsHit","Sts",fDigiArray,kFALSE);
+  //ioman->Register("StsHit","Sts",fDigiArray,kTRUE);
+  ioman->Register("StsHit","Sts",fDigiArray,kFALSE);
   CreateStructure();
   
   cout << "-I- MpdItsHitProducer5spd: Intialization finished successfully" << endl;

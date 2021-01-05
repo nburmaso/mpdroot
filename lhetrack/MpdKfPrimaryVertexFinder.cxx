@@ -238,9 +238,9 @@ void MpdKfPrimaryVertexFinder::FindVertex()
 {
   /// Kalman primary vertex finder
 
-  const Double_t chi2acc[3] = {35., 25., 15.};
+  //AZ-040121 const Double_t chi2acc[3] = {35., 25., 15.};
+  const Double_t chi2acc[3] = {10., 15., 20.};
   Int_t nTracks = fTracks->GetEntriesFast(), nOK = 0, ok = 1;
-  cout << " Tracks: " << nTracks << endl;
   MpdVertex *vtx = new ((*fVertexCont)[0]) MpdVertex();
   TMatrixD c(3,3), cov(3,3), xk0(3,1), xk(3,1), ck0(5,1);
   TMatrixD a(5,3), b(5,3);
@@ -250,6 +250,7 @@ void MpdKfPrimaryVertexFinder::FindVertex()
   //xk.Zero();
   //xk = 0.5;
   xk.SetMatrixArray(fXYZ);
+  cout << " Tracks: " << nTracks << " " << xk(0,0) << " " << xk(1,0) << " " << xk(2,0) << endl;
   //hit.SetR(35.); // 4 cm
   //xk(0,0) = 1;
   //cov(0,0) = cov(1,1) = 1;
@@ -264,13 +265,15 @@ void MpdKfPrimaryVertexFinder::FindVertex()
     //c(0,0) = c(1,1) = c(2,2) = 100.;
     //c = fCovar;
     //cov = TMatrixD(TMatrixD::kInverted,c);
-   if (ipass == 0) {
+    if (ipass == 0) {
       c = fCovar;
       cov = TMatrixD(TMatrixD::kInverted,c);
     }
-    Int_t nPrim = 0, ibeg = 0, iend = nTracks, istep = 1;
+    //AZ-040121 Int_t nPrim = 0, ibeg = 0, iend = nTracks, istep = 1;
+    //if (ipass % 2 > 0) { ibeg = nTracks-1; iend = -1; istep = -1; }
+    Int_t nPrim = 0, ibeg = nTracks-1, iend = -1, istep = -1;
+    if (ipass % 2 > 0) { ibeg = 0; iend = nTracks; istep = 1; }
     nOK = 0;
-    if (ipass % 2 > 0) { ibeg = nTracks-1; iend = -1; istep = -1; }
 
     for (Int_t itr = ibeg; itr != iend; itr+=istep) {
       //for (Int_t itr = 0; itr < nTracks; ++itr) {
@@ -295,12 +298,17 @@ void MpdKfPrimaryVertexFinder::FindVertex()
       track1.SetPos(track1.GetPosNew());
       track1.ReSetWeight();
       TMatrixD g = *track1.GetWeight(); // track weight matrix
+      if (ipass == 0 && track->GetUniqueID()) g *= 0.04; //AZ-050121 - downweight ITS track
       //track1.GetWeight()->Print();
 
       if (track->GetNode() == "") {
 	hit.SetType(MpdKalmanHit::kFixedR);
 	hit.SetPos(track->GetPos());
       } else {
+	// 03-jan-2018 - skip track not pointing to the beam line
+	ok = 0;
+	continue;
+
 	hit.SetType(MpdKalmanHit::kFixedP);
 	TString detName = track->GetNode();
 	if (track->GetUniqueID()) {
@@ -322,9 +330,6 @@ void MpdKfPrimaryVertexFinder::FindVertex()
 	TVector3 v3(v7[0], v7[1], v7[2]);
 	d += v3 * norm;
 	if (d < 0) track1.SetDirection(MpdKalmanTrack::kOutward);
-	// 03-jan-2018
-	ok = 0;
-	continue;
       }
 
       MpdKalmanFilter::Instance()->PropagateToHit(&track1,&hit,kFALSE,kTRUE);
@@ -397,6 +402,7 @@ void MpdKfPrimaryVertexFinder::FindVertex()
       //chi21.Print();
       TMatrixD dx = xk;
       dx -= xk0;
+      //dx.Print();
       TMatrixD tmp42(cov,TMatrixD::kMult,dx);
       TMatrixD chi22(dx,TMatrixD::kTransposeMult,tmp42);
       //chi22.Print();

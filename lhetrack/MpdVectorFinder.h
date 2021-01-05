@@ -20,6 +20,7 @@
 class MpdKalmanHit;
 class MpdKalmanTrack;
 class MpdItsKalmanTrack;
+class MpdTpcKalmanFilter;
 
 class MpdVectorFinder :public FairTask 
 {
@@ -53,6 +54,7 @@ class MpdVectorFinder :public FairTask
   void Reset();
   void FillGeoScheme(); // fill Kalman filter geometry manager   
   Bool_t GoToBeamLine(MpdItsKalmanTrack *track); // go to beam line
+  Bool_t Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t charge);
 
  private:
 
@@ -96,7 +98,7 @@ class MpdVectorFinder :public FairTask
   //Bool_t AreTracksDoubles(MpdCellTrack *tr1, MpdCellTrack *tr2);//12.02
   Bool_t AreTracksDoubles(MpdItsKalmanTrack *tr1, MpdItsKalmanTrack *tr2);
   void GetShortTracks(); 
-
+    
  private:
   Int_t fNPass; 
   Int_t fExact; //!< exact ID match if != 0
@@ -135,10 +137,11 @@ class MpdVectorFinder :public FairTask
   std::map<TString,Int_t> fCellMap;
   //FairVertex *fPrimVtx;
   std::vector<std::map<Int_t,MpdVector*> > fVectorCands; //!< vector combinations built
-
+  MpdTpcKalmanFilter *fTpcKF; //!< TPC kalman filter
+  
  private:
-  // Some constants                                                             
-  static const Double_t fgkChi2Cut; ///< max accepted Chi2 of hit for track     
+  // Some constants
+  static const Double_t fgkChi2Cut; ///< max accepted Chi2 of hit for track
 
   ClassDef(MpdVectorFinder,0); 
 };

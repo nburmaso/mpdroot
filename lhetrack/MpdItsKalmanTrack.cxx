@@ -124,6 +124,11 @@ MpdItsKalmanTrack & MpdItsKalmanTrack::operator=(const MpdItsKalmanTrack& track)
     MpdKalmanHit *hit = (MpdKalmanHit*)(track.fTrHits->UncheckedAt(i));
     new ((*fTrHits)[i]) MpdKalmanHit(*hit);
   }
+  if (track.fHits == 0x0) {
+    for (Int_t i = 0; i < nHits; ++i) {
+      fHits->Add(fTrHits->UncheckedAt(i));
+    }
+  }
   return *this;
 }
 

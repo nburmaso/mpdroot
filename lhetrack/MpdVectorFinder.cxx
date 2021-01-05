@@ -14,7 +14,7 @@
 #include "MpdVector.h" 
 #include "MpdCodeTimer.h"
 #include "MpdConstField.h"
-#include "MpdItsHit5spd.h" /// was: "MpdStsHit.h"
+#include "MpdItsHit5spd.h"
 #include "MpdItsKalmanTrack.h"
 #include "MpdKalmanFilter.h"
 #include "MpdKalmanGeoScheme.h"
@@ -23,7 +23,7 @@
 #include "MpdMCTrack.h"
 #include "MpdStsPoint.h"
 //#include "MpdTpcKalmanTrack.h"
-//#include "MpdTpcKalmanFilter.h"
+#include "MpdTpcKalmanFilter.h"
 
 #include "FairGeoNode.h"
 #include "FairMCPoint.h"
@@ -105,6 +105,11 @@ MpdVectorFinder::~MpdVectorFinder()
 //__________________________________________________________________________
 InitStatus MpdVectorFinder::Init() 
 {
+
+  //----- Get pipe radius                                                         
+  fPipeR = ((TGeoTube*)gGeoManager->GetVolume("pipe1")->GetShape())->GetRmax();
+  cout << "************** Pipe radius: " << fPipeR << " cm " << endl;
+  
   //return ReInit();
   if (ReInit() != kSUCCESS) return kERROR;
   
@@ -175,10 +180,6 @@ InitStatus MpdVectorFinder::Init()
     
   }
   FillGeoScheme();
-  
-  //----- Get pipe radius                                                         
-  fPipeR = ((TGeoTube*)gGeoManager->GetVolume("pipe1")->GetShape())->GetRmax();
-  cout << "************** Pipe radius: " << fPipeR << " cm " << endl;
   
   //----- Get cables                                                              
   TObjArray *vols = gGeoManager->GetListOfVolumes();
@@ -1638,12 +1639,16 @@ Bool_t MpdVectorFinder::GoToBeamLine(MpdItsKalmanTrack *track)
 
   hit.SetPos(0.);
   hit.SetMeas(0,track->GetParam(2)); // track Phi
-  pos = track->GetPosNew(); //AZ-231020
+  //AZ-030121 pos = track->GetPosNew(); //AZ-231020
   //fout_v << i << " " << track->GetTrackID() << " " << track->GetLength() << " " << ((MpdKalmanHitR*)track->GetHits()->First())->GetLength() << endl;
-  iok = 0; //AZ-231020 MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
-  if (iok != 1) MpdKalmanFilter::Instance()->FindPca(track, vert);
-  track->SetNode(track->GetNodeNew()); //AZ-231020
-  track->SetPos(pos); //AZ-231020  
+  //AZ-030121 iok = 0; //AZ-231020 MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
+  iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
+  if (iok != 1) {
+    track->SetNodeNew(""); // for FindPca 
+    MpdKalmanFilter::Instance()->FindPca(track, vert);
+  }
+  //AZ-030121 track->SetNode(track->GetNodeNew()); //AZ-231020
+  //AZ-030121 track->SetPos(pos); //AZ-231020  
   track->SetParam(*track->GetParamNew()); // !!! track params at PCA
   return kTRUE;
 }
@@ -1763,6 +1768,7 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
       track->SetLengAtHit(track->GetLength()); 
       track->SetParamAtHit(param);
       track->SetWeightAtHit(*track->GetWeight());
+      track->SetPosAtHit(track->GetPosNew());
     }
 
     // Add scattering in Si
@@ -2278,5 +2284,168 @@ void MpdVectorFinder::GetShortTracks()
     ///if (it->second > 0) fout_v << ++left << " " << it->first << endl;
   }
 }
+
+//__________________________________________________________________________
+
+Bool_t MpdVectorFinder::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t charge)
+{
+  /// Refit track in ITS+TPC using track hits (toward beam line) for some
+  /// particle mass and charge hypothesis 
+
+  if (fTpcKF == NULL) fTpcKF = (MpdTpcKalmanFilter*) FairRun::Instance()->GetTask("TPC Kalman filter");
+  if (fTpcKF == NULL) {
+    cout << " !!! TPC Kalman Filter was not activated !!! " << endl;
+    exit(1);
+  }
+  MpdKalmanGeoScheme *geoScheme = MpdKalmanFilter::Instance()->GetGeo();
+  MpdKalmanHit hTmp;
+
+  if (track->GetNofTrHits() > track->GetNofIts()) {
+    // Refit inside TPC
+    //MpdTpcKalmanTrack *tpc = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(track->GetUniqueID()-1);
+    track->SetUniqueID(0); // reset ITS flag
+    //tr.GetWeightAtHit()->Print();
+    //tr.GetParamAtHit()->Print();
+    fTpcKF->Refit(track, mass, charge); // this mixes up hit order (ITS and TPC) !!!
+    //tr.GetWeight()->Print();
+    //tr.GetParam()->Print();
+    if (track->GetNofIts() == 0) return kTRUE;
+  
+    hTmp.SetType(MpdKalmanHit::kFixedR);
+    hTmp.SetPos(track->GetPos()); 
+    track->SetParamNew(*track->GetParam());
+    track->SetPos(track->GetPosNew());
+    track->ReSetWeight();
+    //TMatrixDSym w = *tr.GetWeight(); // save current weight matrix
+    //MpdKalmanFilter::Instance()->PropagateToHit(track,&hit,kFALSE);
+    MpdKalmanFilter::Instance()->PropagateParamToHit(track,&hTmp,kFALSE);
+    //tr.SetWeight(w); // restore original weight matrix (near TPC inner shell)
+    track->SetDirection(MpdKalmanTrack::kInward);
+    track->SetUniqueID(1);
+  } else {
+    track->SetDirection(MpdKalmanTrack::kOutward);
+    hTmp.SetType(MpdKalmanHit::kFixedR);
+    hTmp.SetPos(track->GetPos());
+    track->SetPos(track->GetPosNew());
+    track->SetParamNew(*track->GetParam());
+    Bool_t ok = MpdKalmanFilter::Instance()->PropagateParamToHit(track,&hTmp,kFALSE);
+    track->ReSetWeight();
+    ok = MpdKalmanFilter::Instance()->Refit(track, -1, 0);
+    if (!ok) return ok;
+    hTmp.SetPos(((MpdKalmanHit*)track->GetTrHits()->First())->GetDist()+1.0);
+    MpdKalmanFilter::Instance()->PropagateParamToHit(track,&hTmp,kFALSE);
+    track->SetDirection(MpdKalmanTrack::kInward);
+    track->SetPos(track->GetPosNew());
+    track->SetParam(*track->GetParamNew());
+    
+    Int_t nHits = track->GetNofHits();
+    nHits *= nHits;
+    TMatrixDSym *www = track->GetWeight();
+
+    for (Int_t i = 0; i < 5; ++i) {
+      for (Int_t j = i; j < 5; ++j) {
+	if (j == i) (*www)(i,j) /= nHits;
+	else (*www)(i,j) = (*www)(j,i) = 0.;
+      }
+    }
+  }
+  
+  Int_t ntot = track->GetNofTrHits(), nhits = TMath::Min(15,ntot); 
+  Int_t indx0 = ntot - nhits; 
+
+  TMatrixD param(5,1);
+  TMatrixDSym weight(5), pointWeight(5);
+  TString mass2 = "";
+  mass2 += mass * mass;
+  Double_t vert[3] = {0.0,0.0,0.0};
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07};
+
+  for (Int_t ih = indx0; ih < ntot; ++ih) {
+    MpdKalmanHit *hit = (MpdKalmanHit*) track->GetTrHits()->UncheckedAt(ih);
+    if (hit->GetUniqueID() == 0) continue; // skip TPC hits
+    MpdKalmanFilter::Instance()->PropagateToHit(track, hit, kFALSE, kTRUE); // do not adjust track length for the moment
+    Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(track, hit, pointWeight, param);
+    //cout << ih << " " << hit->GetPos() << " " << hit->GetUniqueID() << " " << dChi2 << "\n";
+
+    track->SetChi2(track->GetChi2()+dChi2);
+    weight = *track->GetWeight();
+    weight += pointWeight;
+    track->SetWeight(weight);
+    track->SetParamNew(param);
+    
+    // Add multiple scattering in the sensor
+    //*
+    Double_t x0 = 9.36; //, step = 0.005 * 4.0; // rad. length
+    TVector3 mom3 = track->Momentum3();
+    mom3.SetMag(1.0);
+    TVector3 norm = geoScheme->Normal(hit);
+    Double_t cosPhi = norm.Dot(mom3);
+
+    TMatrixDSym *cov = track->Weight2Cov();
+    Double_t th = track->GetParamNew(3);
+    Double_t cosTh = TMath::Cos(th);
+    //Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, x0, thick[lay]/cosPhistep, mass2);
+    Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, x0, 4*thick[hit->GetLayer()]/cosPhi, mass2);
+    (*cov)(2,2) += (angle2 / cosTh / cosTh);
+    (*cov)(3,3) += angle2;
+    Int_t iok = 0;
+    MpdKalmanFilter::Instance()->MnvertLocal(cov->GetMatrixArray(), 5, 5, 5, iok);
+    track->SetWeight(*cov);
+    //*/
+  }
+  
+  //------ Propagate track to the beam line
+  track->SetParam(*track->GetParamNew());
+  track->SetPos(track->GetPosNew());
+  Double_t pos = track->GetPos();
+  TMatrixD par = *track->GetParam();
+  TMatrixDSym cov = *track->Weight2Cov();
+  Double_t leng = track->GetLength();
+  TString nodeNew = track->GetNodeNew();
+  //cout << " 1: " << nodeNew << ", " << track->GetNode() << " " << track->GetHits()->GetEntriesFast() << endl;
+ 
+  // Go to beam pipe
+  hTmp.SetPos(fPipeR);
+  //hTmp.SetPos(2.9); // !!! FIXME
+  Int_t iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hTmp, kFALSE);
+  if (iok != 1) {
+    // Restore track
+    track->SetParam(par);
+    track->SetParamNew(par);
+    track->SetCovariance(cov);
+    track->ReSetWeight();
+    track->SetPos(pos);
+    track->SetPosNew(pos);
+    track->SetLength(leng);
+    //track->SetNode(node);
+    track->SetNodeNew(nodeNew);
+  } else {
+    // Add multiple scattering
+    //Double_t dX = 0.05 / 8.9; // 0.5 mm of Al
+    Double_t dX = 0.1 / 35.28; // 1. mm of Be
+    TMatrixDSym* pcov = track->Weight2Cov();
+    Double_t th = track->GetParamNew(3);
+    Double_t cosTh = TMath::Cos(th);
+    Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, dX);
+    (*pcov)(2,2) += (angle2 / cosTh / cosTh);
+    (*pcov)(3,3) += angle2;
+    Int_t ok = 0;
+    MpdKalmanFilter::Instance()->MnvertLocal(pcov->GetMatrixArray(), 5, 5, 5, ok);
+    track->SetWeight(*pcov);
+  }
+  track->Weight2Cov(); // rebuild covar matrix (it was overwritten by weight above)
+
+  hTmp.SetPos(0.);
+  hTmp.SetMeas(0,track->GetParam(2)); // track Phi
+  iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hTmp, kFALSE);
+  if (iok != 1) {
+    track->SetNodeNew(""); // for FindPca 
+    MpdKalmanFilter::Instance()->FindPca(track, vert);
+  }
+  track->SetParam(*track->GetParamNew()); // !!! track params at PCA
+  return kTRUE;
+}
+
+//__________________________________________________________________________
 
 ClassImp(MpdVectorFinder); 
