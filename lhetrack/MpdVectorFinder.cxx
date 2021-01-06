@@ -74,7 +74,8 @@ MpdVectorFinder::MpdVectorFinder(const char *name, Bool_t sa, Int_t iVerbose)
   fNTracks(0),
   fTrackExact(NULL),
   fGeo(0),
-  fSa(sa) // by default its + tpc tracking is done
+  fSa(sa), // by default its + tpc tracking is done
+  fTpcKF(NULL)
 {
   fKHits1 = new TClonesArray("MpdKalmanHit", 100);
   for (Int_t i = 0; i < 5; ++i) {
