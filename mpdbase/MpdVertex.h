@@ -77,6 +77,16 @@ class MpdVertex : public TNamed
 		 Int_t ndf, Int_t nTracks, const TMatrixFSym& covMat);
   void SetIndices(TArrayI *inds) { *fTrInd = *inds; } // set track indices
 
+  void SetCovMatrix(const Double_t *array) 
+  { Int_t iii = 0;
+    for (Int_t ind = 0; ind < 9; ++ind) {
+      Int_t i = ind % 3;
+      Int_t j = ind / 3;
+      if (j > i) continue;
+      fCovMatrix[iii++] = array[ind]; 
+    } 
+  }
+
   /** Reset the member variables **/
   void Reset();
 		    
