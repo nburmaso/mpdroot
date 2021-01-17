@@ -80,6 +80,8 @@ void SetTasks(MpdEventManager* fMan)
     fMan->AddTask(EmcPoint);
     MpdMCPointDraw* McordPoint = new MpdMCPointDraw("McordPoint", mcPointColor, kDot);
     fMan->AddTask(McordPoint);
+    MpdMCPointDraw* BmdPoint = new MpdMCPointDraw("BmdPoint", mcPointColor, kFullSquare);
+    fMan->AddTask(BmdPoint);
 
     // draw MC geometry tracks
     MpdMCTracks* GeoTrack = new MpdMCTracks("GeoTracks");
@@ -111,6 +113,9 @@ void SetTasks(MpdEventManager* fMan)
     // draw ZDC towers
     MpdZdcTowerDraw* MpdZdcTower= new MpdZdcTowerDraw("MpdZdcTower", 0.0001 /*energy threshold, GeV*/, kFALSE, 1);
     fMan->AddTask(MpdZdcTower);
+    // draw BMD towers
+    MpdBmdTowerDraw* MpdBmdTower= new MpdBmdTowerDraw("MpdBmdTower", 0.0001, kFALSE, 1);
+    fMan->AddTask(MpdBmdTower);
 
     // save EventDisplay Screenshot
     //MpdWebScreenshots* WebScreenshots = new MpdWebScreenshots("WebScreenshots", "/var/www/html/events"); // for WEB-page

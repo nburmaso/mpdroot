@@ -66,12 +66,14 @@ if (MPDROOT)
     ${CMAKE_SOURCE_DIR}/lhetrack
     ${CMAKE_SOURCE_DIR}/emc
     ${CMAKE_SOURCE_DIR}/zdc
+    ${CMAKE_SOURCE_DIR}/bmd
   )
   Set(SRCS
     ${SRCS}
     mpd/MpdGlobalTrackDraw.cxx
     mpd/MpdEmcTowerDraw.cxx
     mpd/MpdZdcTowerDraw.cxx
+    mpd/MpdBmdTowerDraw.cxx
   )
 endif (MPDROOT)
 

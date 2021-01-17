@@ -25,6 +25,7 @@
 #pragma link C++ class MpdGlobalTrackDraw;
 #pragma link C++ class MpdEmcTowerDraw;
 #pragma link C++ class MpdZdcTowerDraw;
+#pragma link C++ class MpdBmdTowerDraw;
 
 #endif
 

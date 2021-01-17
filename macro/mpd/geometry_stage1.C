@@ -10,34 +10,39 @@ void geometry_stage1(FairRunSim *fRun) {
 
   FairModule *Pipe = new FairPipe("PIPE");
   Pipe->SetGeometryFileName("pipe_v3.root");
-  fRun->AddModule(Pipe);
+  //fRun->AddModule(Pipe);
 
   FairModule *Magnet = new FairMagnet("MAGNET");
   Magnet->SetGeometryFileName("magnet_v5.root");
-  fRun->AddModule(Magnet);
+  //fRun->AddModule(Magnet);
 
   FairDetector *Ffd = new MpdFfd("FFD", kTRUE);
   Ffd->SetGeometryFileName("FFD_v6.root");
-  fRun->AddModule(Ffd);
+  //fRun->AddModule(Ffd);
 
   FairDetector *Tpc = new TpcDetector("TPC", kTRUE);
   Tpc->SetGeometryFileName("tpc_v9.root");
-  fRun->AddModule(Tpc);
+  //fRun->AddModule(Tpc);
 
   FairDetector *Tof = new MpdTof("TOF", kTRUE);
   Tof->SetGeometryFileName("tof_v8_3.root");
-  fRun->AddModule(Tof);
+  //fRun->AddModule(Tof);
 
   FairDetector *Emc = new MpdEmcKI("EMC", kTRUE);
   Emc->SetGeometryFileName("emc_v3.root");
-  fRun->AddModule(Emc);
+  //fRun->AddModule(Emc);
 
   FairDetector *Zdc = new MpdZdc("ZDC", kTRUE);
   Zdc->SetGeometryFileName(
       "zdc_oldnames_7sect_v1_no_overlaps_w_pipe_magnet.root");
-  fRun->AddModule(Zdc);
+  //fRun->AddModule(Zdc);
 
   FairDetector *mcord = new MpdMcord("MCORD",kTRUE);
   mcord->SetGeometryFileName("mcord_v3.root");
-  fRun->AddModule(mcord);
+  //fRun->AddModule(mcord);
+
+      FairDetector *Bbc = new BmdDetector("BMD",kTRUE );
+    Bbc->SetGeometryFileName("bbc_hexagon_v3.root");
+    //Bbc->SetGeometryFileName("simple1_v1.root");
+   fRun->AddModule(Bbc);
 }

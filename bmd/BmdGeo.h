@@ -25,41 +25,32 @@
 
 // Collaborating Class Declarations --
 
-
-
 class BmdGeo : public FairGeoSet {
 public:
-
   // Constructors/Destructors ---------
-   BmdGeo();
-  ~BmdGeo(){}
+  BmdGeo();
+  ~BmdGeo() {}
 
   // Operators
-  
 
   // Accessors -----------------------
-  const char* getModuleName(Int_t);
-  const char* getEleName(Int_t);
-  //inline Int_t getModNumInMod(const TString&);
-
+  const char *getModuleName(Int_t);
+  const char *getEleName(Int_t);
+  // inline Int_t getModNumInMod(const TString&);
 
   // Modifiers -----------------------
 
-
   // Operations ----------------------
 protected:
-  char modName[20];  // name of module
-  char eleName[20];  // substring for elements in module
+  char modName[20]; // name of module
+  char eleName[20]; // substring for elements in module
 private:
-
   // Private Data Members ------------
-
 
   // Private Methods -----------------
 
 public:
-  ClassDef(BmdGeo,1)
-
+  ClassDef(BmdGeo, 1)
 };
 
 #endif
