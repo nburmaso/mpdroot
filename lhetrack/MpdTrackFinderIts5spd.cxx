@@ -81,19 +81,24 @@ MpdTrackFinderIts5spd::~MpdTrackFinderIts5spd()
 //__________________________________________________________________________
 InitStatus MpdTrackFinderIts5spd::Init()
 {
+
+  //----- Get pipe radius
+   fPipeR = ((TGeoTube*)gGeoManager->GetVolume("pipe1")->GetShape())->GetRmax();
+   cout << "************** Pipe radius: " << fPipeR << " cm " << endl;
+
   //return ReInit();
   if (ReInit() != kSUCCESS) return kERROR;
 
-//----- Read database
+  //----- Read database
 
   FairRuntimeDb* rtdb = FairRun::Instance()->GetRuntimeDb();
   MpdStsGeoPar *geoPar = (MpdStsGeoPar*) rtdb->getContainer("MpdStsGeoPar");
-// cout << geoPar << endl;
+  // cout << geoPar << endl;
   TString volName = "sts01 ", path = "";
   TObjArray* sensNodes = geoPar->GetGeoSensitiveNodes();
-// cout << sensNodes->GetEntriesFast() << " " << geoPar->GetGeoPassiveNodes()->GetEntriesFast() << endl;
+  // cout << sensNodes->GetEntriesFast() << " " << geoPar->GetGeoPassiveNodes()->GetEntriesFast() << endl;
 
-//----- Process modular geometry
+  //----- Process modular geometry
 
    fGeo = 1; 
    Int_t nLay = 5;
@@ -153,11 +158,11 @@ InitStatus MpdTrackFinderIts5spd::Init()
    }
    FillGeoScheme();
    
-//----- Get pipe radius
-   fPipeR = ((TGeoTube*)gGeoManager->GetVolume("pipe1")->GetShape())->GetRmax();
-   cout << "************** Pipe radius: " << fPipeR << " cm " << endl;
+   //----- Get pipe radius
+   //fPipeR = ((TGeoTube*)gGeoManager->GetVolume("pipe1")->GetShape())->GetRmax();
+   //cout << "************** Pipe radius: " << fPipeR << " cm " << endl;
 
-//----- Get cables
+   //----- Get cables
    TObjArray *vols = gGeoManager->GetListOfVolumes();
    Int_t nvols = vols->GetEntriesFast(), ncables = 0;
    for (Int_t i = 0; i < nvols; ++i) {
@@ -585,8 +590,11 @@ void MpdTrackFinderIts5spd::DoTracking(Int_t iPass)
     //Double_t pos = ((MpdKalmanHit*)track->GetHits()->Last())->GetPos();
     //MpdKalmanFilter::Instance()->PropagateParamR(track, &hit, kTRUE);
     iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hit, kTRUE);
-    if (iok != 1) MpdKalmanFilter::Instance()->FindPca(track, vert);
-    else track->SetNodeNew(""); //??? 3-jan-2018
+    if (iok != 1) {
+      track->SetNodeNew(""); // for FindPca 
+      MpdKalmanFilter::Instance()->FindPca(track, vert);
+      track->SetCovariance(cov); //AZ-040121
+    }
     //track->SetPos(pos); // restore position
     track->SetParam(*track->GetParamNew()); // !!! track params at PCA
     //track->GetCovariance()->Print();
@@ -603,6 +611,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 
   const Int_t maxBr = 24, maxBrLay = 2000; // max number of branches
   //const Int_t maxBr = 100, maxBrLay = 1000; // max number of branches
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07}; // layer thicknesses
 
   MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
 
@@ -631,6 +640,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
   branch[0] = *track;
 
   TString mass2 = "0.0194797849"; // pion mass squared
+  /*
   if (fMCTracks) {
     // Get particle mass - ideal PID
     MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
@@ -644,9 +654,10 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
       }
     }
   }
+  */
 
-// cout << "##### Cycle start ##### " << endl;
-//  cout << " layBeg, LayEnd: " << layBeg << " " << layEnd << endl;
+  // cout << "##### Cycle start ##### " << endl;
+  //  cout << " layBeg, LayEnd: " << layBeg << " " << layEnd << endl;
  
   for (Int_t lay = layBeg; lay != layEnd; lay+=dLay) {
     Int_t nLay = GetNofHitsInLayer(lay);
@@ -726,7 +737,8 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 	  MpdKalmanHit *hit = (MpdKalmanHit*) fKHits->UncheckedAt(it1->second);
 	  if (it1 == ret.first) {
 	    norm = geo->Normal(hit);
-	    step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	    //step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	    step = thick[hit->GetLayer()] / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
 	  }	       
 	  // Exclude used hits
 	  if (hit->GetFlag() & MpdKalmanHit::kUsed) continue;
@@ -789,7 +801,8 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 	if (!MpdKalmanFilter::Instance()->PropagateToHit(curTr,&hitTmp,kTRUE,kTRUE)) { }
 
 	// Add multiple scattering in the sensor
-	Double_t x0 = 9.36, step = 0.005 * 4.0; // rad. length
+	//Double_t x0 = 9.36, step = 0.005 * 4.0; // rad. length
+	Double_t x0 = 9.36, step = thick[lay] * 4.0; // rad. length
 	TMatrixDSym *cov = curTr->Weight2Cov();
 	Double_t th = curTr->GetParamNew(3);
 	Double_t cosTh = TMath::Cos(th);
@@ -1067,7 +1080,7 @@ void MpdTrackFinderIts5spd::AddHits()
 
 //__________________________________________________________________________
 
-void MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t charge)
+Bool_t MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t charge)
 {
   /// Refit track in ITS+TPC using track hits (toward beam line) for some
   /// particle mass and charge hypothesis 
@@ -1077,15 +1090,17 @@ void MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t
     cout << " !!! TPC Kalman Filter was not activated !!! " << endl;
     exit(1);
   }
+  MpdKalmanGeoScheme *geoScheme = MpdKalmanFilter::Instance()->GetGeo();
 
   //MpdTpcKalmanTrack *tpc = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(track->GetUniqueID()-1);
   track->SetUniqueID(0); // reset ITS flag
   //tr.GetWeightAtHit()->Print();
   //tr.GetParamAtHit()->Print();
-  fTpcKF->Refit(track, mass, charge); // this mixes up hit order (ITS and TPC) !!!
+  //AZ fTpcKF->Refit(track, mass, charge); // this mixes up hit order (ITS and TPC) !!!
+  if (track->GetNofTrHits() > track->GetNofIts()) fTpcKF->Refit(track, mass, charge); // this mixes up hit order (ITS and TPC) !!!
   //tr.GetWeight()->Print();
   //tr.GetParam()->Print();
-  if (track->GetNofIts() == 0) return;
+  if (track->GetNofIts() == 0) return kTRUE;
   
   MpdKalmanHit hTmp;
   hTmp.SetType(MpdKalmanHit::kFixedR);
@@ -1108,6 +1123,7 @@ void MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t
   TString mass2 = "";
   mass2 += mass * mass;
   Double_t vert[3] = {0.0,0.0,0.0};
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07};
 
   for (Int_t ih = indx0; ih < ntot; ++ih) {
     MpdKalmanHit *hit = (MpdKalmanHit*) track->GetTrHits()->UncheckedAt(ih);
@@ -1124,11 +1140,17 @@ void MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t
     
     // Add multiple scattering in the sensor
     //*
-    Double_t x0 = 9.36, step = 0.005 * 4.0; // rad. length
+    Double_t x0 = 9.36; //, step = 0.005 * 4.0; // rad. length
+    TVector3 mom3 = track->Momentum3();
+    mom3.SetMag(1.0);
+    TVector3 norm = geoScheme->Normal(hit);
+    Double_t cosPhi = norm.Dot(mom3);
+
     TMatrixDSym *cov = track->Weight2Cov();
     Double_t th = track->GetParamNew(3);
     Double_t cosTh = TMath::Cos(th);
-    Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, x0, step, mass2);
+    //Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, x0, thick[lay]/cosPhistep, mass2);
+    Double_t angle2 = MpdKalmanFilter::Instance()->Scattering(track, x0, 4*thick[hit->GetLayer()]/cosPhi, mass2);
     (*cov)(2,2) += (angle2 / cosTh / cosTh);
     (*cov)(3,3) += angle2;
     Int_t iok = 0;
@@ -1148,8 +1170,8 @@ void MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t
   //cout << " 1: " << nodeNew << ", " << track->GetNode() << " " << track->GetHits()->GetEntriesFast() << endl;
  
   // Go to beam pipe
-  //hTmp.SetPos(fPipeR);
-  hTmp.SetPos(2.9); // !!! FIXME
+  hTmp.SetPos(fPipeR);
+  //hTmp.SetPos(2.9); // !!! FIXME
   Int_t iok = MpdKalmanFilter::Instance()->PropagateToHit(track, &hTmp, kFALSE);
   if (iok != 1) {
     // Restore track
@@ -1184,6 +1206,7 @@ void MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t
   if (iok != 1) MpdKalmanFilter::Instance()->FindPca(track, vert);
   else track->SetNodeNew(""); //??? 3-jan-2018
   track->SetParam(*track->GetParamNew()); // !!! track params at PCA
+  return kTRUE;
 }
 
 //__________________________________________________________________________

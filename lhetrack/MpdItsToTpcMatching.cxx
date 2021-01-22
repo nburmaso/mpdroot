@@ -120,6 +120,27 @@ void MpdItsToTpcMatching::Reset()
 
 //__________________________________________________________________________
 
+void MpdItsToTpcMatching::GetItsTracks(multimap <Float_t, MpdItsKalmanTrack*> &multimapIts,
+				       multimap <Float_t, MpdItsKalmanTrack*> &multimapItsPhi)
+{
+  /// Get ITS tracks linked to their outer hit positions (rphi and z)
+
+  Int_t n = fItsTracks->GetEntriesFast();
+  Float_t phi;
+  MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
+  
+  for (Int_t i = 0; i < n; i++) {
+    MpdItsKalmanTrack *track = (MpdItsKalmanTrack*) fItsTracks->UncheckedAt(i);
+    MpdKalmanHit *hit = (MpdKalmanHit*) track->GetTrHits()->First();
+    TVector3 pos = geo->GlobalPos(hit);
+    cout << pos.Pt() << " -aaaaaaaaaa- " << pos.Z() << endl;
+    multimapIts.insert(pair<Float_t,MpdItsKalmanTrack*>(pos.Z(),track));
+  }
+
+}
+
+//__________________________________________________________________________
+
 void MpdItsToTpcMatching::RefitItsTo27(multimap <Float_t, MpdItsKalmanTrack*> &multimapIts,
 				       multimap <Float_t, MpdItsKalmanTrack*> &multimapItsPhi)
 {
@@ -175,6 +196,8 @@ void MpdItsToTpcMatching::RefitTpcTo27(multimap <Float_t, MpdTpcKalmanTrack*> &m
   // Propagate TPC track ro R = 27 cm
   
   Int_t n = fTpcTracks->GetEntriesFast();
+  fTpcIndSet.clear();
+  
   Float_t phi;
   cout << "fTpcTracks " << n << endl;
   cout << "refit TPC" << endl;
@@ -237,6 +260,7 @@ void MpdItsToTpcMatching::RefitTpcTo27(multimap <Float_t, MpdTpcKalmanTrack*> &m
     if (TMath::Abs(TMath::Pi() - phi) < TMath::Pi() / 9.0)
       ///multimapTpcPhi.insert(pair<Float_t, MpdTpcKalmanTrack*>(phi - TMath::Sign(1, phi) * 2 * TMath::Pi(), track));
       multimapTpcPhi.insert(pair<Float_t, MpdTpcKalmanTrack*>((*parNew)(0,0) - TMath::Sign(1, phi) * 2 * TMath::Pi() * track->GetPosNew(), track));
+    fTpcIndSet.insert(i); // store TPC track indices
   }
 }
 
@@ -255,6 +279,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
   multimap <Float_t, MpdTpcKalmanTrack*> multimapTpc, multimapTpcPhi;
 
   RefitItsTo27(multimapIts, multimapItsPhi);
+  //GetItsTracks(multimapIts, multimapItsPhi);
   RefitTpcTo27(multimapTpc, multimapTpcPhi);
 
   Int_t n = fItsTracks->GetEntriesFast();
@@ -264,6 +289,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 
   Float_t epsz = 2.5; //0.5;/// TODO should it depend on pt as well?
   Float_t epsphi = 2.5; //0.5;//0.2 for phi, 0.5 for rphi;
+  const Double_t thick[9] = {0.005, 0.005, 0.005, 0.07, 0.07};
 
   Int_t k = 0, tpck = 0;
 
@@ -318,6 +344,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
       mom3.SetMag(1.0);
 
       TString mass2 = "0.0194797849"; // pion mass squared
+      /*
       if (fMCTracks) {
 	// Get particle mass - ideal PID
 	MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(temp->GetTrackID());
@@ -331,6 +358,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 	  }
 	}
       }
+      */
       //AZ
 
       Int_t hitindex = 0;
@@ -339,7 +367,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
       for (Int_t i = 0; i < (itits->second)->GetHits()->GetEntriesFast(); i++) {
         MpdKalmanHit* hitTmp = ((MpdKalmanHit*) (itits->second)->GetHits()->UncheckedAt(i));
 	///cout << "temp " << temp->GetNofHits() << " " << temp->GetNofIts() << " " << temp->GetNofTrHits()<< endl;
-
+	
 	Bool_t ok = MpdKalmanFilter::Instance()->PropagateToHit(temp, hitTmp, kFALSE, kTRUE); // propagate tpc track to its hits
 	Double_t dChi2 = MpdKalmanFilter::Instance()->FilterHit(temp, hitTmp, pointWeight, param); 
 
@@ -364,7 +392,8 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 
 	// AZ - Add multiple scattering in the sensor
 	norm = MpdKalmanFilter::Instance()->GetGeo()->Normal(hitTmp);
-	Double_t step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	//Double_t step = 0.005 / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
+	Double_t step = thick[hitTmp->GetLayer()] / TMath::Abs(norm * mom3) * 4.0; // extra factor 4. - possible overlaps 
 	Double_t x0 = 9.36; // rad. length
 	TMatrixDSym *cov = temp->Weight2Cov();
 	Double_t th = temp->GetParamNew(3);
@@ -493,6 +522,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 	
 	//AZ if (track->GetNofHits() > 2) {
 	/// writing to TpcTracksRefit
+	fTpcIndSet.erase(track->GetUniqueID()-1); // exclude matched TPC track
 	track->SetUniqueID(std::get<1>(tupl)->GetTrackID()); /// ITS track ID
 	//cout << "its and tpc track id equal " << track->GetTrackID() << " " << track->GetUniqueID() << endl;
 
@@ -517,7 +547,8 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 	  //AZ new ((*fTpcTracksRefit)[matchedCount]) MpdItsKalmanTrack(*temp); /// *std::get<1>(tupl)
 	new ((*fTpcTracksRefit)[matchedCount]) MpdItsKalmanTrack(*track); //AZ
 	trtr->SetChi2(temp->GetChi2Its()); //AZ
-	trtr->SetUniqueID(std::get<1>(tupl)->GetTrackID());
+	//AZ-010121 trtr->SetUniqueID(std::get<1>(tupl)->GetTrackID());
+	trtr->SetUniqueID(std::get<1>(tupl)->GetTrackID()+1); //AZ - to avoid 0 
 	delete track;
       }
       matchedCount++;
@@ -571,6 +602,14 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
     delete track; //AZ
   }
 
+  // Add TPC-only tracks to the same container
+  Int_t nout = fTpcTracksRefit->GetEntriesFast();
+  
+  for (set<Int_t>::iterator sit = fTpcIndSet.begin(); sit != fTpcIndSet.end(); ++sit) {
+    MpdTpcKalmanTrack *tr = (MpdTpcKalmanTrack*) fTpcTracks->UncheckedAt(*sit);
+    new ((*fTpcTracksRefit)[nout++]) MpdItsKalmanTrack(*tr);
+  }
+  
   cout << "fItsTracks size " << fItsTracks->GetEntriesFast() << endl;
   cout << "Its tracks without match: " << k << endl;
   cout << "Overall possible tpc+its tracks: " << tpck << endl;
@@ -578,6 +617,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
   cout << "Overall good matched tracks: " << qualTr << endl;
   cout << "Overall used ITS hits when matching: " << usedItsHits << endl;
   cout << "wrongMatch: " << wrongMatch << endl;
+  cout << "leftover unmatched TPC tracks: " << fTpcIndSet.size() << endl;
 
   fout_v_match << "fItsTracks size " << fItsTracks->GetEntriesFast() << endl;
   fout_v_match << "Its tracks without match: " << k << endl;

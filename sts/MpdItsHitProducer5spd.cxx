@@ -73,8 +73,8 @@ InitStatus MpdItsHitProducer5spd::Init() {
   // Create and register output array
   fDigiArray = new TClonesArray("MpdItsHit5spd");
   
-  ioman->Register("StsHit","Sts",fDigiArray,kTRUE);
-  //ioman->Register("StsHit","Sts",fDigiArray,kFALSE);
+  //ioman->Register("StsHit","Sts",fDigiArray,kTRUE);
+  ioman->Register("StsHit","Sts",fDigiArray,kFALSE);
   CreateStructure();
   
   cout << "-I- MpdItsHitProducer5spd: Intialization finished successfully" << endl;
@@ -159,13 +159,15 @@ void MpdItsHitProducer5spd::Exec(Option_t* opt) {
     layer = ((detId >> 13) & 7);
     
     Double_t pos[3] = {0};
-    TVector3 pos3;
+    //AZ TVector3 pos3;
+    TVector3 pos3, pos3out, mom3; //AZ-161020
     point->Position(pos3);
-    pos3.GetXYZ(pos); // global coordinate
+    //AZ-161020 pos3.GetXYZ(pos); // global coordinate
     
-    TGeoNode *node = gGeoManager->FindNode(pos[0],pos[1],pos[2]);
+    //AZ-161020 TGeoNode *node = gGeoManager->FindNode(pos[0],pos[1],pos[2]);
+    TGeoNode *node = gGeoManager->FindNode(pos3[0],pos3[1],pos3[2]);
     if (node == 0x0) {
-      cout << " !!! Missing node " << pos[0] << " " << pos[1] << " " << pos[2] << endl;
+      cout << " !!! Missing node " << pos3[0] << " " << pos3[1] << " " << pos3[2] << endl;
       exit(0);
     }
     //cout << "Node: " << node->GetName() << "  Point position: " << pos[0] << " " << pos[1] << " " << pos[2] << endl;
@@ -178,6 +180,17 @@ void MpdItsHitProducer5spd::Exec(Option_t* opt) {
     //cout << gGeoManager->GetPath() << " DetectorID = " << detId << endl;
     //cout << " Layer: "<< layer << " Ladder: " << ladder << " Sector: " << sector << endl;
     
+    //AZ-161020
+    point->PositionOut(pos3out);
+    point->Momentum(mom3);
+    mom3.SetMag(0.0002); // step 2 um
+    mom3 *= -1;
+    pos3out += mom3; // step back
+    pos3 += pos3out;
+    pos3 *= 0.5;
+    pos3.GetXYZ(pos); // global coordinate
+    //AZ
+
     Double_t loc[3] = {0.};
     gGeoManager->MasterToLocal(pos,loc);
     

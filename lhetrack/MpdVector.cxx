@@ -25,7 +25,7 @@ MpdVector::MpdVector()
 {
   /// Default constructor
   
-  //for (Int_t i = 0; i < 2; ++i) fMeas[i] = fErr[i] = fCosSin[i] = 0;
+  for (Int_t i = 0; i < 2; ++i) fMeas[i] = fErr[i] = fCosSin[i] = 0;
   // fCosSin[0] = 1.;
 }
  

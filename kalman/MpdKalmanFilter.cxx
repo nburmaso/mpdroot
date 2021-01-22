@@ -201,7 +201,7 @@ Bool_t MpdKalmanFilter::PropagateToHit(MpdKalmanTrack *track, const MpdKalmanHit
 
   if (hit->GetType() == MpdKalmanHit::kFixedR) {
     //if (TMath::Abs(pos.Pt() - track->GetPos()) < fgkEpsilon) return kTRUE; // the "same" pos
-    if (TMath::Abs(hit->GetPos() - track->GetPos()) < fgkEpsilon) { 
+    if (track->GetNode() == "" && TMath::Abs(hit->GetPos() - track->GetPos()) < fgkEpsilon) { 
       if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Stop(Class()->GetName(),__FUNCTION__);
       return kTRUE; // the "same" pos
     }
