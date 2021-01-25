@@ -53,3 +53,6 @@ html/
 
 # VS Code directory
 .vscode
+
+# QT Creator
+CMakeLists.txt.user
