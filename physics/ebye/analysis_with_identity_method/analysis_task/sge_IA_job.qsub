@@ -1,0 +1,17 @@
+#!/bin/bash
+# # $ -N task_$1_$2
+#$ -j y
+#$ -cwd
+# request Bourne again shell as shell for job
+#$ -S /bin/bash
+
+echo "  Start date: `date` (`hostname`)"
+
+#eval "[PATH_TO_BUILD_DIR]/build/config.sh"
+#root -b -q '$VMCWORKDIR/macro/your_root_macro.C(your_int_parameter, "your_string_parameter"...)'
+
+echo 'file ids:' $1 $2
+. /lhep/users/altsybee/sw/mpdroot/build/config.sh
+root -b -q "/lhep/users/altsybee/test_March_2021_before_commit/get_tree_MPD_task.cc($1, $2)"
+
+echo "  End date: `date`"
