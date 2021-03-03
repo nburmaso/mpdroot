@@ -34,7 +34,7 @@ The script does several things:
 <a name="sec3"></a>
 ## 3. Extraction of the special tree with tracks for identity method
 After that, the script `get_dEdx_vs_mom_and_true_pi_K_p_moments_from_tree.C` runs over obtained `an_results.root` file in order to:
-1) extract the dEdx vs pTPC distributions and put them in `file_dEdx_in_bins.root`,
+1) extract the dEdx vs pTPC distributions and put them in `file_dEdx_in_bins.root` (IMPORTANT: this is done with utilizing the PID info from simulations! With real data, this is not possible, and sophisticated stable fits in narrow momentum slices will be required.)
 2) calculate the true (i.e. primary-particle level) moments (first, second, cross-moments) and put them in `file_truth_moments_IM.root`.
 
 <a name="sec4"></a>
