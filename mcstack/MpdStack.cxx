@@ -116,7 +116,15 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
   particle->SetPolarisation(polx, poly, polz);
   particle->SetWeight(weight);
   particle->SetUniqueID(proc);
-
+  //AZ - global polarization transfer to decay Lambda
+  if (TMath::Abs(pdgCode) == 3122 && proc == kPDecay) {
+    TParticle *moth = (TParticle*) partArray.UncheckedAt(parentId);
+    TVector3 polar;
+    moth->GetPolarisation(polar);
+    particle->SetPolarisation(polar);
+    particle->SetWeight(moth->GetWeight());
+  }    
+  
   // --> Increment counter
   if (parentId < 0) fNPrimaries++;
 
@@ -191,6 +199,14 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
   particle->SetPolarisation(polx, poly, polz);
   particle->SetWeight(weight);
   particle->SetUniqueID(proc);
+  //AZ - global polarization transfer to decay Lambda
+  if (TMath::Abs(pdgCode) == 3122 && proc == kPDecay) {
+    TParticle *moth = (TParticle*) partArray.UncheckedAt(parentId);
+    TVector3 polar;
+    moth->GetPolarisation(polar);
+    particle->SetPolarisation(polar);
+    particle->SetWeight(moth->GetWeight());
+  }    
 
   // --> Increment counter
   if (parentId < 0) fNPrimaries++;

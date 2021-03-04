@@ -47,6 +47,7 @@ MpdDecayerPyt8* MpdDecayerPyt8::Instance()
 MpdDecayerPyt8::MpdDecayerPyt8():
   fPythia8(new TPythia8()),
   fDebug(0),
+  fGlobalPolar(0),
   fLambda(NULL),
   fRandom(NULL)
 {
@@ -317,13 +318,15 @@ void MpdDecayerPyt8::Gdeca2(Double_t xm0, Double_t xm1, Double_t xm2, Double_t p
   
   TVector3 polar;
   part->GetPolarisation(polar);
+  if (fGlobalPolar) polar.SetMag(part->GetWeight()); // particle polarization value is passed as its weight 
   
-  if (TMath::Abs(polar.X()) < 0.0001 && TMath::Abs(polar.Z()) < 0.0001) {
+  if (TMath::Abs(polar.X()) < 0.0001 && TMath::Abs(polar.Z()) < 0.0001 && TMath::Abs(polar.Y()) < 0.0001) {
     costh = 2. * random[0] - 1.0;
     phi = TMath::TwoPi() * random[1];
   } else {
     // Anisotropic decay angular distribution (0.5*(1+alpha*P*cos)).
-    Anisotropy (pvert, random, polar.X(), phi, costh);
+    //Anisotropy (pvert, random, polar.X(), phi, costh);
+    Anisotropy (pvert, random, polar, phi, costh);
   }
 
   if (TMath::Abs(costh) >= 1.0) costh = TMath::Sign (1.0, costh);
@@ -349,13 +352,18 @@ void MpdDecayerPyt8::Gdeca2(Double_t xm0, Double_t xm1, Double_t xm2, Double_t p
 ////////////////////////////////////////////////////////////////////////////////
 /// Simulate anisotropic (due to polarization) decay of lambda
 
-void MpdDecayerPyt8::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Double_t &phi, Double_t &costh)
+//void MpdDecayerPyt8::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar, Double_t &phi, Double_t &costh)
+void MpdDecayerPyt8::Anisotropy (Double_t *pvert, Double_t *rndm, TVector3& polar3, Double_t &phi, Double_t &costh)
 {
   // Simulate anisotropic (due to polarization) decay of lambda
 
   //exit(0);
   //std::ofstream outfile ("costh.txt");
   //freopen ("costh.txt", "w", stdout);
+
+  Double_t polar = 0.0;
+  if (fGlobalPolar) polar = polar3.Mag(); // global polarization - CHECK THIS
+  else polar = polar3.X(); // transverse polar.
 
   //const Double_t alpha = 0.642;
   static TF1 f("f","1+0.642*[0]*x",-1,1); 
@@ -373,8 +381,10 @@ void MpdDecayerPyt8::Anisotropy (Double_t *pvert, Double_t *rndm, Double_t polar
   // Compute normal vector
   TVector3 beam(0.0, 0.0, 1.0);
   TVector3 lambda(pvert[0], pvert[1], pvert[2]);
-  TVector3 norm = beam.Cross(lambda).Unit();
-
+  TVector3 norm;
+  if (fGlobalPolar) norm = polar3.Unit(); // global polarization
+  else norm = beam.Cross(lambda).Unit(); // transverse polarization
+    
   // Unit vector with theta and phi w.r.t. normal
   TVector3 unit(sinth*TMath::Cos(phi), sinth*TMath::Sin(phi), costhe);
 
