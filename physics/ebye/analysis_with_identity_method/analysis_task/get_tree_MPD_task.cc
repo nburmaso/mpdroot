@@ -1,7 +1,7 @@
 // =======================================================================================================================================
 // This code extracts various kinds of information and an event tree from the MPD DST files with simulations.
 // Files for analysis are merged into a chain from the strDirInputDST directory, filenames are taken from inputFilesByHand.txt.
-// Author: Igor Altsybeev (SPbSU), 10.2020
+// Author: Igor Altsybeev (SPbSU), Igor.Altsybeev@cern.ch, 10.2020
 // =======================================================================================================================================
 
 
