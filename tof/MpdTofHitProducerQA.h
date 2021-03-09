@@ -18,7 +18,9 @@ class MpdTofHitProducerQA
 	TH1D   			*hOccup, *htR, *hDistance;        	
         TH2D   			*hMergedTimes, *hNeighborPair, *hXYSmeared, *hXYSmeared2,*hXYSmearedCross, *hXYSmearedCross2, *hEtaPhi, *h2Strips, *h2Detectors, *hRZ;
 	TH2D			*hHitPointPerEvent = nullptr, *hPointDistanceSame = nullptr, *hPointDistanceDiff = nullptr, *hDevHitYZOrigin = nullptr, *hDevHitXZOrigin = nullptr;
-	TH2D			*hHitPositionInsideStrip = nullptr, *hMCPositionInsideStrip = nullptr, *hPointXZOrigin = nullptr, *hHitXZOrigin = nullptr, *hHitYZOrigin = nullptr;
+	TH2D			*hHitPositionInsideStrip = nullptr, *hMCPositionInsideStrip = nullptr, *hPointXZOrigin = nullptr,*hPointYZOrigin = nullptr, *hHitXZOrigin = nullptr, *hHitYZOrigin = nullptr;
+	TH2D			*hXZCentralDetector = nullptr,*hYZCentralDetector = nullptr, *hXZDetector = nullptr,*hYZDetector = nullptr;
+
 	TEfficiency		*effHitGap2, *effHitGap13, *effCrossHit;	
 	
         TString			fFlnm;
@@ -42,6 +44,7 @@ public :
 	void		PointDistanceTest(const TClonesArray*);
 	void		PositionInsideStripTest(const TVector3& stripCenter, const TVector3& mcPosition, const TVector3& hitPosition);
 	void		RotationToOriginTest(const TGeoCombiTrans& matrix, const TVector3& mcPosition, const TVector3& hitPosition);
+	void		CentralDetectorTest(Int_t suid, const TVector3& hitPosition);
 
 	inline void	FillOccupancy(Double_t occupancy){ hOccup->Fill(occupancy);}
 	inline void	FillMergedTimes(Double_t time1, Double_t time2){ hMergedTimes->Fill(time1, time2);}

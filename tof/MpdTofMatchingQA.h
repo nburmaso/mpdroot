@@ -47,7 +47,8 @@ class MpdTofMatchingQA
 	TEfficiency		*pEff2P, *pEff2Eta, *pEff2EtaP;		// Efficiency = N true / N tpc kf tracks (ALICE TDR TOF 2000)
 	TEfficiency		*pCont2P, *pCont2Eta, *pCont2EtaP; 	// Contamination = N wrong / N single matching to fired strip (ALICE TDR TOF 2000)
 
-	TEfficiency		*pEffEtaPIdeal, *pContEtaPIdeal; 	// ideal matching by MC data		
+	TEfficiency		*pEffEtaPIdeal, *pContEtaPIdeal; 	// ideal matching by MC data	
+	TEfficiency		*pEffKalman, *pEffMatch, *pEffKalmanP, *pEffMatchP, *pEffKalmanPi, *pEffMatchPi, *pEffKalmanK, *pEffMatchK; 		
 	
         TString			fFlnm;
         bool			fIsEndcap;	
@@ -70,6 +71,8 @@ public :
 	void		FillIdealMatching(const TmPt& mPt, const TmmT2H& mmT2H, const TClonesArray* aMCTracks);	
 	void		FillSmearedPoints(const TVector3& estPosition, const TVector3 *smearedPosition, const TVector3 *smearedMomentum);
 	void		FillNtracks(const TClonesArray *aTracks, size_t NkfTracks);
+
+	void		FillTrackEfficiency(bool kalman, bool matched, int pdgcode, const TVector3& momentum);
 
 	inline void	FillKfTracks(bool hadPoint, Double_t eta, Double_t Momentum){ htKFTrack->Fill(eta, Momentum); if(hadPoint)htKFTrackPoint->Fill(eta, Momentum);}
 	inline void	FillPointInsideDetector(const TVector3& position){ hPointInsideDetector->Fill(position.Z(), position.Phi() * TMath::RadToDeg());}

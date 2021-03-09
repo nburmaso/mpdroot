@@ -48,12 +48,13 @@ public:
   	inline Int_t	GetGap() const {	return ((fDetectorID & 0x0000FF00) >> 8);};
    	inline Int_t	GetStrip() const {	return ( fDetectorID & 0x000000FF);}; 	
    
-    	static Int_t	GetSector(Int_t suid){ 	return ((suid & 0xFF000000) >> 24);};
-   	static Int_t	GetDetector(Int_t suid){return ((suid & 0x00FF0000) >> 16);};
-    	static Int_t	GetGap(Int_t suid){ 	return ((suid & 0x0000FF00) >> 8);};  	
- 	static Int_t	GetStrip(Int_t suid){ 	return ( suid & 0x000000FF);};
+    	static Int_t	GetSector(Int_t suid)	{ 	return ((suid & 0xFF000000) >> 24);};
+   	static Int_t	GetDetector(Int_t suid)	{	return ((suid & 0x00FF0000) >> 16);};
+    	static Int_t	GetGap(Int_t suid){ 		return ((suid & 0x0000FF00) >> 8);};
+ 	static Int_t	GetStrip(Int_t suid){ 		return ( suid & 0x000000FF);};
 
- 	static Int_t	ClearGap(Int_t suid){ 	return ( suid & 0xFFFF00FF);}; // set gap = 0 for hit suid
+ 	static Int_t	ClearGap(Int_t suid)	{ 	return ( suid & 0xFFFF00FF);}; // set gap = 0 for hit suid
+ 	static Int_t	SetCentralGap(Int_t suid){ 	return ( ClearGap(suid) | 0x00000200);}; // set gap = 2 for hit suid
 	
   	Int_t 		GetSuid() const {return fDetectorID;};
 	static bool 	PrintSuid(Int_t suid, const char* comment = nullptr, std::ostream& os = std::cout);

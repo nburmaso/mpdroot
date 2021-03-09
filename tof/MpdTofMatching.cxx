@@ -567,6 +567,42 @@ void 		MpdTofMatching::Exec(Option_t *option)
 	if(fDoMCtest) pQA->FillMatchingEfficiency(mPt, aTofMatchings, aTofHits, aMcTracks);	
 
 //pQA->tidsTofTouch.Print("\n tidsTofTouch ------------------------>>>");
+
+	set<int> matchedTracks; // MCtid
+	for(Int_t i = 0, N = aTofMatchings->GetEntriesFast(); i < N; i++)
+	{
+		auto match = (MpdTofMatchingData*) aTofMatchings->At(i);
+		int KFtid = match->GetKFTrackIndex();
+		auto pKfTrack = (MpdTpcKalmanTrack*) aTPCkfTracks->UncheckedAt(KFtid);	
+
+		matchedTracks.insert(pKfTrack->GetTrackID());
+	}
+
+	set<int> kalmanTracks; // MCtid
+	for(Int_t i = 0, N = aTPCkfTracks->GetEntriesFast(); i < N; i++)
+	{
+		auto pKfTrack = (MpdTpcKalmanTrack*) aTPCkfTracks->UncheckedAt(i);	
+
+		kalmanTracks.insert(pKfTrack->GetTrackID());
+	}
+
+	TVector3 momentum;
+	for(Int_t tid = 0, Ntracks = aMcTracks->GetEntriesFast(); tid < Ntracks; tid++) // cycle by mc tracks
+	{ 
+		//if(()->GetNPoints(kTOF)) NmcTracks++;
+
+		auto track = (MpdMCTrack*) aMcTracks->UncheckedAt(tid);
+
+		if(track->GetMotherId() == -1) // primary mc track
+		{
+			bool IsKalman = (kalmanTracks.find(tid) != kalmanTracks.end());
+			bool IsMatched = (matchedTracks.find(tid) != matchedTracks.end());
+
+			track->GetMomentum(momentum);
+
+			if(pQA) pQA->FillTrackEfficiency(IsKalman, IsMatched, track->GetPdgCode(), momentum);
+		}
+	}
 				
 	Report(fVerbose);
 	
@@ -609,7 +645,7 @@ void		MpdTofMatching::FillWeights(const TmPt& mPt, const TmmD2H& mmD2H, const Tm
 
 //if(pQA) pQA->tidsTofTouch.Reset();
 
-	mcInfo 		*pMCdata = nullptr;	
+	mcInfo 		*pMCdata = {};	
 	double 		trLength, trackLength;
 	Int_t 		charge;
  	vector<Tinterval> list; // list of strips overlapped probe point
@@ -629,7 +665,7 @@ void		MpdTofMatching::FillWeights(const TmPt& mPt, const TmmD2H& mmD2H, const Tm
 
 		if(pMCdata && pMCdata->TofTouch) fNTofTracksEvent++;	
 
-		TVector3 estPointOnCyl = EstTrackOnR(pKfTrack); 		// Estimate point on cylinder	
+		TVector3 estPointOnCyl = EstTrackOnR(pKfTrack);			// Estimate point on cylinder
 
  		if(MpdTofGeoUtils::Instance()->IsPointInsideDetectors(estPointOnCyl, list, Zerror, PhiError)) // !empty detector list 
 		{		

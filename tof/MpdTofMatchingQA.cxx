@@ -121,6 +121,19 @@ MpdTofMatchingQA::MpdTofMatchingQA(const char *flnm, bool isEndcap)
 	Add(h1 = new TH2D(mangling("h1"),  "; #Delta Z, cm; #Delta #phi, cm", 1000, -100., 100., 1000, -100., 100.));
 	Add(h2 = new TH2D(mangling("h2"),  "; #Delta Z, cm; #Delta #phi, cm", 1000, -100., 100., 1000, -100., 100.));
 	Add(h3 = new TH2D(mangling("h3"),  "; #Delta Z, cm; #Delta #phi, cm", 1000, -100., 100., 1000, -100., 100.));
+
+	Add(pEffKalman = new TEfficiency(mangling("EffKalman"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+	Add(pEffMatch = new TEfficiency(mangling("EffMatch"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+
+	Add(pEffKalmanP = new TEfficiency(mangling("EffKalman_P"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+	Add(pEffMatchP = new TEfficiency(mangling("EffMatch_P"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+
+	Add(pEffKalmanPi = new TEfficiency(mangling("EffKalman_Pi"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+	Add(pEffMatchPi = new TEfficiency(mangling("EffMatch_Pi"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+
+	Add(pEffKalmanK = new TEfficiency(mangling("EffKalman_K"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+	Add(pEffMatchK = new TEfficiency(mangling("EffMatch_K"), ";#eta;P, GeV/c",  100, -EtaMax, EtaMax, 100, 0., Pmax)); 
+
 }
 //------------------------------------------------------------------------------------------------------------------------
 void	MpdTofMatchingQA::FillParameter(bool isTrueMatching, double weight, double normWeight)
@@ -187,7 +200,30 @@ void	MpdTofMatchingQA::FillNtracks(const TClonesArray *aTracks, size_t NkfTracks
 	for(Int_t i = 0, iMax = aTracks->GetEntriesFast(); i < iMax; i++) if(((MpdMCTrack*) aTracks->UncheckedAt(i))->GetNPoints(kTOF)) NmcTracks++;
 		
 	hNMcKfTracks->Fill(NmcTracks, NkfTracks);
-}							
+}	
+//------------------------------------------------------------------------------------------------------------------------			
+void	MpdTofMatchingQA::FillTrackEfficiency(bool kalman, bool matched, int pdgcode, const TVector3& momentum)
+{
+	pEffKalman->Fill(kalman, momentum.Eta(), momentum.Mag());
+	pEffMatch->Fill(matched, momentum.Eta(), momentum.Mag());
+
+	if(2212 == pdgcode || -2212 == pdgcode)
+	{
+		pEffKalmanP->Fill(kalman, momentum.Eta(), momentum.Mag());
+		pEffMatchP->Fill(matched, momentum.Eta(), momentum.Mag());
+	}
+	else if(211 == pdgcode || -211 == pdgcode)
+	{
+		pEffKalmanPi->Fill(kalman, momentum.Eta(), momentum.Mag());
+		pEffMatchPi->Fill(matched, momentum.Eta(), momentum.Mag());
+	}
+	else if(321 == pdgcode || -321 == pdgcode)
+	{
+		pEffKalmanK->Fill(kalman, momentum.Eta(), momentum.Mag());
+		pEffMatchK->Fill(matched, momentum.Eta(), momentum.Mag());
+	}
+
+}						
 //------------------------------------------------------------------------------------------------------------------------			
 void	MpdTofMatchingQA::Finish()
 {

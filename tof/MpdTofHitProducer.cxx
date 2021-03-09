@@ -111,11 +111,11 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 	TVector3 	mcPosition, hitPosition, hitPosError; 	
     	int		nSingleHits = 0, nCrossHits = 0;	
 
-	auto SmearingAlongStrip = [this](const TGeoCombiTrans& matrix, const TVector3& point, TVector3& hit, TVector3& error)
+	auto SmearingAlongStrip = [this](const TGeoCombiTrans& gap, const TGeoCombiTrans& centralGap, const TVector3& point, TVector3& hit, TVector3& error)
 	{
 		// rotate stip to origin LRS (dX = fStripLength, dY = 0, dZ = strip step)  
 		Double_t local[3], master[3] = {point.X(), point.Y(), point.Z()};
-		matrix.MasterToLocal(master, local);
+		gap.MasterToLocal(master, local);
 
 		// smearing the hit position along x axis 
 		double Xsmeared, x = local[0]; size_t nTries = 0;
@@ -126,14 +126,14 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 		} 
 		while(fabs(Xsmeared) > fStripLength/2.); // check strip boundary exit
 
-		// rotete back to MRS
-		local[0] = Xsmeared; local[2] = 0.; // set the hit position to the strip center along z axis(at LRS)
-		matrix.LocalToMaster(local, master);
+		// shift and rotate back to MRS(shift by Y from gap to central gap)
+		local[0] = Xsmeared, local[2] = 0.;	// smearing along X axis, shift to the strip center along Z axis(at LRS)
+		centralGap.LocalToMaster(local, master);
 		hit.SetXYZ(master[0], master[1], master[2]);
 
 		// rotate error vector
 		local[0] = fErrX; local[1] = 0.; local[2] = fErrZ;
-		matrix.LocalToMaster(local, master);
+		centralGap.LocalToMaster(local, master);
 		error.SetXYZ(master[0], master[1], master[2]); 
 
 		return true;
@@ -154,18 +154,19 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 			Double_t time = pRandom->Gaus(pPoint->GetTime(), fTimeSigma); // default 100 ps		
 			pPoint->Position(mcPosition);
 
-			auto pStrip = MpdTofGeoUtils::Instance()->FindStrip(suid);
-			if(! SmearingAlongStrip(pStrip->fMatrix, mcPosition, hitPosition, hitPosError))
+			auto strip = MpdTofGeoUtils::Instance()->FindStrip(suid);
+			auto centralStrip = MpdTofGeoUtils::Instance()->FindStrip(MpdTofPoint::SetCentralGap(suid));
+			if(! SmearingAlongStrip(strip->fMatrix, centralStrip->fMatrix,  mcPosition, hitPosition, hitPosError))
 			{
-				pStrip->Dump(" [MpdTofHitProducer::Exec] -E- Invalid Rotation matrix.");
+				strip->Dump(" [MpdTofHitProducer::Exec] -E- Invalid Rotation matrix.");
 				continue;
 			}
 
 			LStrip::Side_t side;
-			Double_t distance = pStrip->MinDistanceToEdge(&mcPosition, side); // [cm]
+			Double_t distance = strip->MinDistanceToEdge(&mcPosition, side); // [cm]
 
 			bool stripFired;
-			if(stripFired = IsHitCreated(distance, gap))  // simulate hit efficiency
+			if(stripFired = IsHitCreated(distance, gap))  // simulate hit efficiency (add flag MpdTofUtils::IsSingle)
 			{
 			 	AddHit(MpdTofPoint::ClearGap(suid), hitPosition, hitPosError, pointIndex, tid, time, MpdTofUtils::IsSingle); 	
 			 	nSingleHits++;			
@@ -175,20 +176,22 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 			{
 				if(stripFired) pQA->Point2HitSmearingTest(mcPosition, hitPosition);
 				pQA->HitGapEfficiencyTest(stripFired, distance, gap);
-				pQA->PositionInsideStripTest(pStrip->center, mcPosition, hitPosition);
-				pQA->RotationToOriginTest(pStrip->fMatrix, mcPosition, hitPosition);
+				pQA->PositionInsideStripTest(strip->center, mcPosition, hitPosition);
+				pQA->RotationToOriginTest(strip->fMatrix, mcPosition, hitPosition);
+				pQA->CentralDetectorTest(suid, hitPosition);
 			}
 	
-	     		if(stripFired = IsCrossHitCreated(distance, gap)) // simulate cross hit efficiency
+	     		if(stripFired = IsCrossHitCreated(distance, gap)) // simulate cross hit efficiency (add flag MpdTofUtils::IsDouble)
         		{
-        			Int_t crossSuid = (side == LStrip::kRight) ? pStrip->neighboring[LStrip::kRight] : pStrip->neighboring[LStrip::kLeft];
+        			Int_t crossSuid = (side == LStrip::kRight) ? strip->neighboring[LStrip::kRight] : strip->neighboring[LStrip::kLeft];
   
   				if(LStrip::kInvalid  == crossSuid) continue; // edge strip on detector
   			
-  				pStrip = MpdTofGeoUtils::Instance()->FindStrip(crossSuid);
-				if(! SmearingAlongStrip(pStrip->fMatrix, mcPosition, hitPosition, hitPosError))
+  				strip = MpdTofGeoUtils::Instance()->FindStrip(crossSuid);
+				centralStrip = MpdTofGeoUtils::Instance()->FindStrip(MpdTofPoint::SetCentralGap(crossSuid));
+				if(! SmearingAlongStrip(strip->fMatrix, centralStrip->fMatrix, mcPosition, hitPosition, hitPosError))
         			{
-					pStrip->Dump(" [MpdTofHitProducer::Exec] -E- Invalid Rotation matrix.");
+					strip->Dump(" [MpdTofHitProducer::Exec] -E- Invalid Rotation matrix.");
 					continue;
 				}
 

@@ -9,6 +9,7 @@
 #include "MpdTofHit.h"
 #include "MpdTof.h"
 #include "MpdTofPoint.h"
+#include "MpdTofGeoUtils.h"
 
 #include "MpdTofHitProducerQA.h"
 using namespace std;
@@ -48,12 +49,18 @@ MpdTofHitProducerQA::MpdTofHitProducerQA(const char *flnm, bool isEndcap)
 		"Hit position deviation from strip center(single hits);#Delta_{#phi}, cm;#Delta_{Z}, cm", 1000, -50., 50., 1000, -0.5, 0.5));
 	Add(hMCPositionInsideStrip = new TH2D(mangling("MCPositionInsideStrip"), 
 		"MC point position deviation from strip center(single hits);#Delta_{#phi}, cm;#Delta_{Z}, cm", 1000, -50., 50., 1000, -5., 5.));
-	Add(hPointXZOrigin = new TH2D(mangling("PointXZOrigin"), "MC point XZ position at origin LRS;X, cm;Z, cm", 1000, -50., 50., 1000, -1., 1.));
+	Add(hPointXZOrigin = new TH2D(mangling("PointXZOrigin"), "MC point XZ position at origin LRS;Z, cm;X, cm", 1000, -1., 1., 1000, -50., 50.));
+	Add(hPointYZOrigin = new TH2D(mangling("PointYZOrigin"), "MC point YZ position at origin LRS;Z, cm;Y, cm", 1000, -1., 1., 1000, -0.2, 0.2));
 	Add(hHitXZOrigin = new TH2D(mangling("HitXZOrigin"), "Hit XZ position at origin LRS;X, cm;Z, cm", 1000, -50., 50., 1000, -0.05, 0.05));
 	Add(hHitYZOrigin = new TH2D(mangling("HitYZOrigin"), "Hit YZ position at origin LRS;Y, cm;Z, cm", 1000, -0.1, 0.1, 1000, -0.05, 0.05));
 
 	Add(hDevHitXZOrigin = new TH2D(mangling("DevHitXZOrigin"), "Hit XZ position deviation from MC point position at origin LRS;X, cm;Z, cm", 1000, -10., 10., 1000, -1., 1.));
 	Add(hDevHitYZOrigin = new TH2D(mangling("DevHitYZOrigin"), "Hit YZ position deviation from MC point position at origin LRS;Y, cm;Z, cm", 1000, -0.1, 0.1, 1000, -1., 1.));
+
+	Add(hXZCentralDetector = new TH2D(mangling("XZCentralDetector"), "central detector hits.;Z, cm;X, cm", 1000, -10., 40., 1000, -50., 50.));
+	Add(hYZCentralDetector = new TH2D(mangling("YZCentralDetector"), "central detector hits.;Z, cm;Y, cm", 1000, -10., 40., 1000, 149., 152.));
+	Add(hXZDetector = new TH2D(mangling("XYDetector"), "central detector hits.;X, cm;Y, cm", 1000, -40., 40., 1000, -0.6, 0.6));
+	Add(hYZDetector = new TH2D(mangling("YZDetector"), "central detector hits.;Z, cm;Y, cm", 1000, -0.05, 0.05, 1000, -0.6, 0.6));
 }
 //------------------------------------------------------------------------------------------------------------------------			
 void	MpdTofHitProducerQA::Finish()
@@ -138,7 +145,8 @@ void		MpdTofHitProducerQA::RotationToOriginTest(const TGeoCombiTrans& matrix, co
 	// rotate stip to origin LRS
 	Double_t localHit[3], localPoint[3], master[3] = {mcPosition.X(), mcPosition.Y(), mcPosition.Z()};
 	matrix.MasterToLocal(master, localPoint);
-	hPointXZOrigin->Fill(localPoint[0], localPoint[2]); 
+	hPointXZOrigin->Fill(localPoint[2], localPoint[0]); 
+	hPointYZOrigin->Fill(localPoint[2], localPoint[1]); 
 
 	master[0] = hitPosition.X(); master[1] = hitPosition.Y(); master[2] = hitPosition.Z();
 	matrix.MasterToLocal(master, localHit);
@@ -147,6 +155,23 @@ void		MpdTofHitProducerQA::RotationToOriginTest(const TGeoCombiTrans& matrix, co
 
 	hDevHitXZOrigin->Fill(localHit[0] - localPoint[0], localHit[2] - localPoint[2]); // (Xhit - Xpoint) vs (Zhit - Zpoint)
 	hDevHitYZOrigin->Fill(localHit[1] - localPoint[1], localHit[2] - localPoint[2]); // (Yhit - Ypoint) vs (Zhit - Zpoint)
+}
+//------------------------------------------------------------------------------------------------------------------------
+void		MpdTofHitProducerQA::CentralDetectorTest(Int_t suid, const TVector3& hitPosition)
+{
+	if(MpdTofPoint::GetSector(suid) == 4 && MpdTofPoint::GetDetector(suid) == 11) // select unrotated detector (strips along X axis, perp. to strip along Y axis)
+	{
+		hXZCentralDetector->Fill(hitPosition.Z(), hitPosition.X());
+		hYZCentralDetector->Fill(hitPosition.Z(), hitPosition.Y());		
+	}
+
+	// back transform to the central gap LRS
+	const auto& matrix = MpdTofGeoUtils::Instance()->FindStrip(MpdTofPoint::SetCentralGap(suid))->fMatrix;
+	Double_t local[3],  master[3] = {hitPosition.X(), hitPosition.Y(), hitPosition.Z()};
+	matrix.MasterToLocal(master, local);
+	
+	hXZDetector->Fill(local[0], local[1]);
+	hYZDetector->Fill(local[2], local[1]);
 }
 //------------------------------------------------------------------------------------------------------------------------
 void	MpdTofHitProducerQA::FillCrossHitEfficiency(bool fired, Double_t distance, size_t gap, const TVector3& position, const TVector3& smearedPosition)
