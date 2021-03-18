@@ -67,11 +67,13 @@ Bool_t MpdUnigenGenerator::ReadEvent(FairPrimaryGenerator* primGen){
   fInTree->GetEntry(fEventNumber);
   std::cout << "-I- MpdUnigenGenerator: Event " << fEventNumber << std::endl;
 
-  Double_t phi = 0.;
+  Double_t phi = fEvent->GetPhi();
+  Double_t dphi = 0.;
   // ---> Generate rotation angle
   if (fEventPlaneSet) {
     gRandom->SetSeed(0);
-    phi = gRandom->Uniform(fPhiMin, fPhiMax);
+    dphi = gRandom->Uniform(fPhiMin, fPhiMax);
+    phi += dphi;
   }
 
   FairMCEventHeader* header = primGen->GetEvent();
@@ -95,7 +97,7 @@ Bool_t MpdUnigenGenerator::ReadEvent(FairPrimaryGenerator* primGen){
     if (fEventPlaneSet) {
       Double_t pt = TMath::Sqrt(px * px + py * py);
       Double_t azim = TMath::ATan2(py, px);
-      azim += phi;
+      azim += dphi;
       px = pt * TMath::Cos(azim);
       py = pt * TMath::Sin(azim);
     }
