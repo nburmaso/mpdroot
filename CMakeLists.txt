@@ -197,6 +197,7 @@ ENDIF(HAS_CXX11_SHAREDPOINTER)
 # the project's entire directory structure.
 add_subdirectory (mcstack)
 add_subdirectory (passive)
+add_subdirectory (generators/unigen_format)
 add_subdirectory (generators)
 add_subdirectory (shield_pack)
 add_subdirectory (mpdbase)

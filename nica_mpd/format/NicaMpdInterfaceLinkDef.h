@@ -36,8 +36,6 @@
 #pragma link C++ class NicaUnigenSource + ;
 #pragma link C++ class NicaUnigenTrack + ;
 #pragma link C++ class NicaUnigenTrackInterface + ;
-#pragma link C++ class UEvent + ;
-#pragma link C++ class UParticle + ;
 
 #pragma link C++ class NicaMpdHbtComplexEvent + ;
 #pragma link C++ class NicaMpdHbtEvent + ;

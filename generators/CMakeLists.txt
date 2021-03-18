@@ -16,6 +16,7 @@ set(INCLUDE_DIRECTORIES
  ${CMAKE_SOURCE_DIR}/mpdbase
  ${CMAKE_SOURCE_DIR}/mpddst/mcDst
  ${CMAKE_SOURCE_DIR}/generators
+ ${CMAKE_SOURCE_DIR}/generators/unigen_format
  ${CMAKE_SOURCE_DIR}/mcstack
 )
 
@@ -63,6 +64,7 @@ MpdDecayer.cxx
 MpdTPythia8Generator.cxx
 MpdSmashGenerator.cxx
 MpdDecayerPyt8.cxx
+MpdUnigenGenerator.cxx
 )
 if(PLUTO_FOUND)
 #set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
@@ -72,7 +74,7 @@ EndIf(PLUTO_FOUND)
 Set(HEADERS)
 Set(LINKDEF GenLinkDef.h)
 Set(LIBRARY_NAME MpdGen)
-Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst EGPythia6 EGPythia8)
+Set(DEPENDENCIES Base EG MathCore Physics RIO Core MpdMcDst EGPythia6 EGPythia8 UniGenFormat)
 
 GENERATE_LIBRARY()
 

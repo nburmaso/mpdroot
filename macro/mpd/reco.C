@@ -144,6 +144,7 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     // TOF hit producers
     MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
+    tofHit->SetTimeResolution(0.080);
     fRun->AddTask(tofHit);
 
 /*
@@ -169,8 +170,8 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
     //MpdEtofMatching* etofMatch = new MpdEtofMatching("ETOF matching");
     //fRun->AddTask(etofMatch);
 
-    FairTask *emcHP = new MpdEmcHitCreation();
-    fRun->AddTask(emcHP);
+    //FairTask *emcHP = new MpdEmcHitCreation();
+    //fRun->AddTask(emcHP);
 
     FairTask *tdigi = new MpdZdcDigiProducer("MpdZdcDigiProducer");
     fRun->AddTask(tdigi);

@@ -21,6 +21,7 @@ void mpdloadlibs()
   gSystem->Load("libMCStack");
   gSystem->Load("libMpdField");
   gSystem->Load("libPassive");
+  gSystem->Load("libUniGenFormat");
   gSystem->Load("libMpdGen");
   // Hadgen
   gSystem->Load("libHADGEN");

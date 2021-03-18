@@ -90,6 +90,15 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
     primGen->AddGenerator(mcDstGen);
 
 #else    
+#ifdef UNIGEN // Unigen generator
+    if (!CheckFileExist(inFile)) return;
+    
+    Bool_t isSpectatorON = kTRUE; // Does unigen tree have fragments (depends on model)?
+    MpdUnigenGenerator* uniGen = new MpdUnigenGenerator(inFile, isSpectatorON);
+    //uniGen->SetEventPlane(0., 2.*TMath::Pi());
+    primGen->AddGenerator(uniGen);
+
+#else    
 #ifdef URQMD // <---- Urqmd  Generator
     if (!CheckFileExist(inFile)) return;
 
@@ -194,6 +203,7 @@ void runMC(TString inFile = "auau.04gev.0_3fm.10k.f14.gz", TString outFile = "ev
         nEvents = smashGen->GetNeventsInTree() - nStartEvent;
     cout << "runMC: MpdSmashGenerator: nEvents = " << nEvents << endl;
 
+#endif
 #endif
 #endif
 #endif
