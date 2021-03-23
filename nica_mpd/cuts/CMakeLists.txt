@@ -47,6 +47,7 @@ trackcuts/MpdNSigmaCut.cxx
 trackcuts/MpdPadsEdgeSectorCut.cxx
 trackcuts/MpdHitsEdgeSectorCut.cxx
 trackcuts/MpdBasicTrackCut.cxx
+trackcuts/MpdTrackIsGlobalCut.cxx
 #paircuts/MpdTwoTrackSharedQualityCut.cxx
 
 

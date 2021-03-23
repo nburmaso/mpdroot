@@ -13,15 +13,18 @@
 
 #include "NicaComplexEvent.h"
 
-class NicaMpdMiniDstFullEvent : public NicaComplexEvent{
+class NicaMpdMiniDstFullEvent : public NicaComplexEvent {
+protected:
+  NicaMpdMiniDstFullEvent(NicaEvent* re, NicaEvent* im);
+
 public:
-    NicaMpdMiniDstFullEvent();
-    void OnlyPrimary();
-    void OnlyGlobal();
-    void Update();
-    virtual TString GetFormatName()const{return "NicaMpdMiniDstFullEvent";};
-    virtual ~NicaMpdMiniDstFullEvent();
-    ClassDef(NicaMpdMiniDstFullEvent,1)
+  NicaMpdMiniDstFullEvent();
+  void OnlyPrimary();
+  void OnlyGlobal();
+  virtual void Update();
+  virtual TString GetFormatName() const { return "NicaMpdMiniDstFullEvent"; };
+  virtual ~NicaMpdMiniDstFullEvent();
+  ClassDef(NicaMpdMiniDstFullEvent, 1)
 };
 
 #endif /* NICAMPDMINIDSTFULLEVENT_H_ */

@@ -14,27 +14,27 @@
 #include <TVector3.h>
 
 #include "MpdMiniTrack.h"
+#include "NicaEvent.h"
 #include "NicaExpTrack.h"
+#include "NicaHelix.h"
 #include "NicaToFTrack.h"
 #include "NicaTpcTrack.h"
-#include "NicaEvent.h"
 #include "NicaTrack.h"
-#include "NicaHelix.h"
 
 NicaMpdMiniDstTrack::NicaMpdMiniDstTrack() {}
 
-void NicaMpdMiniDstTrack::Update(MpdMiniTrack *track,
-                                 NicaMpdMiniDstEvent::eMode mode) {
+void NicaMpdMiniDstTrack::Update(MpdMiniTrack* track, NicaMpdMiniDstEvent::eMode mode) {
   TVector3 gMom, mom;
   TVector3 dca = track->origin();
-  gMom = track->gMom();
-  SetPrimary();
+  gMom         = track->gMom();
+  fType        = 0;
   switch (mode) {
     case NicaMpdMiniDstEvent::eMode::kGlobalTrack: {
       mom = track->gMom();
       SetGlobal(kTRUE);
     } break;
     case NicaMpdMiniDstEvent::eMode::kPrimaryTrack: {
+      SetGlobal(kFALSE);
       if (track->isPrimary()) {
         mom = track->pMom();
       } else {
@@ -49,18 +49,18 @@ void NicaMpdMiniDstTrack::Update(MpdMiniTrack *track,
   SetID(track->id());
   SetCharge(track->charge());
   SetNHits(track->nHits());
-  if (!track->isPrimary()) {
-    SetGlobal(kTRUE);
-  }
+  SetHitMap(track->hitMap());
+
+  if (!track->isPrimary()) { SetGlobal(kTRUE); }
   SetChi2(track->chi2());
   fTpcTrack->SetNHits(track->nHits());  //! FIXME
   fTpcTrack->SetDeDx(track->dEdx());
-  fTpcTrack->SetSigma(track->nSigmaPion(), track->nSigmaKaon(),
-                      track->nSigmaProton(), track->nSigmaProton());
+  fTpcTrack->SetSigma(track->nSigmaPion(), track->nSigmaKaon(), track->nSigmaProton(), track->nSigmaProton());
 
   fToFTrack->SetBeta(NicaToFTrack::DummyVal());
   fToFTrack->SetMass2(NicaToFTrack::DummyVal());
   fToFTrack->SetFlag(0);
+  fHitsMap = track->hitMap();
 
   TVector3 origin = track->origin();
   fFirstPoint->SetXYZ(origin.X(), origin.Y(), origin.Z());
@@ -79,7 +79,7 @@ void NicaMpdMiniDstTrack::Update(MpdMiniTrack *track,
   }
   // fSharedHitsMap = track->topologyMap(0);
   // fHitsMap = track->topologyMap(1);
-  NicaHelix *helix = GetHelix();
+  NicaHelix* helix = GetHelix();
   helix->SetParams(*fFirstPoint, gMom, fCharge);
 }
 

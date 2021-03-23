@@ -8,18 +8,15 @@
  */
 #include "NicaTrackTpcPads.h"
 
+#include "NicaTpcSectorGeo.h"
 #include <TLorentzVector.h>
 #include <iostream>
-#include "NicaTpcSectorGeo.h"
 
-NicaTrackTpcPads::NicaTrackTpcPads() : fNominalHelix(new NicaHelix()) {
-  fPadsNo[0] = fPadsNo[1] = -2;
-}
+NicaTrackTpcPads::NicaTrackTpcPads() : fNominalHelix(new NicaHelix()) { fPadsNo[0] = fPadsNo[1] = -2; }
 
 NicaTrackTpcPads::~NicaTrackTpcPads() { delete fNominalHelix; }
 
-NicaTrackTpcPads::NicaTrackTpcPads(const NicaTrackTpcPads &other)
-    : TObject(other) {
+NicaTrackTpcPads::NicaTrackTpcPads(const NicaTrackTpcPads& other) : TObject(other) {
   fNominalHelix = new NicaHelix(*other.fNominalHelix);
   for (int i = 0; i < NicaMpdConst::TpcLayers; i++) {
     fPadID[i] = other.fPadID[i];
@@ -29,10 +26,10 @@ NicaTrackTpcPads::NicaTrackTpcPads(const NicaTrackTpcPads &other)
   fPadsNo[1] = other.fPadsNo[1];
 }
 
-void NicaTrackTpcPads::Calculate(NicaHelix *helix, TLorentzVector *vector) {
+void NicaTrackTpcPads::Calculate(NicaHelix* helix, TLorentzVector* vector) {
   if (AreCalculated()) return;  // pads are calculated
-  NicaTpcSectorGeo *sec = NicaTpcSectorGeo::Instance();
-  *fNominalHelix = *helix;
+  NicaTpcSectorGeo* sec = NicaTpcSectorGeo::Instance();
+  *fNominalHelix        = *helix;
   if (vector) {
     fNominalHelix->Shift(-vector->X(), -vector->Y(), -vector->Z());
     sec->CalculatePads(fNominalHelix, fPaths, fPadsNo);
@@ -40,7 +37,7 @@ void NicaTrackTpcPads::Calculate(NicaHelix *helix, TLorentzVector *vector) {
     sec->CalculatePads(fNominalHelix, fPaths, fPadsNo);
   }
   for (int i = fPadsNo[0]; i < fPadsNo[1]; i++) {
-    TVector3 glob = fNominalHelix->Evaluate(fPaths[i]);
+    TVector3 glob = fNominalHelix->EvalPos(fPaths[i]);
     TVector3 loc;
     fPadID[i] = sec->Global2Local(glob, loc, -1);
   }
@@ -53,9 +50,9 @@ void NicaTrackTpcPads::Calculate(NicaHelix *helix, TLorentzVector *vector) {
 }
 
 Double_t NicaTrackTpcPads::GetR(Int_t lay) const {
-  NicaTpcSectorGeo *sec = NicaTpcSectorGeo::Instance();
-  Double_t R = 0;
-  Double_t L = lay;
+  NicaTpcSectorGeo* sec = NicaTpcSectorGeo::Instance();
+  Double_t R            = 0;
+  Double_t L            = lay;
   if (lay < sec->NofRowsReg(0)) {
     return sec->GetMinY() + sec->PadHeight(0) * (L + 0.5);
   } else {
@@ -68,7 +65,7 @@ Bool_t NicaTrackTpcPads::AreCalculated() const {
   return kFALSE;
 }
 
-NicaTrackTpcPads &NicaTrackTpcPads::operator=(const NicaTrackTpcPads &other) {
+NicaTrackTpcPads& NicaTrackTpcPads::operator=(const NicaTrackTpcPads& other) {
   if (this == &other) return *this;
   *fNominalHelix = *other.fNominalHelix;
   for (int i = 0; i < NicaMpdConst::TpcLayers; i++) {

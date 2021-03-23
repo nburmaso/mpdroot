@@ -27,6 +27,7 @@ ${NICAFEMTO_MPDHELPERS}
 ${CMAKE_SOURCE_DIR}/nicafemto/nicagenerators
 ${CMAKE_SOURCE_DIR}/nicafemto/nicagenerators/readers
 ${CMAKE_SOURCE_DIR}/nicafemto/nicagenerators/writers
+${CMAKE_SOURCE_DIR}/nicafemto/analysis/v0s
 ${NICAFEMTO_DATA}
 ${NICAFEMTO_MPDFORMAT}
 )
@@ -41,6 +42,7 @@ Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
 )
+message(WARNING,"LINK DIRS ${LINK_DIRECTORIES}")
 
 Include_Directories(${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
@@ -80,6 +82,9 @@ unigen/NicaUnigenTrackInterface.cxx
 hbtformat/NicaMpdHbtComplexEvent.cxx
 hbtformat/NicaMpdHbtEvent.cxx
 hbtformat/NicaMpdHbtTrack.cxx
+minidstv0/NicaMiniDstFullV0Event.cxx
+minidstv0/NicaMpdMiniDstEventV0.cxx
+minidstv0/NicaMpdMiniDstEventV0Interface.cxx
 )
 
 Set(HEADERS )

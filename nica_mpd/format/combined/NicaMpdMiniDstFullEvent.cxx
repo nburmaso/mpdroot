@@ -34,20 +34,18 @@ void NicaMpdMiniDstFullEvent::Update() {
   fTracks->ExpandCreateFast(fTotalTracksNo);
   for (int i = 0; i < fTotalTracksNo; i++) {
     NicaComplexTrack* track = (NicaComplexTrack*) fTracks->UncheckedAt(i);
+    track->ResetTrack(i, this);
     track->SetRealTrack(fRealEvent->GetTrack(i));
     MpdMiniTrack* mpd_track = (MpdMiniTrack*) track->GetRealTrack()->GetTrackPointer();
     Int_t parent_id         = mpd_track->mcTrackIndex();
     track->NicaTrack::CopyData(fRealEvent->GetTrack(i));
     track->SetMatchID(parent_id);
-    if (parent_id >= 0) {
-      track->SetImgTrack(fImgEvent->GetTrack(parent_id));
-    } else {
-      track->SetImgTrack(nullptr);
-    }
-    track->SetID(i);
+    if (parent_id >= 0) track->SetImgTrack(fImgEvent->GetTrack(parent_id));
   }
 }
 
 NicaMpdMiniDstFullEvent::~NicaMpdMiniDstFullEvent() {
   // TODO Auto-generated destructor stub
 }
+
+NicaMpdMiniDstFullEvent::NicaMpdMiniDstFullEvent(NicaEvent* re, NicaEvent* im) : NicaComplexEvent(re, im) {}

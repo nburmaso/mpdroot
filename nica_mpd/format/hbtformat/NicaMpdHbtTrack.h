@@ -10,18 +10,19 @@
 #define NICAMPDHBTTRACK_H_
 
 #include "NicaExpTrack.h"
+#include "NicaV0Track.h"
 
 class NicaTrackTpcPads;
 
 class NicaMpdHbtTrack : public NicaExpTrackHelix {
-  NicaTrackTpcPads *fPads;
+  NicaTrackTpcPads* fPads;
 
- public:
+public:
   NicaMpdHbtTrack();
-  NicaMpdHbtTrack(const NicaMpdHbtTrack &other);
-  NicaTrackTpcPads *GetPadsInfo() const { return fPads; };
-  NicaMpdHbtTrack &operator=(const NicaMpdHbtTrack &other);
-  virtual void CopyData(NicaTrack *track);
+  NicaMpdHbtTrack(const NicaMpdHbtTrack& other);
+  NicaTrackTpcPads* GetPadsInfo() const { return fPads; };
+  NicaMpdHbtTrack& operator=(const NicaMpdHbtTrack& other);
+  virtual void CopyData(NicaTrack* track);
   virtual ~NicaMpdHbtTrack();
   ClassDef(NicaMpdHbtTrack, 1)
 };

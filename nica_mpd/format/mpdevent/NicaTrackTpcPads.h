@@ -9,9 +9,9 @@
 #ifndef NICATRACKTPCPADS_H_
 #define NICATRACKTPCPADS_H_
 
-#include <TVector.h>
 #include "NicaHelix.h"
 #include "NicaMpdConst.h"
+#include <TVector.h>
 
 /**
  * class that represent information about pads assigned to tracl
@@ -22,9 +22,9 @@ class NicaTrackTpcPads : public TObject {
   Int_t fPadID[NicaMpdConst::TpcLayers];
   Float_t fPaths[NicaMpdConst::TpcLayers];
   Short_t fPadsNo[2];
-  NicaHelix *fNominalHelix;
+  NicaHelix* fNominalHelix;
 
- public:
+public:
   NicaTrackTpcPads();
   /**
    *
@@ -67,23 +67,19 @@ class NicaTrackTpcPads : public TObject {
    *
    * @return nominal helix (if Calculate() was called with event vertex)
    */
-  NicaHelix *GetNominalHelix() const { return fNominalHelix; };
+  NicaHelix* GetNominalHelix() const { return fNominalHelix; };
   /**
    *
    * @param lay
    * @return momentum calculated at give layer by using helix
    */
-  TVector3 GetMomentumAtLayer(Int_t lay) const {
-    return fNominalHelix->EvalMom(fPaths[lay]);
-  }
+  TVector3 GetMomentumAtLayer(Int_t lay) const { return fNominalHelix->EvalMom(fPaths[lay]); }
   /**
    *
    * @param lay
    * @return momentum calculated at givel layer by using helix
    */
-  TVector3 GetPositionAtLayer(Int_t lay) const {
-    return fNominalHelix->Evaluate(fPaths[lay]);
-  };
+  TVector3 GetPositionAtLayer(Int_t lay) const { return fNominalHelix->EvalPos(fPaths[lay]); };
   /**
    *
    * @param lay
@@ -100,10 +96,10 @@ class NicaTrackTpcPads : public TObject {
    * @param vector vertex position, set vector==null to calculate real pads ID's
    * or event vertex to calculate nominal pads
    */
-  void Calculate(NicaHelix *helix, TLorentzVector *vector);
+  void Calculate(NicaHelix* helix, TLorentzVector* vector);
   virtual ~NicaTrackTpcPads();
-  NicaTrackTpcPads(const NicaTrackTpcPads &other);
-  NicaTrackTpcPads &operator=(const NicaTrackTpcPads &other);
+  NicaTrackTpcPads(const NicaTrackTpcPads& other);
+  NicaTrackTpcPads& operator=(const NicaTrackTpcPads& other);
   ClassDef(NicaTrackTpcPads, 1)
 };
 

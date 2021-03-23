@@ -16,39 +16,40 @@
 class TChain;
 class TClonesArray;
 
-class NicaMiniDstSource : public FairSource{
-    Int_t fNFiles;
-    TString *fFileName;
-    TChain *fChain;
-    TClonesArray *fEvent;
-    TClonesArray *fTracks;
-    TClonesArray *fTofInfo;
-    TClonesArray *fEmcInfo;
-    TClonesArray *fMcEvent;
-    TClonesArray *fMcTracks;
+class NicaMiniDstSource : public FairSource {
+  Int_t fNFiles;
+  TString* fFileName;
+  TChain* fChain;
+  TClonesArray* fEvent;
+  TClonesArray* fTracks;
+  TClonesArray* fTofInfo;
+  TClonesArray* fEmcInfo;
+  TClonesArray* fMcEvent;
+  TClonesArray* fMcTracks;
+
 public:
-    NicaMiniDstSource();
-    NicaMiniDstSource(const NicaMiniDstSource &other);
-    NicaMiniDstSource(TString inFile);
-    virtual void AddFile(TString file);
-    virtual Bool_t Init();
-    virtual Int_t ReadEvent(UInt_t=0);
-    virtual void Close();
-    virtual void Reset(){};
-    virtual Bool_t   ActivateObject(TObject**, const char*)  { return kFALSE; }
-    virtual Source_Type GetSourceType(){return kFILE;};
-    virtual void SetParUnpackers(){};
-    virtual Bool_t InitUnpackers(){return kTRUE;} ;
-    virtual Bool_t ReInitUnpackers(){return kTRUE;} ;
-    virtual Int_t  CheckMaxEventNo(Int_t=0);
-    virtual void ReadBranchEvent(const char* BrName){};
-    virtual void ReadBranchEvent(const char* BrName, Int_t Event){};
-    virtual void FillEventHeader(FairEventHeader* feh){};
-    void SetRunId(Int_t runId) { fRunId = runId; }
-    Int_t GetRunId() const     { return fRunId;  }
-    virtual ~NicaMiniDstSource();
-    ClassDef(NicaMiniDstSource,1)
+  NicaMiniDstSource();
+  NicaMiniDstSource(const NicaMiniDstSource& other);
+  NicaMiniDstSource(TString inFile);
+  virtual void AddFile(TString file);
+  virtual Bool_t Init();
+  virtual Int_t ReadEvent(UInt_t = 0);
+  virtual void Close();
+  virtual void Reset() {};
+  virtual Bool_t ActivateObject(TObject**, const char*) { return kFALSE; }
+  virtual Source_Type GetSourceType() { return kFILE; };
+  virtual void SetParUnpackers() {};
+  virtual Bool_t InitUnpackers() { return kTRUE; };
+  virtual Bool_t ReInitUnpackers() { return kTRUE; };
+  virtual Int_t CheckMaxEventNo(Int_t = 0);
+  virtual void ReadBranchEvent(const char* BrName) {};
+  virtual void ReadBranchEvent(const char* BrName, Int_t Event) {};
+  virtual void FillEventHeader(FairEventHeader* feh) {};
+  void SetRunId(Int_t runId) { fRunId = runId; }
+  Int_t GetRunId() const { return fRunId; }
+  virtual Bool_t SpecifyRunId() { return kFALSE; };
+  virtual ~NicaMiniDstSource();
+  ClassDef(NicaMiniDstSource, 1)
 };
 
 #endif /* MPDROOT_NICA_MPD_FORMAT_MPDMC_NICAMINIDSTSOURCE_H_ */
-

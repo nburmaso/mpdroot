@@ -33,8 +33,8 @@ Bool_t MpdPairTpcEntranceNomininalCut::Pass(NicaTwoTrack *pair) {
   Double_t S2 = TMath::Min(s1, s2);
   if (s1 < 0) S2 = s2;
   if (s2 < 0) S2 = s1;
-  TVector3 pos1 = track1->GetPadsInfo()->GetNominalHelix()->Evaluate(S1);
-  TVector3 pos2 = track2->GetPadsInfo()->GetNominalHelix()->Evaluate(S2);
+  TVector3 pos1 = track1->GetPadsInfo()->GetNominalHelix()->EvalPos(S1);
+  TVector3 pos2 = track2->GetPadsInfo()->GetNominalHelix()->EvalPos(S2);
   pos2 = pos2 - pos1;
   SetValue(pos2.Mag(), XYZ());
   SetValue(pos2.Pt(), XY());

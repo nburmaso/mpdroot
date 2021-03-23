@@ -32,3 +32,4 @@ set (NICAFEMTO_MPDHELPERS
 add_subdirectory(cuts)
 add_subdirectory(format)
 add_subdirectory(nica_helpers)
+add_subdirectory(tasks)

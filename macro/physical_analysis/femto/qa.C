@@ -11,46 +11,44 @@
  */
 
 
+#ifndef __CLING__
+
+#include "FairRunAna.h"
+#include "Header.h"
+#include "MpdBasicTrackCut.h"
+#include "MpdPairDeltaPhiStarDeltaEtaCut.h"
+#include "MpdTpcMonitor.h"
+#include "NicaConst.h"
+#include "NicaSplitedTrackToStatusTask.h"
+#include "NicaTrackTpcToFCut.h"
+#endif
+
 NicaEvent* e;  // needed to use namespaces
+
+using namespace NicaDataFieldID;
+
 
 NicaQAPlot GetTrackPlots() {
   NicaQAPlot qa_track(ENicaCutUpdate::kTrackUpdate);
-  const Int_t monitor_sim_data  = NicaDataFormatFieldID::NicaFieldIDImStep;
-  const Int_t monitor_reco_data = NicaDataFormatFieldID::NicaFieldIDReStep;
-  Int_t histo_id;
-  histo_id = qa_track.AddTH2("tpc",
-                             NicaDataFormatFieldID::ETrackFieldID::kP + monitor_reco_data,
-                             NicaDataFormatFieldID::EExpTrackFieldID::kTpcDedx + monitor_reco_data);
-  qa_track.SetAxis2D(histo_id, 200, 0, 4, 200, 0, 1E+5);
-
-  histo_id = qa_track.AddTH2("spectra",
-                             NicaDataFormatFieldID::ETrackFieldID::kEta + monitor_reco_data,
-                             NicaDataFormatFieldID::ETrackFieldID::kPt + monitor_reco_data);
-  qa_track.SetAxis2D(histo_id, 200, -2, 2, 200, 0, 4);
-  histo_id = qa_track.AddTH2("tof_beta",
-                             monitor_reco_data + NicaDataFormatFieldID::ETrackFieldID::kP,
-                             monitor_reco_data + NicaDataFormatFieldID::EExpTrackFieldID::kToFBeta);
-  qa_track.SetAxis2D(histo_id, 200, 0, 4, 150, 0, 1.5);
-  histo_id = qa_track.AddTH2("tof_m",
-                             monitor_reco_data + NicaDataFormatFieldID::ETrackFieldID::kP,
-                             monitor_reco_data + NicaDataFormatFieldID::EExpTrackFieldID::kTofM2);
-  qa_track.SetAxis2D(histo_id, 200, 0, 4, 200, -0.1, 1.4);
+  const Int_t simData  = NicaDataFieldID::ImStep;
+  const Int_t recoData = NicaDataFieldID::ReStep;
+  qa_track.AddTH2("tpc", ETrack::kP + recoData, EExpTrack::kTpcDedx + recoData, 200, 0, 4, 200, 0, 1E+5);
+  qa_track.AddTH2("spectra", ETrack::kEta + recoData, ETrack::kPt + recoData, 200, -2, 2, 200, 0, 4);
+  qa_track.AddTH2("tof_beta", recoData + ETrack::kP, recoData + EExpTrack::kToFBeta, 200, 0, 4, 150, 0, 1.5);
+  qa_track.AddTH2("tof_m", recoData + ETrack::kP, recoData + EExpTrack::kTofM2, 200, 0, 4, 200, -0.1, 1.4);
+  qa_track.AddTH2("pt_reso", EComplexTrack::kDeltaPt, ETrack::kPt + simData, 200, -0.1, 0.1, 200, 0, 4);
+  qa_track.AddTH2("eta_reso", EComplexTrack::kDeltaEta, ETrack::kPt + simData, 200, -0.1, 0.1, 200, -2, 2);
   return qa_track;
 }
 
 NicaQAPlot GetEventPlots() {
   Int_t histo_id;
-  const Int_t monitor_sim_data  = NicaDataFormatFieldID::NicaFieldIDImStep;
-  const Int_t monitor_reco_data = NicaDataFormatFieldID::NicaFieldIDReStep;
+  const Int_t simData  = NicaDataFieldID::ImStep;
+  const Int_t recoData = NicaDataFieldID::ReStep;
   NicaQAPlot qa_event(ENicaCutUpdate::kEventUpdate);
-  histo_id = qa_event.AddTH2("impact vs multiplicity",
-                             NicaDataFormatFieldID::EMcEventFieldID::kB + monitor_sim_data,
-                             NicaDataFormatFieldID::EEventFieldID::kTracksNo + monitor_sim_data);
-  qa_event.SetAxis2D(histo_id, 200, 0, 20, 200, 0, 2000);
-  histo_id = qa_event.AddTH2("reco vs sim track No",
-                             NicaDataFormatFieldID::EEventFieldID::kTracksNo + monitor_reco_data,
-                             NicaDataFormatFieldID::EEventFieldID::kTracksNo + monitor_sim_data);
-  qa_event.SetAxis2D(histo_id, 200, 0, 2000, 200, 0, 2000);
+  qa_event.AddTH2("impact vs multiplicity", EMcEvent::kB + simData, EEvent::kTracksNo + simData, 200, 0, 20, 200, 0, 2000);
+  qa_event.AddTH2("reco vs sim track No", EEvent::kTracksNo + recoData, EEvent::kTracksNo + simData, 200, 0, 2000, 200, 0, 2000);
+
   return qa_event;
 }
 void qa2() {

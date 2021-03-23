@@ -25,7 +25,7 @@ TVector3 MpdPairTpcSimpleCut::PosNominal(NicaExpTrackHelix *track,
   while (s2 < 0) {
     s2 += helix->GetPeriod();
   }
-  TVector3 p = helix->Evaluate(TMath::Min(s1, s2));
+  TVector3 p = helix->EvalPos(TMath::Min(s1, s2));
   // shift by vertex pos
   p.SetXYZ(p.X() - ev->GetVertex()->X(), p.Y() - ev->GetVertex()->Y(),
            p.Z() - ev->GetVertex()->Z());
@@ -45,7 +45,7 @@ TVector3 MpdPairTpcSimpleCut::PosReal(NicaExpTrackHelix *track,
   while (s2 < 0) {
     s2 += helix->GetPeriod();
   }
-  return helix->Evaluate(TMath::Min(s1, s2));
+  return helix->EvalPos(TMath::Min(s1, s2));
 }
 
 MpdPairTpcSimpleCut::MpdPairTpcSimpleCut(Int_t size)

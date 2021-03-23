@@ -56,6 +56,7 @@ public:
     virtual void FillEventHeader(FairEventHeader* feh){};
     void SetRunId(Int_t runId) { fRunId = runId; }
     Int_t GetRunId() const     { return fRunId;  }
+    virtual Bool_t SpecifyRunId(){return kFALSE;}
     ClassDef(NicaUnigenSource,1)
 };
 

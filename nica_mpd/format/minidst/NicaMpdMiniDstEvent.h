@@ -11,26 +11,25 @@
 
 #include "NicaExpEvent.h"
 
-class NicaMpdMiniDstEvent : public NicaExpEventHelix{
+class NicaMpdMiniDstEvent : public NicaExpEventHelix {
 public:
-    enum eMode{
-      kGlobalTrack,
-      kPrimaryTrack
-    };
+  enum eMode { kGlobalTrack, kPrimaryTrack };
+
 protected:
-    eMode fMode;
-    virtual void ShallowCopyEvent(NicaEvent *event);
-    NicaMpdMiniDstEvent(TString trackname);
+  eMode fMode;
+  virtual void ShallowCopyEvent(NicaEvent* event);
+  NicaMpdMiniDstEvent(TString trackname);
+
 public:
-    NicaMpdMiniDstEvent(eMode=kGlobalTrack);
-    void CreateSource();
-    void Update();
-    void OnlyPrimary(){fMode = kPrimaryTrack;};
-    void OnlyGlobal(){fMode = kGlobalTrack;};
-    virtual Bool_t ExistInTree()const;
-    virtual TString GetFormatName()const;
-    virtual ~NicaMpdMiniDstEvent();
-    ClassDef(NicaMpdMiniDstEvent,1)
+  NicaMpdMiniDstEvent(eMode = kGlobalTrack);
+  virtual void CreateSource();
+  virtual void Update();
+  void OnlyPrimary() { fMode = kPrimaryTrack; };
+  void OnlyGlobal() { fMode = kGlobalTrack; };
+  virtual Bool_t ExistInTree() const;
+  virtual TString GetFormatName() const;
+  virtual ~NicaMpdMiniDstEvent();
+  ClassDef(NicaMpdMiniDstEvent, 1)
 };
 
 #endif /* MPDROOT_NICA_MPD_FORMAT_MINIDST_NICAMPDMINIDSTEVENT_H_ */

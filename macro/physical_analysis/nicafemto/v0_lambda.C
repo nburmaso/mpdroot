@@ -19,9 +19,11 @@
 #include "NicaCutMonitorX.h"
 #include "NicaCutMonitorXY.h"
 #include "NicaJobs.h"
+#include "NicaMiniDstFullV0Event.h"
 #include "NicaMiniDstSource.h"
 #include "NicaMpdMiniDstEvent.h"
 #include "NicaMpdMiniDstFullEvent.h"
+#include "NicaMpdV0Finder.h"
 #include "NicaTrackAna.h"
 #include "NicaTrackBasicMCCut.h"
 #include "NicaTrackChargeCut.h"
@@ -30,6 +32,7 @@
 #include "NicaTrackPdgCut.h"
 #include "NicaTrackToFMass2Cut.h"
 #include "NicaTrackTpcCut.h"
+#include "NicaTwoTrackAna.h"
 #include "NicaV0BasicFinder.h"
 #include "NicaV0CandBasicCut.h"
 #include "NicaV0CandidateHelix.h"
@@ -42,7 +45,7 @@
  * @param task
  * @param tof
  */
-void SetPos(NicaV0BasicFinder *task, Bool_t tof) {
+void SetPos(NicaV0BasicFinder* task, Bool_t tof) {
   NicaTrackTpcCut tpc;
   tpc.SetCharge(1);
   tpc.SetActiveSigma(tpc.ProtonSigma());
@@ -71,7 +74,6 @@ void SetPos(NicaV0BasicFinder *task, Bool_t tof) {
     NicaTrackToFMass2Cut mass;
     Double_t mP = NicaConst::ProtonMass() * NicaConst::ProtonMass();
     mass.SetMinMax(mP * 0.8, mP * 1.2);
-    ;
     task->AddPosDauCut(mass);
     NicaCutMonitorXY m2(p.CutName(), 0, mass.CutName(), 0);
     m2.SetXaxis(200, 0, 4);
@@ -84,7 +86,7 @@ void SetPos(NicaV0BasicFinder *task, Bool_t tof) {
  * @param task
  * @param tof
  */
-void SetNeg(NicaV0BasicFinder *task, Bool_t tof) {
+void SetNeg(NicaV0BasicFinder* task, Bool_t tof) {
   NicaTrackTpcCut tpc;
   tpc.SetCharge(-1);
   tpc.SetActiveSigma(tpc.PionSigma());
@@ -121,7 +123,7 @@ void SetNeg(NicaV0BasicFinder *task, Bool_t tof) {
  * candidates cuts
  * @param task
  */
-void SetLambCut(NicaV0BasicFinder *task) {
+void SetLambCut(NicaV0BasicFinder* task) {
   // szybkie ciecie wybiera lambdy
   NicaV0CandBasicCut basF;
   basF.SetMinMax(0, 0.8, basF.DCA1to2());
@@ -138,12 +140,10 @@ void SetLambCut(NicaV0BasicFinder *task) {
   bas.SetMinMax(0, 0.8, bas.DCA1to2());
   bas.SetMinMax(0, 0.4, bas.DCAToPV());
   bas.SetMinMax(7, 1E+9, bas.DecLength());
-  bas.SetMinMax(NicaConst::LambdaMass() - 0.004,
-                NicaConst::LambdaMass() + 0.004, bas.InvMass());
+  bas.SetMinMax(NicaConst::LambdaMass() - 0.004, NicaConst::LambdaMass() + 0.004, bas.InvMass());
   NicaCutMonitorX mon(bas.CutName(), bas.InvMass());
   mon.SetXaxis(100, 1, 1.2);
-  NicaCutMonitorXY mon2(bas.CutName(), bas.AlphaArm(), bas.CutName(),
-                        bas.PtArm());
+  NicaCutMonitorXY mon2(bas.CutName(), bas.AlphaArm(), bas.CutName(), bas.PtArm());
   mon2.SetXaxis(100, -1, 1);
   mon2.SetYaxis(100, 0, 0.3);
   task->AddCandicateCut(bas, "double");
@@ -152,15 +152,15 @@ void SetLambCut(NicaV0BasicFinder *task) {
 }
 
 void v0_lambda(TString inFile, TString outFile = "v0.root") {
-  FairRunAna *ana = new FairRunAna();
+  FairRunAna* ana = new FairRunAna();
 
-  NicaMiniDstSource *source = new NicaMiniDstSource(inFile);
+  NicaMiniDstSource* source = new NicaMiniDstSource(inFile);
 
   ana->SetSource(source);
   ana->SetOutputFile(outFile);
   // two v0 findes with and without TOF
-  NicaV0BasicFinder *v0_1 = new NicaV0BasicFinder();
-  NicaV0BasicFinder *v0_2 = new NicaV0BasicFinder();
+  NicaMpdV0Finder* v0_1 = new NicaMpdV0Finder();
+  NicaMpdV0Finder* v0_2 = new NicaMpdV0Finder();
   SetPos(v0_1, kFALSE);
   SetPos(v0_2, kTRUE);
   SetNeg(v0_1, kFALSE);
@@ -175,10 +175,15 @@ void v0_lambda(TString inFile, TString outFile = "v0.root") {
   v0_2->SetFormat(new NicaMpdMiniDstEvent());
 
   // to fix n-sigma calculation (not needed for newest productions)
-  MpdPIDOnTheFly *pid = new MpdPIDOnTheFly();
+  MpdPIDOnTheFly* pid = new MpdPIDOnTheFly();
   ana->AddTask(pid);
+
+  NicaTwoTrackAna* pair = new NicaTwoTrackAna();
+  pair->SetFormat(new NicaMiniDstFullV0Event());
+
   ana->AddTask(v0_1);
   ana->AddTask(v0_2);
+  ana->AddTask(pair);
   ana->Init();
   ana->Run(20000);
 }

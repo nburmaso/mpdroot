@@ -210,7 +210,7 @@ void MpdDstCompressTask2::FixMom(MpdTrack *track,Int_t index, TVector3 &vertex) 
     NicaHelixZ helix(poz,mom,track->GetCharge());
     Double_t s = helix.PathLength(vertex, 1);
     TVector3 newMom = helix.EvalMom(s);
-    TVector3 newPos = helix.Evaluate(s);
+    TVector3 newPos = helix.EvalPos(s);
     track->SetFirstPointX(newPos.X());
     track->SetFirstPointY(newPos.Y());
     track->SetFirstPointZ(newPos.Z());

@@ -18,6 +18,7 @@
 #pragma link C++ namespace MpdPadsFormat;
 #pragma link C++ namespace MpdHbtDst;
 
+#pragma link C++ class MpdTrackIsGlobalCut + ;
 #pragma link C++ class MpdTrackChargeCut + ;
 #pragma link C++ class MpdTrackFirstPointCut + ;
 #pragma link C++ class MpdTcpCalibratedCut + ;

@@ -53,4 +53,9 @@
 #pragma link C++ class NicaMpdMiniDstFullEvent + ;
 #pragma link C++ class NicaMiniDstSource + ;
 
+#pragma link C++ class NicaMiniDstFullV0Event + ;
+#pragma link C++ class NicaMpdMiniDstEventV0 + ;
+#pragma link C++ class NicaMpdMiniDstEventV0Interface + ;
+
+
 #endif /* INTERFACES_MPDROOT_NICAMPDINTERFACELINKDEF_H_ */

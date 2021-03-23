@@ -20,9 +20,9 @@ Bool_t MpdAlicePairQuality::Pass(NicaTwoTrack *pair) {
   NicaMpdTrack *tr1 = (NicaMpdTrack *)pair->GetTrack1();
   NicaMpdTrack *tr2 = (NicaMpdTrack *)pair->GetTrack2();
   Double_t nhits = tr1->GetNHitsTpc() + tr2->GetNHitsTpc();
-  ULong64_t tr1_map = tr1->GetSharedHitMap();
-  ULong64_t tr2_map = tr2->GetSharedHitMap();
-  ULong64_t sum = tr1_map & tr2_map;
+  ULong64_t shared_map1 = tr1->GetSharedHitMap();
+  ULong64_t shared_map2 = tr2->GetSharedHitMap();
+  ULong64_t sum = shared_map1 & shared_map2;
   ULong64_t hits_map1 = tr1->GetHitMap();
   ULong64_t hits_map2 = tr2->GetHitMap();
   Double_t q = 0;

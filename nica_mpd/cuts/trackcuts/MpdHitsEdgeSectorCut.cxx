@@ -51,7 +51,7 @@ Bool_t MpdHitsEdgeSectorCut::Pass(NicaTrack* track) {
   for (int iLay = 0; iLay < tr->GetTpcPadsInfo()->GetPadsNo(); iLay++) {
     if (!TESTBIT(hit_map, iLay)) continue;
     Double_t s = tr->GetTpcPadsInfo()->GetPath(iLay);
-    TVector3 pos = tr->GetHelix()->Evaluate(s);
+    TVector3 pos = tr->GetHelix()->EvalPos(s);
     Int_t sector = fSec->Sector(tr->GetTpcPadsInfo()->GetPadID(iLay));
     Double_t angle_m = fSec->SectorAngle(sector) - dphi;
     Double_t angle_p = angle_m + dphi * 2.0;
