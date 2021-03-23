@@ -199,7 +199,7 @@ Bool_t MpdZdc::ProcessHits(FairVolume* vol) {
   Double_t  QCF=1; //quenching for Birk
   Double_t  BirkConst = 12.6; //0.126 mm/MeV for polystyrene 
   //0.126 *(0.1/0.001) = 12.6 cm/GeV
-  //(0.126 mm/MeV - from Wikipedia, 0.07943mm/MeV Â– in Geant4)
+  //(0.126 mm/MeV - from Wikipedia, 0.07943mm/MeV ô– in Geant4,G4EmSaturation.cc (push))
 
 
  //#define EDEBUG

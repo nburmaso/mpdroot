@@ -7,6 +7,7 @@
  *  Author:   Elena Litvinenko
  *  e-mail:   litvin@nf.jinr.ru
  *  Version:  18-Apr-2008
+ *  Modified March 2021  by A.Strijak
  *
  ************************************************************************************/
 
@@ -36,6 +37,7 @@ MpdZdcDigi::MpdZdcDigi()
   fChannelID = -1;
   fELoss     = 0;
   fELossDigi = 0;
+  fELossReco = 0.;
   fIsPsd = kFALSE;
 }
 

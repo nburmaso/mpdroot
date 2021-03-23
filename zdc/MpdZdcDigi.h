@@ -6,6 +6,7 @@
  *  Author:   Elena Litvinenko
  *  e-mail:   litvin@nf.jinr.ru
  *  Version:  18-Apr-2008
+ *  Modified March 2021  by A.Strijak
  *
  ************************************************************************************/
 
@@ -38,6 +39,7 @@ class MpdZdcDigi: public TObject
   inline Double_t  GetELoss()               { return fELoss; }
   inline Double_t  GetADCResolution()       { return fADCResolution; } 
   inline Double_t  GetEnergyDigiThreshold() { return fEnergyDigiThreshold; } 
+  inline Double_t  GetELossReco()               { return fELossReco; }
 
   inline char      GetWasInitialized()      { return fWasInitialized; } 
   inline Bool_t    GetIsPsd()               { return fIsPsd; } 
@@ -57,6 +59,7 @@ class MpdZdcDigi: public TObject
   UInt_t Convert ()          { fELossDigi = ADC (fELoss);  fELoss=0;  return fELossDigi;}
   UInt_t ConvertSim ()       { fELossDigi = ADC (fELoss);             return fELossDigi;}
   UInt_t ADC (Double_t pfELoss);
+  Double_t  SetELossReco (Double_t pfELoss)  { fELossReco = pfELoss; return fELossReco; }
 
  protected:
 
@@ -70,10 +73,11 @@ class MpdZdcDigi: public TObject
   Int_t    fChannelID;       // Hardware channel number (Sub-module number)
   UInt_t   fELossDigi;       // Sum of the energy losses as digital response of the detector/channel
   Double_t fELoss;           // Sum of the energy losses as analog signal accumulated prior to digitalization
+  Double_t fELossReco;       // Sum of the energy losses as analog simulated response of the detector/channel
 
   Bool_t   fIsPsd;           // static initialization tried from from MpdZdcDigiPar (0) or MpdZdcPsdDigiPar (1)
 
-  ClassDef(MpdZdcDigi,1);
+  ClassDef(MpdZdcDigi,2);
 
 };
 
