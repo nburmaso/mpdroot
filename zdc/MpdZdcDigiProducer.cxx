@@ -6,6 +6,7 @@
  *  Author:   Elena Litvinenko
  *  e-mail:   litvin@nf.jinr.ru
  *  Version:  18-Apr-2008
+ *  Modified March 2021  by A.Strijak
  *
  ************************************************************************************/
 
@@ -32,9 +33,11 @@ MpdZdcDigiProducer::MpdZdcDigiProducer(const char* name) :
   fPointArray=0;
   fDigiArray=0;
   fGeoPar=0;
-  fHistZdc1En=0;
-  fHistZdc2En=0;
-  fELossZdc1Value = NULL, fELossZdc2Value = NULL, fELossZdc1Histo = NULL, fELossZdc2Histo = NULL;
+//  fELossZdc1Value = NULL, fELossZdc2Value = NULLL;
+  fPix2Mip = 15;             // 15 MPPC pixels per MIP
+  fMIPEnergy = 0.005;        // 5 MeV
+  fMIPNoise = 0.3;           // 0.2 MIP noise level
+  fMIP2GeV = 0.005;
 }
 // -------------------------------------------------------------------------
 
@@ -71,6 +74,8 @@ InitStatus MpdZdcDigiProducer::Init() {
 
   cout << "-I- MpdZdcDigiProducer: Init started..." << endl;
 
+  fRandom3 = new TRandom3();
+
   // Get RootManager
   FairRootManager* ioman = FairRootManager::Instance();
   if ( ! ioman ) {
@@ -91,19 +96,13 @@ InitStatus MpdZdcDigiProducer::Init() {
   fDigiArray = new TClonesArray("MpdZdcDigi");  
   ioman->Register("ZdcDigi","Zdc",fDigiArray,kTRUE);
 
-
+/*
   fELossZdc1Value = new TClonesArray("TParameter<double>");
   ioman->Register("ELossZdc1Value","Zdc",fELossZdc1Value,kTRUE);
 
   fELossZdc2Value = new TClonesArray("TParameter<double>");
-  ioman->Register("ELossZdc2Value","Zdc",fELossZdc2Value,kTRUE);
-
-  fELossZdc1Histo = new TClonesArray("TVectorT<float>");
-  ioman->Register("ELossZdc1Histo","Zdc",fELossZdc1Histo,kTRUE);
-
-  fELossZdc2Histo = new TClonesArray("TVectorT<float>");
-  ioman->Register("ELossZdc2Histo","Zdc",fELossZdc2Histo,kTRUE);  
-
+  ioman->Register("ELossZdc2Value","Zdc",fELossZdc2Value,kTRUE);  
+*/
   MpdZdcDigiScheme *fDigiScheme  = MpdZdcDigiScheme::Instance();
   fDigiScheme->Init(fGeoPar,0,kTRUE,2);
 
@@ -112,36 +111,6 @@ InitStatus MpdZdcDigiProducer::Init() {
   return kSUCCESS;
 
 }
-// -------------------------------------------------------------------------
-void MpdZdcDigiProducer::CreateHistograms ( MpdZdcDigiId_t *pDigiID)
-{
-  Int_t nx,ny, nz;
-  Double_t dx, dy, dz;
-
-  MpdZdcDigiScheme *fDigiScheme  = MpdZdcDigiScheme::Instance();
-  fDigiScheme->GetZdcDimensions (nx,ny,nz);
-  fDigiScheme->GetVolDxDyDz (pDigiID,dx, dy, dz);
-  
-  Int_t Nx=nx+2;
-  Double_t Dx=dx*Nx; 
-  Int_t Ny=ny+2;
-  Double_t Dy=dy*Ny; 
-
-  fHistZdc1En = new TH2F ("HistZdc1En","HistZdc1Energy",Nx,-Dx,Dx,Ny,-Dy,Dy);
-  fHistZdc2En = new TH2F ("HistZdc2En","HistZdc2Energy",Nx,-Dx,Dx,Ny,-Dy,Dy);
-
-  if ((!fHistZdc1En)||(!fHistZdc2En)) 
-    cout << "-E- MpdZdcDigiProducer: HistZdc1En or HistZdc2En Histograms not created !!" << endl;
-  else {
-    FairRootManager* ioman = FairRootManager::Instance();
-    fHistZdc1En->SetDirectory((TFile*)ioman->GetOutFile());
-    fHistZdc2En->SetDirectory((TFile*)ioman->GetOutFile());
-    fHistZdc1En->Write();
-    fHistZdc2En->Write();
-}
-
-}
-
 // -----   Public method Exec   --------------------------------------------
 void MpdZdcDigiProducer::Exec(Option_t* opt) {
  
@@ -183,14 +152,7 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
   Int_t nPoints = fPointArray->GetEntriesFast();
   Double_t e1=0, e2=0;
 
-  if (fHistZdc1En) {
-    fHistZdc1En->Reset();
-    fHistZdc2En->Reset();
-  }
-  TH2F* hist1=fHistZdc1En;
-  TH2F* hist2=fHistZdc2En;
 
-  Bool_t flag_of_not_created=1;
   //cout <<"marina " <<nPoints <<endl;
   for (Int_t iPoint=0; iPoint<nPoints; iPoint++) {
     //marina
@@ -208,19 +170,16 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
     dEdepSectEv[modID-1][chanID]+=point->GetEnergyLoss();
     //end marina
 
+/*
+    if (detID == 1) {
+      e1 += point->GetEnergyLoss();
+    }
+    else e2 += point->GetEnergyLoss();
+*/
     Int_t pMMcopy=1*(point->GetZ()>0)+2*(point->GetZ()<0);
     digiID = pDigiScheme->GetDigiIdFromVolumeData  (point->GetDetectorID(), point->GetCopy(), point->GetCopyMother(),pMMcopy);
 
     if ((digiID[0]!=-1)&&(digiID[1]!=-1)) {
-
-
-      if (!fHistZdc1En) {
-
-	CreateHistograms(&digiID);
-
-	hist1=fHistZdc1En;
-	hist2=fHistZdc2En;
-      }
 
       if (fDigiIdEnergy.find(digiID)==fDigiIdEnergy.end())
 	fDigiIdEnergy[digiID] = point->GetEnergyLoss();
@@ -229,11 +188,9 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
 
       if (pMMcopy==1) {
 	e1 += point->GetEnergyLoss();
-        hist1->Fill(point->GetX(),point->GetY(),point->GetEnergyLoss());
       }
       else {
 	e2 += point->GetEnergyLoss();
-        hist2->Fill(point->GetX(),point->GetY(),point->GetEnergyLoss());
       }
 
     }//if ((digiID[0]!=-1)&&(digiID[1]!=-1))
@@ -250,39 +207,47 @@ void MpdZdcDigiProducer::Exec(Option_t* opt) {
   }//for (Int_t iPoint=0; iPoint<nPoints; iPoint++)
 
   //cout <<"marina 2 " <<endl;
+/*
   TClonesArray& clref1 = *fELossZdc1Value;
   new(clref1[0]) TParameter<double>("ELossZdc1",e1);
   TClonesArray& clref2 = *fELossZdc2Value;
   new(clref2[0]) TParameter<double>("ELossZdc2",e2); 
+*/
+  e1 = 0;
+  e2 = 0;
 
-  if (fHistZdc1En) {
-    TClonesArray& clref1e = *fELossZdc1Histo;
-    new(clref1e[0]) TVectorT<float>(fHistZdc1En->GetSize(),fHistZdc1En->GetArray());
-  }
-
-  if (fHistZdc2En) {
-    TClonesArray& clref2e = *fELossZdc2Histo;
-    new(clref2e[0]) TVectorT<float>(fHistZdc2En->GetSize(),fHistZdc2En->GetArray());
-  }
-  
   //cout <<"marina 3 " <<endl;
     for(Int_t i=0; i<90; i++) {// mod    
       for(Int_t ii=0;ii<10;ii++) { // section 
 	//cout <<"dEdepSectEv " <<i <<" " <<ii <<" " <<dEdepSectEv[i][ii] <<endl;
 	if(dEdepSectEv[i][ii]>0) {
+
 	  if(i<=44) detID = 1;
 	  else detID = 2;
+
+          Double_t recEnergy = RecoEnergy(dEdepSectEv[i][ii]);
+
 	  if(detID==1) {
 	    MpdZdcDigi* digi = AddHit(detID, i+1, ii+1, dEdepSectEv[i][ii]); 
 	    digi->ConvertSim();
+	    digi->SetELossReco(recEnergy);
+            e1 += recEnergy;
 	  }
 	  else {
 	    MpdZdcDigi* digi = AddHit(detID, i-45+1, ii+1, dEdepSectEv[i][ii]);
 	    digi->ConvertSim();
+	    digi->SetELossReco(recEnergy);
+            e2 += recEnergy;
 	  }
 	}
       }
     }//for(Int_t i=0; i<90; i++)
+
+//    TClonesArray& clref1 = *fELossZdc1Value;
+//    new(clref1[0]) TParameter<double>("ELossZdc1",e1);
+//    TClonesArray& clref2 = *fELossZdc2Value;
+//    new(clref2[0]) TParameter<double>("ELossZdc2",e2); 
+
 
     /*
   for(p=fDigiIdEnergy.begin(); p!=fDigiIdEnergy.end(); ++p) {
@@ -323,5 +288,14 @@ MpdZdcDigi* MpdZdcDigiProducer::AddHit(Int_t detID, Int_t modID, Int_t chanID,Fl
 }
 // ----
 
+Double_t MpdZdcDigiProducer::RecoEnergy (Double_t pfELoss)
+{
+  Double_t energyMIP = pfELoss / fMIPEnergy;
+  Double_t energyPix = fRandom3->Poisson(energyMIP * fPix2Mip);
+  Double_t energyMIPSmeared = energyPix / fPix2Mip;
+  Double_t noise = fRandom3->Gaus(0, fMIPNoise);
+  energyMIPSmeared += noise;
+  return energyMIPSmeared * fMIP2GeV;
+}
 
 ClassImp(MpdZdcDigiProducer)
