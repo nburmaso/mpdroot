@@ -86,6 +86,7 @@ class MpdMCTrack : public TObject
   void Get4Momentum(TLorentzVector& momentum);
   void GetStartVertex(TVector3& vertex);
   Double_t GetPolar(Int_t indx) { return fPolar[indx]; }
+  Double_t GetWeight() { return fWeight; }
 
   /** Accessors to the number of MCPoints in the detectors **/
   Int_t GetNPoints(DetectorIdMPD detId)  const;
@@ -95,6 +96,7 @@ class MpdMCTrack : public TObject
   void SetMotherId(Int_t id) { fMotherId = id; }
   void SetNPoints(Int_t iDet, Int_t np);
   void SetPolar(Int_t indx, Double_t polar) { fPolar[indx] = polar; }
+  void SetWeight(Double_t weight) { fWeight = weight; }
 
 private:
 
@@ -131,6 +133,9 @@ private:
   Int_t fNPoints;
   /**AZ Polarization  **/
   Double32_t fPolar[3]; 
+
+  /** Accounts for the length of the polarization vector **/
+  Double32_t fWeight;
 
   ClassDef(MpdMCTrack,4);
 
