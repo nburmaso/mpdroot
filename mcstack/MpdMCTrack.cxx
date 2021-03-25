@@ -99,6 +99,8 @@ MpdMCTrack::MpdMCTrack(TParticle* part)
   TVector3 polar3;
   part->GetPolarisation(polar3);
   for (Int_t i = 0; i < 3; ++i) fPolar[i] = polar3[i];
+
+  fWeight   = part->GetWeight();
 }
 // -------------------------------------------------------------------------
 
