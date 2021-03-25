@@ -113,7 +113,17 @@ Bool_t MpdPHSDGenerator::ReadEvent(FairPrimaryGenerator *primGen)
     {
       Int_t nTr = gMC->GetStack()->GetNtrack();
       TParticle *part = ((MpdStack*)gMC->GetStack())->GetParticle(nTr-1);
-      part->SetPolarisation(pol[0], pol[1], pol[2]);
+      
+      if (TMath::Abs(pol[0]) > 1. || TMath::Abs(pol[1]) > 1. || TMath::Abs(pol[2]) > 1.)
+      {
+		    part->SetPolarisation(0., 0., 0.);
+		    std::cout << "Component of the polarization vector is higher than 1!" << std::endl;
+	    }else
+	    {
+		    part->SetPolarisation(pol[0], pol[1], pol[2]);
+		    Float_t weight_pol = TMath::Sqrt(pol[0]*pol[0]+pol[1]*pol[1]+pol[2]*pol[2]);
+		    part->SetWeight(weight_pol);
+	    }
     }
   }
   
