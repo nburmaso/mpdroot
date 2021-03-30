@@ -194,7 +194,7 @@ void MakeMPDROOT_TOFv8_3()
     
     for(int i = 1; i <= NStrips; i++) 
     {
-        double Z = -detGlassZ/2. + StripStep/2. + i * StripStep;
+        double Z = -detGlassZ/2. + StripStep/2. + (i-1) * StripStep;
 
         vDetBox->AddNode(vStripGas, 0*NStrips + i, new TGeoTranslation("",  0., Ygas1, Z)); // [ 1,24]
         vDetBox->AddNode(vStripGas, 1*NStrips + i, new TGeoTranslation("",  0., Ygas2, Z)); // [25,48] - middle layer
@@ -206,13 +206,12 @@ void MakeMPDROOT_TOFv8_3()
     auto vStripCu = new TGeoVolume("tof1StripCuV", sStripCu, medCu);                 vStripCu->SetLineColor(kRed);
 
     // Add Cu strips
-    const double StripStepCu = 1.25; // [cm]
     const double Ycu1 = YG10Thick1 - detG10ThickY/2. - stripCuY/2.;
     const double Ycu2 = YG10Thick3 - detG10ThickY/2. - stripCuY/2.;
     
     for(int i = 1; i <= NStrips; i++) 
     {
-        double Z = -detGlassZ/2. + StripStepCu/2. + i * StripStep;
+        double Z = -detGlassZ/2. + StripStep/2. + (i-1) * StripStep;
         
         vDetBox->AddNode(vStripCu, 0*NStrips + i, new TGeoTranslation("",  0., Ycu1, Z));// [ 1,24]
         vDetBox->AddNode(vStripCu, 1*NStrips + i, new TGeoTranslation("",  0., Ycu2, Z));// [25,48]
