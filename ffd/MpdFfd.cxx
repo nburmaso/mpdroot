@@ -1,7 +1,9 @@
 //------------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------
-// -----                       MpdFfd source file                      -----
-// -------------------------------------------------------------------------
+/// \class MpdFfd
+/// 
+/// \brief 
+/// \author Sergei Lobastov (LHE, JINR, Dubna)
+//------------------------------------------------------------------------------------------------------------------------
 
 #include "iostream"
 
@@ -26,113 +28,203 @@
 #include "MpdFfdGeo.h"
 #include "MpdFfdGeoPar.h"
 #include "MpdFfdPoint.h"
+#include "MpdFfdHitProducer.h"
 
 class FairVolume;
+using namespace std;
 
+ClassImp(MpdFfd)
 //------------------------------------------------------------------------------------------------------------------------
-MpdFfd::MpdFfd() : FairDetector("FFD", kTRUE) {
-  fFfdCollection = new TClonesArray("MpdFfdPoint");
-  fPosIndex = 0;
-  fVerboseLevel = 1;
+MpdFfd::MpdFfd() 
+ : FairDetector("FFD", kTRUE) 
+{
+	aFfdPoints = new TClonesArray("MpdFfdPoint");
+	fPosIndex = 0;
+	fVerboseLevel = 1;
 }
 //------------------------------------------------------------------------------------------------------------------------
-MpdFfd::MpdFfd(const char *name, Bool_t active) : FairDetector(name, active) {
-  fFfdCollection = new TClonesArray("MpdFfdPoint");
-  fPosIndex = 0;
-  fVerboseLevel = 1;
+MpdFfd::MpdFfd(const char *name, Bool_t active, Int_t verbose) 
+ : FairDetector(name, active)
+{
+	aFfdPoints = new TClonesArray("MpdFfdPoint");
+	fPosIndex = 0;
+	fVerboseLevel = verbose;
 }
 //------------------------------------------------------------------------------------------------------------------------
-MpdFfd::~MpdFfd() {
-  if (fFfdCollection) {
-    fFfdCollection->Delete();
-    delete fFfdCollection;
-  }
+MpdFfd::~MpdFfd() 
+{
+	aFfdPoints->Delete();
+    	delete aFfdPoints;
 }
 //------------------------------------------------------------------------------------------------------------------------
-Bool_t MpdFfd::ProcessHits(FairVolume *vol) {
-  //	Int_t gap, cell, module, region;
-  //	TString Volname;
+MpdFfdPoint* 		MpdFfd::FindPoint(Int_t ptid, Int_t suid)
+{
+	if(cPtid == ptid && cSuid == suid) return cPoint; // cached result
 
-  // Set parameters at entrance of volume. Reset ELoss.
-  if (gMC->IsTrackEntering()) {
-    fELoss = 0.;
-    fTime = gMC->TrackTime() * 1.0e09;
-    fLength = gMC->TrackLength();
-    gMC->TrackPosition(fPos);
-    gMC->TrackMomentum(fMom);
-  }
-
-  // Sum energy loss for all steps in the active volume
-  fELoss += gMC->Edep();
-
-  // Create MpdFfdPoint at ENTER of active volume; fELoss INVALID!!!
-  // AZ if(gMC->IsTrackEntering())
-
-  // Create MpdFfdPoint at exit of active volume
-  if ((gMC->IsTrackExiting() || gMC->IsTrackStop() ||
-       gMC->IsTrackDisappeared()) &&
-      fELoss > 0) {
-    fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
-    // Volname = vol->getRealName();         // EL
-    // region = Volname[5] - '0';   //?????????????????????????
-    // gMC->CurrentVolID(gap);
-    // gMC->CurrentVolOffID(1, cell);
-    // gMC->CurrentVolOffID(2, module);
-
-    // fVolumeID = ((region-1)<<24);////////////// + ((module-1)<<14) +
-    // ((cell-1)<<4) + (gap-1);
-    fVolumeID = vol->getMCid();
-
-    AddHit(fTrackID, fVolumeID, TVector3(fPos.X(), fPos.Y(), fPos.Z()),
-           TVector3(fMom.Px(), fMom.Py(), fMom.Pz()), fTime, fLength, fELoss);
-
-    ((MpdStack *)gMC->GetStack())->AddPoint(kFFD);
-
-    ResetParameters();
-  }
-
-  return kTRUE;
+	// looking for new pair <tid, suid>
+	for(int i = 0, N = aFfdPoints->GetEntriesFast(); i < N; i++) // cycle already created MpdFfdPoint
+	{
+		auto entry = (MpdFfdPoint*) aFfdPoints->UncheckedAt(i);
+		
+		if(entry->IsSame(ptid, suid))
+		{
+			cPoint = entry; // update current point
+			cPtid = ptid;
+			cSuid = suid;
+			return cPoint;
+		}
+	}
+return  nullptr;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdFfd::EndOfEvent() {
-  if (fVerboseLevel)
-    Print();
-  fFfdCollection->Delete();
-  fPosIndex = 0;
+MpdFfdPoint* 		MpdFfd::CreatePoint(Int_t tid, Int_t suid)
+{
+return  new((*aFfdPoints)[aFfdPoints->GetEntriesFast()]) MpdFfdPoint(tid, suid);
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdFfd::Register() {
-  FairRootManager::Instance()->Register("FFDPoint", "Ffd", fFfdCollection,
-                                        kTRUE);
-}
-//------------------------------------------------------------------------------------------------------------------------
-TClonesArray *MpdFfd::GetCollection(Int_t iColl) const {
-  if (iColl == 0)
-    return fFfdCollection;
+Bool_t 		MpdFfd::ProcessHits(FairVolume *vol) 
+{
+	Int_t  suid; 
+	gMC->CurrentVolID(suid);
+	Int_t tid = gMC->GetStack()->GetCurrentTrackNumber();
+	Int_t pid = gMC->TrackPid(); // Cherenkov 50000050  FeedbackPhoton 50000051
 
-  return NULL;
-}
-//------------------------------------------------------------------------------------------------------------------------
-void MpdFfd::Print() const {
-  Int_t nHits = fFfdCollection->GetEntriesFast();
-  cout << "-I- MpdFfd: " << nHits << " points registered in this event."
-       << endl;
+  	if(gMC->IsTrackEntering()) 
+	{		
+		if(pid != 50000050) //  event = non-op track ENTER to quartz volume
+		{
+    			gMC->TrackPosition(fPos);
+    			gMC->TrackMomentum(fMom);
 
-  if (fVerboseLevel > 1)
-    for (Int_t i = 0; i < nHits; i++)
-      (*fFfdCollection)[i]->Print();
+			auto ret = FindTrackParams(tid, suid);
+			if(ret.second == false) // don't found
+			{
+				TrackParam param(suid, fPos.Vect(), fMom,  gMC->TrackTime() * 1.e+9, gMC->TrackLength());
+			 	params.insert(make_pair(tid, param)); // insert new parent track parameters
+			}
+		}
+		else	// event = op create at quartz volume
+		{		
+			TLorentzVector mom;
+			gMC->TrackMomentum(mom);
+
+			double energy = mom.E()* 1.e+9; // op energy [eV]
+
+			bool addEntry = true;
+			if(MpdFfdPoint::fCurrentMode == MpdFfdPoint::kPhotoElectron) // current mode = save pe only
+			{
+				if(! MpdFfdHitProducer::IsPeCreated(energy)) addEntry = false; // failed create pe from op 
+			}
+
+			if(addEntry)
+			{
+  				Int_t ptid = gMC->GetStack()->GetCurrentParentTrackNumber();
+
+				auto point = FindPoint(ptid, suid);
+				if(point == nullptr) point = CreatePoint(ptid, suid);
+
+				if(! point->AddOp(energy, gMC->TrackTime() * 1.e+9)) // [ns]; if MpdFfdPoint not closed, need to call SaveParentTrackParams ONCE!
+				{
+					auto ret = FindTrackParams(ptid, suid);
+					if(ret.second)
+					{
+						auto param = ret.first->second;
+						point->SaveParentTrackParams(param.posIn, param.posOut, param.mom, param.time, param.length);
+
+						((MpdStack *)gMC->GetStack())->AddPoint(kFFD, ptid); // add marker for parent track
+					}
+				}
+
+			} // addEntry
+
+		} // op
+
+  	} // track entering
+
+  	// Update MpdFfdPoint at non-op track EXIT from quartz
+  	if(pid != 50000050 && (gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()) )
+	{
+		TLorentzVector posOut;
+		gMC->TrackPosition(posOut);
+
+		auto ret = FindTrackParams(tid, suid);
+		if(ret.second) ret.first->second.posOut = posOut.Vect(); // update parent track output position
+
+		ResetParameters();
+
+	} // track exiting
+
+return kTRUE;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdFfd::Reset() {
-  fFfdCollection->Delete();
-  ResetParameters();
+pair <MpdFfd::Tparams::iterator, bool>	MpdFfd::FindTrackParams(Int_t tid, Int_t suid)
+{
+	auto ret = params.equal_range(tid); 
+	for(auto it = ret.first; it != ret.second; ++it)
+	{
+		if(it->second.suid == suid)
+		{
+			return make_pair(it, true);
+		}
+	}
+
+return make_pair(params.end(), false);
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdFfd::CopyClones(TClonesArray *cl1, TClonesArray *cl2, Int_t offset) {
+void MpdFfd::EndOfEvent() 
+{
+{	size_t n = 0;
+	for(int i = 0, N = aFfdPoints->GetEntriesFast(); i < N; i++) // cycle already created MpdFfdPoint
+	{
+		auto point = (MpdFfdPoint*) aFfdPoints->UncheckedAt(i);
+		n += point->IsClosed();
+	}
+cout<<"\n  SSSSS MpdFfd::EndOfEvent size="<<aFfdPoints->GetEntriesFast()<<" closed="<<n;
+}
+
+ 	if(fVerboseLevel)    Print();
+  
+	aFfdPoints->Delete();
+	fPosIndex = 0;
+
+	// event data cleanup
+	params.clear();
+	cPoint = nullptr;
+	cPtid = cSuid = -1;
+}
+//------------------------------------------------------------------------------------------------------------------------
+void 			MpdFfd::Register() 
+{
+  	FairRootManager::Instance()->Register("FFDPoint", "Ffd", aFfdPoints, kTRUE);
+}
+//------------------------------------------------------------------------------------------------------------------------
+TClonesArray *MpdFfd::GetCollection(Int_t iColl) const 
+{
+	if(iColl == 0) return aFfdPoints;
+
+return  nullptr;
+}
+//------------------------------------------------------------------------------------------------------------------------
+void MpdFfd::Print() const 
+{
+	Int_t nHits = aFfdPoints->GetEntriesFast();
+	cout<<"-I- MpdFfd: "<<nHits<<" points registered in this event.\n";
+
+	if(fVerboseLevel > 1) for (Int_t i = 0; i < nHits; i++) (*aFfdPoints)[i]->Print();
+}
+//------------------------------------------------------------------------------------------------------------------------
+void MpdFfd::Reset() 
+{
+	aFfdPoints->Delete();
+	ResetParameters();
+}
+//------------------------------------------------------------------------------------------------------------------------
+void MpdFfd::CopyClones(TClonesArray *cl1, TClonesArray *cl2, Int_t offset) 
+{
   Int_t nEntries = cl1->GetEntriesFast();
   cout << "-I- MpdFfd: " << nEntries << " entries to add." << endl;
   TClonesArray &clref = *cl2;
-  MpdFfdPoint *oldpoint = NULL;
+  MpdFfdPoint *oldpoint = nullptr;
 
   for (Int_t i = 0; i < nEntries; i++) {
     oldpoint = (MpdFfdPoint *)cl1->At(i);
@@ -145,7 +237,8 @@ void MpdFfd::CopyClones(TClonesArray *cl1, TClonesArray *cl2, Int_t offset) {
   cout << "-I- MpdFfd: " << cl2->GetEntriesFast() << " merged entries." << endl;
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdFfd::ConstructGeometry() {
+void MpdFfd::ConstructGeometry() 
+{
   TString fileName = GetGeometryFileName();
 
   if (fileName.EndsWith(".root")) {
@@ -168,7 +261,8 @@ void MpdFfd::ConstructGeometry() {
   }
 }
 //------------------------------------------------------------------------------------------------------------------------
-void MpdFfd::ConstructAsciiGeometry() {
+void MpdFfd::ConstructAsciiGeometry() 
+{
 
   int count = 0;
   int count_tot = 0;
@@ -195,8 +289,8 @@ void MpdFfd::ConstructAsciiGeometry() {
   TObjArray *fPassNodes = par->GetGeoPassiveNodes();
 
   TListIter iter(volList);
-  FairGeoNode *node = NULL;
-  FairGeoVolume *aVol = NULL;
+  FairGeoNode *node = nullptr;
+  FairGeoVolume *aVol = nullptr;
 
   while ((node = (FairGeoNode *)iter.Next())) {
     aVol = dynamic_cast<FairGeoVolume *>(node);
@@ -214,24 +308,12 @@ void MpdFfd::ConstructAsciiGeometry() {
   ProcessNodes(volList);
 }
 //------------------------------------------------------------------------------------------------------------------------
-MpdFfdPoint *MpdFfd::AddHit(Int_t trackID, Int_t detID, TVector3 pos,
-                            TVector3 mom, Double_t time, Double_t length,
-                            Double_t eLoss) {
-  TClonesArray &clref = *fFfdCollection;
-  Int_t size = clref.GetEntriesFast();
+Bool_t MpdFfd::CheckIfSensitive(std::string name) 
+{
+	if(name.find("Active") != string::npos) return kTRUE;
 
-  return new (clref[size])
-      MpdFfdPoint(trackID, detID, pos, mom, time, length, eLoss);
-}
-//------------------------------------------------------------------------------------------------------------------------
-// Check if Sensitive-----------------------------------------------------------
-Bool_t MpdFfd::CheckIfSensitive(std::string name) {
-  TString tsname = name;
-  if (tsname.Contains("Active")) {
-    return kTRUE;
-  }
-  return kFALSE;
+return kFALSE;
 }
 //------------------------------------------------------------------------------------------------------------------------
 
-ClassImp(MpdFfd)
+

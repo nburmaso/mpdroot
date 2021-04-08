@@ -1,33 +1,52 @@
 //------------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------
-// -----                      MpdFfdPoint source file                  -----
-// -------------------------------------------------------------------------
-
+/// \class MpdFfdPoint
+/// 
+/// \brief 
+/// \author Sergei Lobastov (LHE, JINR, Dubna)
+//------------------------------------------------------------------------------------------------------------------------
 
 #include <iostream>
+
 #include "MpdFfdPoint.h"
 
+using namespace std;
 
+ClassImp(MpdFfdPoint)
+MpdFfdPoint::FFDPointMode MpdFfdPoint::fCurrentMode = FFDPointMode::kPhotoElectron;
 //------------------------------------------------------------------------------------------------------------------------
 MpdFfdPoint::MpdFfdPoint() : FairMCPoint() { }
 //------------------------------------------------------------------------------------------------------------------------
-MpdFfdPoint::MpdFfdPoint(Int_t trackID, Int_t detID, TVector3 pos, 
-			 	TVector3 mom, Double_t tof, Double_t length, Double_t eLoss)
- : FairMCPoint(trackID, detID, pos, mom, tof, length, eLoss)
-{ }
+MpdFfdPoint::MpdFfdPoint(Int_t tid, Int_t suid)
+ : FairMCPoint(tid, suid, TVector3(), TVector3(), 0., 0., 0.)
+{ 
+	fMode = fCurrentMode;
+}
 //------------------------------------------------------------------------------------------------------------------------
-MpdFfdPoint::~MpdFfdPoint() { }
+MpdFfdPoint::~MpdFfdPoint() 
+{ 
+	fData.clear();
+}
+//------------------------------------------------------------------------------------------------------------------------
+void		MpdFfdPoint::SaveParentTrackParams(const TVector3& posIn, const TVector3& posOut, const TLorentzVector& P, Double_t time, Double_t length) 
+{ 
+	SetPosition(posIn);
+	fPositionOut = posOut; 
+	SetMomentum(P.Vect());
+  	SetTime(time);
+    	SetLength(length); 
+	fBeta = P.Beta();
+
+	isClosed = true;
+}
 //------------------------------------------------------------------------------------------------------------------------
 void MpdFfdPoint::Print(const Option_t* opt) const 
 {
-	cout 	<< "-I- MpdFfdPoint: FFD point for track " << fTrackID 
-       		<< " in detector " << fDetectorID << endl;
-	cout 	<< "    Position (" << fX << ", " << fY << ", " << fZ
-       		<< ") cm" << endl;
-	cout 	<< "    Momentum (" << fPx << ", " << fPy << ", " << fPz
-       		<< ") GeV" << endl;
-	cout 	<< "    Time " << fTime << " ns,  Length " << fLength 
-       		<< " cm,  Energy loss " << fELoss*1.0e06 << " keV" << endl;
+	double step = (fPositionOut - TVector3(fX, fY, fZ)).Mag();
+	if(opt) cout<<opt;
+	cout	<<"\n-I- MpdFfdPoint("<<isClosed<<"): tid="<<fTrackID<< ", suid="<<fDetectorID<<", mode="<<fMode
+		<<", posIn=("<<fX<<", "<<fY<<", "<<fZ<<") cm,  posOut=("<<fPositionOut.X()<<", "<<fPositionOut.Y()<<", "<<fPositionOut.Z()
+		<<") cm, time="<<fTime<<" ns, trackLength="<<fLength<<" cm, quartzStep="<<step<<", beta="<<fBeta<<" " <<this;
+	if(step>0.) cout<<", Nmb per 1cm ="<<fData.size()/step;	
 }
 //------------------------------------------------------------------------------------------------------------------------
-ClassImp(MpdFfdPoint)
+

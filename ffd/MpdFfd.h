@@ -1,38 +1,35 @@
 //------------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------
-// -----                         MpdFfd header file                    -----
-// -------------------------------------------------------------------------
+/// \class MpdFfd
+/// 
+/// \brief 
+/// \author Sergei Lobastov (LHE, JINR, Dubna)
+//------------------------------------------------------------------------------------------------------------------------
 
-/**  MpdFfd.h
- **
- ** Defines the active detector FFD. Constructs the geometry and
- ** registeres MCPoints.
- **/
+#ifndef __HH_MPDFFD_H
+#define __HH_MPDFFD_H 1
 
+#include <iostream>
 
-
-#ifndef MPDFFD_H
-#define MPDFFD_H
-
+#include <vector>
+#include <map>
 
 #include "TClonesArray.h"
 #include "TLorentzVector.h"
 #include "TVector3.h"
 #include "FairDetector.h"
 
-class MpdFfdPoint;
+#include "MpdFfdPoint.h"
+
+//class MpdFfdPoint;
 class FairVolume;
 
 //------------------------------------------------------------------------------------------------------------------------
 class MpdFfd : public FairDetector
 {
-
 public:
-
    	// *@param name    detector name
    	// *@param active  sensitivity flag
-  	MpdFfd(const char* name, Bool_t active);
-
+  	MpdFfd(const char* name, Bool_t active, Int_t verbose = 1);
 	MpdFfd();
 	virtual ~MpdFfd();
 
@@ -75,41 +72,49 @@ public:
 	// @value         kTRUE if volume is sensitive, else kFALSE
 	virtual Bool_t CheckIfSensitive(std::string name);
 
-  
 private:
+  	TLorentzVector fPos = {};          //!  position
+  	TLorentzVector fMom = {};          //!  momentum
 
-	// Track information to be stored until the track leaves the active volume.
-  	Int_t          fTrackID;           //!  track index
-  	Int_t          fVolumeID;          //!  volume id
-  	TLorentzVector fPos;               //!  position
-  	TLorentzVector fMom;               //!  momentum
-  	Double32_t     fTime;              //!  time
-  	Double32_t     fLength;            //!  length
-  	Double32_t     fELoss;             //!  energy loss
+	// cached looking for
+	MpdFfdPoint	*cPoint = nullptr;
+	Int_t 		cPtid = -1, cSuid = -1;
 
-  	Int_t fPosIndex;                   //!
-  	TClonesArray* fFfdCollection;      //! Hit collection
+  	Int_t 				fPosIndex;  //!
+  	TClonesArray* 			aFfdPoints; //! Hit collection
 
+ 	MpdFfdPoint* 		FindPoint(Int_t ptid, Int_t suid);
+	MpdFfdPoint* 		CreatePoint(Int_t ptid, Int_t suid);
 
-	// Adds a MpdFfdPoint to the HitCollection
-  	MpdFfdPoint* AddHit(Int_t trackID, Int_t detID, TVector3 pos, TVector3 mom, Double_t time, Double_t length, Double_t eLoss); 
- 
 	// Resets the private members for the track parameters
-  	void ResetParameters();
+  	void 			ResetParameters();
 
+struct TrackParam
+{
+	TrackParam(Int_t  id, const TVector3& in, const TLorentzVector& P, Double_t t, Double_t l) // init params at track enter to SV
+	{ suid = id; posIn = in; mom = P; time = t; length = l;}
 
-  ClassDef(MpdFfd,1) 
-
+	Int_t  suid = -1;
+	TVector3 posIn = {}, posOut = {};
+	TLorentzVector  mom = {};
+	Double_t time = 0., length = 0.;	
 };
 
+typedef std::multimap<Int_t, TrackParam>  Tparams;
+
+	Tparams  params; //!   key = tid
+
+
+std::pair <Tparams::iterator, bool>	FindTrackParams(Int_t tid, Int_t suid);
+
+
+ClassDef(MpdFfd,3) 
+};
 //------------------------------------------------------------------------------------------------------------------------
 inline void MpdFfd::ResetParameters() 
 {
-	fTrackID = fVolumeID = 0;
-	fPos.SetXYZM(0.0, 0.0, 0.0, 0.0);
-	fMom.SetXYZM(0.0, 0.0, 0.0, 0.0);
-	fTime = fLength = fELoss = 0;
-	fPosIndex = 0;
+	fPos = fMom = {};
+	fPosIndex = {};
 };
 //------------------------------------------------------------------------------------------------------------------------
 #endif

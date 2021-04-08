@@ -1,57 +1,32 @@
-//--------------------------------------------------------------------------
-//----                     MpdFfdHit                                    ----
-//--------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------------------
 #include <iostream>
-using namespace std;
 
 #include "MpdFfdHit.h"
 
-
-// -----   Default constructor   -------------------------------------------
-
+using namespace std;
+ClassImp(MpdFfdHit)
+//------------------------------------------------------------------------------------------------------------------------
 MpdFfdHit::MpdFfdHit()
 {
-  fFlag = 1;
+
 }
-
-
-// -----   Standard constructor   ------------------------------------------
-
-MpdFfdHit::MpdFfdHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index, Int_t flag)
-: FairHit(detID, pos, dpos, index)
+//------------------------------------------------------------------------------------------------------------------------
+MpdFfdHit::MpdFfdHit(Int_t suid, TVector3 pos, TVector3 dpos, Int_t index, Double_t time, size_t npe, Int_t flag)
+: FairHit(suid, pos, dpos, index), fTime(time), fFlag(flag), fNpe(npe)
 {
-    fFlag = flag;
+
 }
+//------------------------------------------------------------------------------------------------------------------------
+MpdFfdHit::~MpdFfdHit() 
+{ 
 
-// -----   Constructor without flag  ------------------------------------------
-
-MpdFfdHit::MpdFfdHit(Int_t detID, TVector3 pos, TVector3 dpos, Int_t index)
-: FairHit(detID, pos, dpos, index)
-{
 }
-
-// -----   Destructor   ----------------------------------------------------
-MpdFfdHit::~MpdFfdHit() { }
-
-
-// -----  Print  -----------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------
 void MpdFfdHit::Print(const Option_t* opt) const
 {
-  cout << "-I- MpdFfdHit" << endl;
-  cout << "    DetectorID: " << fDetectorID << endl;
-  cout << "    Position: (" << fX
-       << ", " << fY
-       << ", " << fZ << ") cm"
-       << endl;
-  cout << "    Position error: (" << fDx
-       << ", " << fDy
-       << ", " << fDz << ") cm"
-       << endl;
-  cout << "    Flag: " << fFlag
-       << endl;
+	cout	<<"\n-I- MpdFfdHit: "<<" suid="<<fDetectorID<< ", Position=("<<fX<<","<<fY<<","<<fZ<<") cm"
+		<<"  time="<<fTime<<", nPe="<<fNpe<<", flag="<<fFlag;
 }
-// -------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------
 
 
-ClassImp(MpdFfdHit)

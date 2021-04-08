@@ -17,7 +17,7 @@ void geometry_stage1(FairRunSim *fRun) {
   fRun->AddModule(Magnet);
 
   FairDetector *Ffd = new MpdFfd("FFD", kTRUE);
-  Ffd->SetGeometryFileName("FFD_v6.root");
+  Ffd->SetGeometryFileName("FFD_v8.root");
   fRun->AddModule(Ffd);
 
   FairDetector *Tpc = new TpcDetector("TPC", kTRUE);

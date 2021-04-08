@@ -34,6 +34,8 @@
 #/mcVerbose/physicsList 2
 #/tracking/verbose 1
 
+/process/optical/verbose 0
+
 #/run/particle/dumpCutValues
 
 # Limit max number of Cerenkov photons per step

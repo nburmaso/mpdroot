@@ -1,92 +1,71 @@
-// -------------------------------------------------------------------------
-// -----                 MpdFfdHitproducer header file                 -----
-// -------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------
+/// \class MpdFfdHitProducer
+/// 
+/// \brief 
+/// \author Sergei Lobastov (LHE, JINR, Dubna)
+//------------------------------------------------------------------------------------------------------------------------
 
-#ifndef CBMHYPHITPRODUCER_H
-#define CBMHYPHITPRODUCER_H 1
+#ifndef __HH_MPDFFDHITPRODUCER_H
+#define __HH_MPDFFDHITPRODUCER_H 1
 
+#include <TList.h>
+#include <TString.h>
+#include <TVector3.h>
+#include <TH2D.h>
+#include <TH1D.h>
+#include <TEfficiency.h>
 
-#include <map>
-#include <iostream>
 #include "FairTask.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TList.h"
-
-#include "TFile.h"
-#include "MpdFfdHit.h"
-#include "TVector3.h"
-
+//------------------------------------------------------------------------------------------------------------------------
 class TClonesArray;
-class TObjectArray;
+class TGraph;
+class MpdFfdPoint;
+class MpdFfdHit;
 
+//------------------------------------------------------------------------------------------------------------------------
 class MpdFfdHitProducer : public FairTask
 {
+        TClonesArray 			*aMcPoints  = nullptr;	//! <--- MC input
+        TClonesArray 			*aMcTracks  = nullptr;	//! <--- MC input
+        TClonesArray 			*aExpDigits = nullptr;	//! <--- Exp input
+        TClonesArray 			*aFfdHits   = nullptr;	//! ---> output
 
- public:
+	Bool_t				fUseMCData;
+	Bool_t				fDoTest = false;	
+	Double_t			fNpeThresh = 80.;// default value = 80 photo electrons
+	Double_t			fErrXY = 4./sqrt(12.), fErrZ = 1.5/sqrt(12.); // 4x4x1.5 [cm]
+      	TList				fList;	
+	TString				fFlnm;
 
-  /** Default constructor **/  
-  MpdFfdHitProducer(const char* fileGeo);
+	TH1D				*hSuids = nullptr;
+	TH2D				*hOpYield = nullptr, *hOpYieldPion = nullptr,  *hOpYieldProton = nullptr, *hOpYieldElectron = nullptr;
+	TH2D				*hPeYield = nullptr, *hPeYieldPion = nullptr,  *hPeYieldProton = nullptr, *hPeYieldElectron = nullptr;
+	TH2D				*hOpTrash = nullptr, *hXY = nullptr, *hXmap = nullptr, *hYmap = nullptr, *hZmap = nullptr;
+	TH2D				*hXcenter = nullptr, *hYcenter = nullptr, *hCenter = nullptr;
+	TEfficiency			*hPMTeff = nullptr;
+	static TGraph			*gPMTeff_pdf; // PDF for PMT yield
 
+  	virtual void 		SetParContainers();
 
-  /** Destructor **/
-  ~MpdFfdHitProducer();
+	void			Add(TEfficiency *hist){ hist->SetDirectory(nullptr); fList.Add(hist);}
+	void			Add(TH1 *hist){ hist->SetDirectory(nullptr); fList.Add(hist);}
+	MpdFfdHit* 		AddHit(const MpdFfdPoint *point, const TVector3& pos, const TVector3& dpos, Int_t refIndex, size_t npe, Int_t flag);
+	TVector3		GetPadCenter(Int_t suid);  // [1,161]
 
+public:
+  	MpdFfdHitProducer(const char* name = "FFD hit Producer", Bool_t useMCdata = true, Int_t verbose = 1, const char* flnm = nullptr);
+  	virtual ~MpdFfdHitProducer();
 
-  /** Virtual method Init **/
-  virtual InitStatus Init();
+  	virtual InitStatus 	Init();
+  	virtual void 		Exec(Option_t* opt);
+  	virtual void  		Finish();
 
+	void			SetErrors(double XYerr, double Zerr){ fErrXY = XYerr; fErrZ = Zerr;};
+	void  			SetPeThresh(Double_t n) {fNpeThresh = n;};
+	static bool 		IsPeCreated(double energy); // [eV] 
 
-  /** Virtual method Exec **/
-  virtual void Exec(Option_t* opt);
-
-  MpdFfdHit* AddHit(Int_t trackID, Int_t detID, Float_t energy);
-  void CreateStructure();
-
-
-  void virtual FinishTask();
-  void virtual Finish();
-  void MakeHists();
-  
-
- private: 
-   
-  virtual void SetParContainers();
-
-  /** Input array of MpdFfdPoints **/
-  TClonesArray* fPointArray;
-
-  /** Output array of MpdFfdHit **/
-  TClonesArray* fDigiArray;  
-
-  TObjArray *fVolumeArray;
- 
-  /** Geo file to use **/
-  TString fFileGeo; 
-  Float_t eneThr;
-
-
-  //_____ Histograms_____________ 
-  TList *hlist;
-
-  TH1F *fZ;
-  TH1F *fR;
-
-  TH2F *fXY;
-  TH2F *fRphi;
-
-  typedef std::map<Int_t, Float_t> mapper;
-  
-  mapper emcX, emcY, emcZ, emcTheta, emcPhi, emcTau;
-/*   map<Int_t, Float_t> emcX; */
-/*   map<Int_t, Float_t> emcY; */
-/*   map<Int_t, Float_t> emcZ; */
-/*   map<Int_t, Float_t> emcTheta; */
-/*   map<Int_t, Float_t> emcPhi; */
-/*   map<Int_t, Float_t> emcTau; */
-  
-  ClassDef(MpdFfdHitProducer,1);
-  
+ClassDef(MpdFfdHitProducer,2);  
 };
-
+//------------------------------------------------------------------------------------------------------------------------
 #endif
+
