@@ -51,6 +51,8 @@ MpdFfdHitProducer::MpdFfdHitProducer(const char* name, Bool_t useMCdata, Int_t v
 		Add(hPeYieldElectron = new TH2D("FFD_peYieldElectron", "Yield of op(per quartz 1 cm) vs #beta;#beta;N pe", 1000, 0.1, 1.01, 1000, 0.5, 1000.5));
 
 		Add(hOpTrash = new TH2D("FFD_opTrashRatio", "trash op ratio;N op; trash op, %", 1000, 0.5, 1000000.5, 1000, 0., 50.));
+		Add(hOccup = new TH2D("FFD_Occup", ";occupancy;suid", 100, -0.5, 99.5, 200, -0.5, 199.5));
+
 		Add(hXY = new TH2D("FFD_XY", "; X, cm; Y, cm", 1000, -20., 20., 1000, -20., 20.));
 		Add(hXmap = new TH2D("FFD_Xmap", "; X, cm; suid", 1000, -20., 20., 200, -0.5, 199.5));
 		Add(hYmap = new TH2D("FFD_Ymap", "; Y, cm; suid", 1000, -20., 20., 200, -0.5, 199.5));
@@ -96,6 +98,7 @@ return kSUCCESS;
 void 	MpdFfdHitProducer::Exec(Option_t* opt) 
 {
 	aFfdHits->Clear();
+	mmCounter.clear();
 
 	if(fUseMCData)
 	{	
@@ -148,10 +151,12 @@ void 	MpdFfdHitProducer::Exec(Option_t* opt)
 			if(nPe >= fNpeThresh) // create FFD hit
 			{
 				TVector3 padCenter = GetPadCenter(suid);
-				AddHit(pPoint, padCenter, TVector3(fErrXY, fErrXY, fErrZ), pointIndex, nPe, 0);
+				auto hit = AddHit(pPoint, padCenter, TVector3(fErrXY, fErrXY, fErrZ), pointIndex, nPe, 0);
 
 				if(fDoTest) 
 				{
+					mmCounter.insert(make_pair(suid, hit));
+
 					TVector3 pos; pPoint->Position(pos); 
 					double padCenterX = padCenter.X(), padCenterY = padCenter.Y();
 					hCenter->Fill(padCenterX - pos.X(), padCenterY - pos.Y());
@@ -175,7 +180,16 @@ void 	MpdFfdHitProducer::Exec(Option_t* opt)
 
 		} // cycle by FFD points
 
-		if(nOpTotal) hOpTrash->Fill(nOpTotal, (100.* nOpTrash) / nOpTotal); // [%]
+		if(fDoTest)
+		{
+			if(nOpTotal) hOpTrash->Fill(nOpTotal, (100.* nOpTrash) / nOpTotal); // [%]
+
+			for(auto iter = mmCounter.begin(); iter != mmCounter.end(); iter = mmCounter.upper_bound(iter->first))
+			{	
+				size_t suid = iter->first;			
+				hOccup->Fill(mmCounter.count(suid), suid);
+			}			
+		}
 
 		LOG(DEBUG1)<<"[MpdFfdHitProducer::Exec] FFD hits = "<<aFfdHits->GetEntriesFast();
 	}

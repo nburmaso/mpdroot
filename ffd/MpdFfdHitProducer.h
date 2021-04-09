@@ -8,6 +8,8 @@
 #ifndef __HH_MPDFFDHITPRODUCER_H
 #define __HH_MPDFFDHITPRODUCER_H 1
 
+#include <map>
+
 #include <TList.h>
 #include <TString.h>
 #include <TVector3.h>
@@ -36,12 +38,13 @@ class MpdFfdHitProducer : public FairTask
 	Double_t			fErrXY = 4./sqrt(12.), fErrZ = 1.5/sqrt(12.); // 4x4x1.5 [cm]
       	TList				fList;	
 	TString				fFlnm;
+	std::multimap<size_t, const MpdFfdHit*>  mmCounter; //!
 
 	TH1D				*hSuids = nullptr;
 	TH2D				*hOpYield = nullptr, *hOpYieldPion = nullptr,  *hOpYieldProton = nullptr, *hOpYieldElectron = nullptr;
 	TH2D				*hPeYield = nullptr, *hPeYieldPion = nullptr,  *hPeYieldProton = nullptr, *hPeYieldElectron = nullptr;
 	TH2D				*hOpTrash = nullptr, *hXY = nullptr, *hXmap = nullptr, *hYmap = nullptr, *hZmap = nullptr;
-	TH2D				*hXcenter = nullptr, *hYcenter = nullptr, *hCenter = nullptr;
+	TH2D				*hXcenter = nullptr, *hYcenter = nullptr, *hCenter = nullptr, *hOccup = nullptr;
 	TEfficiency			*hPMTeff = nullptr;
 	static TGraph			*gPMTeff_pdf; // PDF for PMT yield
 
