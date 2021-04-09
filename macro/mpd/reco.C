@@ -24,6 +24,7 @@
 #include "MpdVertexZfinder.h"
 #include "MpdTpcKalmanFilter.h"
 #include "MpdKfPrimaryVertexFinder.h"
+#include "MpdFfdHitProducer.h"
 #include "MpdTofHitProducer.h"
 #include "MpdEtofHitProducer.h"
 #include "MpdEctTrackFinderTpc.h"
@@ -141,6 +142,9 @@ void reco(TString inFile = "$VMCWORKDIR/macro/mpd/evetest.root", TString outFile
 
     FairTask* findVtx = new MpdKfPrimaryVertexFinder("Vertex finder");
     fRun->AddTask(findVtx);
+
+    MpdFfdHitProducer* ffdHit = new MpdFfdHitProducer("FFDHitProducer");
+    fRun->AddTask(ffdHit);
 
     // TOF hit producers
     MpdTofHitProducer* tofHit = new MpdTofHitProducer("Hit producer");
