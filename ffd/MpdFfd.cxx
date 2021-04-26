@@ -173,15 +173,6 @@ return make_pair(params.end(), false);
 //------------------------------------------------------------------------------------------------------------------------
 void MpdFfd::EndOfEvent() 
 {
-/*{	size_t n = 0;
-	for(int i = 0, N = aFfdPoints->GetEntriesFast(); i < N; i++) // cycle already created MpdFfdPoint
-	{
-		auto point = (MpdFfdPoint*) aFfdPoints->UncheckedAt(i);
-		n += point->IsClosed();
-	}
-cout<<"\n  SSSSS MpdFfd::EndOfEvent size="<<aFfdPoints->GetEntriesFast()<<" closed="<<n;
-}*/
-
  	if(fVerboseLevel)    Print();
   
 	aFfdPoints->Delete();
