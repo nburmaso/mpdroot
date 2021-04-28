@@ -5,6 +5,8 @@
 
 #include "TClonesArray.h"
 
+class MpdTpcKalmanTrack;
+
 class MpdTpcDedxTask :public FairTask
 {
  public:
@@ -34,6 +36,7 @@ class MpdTpcDedxTask :public FairTask
 
  private:
 
+  void DriftCorrection(MpdTpcKalmanTrack *track); // hit correction for drift length
   void Write();
   void Writedir2current( TObject *obj );
 
@@ -41,6 +44,7 @@ class MpdTpcDedxTask :public FairTask
 
   TClonesArray *fTracks;    // TPC tracks
   TClonesArray *fMCTracks;  // MC tracks
+  TClonesArray *fHits0;     // TPC hits (from hit producer)
   TClonesArray *fHits;      // TPC hits (rec. points)
 
  private:

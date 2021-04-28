@@ -41,6 +41,7 @@ private:
 		       const TVector3& posHitErr, Int_t pointIndx, Int_t trackIndx);
   Bool_t Interpolate(Int_t np, Int_t& ibeg, Double_t *yp, Double_t *xp, Double_t *zp, Double_t y0, 
 		     Double_t& dir, Double_t& xhit, Double_t& zhit);
+  void ExecNew(); ///< sectored and layered sensitive volume
 
   TClonesArray* fPointArray;    // Input array of TpcPoints
 

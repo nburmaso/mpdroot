@@ -17,8 +17,10 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 
+#include <TF1.h>
 #include <TGeoManager.h>
 #include <TGeoTube.h>
+#include <TSpline.h>
 //#include "Math/Interpolator.h"
 #include <iostream>
 
@@ -93,11 +95,15 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
 
   //fhLays->Reset();
  
-  static Int_t first = 1;
+  static Int_t first = 1, version3 = 0;
   static Double_t rMin = 99999.0, rMax = 0.0, dR;
   Int_t lay, layMax = 0, nPoints = fPointArray->GetEntriesFast();
   if (first) {
     first = 0;
+    TpcPoint *point = (TpcPoint*) fPointArray->First();
+    TVector3 posOut;
+    //AZ point->PositionOut(posOut);
+    if (posOut != TVector3(0,0,0)) version3 = 1; // sectored and layered sensitive volume 
     FairRuntimeDb* rtdb = FairRun::Instance()->GetRuntimeDb();
     //rtdb->printParamContexts();
     //cout << rtdb->findContainer("TpcGeoPar") << " " << rtdb->findContainer("TpcContFact:") << endl;
@@ -162,6 +168,8 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
   //Double_t rMin = 34.19, rMax = 99.81, dR = (rMax-rMin)/50; // 1.3124; // new version (with dead material)
   // !!!!!!!!!
   
+  //AZ if (version3) { ExecNew(); return; } // sectored and layered sensitive volume
+  //if (1) { ExecNew(); return; } // more streamlined procedure
   if (fModular) { ExecModular(); return; } // emulate geometry of readout chambers
 
   TVector3 p3, p30, p3err(0.05, 0., 0.1); // R-Phi error 500 um, Z error 1 mm
@@ -546,6 +554,7 @@ MpdTpcHit* MpdTpcHitProducer::AddRawHit(Int_t indx, Int_t detUID, const TVector3
   MpdTpcHit *pHit = new  ((*fHitArray)[indx]) MpdTpcHit(detUID, posHit, posHitErr, pointIndx);
   pHit->AddLink(FairLink(MpdTpcHit::PointIndex, pointIndx));
   pHit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, trackIndx));
+  pHit->AddID(trackIndx);
   return pHit;
 }
 
@@ -670,6 +679,218 @@ Bool_t MpdTpcHitProducer::Interpolate(Int_t np, Int_t& ibeg, Double_t *yp, Doubl
   if (TMath::Abs(zhit) > fZtpc + 1) return kFALSE;
 
   return kTRUE;
+}
+
+//---------------------------------------------------------------------------
+
+void MpdTpcHitProducer::ExecNew() 
+{
+  // More streamlined version
+
+  MpdTpcSectorGeo *secGeo = MpdTpcSectorGeo::Instance();
+  static TF1 func("func","[1]+[2]*(x-[0])+[3]*(x-[0])*(x-[0])",0,99999);
+  
+  Int_t nPoints = fPointArray->GetEntriesFast(), nHits = 0, lay = 0;
+  TVector3 p3, p30, p3loc, p3loc0, pmom3, pmom3loc, p3extr, p3err(0.05, 0., 0.1); // X error 500 um, Z error 1 mm
+  map<Int_t,map<Double_t,Int_t> > idmap;
+  //multimap<Int_t,Int_t> midIndx;
+  cout << " MC poins: " << nPoints << endl;
+
+  // Get all points according to trackID
+  
+  for (Int_t j = 0; j < nPoints; ++j ) {
+  //for (Int_t j = 0; j < 1000; ++j ) {
+    TpcPoint* point = (TpcPoint*) fPointArray->UncheckedAt(j);
+    Int_t id = point->GetTrackID();
+    //if (id != 1) continue; ///
+    if (id < 0) continue; /// strange case - protection
+    if (idmap.count(id) == 0) {
+      map<Double_t,Int_t> aaa;
+      idmap[id] = aaa;
+    }
+    idmap[id][point->GetTime()] = j;
+  }
+ 
+  // Loop over trackIDs
+
+  for (map<Int_t,map<Double_t,Int_t> >::iterator mit = idmap.begin(); mit != idmap.end(); ++mit) {
+    Int_t id = mit->first;
+    map<Double_t,Int_t>& aaa = mit->second;
+    map<Double_t,MpdTpcHit> hitMap;
+    
+    // Loop over points from one track and create hit for each point
+    
+    for (map<Double_t,Int_t>::iterator mit1 = aaa.begin(); mit1 != aaa.end(); ++mit1) {
+      TpcPoint *point = (TpcPoint*) fPointArray->UncheckedAt(mit1->second);
+      point->Position(p3);
+      Int_t padID = secGeo->Global2Local(p3, p3loc), isec = -1;
+      if (padID < 0) continue; // outside sector boundaries
+      lay = -1;
+      if (padID >= 0) {
+	lay = secGeo->PadRow(padID);
+	isec = secGeo->Sector(padID);
+      }
+      MpdTpcHit hit(padID, p3, p3err, mit1->second);
+      hit.SetLayer(lay);
+      hit.SetLocalPosition(p3loc); // point position
+      hit.SetEnergyLoss(point->GetEnergyLoss());
+      hit.SetStep(point->GetStep());
+      hit.SetModular(1); // modular geometry flag
+      hit.SetLength(point->GetLength()); 
+      // Track direction in sector frame
+      Int_t idir = 0;
+      if (padID >= 0) {
+	point->Momentum(pmom3);
+	if (pmom3.Mag() > 1.e-6) {
+	  p3extr = p3;
+	  pmom3.SetMag(0.001);
+	  p3extr += pmom3;
+	  secGeo->Global2Local(p3extr, pmom3loc, isec);
+	  pmom3loc -= p3loc;
+	  if (pmom3loc[1] < -1.e-7) idir = -1; // going inward
+	  else if (pmom3loc[1] > 1.e-7) idir = 1;
+	}
+      }
+      hit.SetFlag(idir);
+      //hit.AddLink(FairLink(MpdTpcHit::PointIndex, mit1->second));
+      //hit.AddLink(FairLink(MpdTpcHit::MCTrackIndex, id));
+      hitMap[mit1->first] = hit;
+    }
+    // Add fake hit to indicate end-of-track
+    if (hitMap.size()) {
+      MpdTpcHit htmp;
+      htmp.SetDetectorID(secGeo->PadID(30,0));
+      htmp.SetFlag(hitMap.rbegin()->second.GetFlag());
+      hitMap[hitMap.rbegin()->first+1.0] = htmp;
+    }
+    
+    // Find track segment in one sector going in one direction in sector frame
+    Int_t isec0 = -9, idir0 = -9, layb, laye, lay0;
+    vector<Double_t> xyzloct[4];
+    map<Double_t,MpdTpcHit>::iterator mitb, mite;
+    nHits = fHitArray->GetEntriesFast();
+    
+    for (map<Double_t,MpdTpcHit>::iterator mit1 = hitMap.begin(); mit1 != hitMap.end(); ++mit1) {
+      MpdTpcHit& hit = mit1->second;
+      Int_t isec = secGeo->Sector(hit.GetDetectorID());
+      Int_t idir = hit.GetFlag();
+      if (isec0 < 0) {
+	isec0 = isec;
+	idir0 = idir;
+      }
+      if (isec != isec0 || idir != idir0) {
+	// Process track segment
+	if (xyzloct[0].size() < 2) mitb = mite = hitMap.lower_bound(xyzloct[3].front()); // Only one point
+	else {
+	  mitb = hitMap.lower_bound(xyzloct[3].front());
+	  mite = hitMap.lower_bound(xyzloct[3].back());
+	}
+	layb = mitb->second.GetLayer();
+	laye = mite->second.GetLayer();
+	map<Double_t,MpdTpcHit>::iterator mitt = mitb, mitend = mite, mithit;
+	++mitend;
+	
+	// Create hit on each padrow median plane
+
+	Int_t spsize = TMath::Max (Int_t(xyzloct[0].size()),2);
+	//TSpline3 tx("tx",xyzloct[3].data(),xyzloct[0].data(),spsize);
+	//TSpline3 tz("tz",xyzloct[3].data(),xyzloct[2].data(),spsize);
+	TSpline3* yt = NULL, *yx = NULL, *yz = NULL;
+	if (xyzloct[1].front() > xyzloct[1].back()) {
+	  // Reverse vectors (to have localY in ascending order)
+	  vector<Double_t> yrev(xyzloct[1]), trev(xyzloct[3]), xrev(xyzloct[0]), zrev(xyzloct[2]);
+	  std::reverse(yrev.begin(),yrev.end());
+	  std::reverse(trev.begin(),trev.end());
+	  std::reverse(xrev.begin(),xrev.end());
+	  std::reverse(zrev.begin(),zrev.end());
+	  yt = new TSpline3("yt",yrev.data(),trev.data(),spsize);
+	  yx = new TSpline3("yx",yrev.data(),xrev.data(),spsize);
+	  yz = new TSpline3("yz",yrev.data(),zrev.data(),spsize);
+	} 
+	else {
+	  yt = new TSpline3("yt",xyzloct[1].data(),xyzloct[3].data(),spsize);
+	  yx = new TSpline3("yx",xyzloct[1].data(),xyzloct[0].data(),spsize);
+	  yz = new TSpline3("yz",xyzloct[1].data(),xyzloct[2].data(),spsize);
+	}
+	// Fit yloc vs time to find maximum and minimum of yloc achieved
+	Double_t ylocMinMax[2] = {0, 100}, dt = TMath::Max(xyzloct[3].back()-xyzloct[3].front(),0.2);
+	//Double_t ylocMinMax[2] = {0, 100}, dt = xyzloct[3].back()-xyzloct[3][xyzloct[3].size()-2];
+	if (spsize > 2) {
+	  dt *= 0.2;
+	  //dt *= 5;
+	  //*
+	  TGraph gr(spsize,xyzloct[3].data(),xyzloct[1].data());
+	  func.SetParameters(0,xyzloct[1].front(),0,0);
+	  func.FixParameter(0,xyzloct[3].front());
+	  //gr.Fit("pol2","Q");
+	  gr.Fit("func","Q");
+	  ylocMinMax[0] = gr.GetFunction("func")->GetMinimum(xyzloct[3].front()-dt,xyzloct[3].back()+dt);
+	  ylocMinMax[1] = gr.GetFunction("func")->GetMaximum(xyzloct[3].front()-dt,xyzloct[3].back()+dt);
+	  //*/
+	}
+	
+	Double_t time = 0.0;
+	MpdTpcHit *hitok = NULL;
+	lay0 = -9;
+	
+	for ( ; mitt != mitend; ++mitt) {
+	  Int_t padID = mitt->second.GetDetectorID();
+	  if (mitb == mite) {
+	    // One hit
+	    for (Int_t j = 0; j < 3; ++j) p3loc[j] = xyzloct[j].front();
+	    time = xyzloct[3].front();
+	    hitok = &mitb->second;
+	    lay = layb;
+	  } else {
+	    lay = secGeo->PadRow(padID);
+	    if (lay == lay0) continue; // hit from the same padrow
+	    p3loc[1] = secGeo->LocalPadPosition(padID).Y(); // padrow position
+	    //if (p3loc[1] < ylocMinMax[0] || p3loc[1] > ylocMinMax[1]) continue; // curling track
+	    if (p3loc[1] < ylocMinMax[0]) p3loc[1] = ylocMinMax[0];
+	    else if (p3loc[1] > ylocMinMax[1]) p3loc[1] = ylocMinMax[1];
+	    
+	    time = yt->Eval(p3loc[1]);
+	    if ((idir0 == 0 && time > xyzloct[3].back()) || time < xyzloct[3].front()-dt || time > xyzloct[3].back()+dt)
+	      continue; // do not extrapolate curling track
+	    //p3loc[0] = tx.Eval(time);
+	    //p3loc[2] = tz.Eval(time);
+	    p3loc[0] = yx->Eval(p3loc[1]);
+	    p3loc[2] = yz->Eval(p3loc[1]);
+	    Double_t timh = TMath::Min (time,mite->first-0.001);
+	    timh = TMath::Max (timh,mitb->first);
+	    mithit = hitMap.lower_bound(timh);
+	    if (mithit != hitMap.end()) hitok = &mithit->second;
+	    else hitok = &hitMap.rbegin()->second;
+	  }
+	  lay0 = lay;
+	  secGeo->Local2Global(secGeo->Sector(padID),p3loc,p3);
+	  if (secGeo->Global2Local(p3, p30) < 0) continue; // cross-check
+	  MpdTpcHit *hitp = AddRawHit(nHits++, padID, p3, p3err, hitok->GetRefIndex(), id);
+	  //MpdTpcHit *hitp = new ((*fHitArray)[nHits++]) MpdTpcHit(*hitok); // copy constructor does not work
+	  hitp->SetLayer(lay);
+	  hitp->SetLocalPosition(p3loc); // point position
+	  hitp->SetPosition(p3);
+	  hitp->SetEnergyLoss(hitok->GetEnergyLoss());
+	  hitp->SetStep(hitok->GetStep());
+	  hitp->SetModular(1); // modular geometry flag
+	  hitp->SetLength(hitok->GetLength()); 
+	}
+	for (Int_t j = 0; j < 4; ++j) xyzloct[j].clear();
+	isec0 = isec;
+	idir0 = idir;
+	delete yt;
+	delete yx;
+	delete yz;
+      } // if (isec != isec0 || idir != idir0)
+
+      if (isec == 30) break;
+      hit.LocalPosition(p3loc);
+      for (Int_t j = 0; j < 3; ++j) xyzloct[j].push_back(p3loc[j]);
+      xyzloct[3].push_back(mit1->first);
+    } // for (map<Double_t,MpdTpcHit>::iterator mit1 = hitMap.begin();
+    
+  } // for (map<Int_t,map<Double_t,Int_t> >::iterator mit = idmap.begin();
+
 }
 
 //___________________________________________________________________________

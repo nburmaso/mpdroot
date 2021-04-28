@@ -19,6 +19,7 @@
 
 // This Class' Header ------------------
 #include "TpcDetector.h"
+#include "MpdTpcEDepParams.h"
 
 // C/C++ Headers ----------------------
 #include <iostream>
@@ -103,10 +104,11 @@ void TpcDetector::Register() {
 
 }
 
-Bool_t
-TpcDetector::ProcessHits( FairVolume *v)
+//---------------------------------------------------------------------------
+Bool_t TpcDetector::ProcessHits( FairVolume *v)
 {
   // create Hit for every MC step
+
   Double_t time   = gMC->TrackTime() * 1.0e09;
   Double_t length = gMC->TrackLength();
   TLorentzVector pos;
@@ -119,18 +121,38 @@ TpcDetector::ProcessHits( FairVolume *v)
   Int_t trackID  = gMC->GetStack()->GetCurrentTrackNumber();
   Int_t volumeID = v->getMCid();
 
-  if (eLoss > 0) { //AZ
-    TpcPoint* p=AddHit(trackID, volumeID, pos.Vect(), mom.Vect(), time, length, eLoss);
-    p->SetStep(gMC->TrackStep());
-
-    ((MpdStack*)gMC->GetStack())->AddPoint(kTPC);
-
+  Float_t pX=0., pY=0., pZ=0., eTot=0.;
+  gMC->TrackMomentum( pX, pY, pZ, eTot);
+  if (eLoss > 0 && eTot>0.001) { //AZ - hard-coded 1 MeV cut
+  //if (eLoss > 0) { //AZ
+    //AZ - dE/dx simulation from the new prescription
+    //cout << " xxxxxxxxxxxxx " << gMC->TrackMass() << endl;
+    Double_t betgam = mom.Vect().Mag() / gMC->TrackMass();
+    //cout << betgam << " " << mom.Beta() * mom.Gamma() << endl;
+    if (betgam > 0.01) {
+      betgam = TMath::Log10(betgam);
+      MpdTpcEDepParams *deParams = MpdTpcEDepParams::Instance();
+      //IR 05-APR-2021 if (betgam >= deParams->GetMinLimit() && betgam < deParams->GetMaxLimit()) {
+      betgam = TMath::Min( betgam, deParams->GetMaxLimit());
+      if (betgam >= deParams->GetMinLimit()) {
+	// New value
+	eLoss = deParams->GetEloss (betgam, gMC->TrackCharge(), gMC->TrackStep());
+	//cout << " xxxxxx " << gMC->Edep() << " " << eLoss << endl;
+	//AZ
+	TpcPoint* p = AddHit(trackID, volumeID, pos.Vect(), mom.Vect(), time, length, eLoss);
+	p->SetStep(gMC->TrackStep());
+	
+	((MpdStack*)gMC->GetStack())->AddPoint(kTPC);
+	
+      } 
+    }
   }
   //  p->Print("");
 
   return kTRUE;
 }
 
+//---------------------------------------------------------------------------
 
 TClonesArray* TpcDetector::GetCollection(Int_t iColl) const {
   if (iColl == 0) return fTpcPointCollection;

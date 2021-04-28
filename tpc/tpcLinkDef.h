@@ -30,6 +30,7 @@
 //#pragma link C++ class MpdTpcClusterFinderAZ+;
 #pragma link C++ class MpdTPCpid+;
 #pragma link C++ class MpdTpcClusterFinderMlem+;
+#pragma link C++ class MpdTpcEDepParams+;
 
 #endif
 
