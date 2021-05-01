@@ -15,16 +15,23 @@
 #include <vector>
 
 class TFile;
-class TNtuple;
+class TTree;
 
 class MpdCosmicGenerator : public FairGenerator {
-  TFile* fFile;
-  TNtuple* fTree;
+  TFile* fFile;  //!
+  TTree* fTree;  //!
   Int_t fMultiplicity;
   Int_t fGeneratedTracks;
-  Float_t* fData;
+  Int_t fPID;
+  Float_t fPosX;
+  Float_t fPosY;
+  Float_t fPosZ;
+  Float_t fPx;
+  Float_t fPy;
+  Float_t fPz;
+  Float_t fShift;
   TString fFileName;
-  std::vector<int> fIDs;
+  std::vector<int> fIDs;  //!
 
 public:
   MpdCosmicGenerator(TString filename = "", Int_t multi = 1000);
@@ -36,3 +43,4 @@ public:
 
 
 #endif /* MPDROOT_GENERATORS_MPDCOSMICGENERATOR_H_ */
+
