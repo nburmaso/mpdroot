@@ -28,6 +28,7 @@ MpdCosmicGenerator::MpdCosmicGenerator(TString filename, Int_t multi) :
   fPy(0),
   fPz(0),
   fShift(0),
+  fTime(-1),
   fGeneratedTracks(0) {}
 
 Bool_t MpdCosmicGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
@@ -36,7 +37,6 @@ Bool_t MpdCosmicGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
   std::vector<int>::const_iterator last  = fIDs.begin() + fGeneratedTracks + fMultiplicity;
   std::vector<int> newVec(first, last);
   std::sort(newVec.begin(), newVec.end());
-
   for (int iTrack = 0; iTrack < fMultiplicity; iTrack++) {
     Int_t pos = newVec[iTrack];
     fTree->GetEntry(pos);
@@ -73,12 +73,15 @@ Bool_t MpdCosmicGenerator::Init() {
   Double_t simTime = h->GetBinContent(1);
   Double_t edge    = h->GetBinContent(2);
   fShift           = edge * 50.0;
-  LOG(info) << "MpdCosmicGenerator: simulation time: " << simTime << " s";
-  LOG(info) << "MpdCosmicGenerator: edge size: " << edge << " m";
-  Double_t m           = fMultiplicity;
-  Double_t tracks      = fTree->GetEntriesFast();
+  Double_t m       = fMultiplicity;
+  Double_t tracks  = fTree->GetEntriesFast();
+
+  if (fTime > 0) { fMultiplicity = fTime * tracks / simTime; }
+  m                    = fMultiplicity;
   Double_t simPerEvent = m / tracks * simTime;
   LOG(info) << "MpdCosmicGenerator: simulation time per event: " << simPerEvent << " s";
+  LOG(info) << "MpdCosmicGenerator: number of tracks per event: " << fMultiplicity;
+  LOG(info) << "MpdCosmicGenerator: edge size: " << edge << " m";
   fIDs.resize(fTree->GetEntriesFast());
   int i = 0;
   for (auto el : fIDs)

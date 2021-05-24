@@ -30,11 +30,17 @@ class MpdCosmicGenerator : public FairGenerator {
   Float_t fPy;
   Float_t fPz;
   Float_t fShift;
+  Float_t fTime;
   TString fFileName;
   std::vector<int> fIDs;  //!
 
 public:
   MpdCosmicGenerator(TString filename = "", Int_t multi = 1000);
+  /**
+  set simulation time in seconds, ovewrites multiplicity
+  @param t time in sec
+  **/
+  void SetTime(Double_t t) { fTime = t; }
   virtual Bool_t Init();
   virtual Bool_t ReadEvent(FairPrimaryGenerator* primGen);
   virtual ~MpdCosmicGenerator();
