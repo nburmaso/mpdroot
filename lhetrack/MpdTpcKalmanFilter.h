@@ -22,6 +22,8 @@
 #include <TMatrixDSym.h>
 #include "TClonesArray.h"
 
+#include <map>
+//#include <tuple>
 #include <vector>
 
 class MpdTpcKalmanFilter : public FairTask
@@ -29,6 +31,24 @@ class MpdTpcKalmanFilter : public FairTask
 
  public:
   
+  struct matrix4 {
+    TMatrixD xextr, xfilt, jacob, wfilt;
+    matrix4() {resize();}
+    matrix4(TMatrixD a, TMatrixD b, TMatrixD c, TMatrixD d) {
+      resize();
+      xextr = a;
+      xfilt = b;
+      jacob = c;
+      wfilt = d;
+    }
+    void resize() {
+      xextr.ResizeTo(5,1);
+      xfilt.ResizeTo(5,1);
+      jacob.ResizeTo(5,5);
+      wfilt.ResizeTo(5,5);
+    }
+  };
+
   MpdTpcKalmanFilter(); ///< Default ctor
   MpdTpcKalmanFilter(const char *name, const char *title="TPC Kalman filter"); ///< Ctor
   virtual ~MpdTpcKalmanFilter(); ///< Destructor
@@ -50,11 +70,13 @@ class MpdTpcKalmanFilter : public FairTask
   Int_t GetParticleId(Int_t id); ///< particle ID for track id
   void SetModular(Int_t modular) { fModular = modular; } ///< set != 0 if modular geom. of r/out chambers
   void SetSectorGeo(MpdTpcSectorGeo *secGeo) { fSecGeo = secGeo; } ///< set sector geometry
-  Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE); ///< refit track using its points for given particle mass and charge
+  //Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE, std::map<Double_t,std::tuple<TMatrixD,TMatrixD,TMatrixD,TMatrixD> > *cache = NULL); ///< refit track using its points for given particle mass and charge
+  Bool_t Refit(MpdKalmanTrack *track, Double_t mass = 0.13957, Int_t charge = 1, Bool_t skip = kFALSE, Int_t iDir = 1, Bool_t exclude = kFALSE, std::map<Double_t,matrix4> *cache = NULL); ///< refit track using its points for given particle mass and charge
   Int_t GetHitID(MpdKalmanHit *hit); // get hit ID from MC point ID
   void UseTpcHit(Bool_t useMC = kTRUE) { fUseMCHit = useMC; }; // to use TpcHit branch instead of MpdTpcHit
   void FillGeoScheme(); // fill Kalman filter geometry manager info (for modular geometry of r/out chambers)
   Bool_t IsTpcHit() const { return fUseMCHit; } // tracking with hits or clusters ?
+  void Smooth(MpdTpcKalmanTrack *track, std::vector<std::pair<Double_t,TMatrixD> >& vecSmooth);
 
  private:
   // Some constants
@@ -117,11 +139,12 @@ class MpdTpcKalmanFilter : public FairTask
   //const TpcPadPlane *fPadPlane;        //! pointer to pad plane
   MpdTpcSectorGeo *fSecGeo;            //! pointer to sector geometry
   Bool_t fUseMCHit;                    // to use TpcHit branch (hit producer) instead of MpdTpc (clusters)
+  std::map<Double_t,matrix4> *fCache; // cached track parameters for smoother
 
  private:
   // Some constants
   static const Double_t fgkChi2Cut;    // max accepted Chi2 of hit for track
 
-  ClassDef(MpdTpcKalmanFilter,1);
+  ClassDef(MpdTpcKalmanFilter,0);
 };
 #endif

@@ -169,7 +169,7 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
   // !!!!!!!!!
   
   //AZ if (version3) { ExecNew(); return; } // sectored and layered sensitive volume
-  //if (1) { ExecNew(); return; } // more streamlined procedure
+  if (1) { ExecNew(); return; } // more streamlined procedure
   if (fModular) { ExecModular(); return; } // emulate geometry of readout chambers
 
   TVector3 p3, p30, p3err(0.05, 0., 0.1); // R-Phi error 500 um, Z error 1 mm

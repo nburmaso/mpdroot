@@ -64,6 +64,7 @@ class MpdKalmanFilter : public FairTask
   void SetNumer(Int_t numer) { fNumer = numer; } // if != 0 - numerical propagator
   Double_t* ExtrapOneStep(MpdKalmanTrack *track, Double_t step, Int_t flag = 0); // propagate thru one step (use cache if flag != 0)
   virtual InitStatus Init();
+  TMatrixD& GetJacob() { return fJacob; } // return Jacobian
 
  protected:
   virtual InitStatus ReInit();
@@ -105,6 +106,7 @@ class MpdKalmanFilter : public FairTask
   MpdKalmanGeoScheme *fGeoScheme; // pointer to geometry manager
   Int_t fNumer; // if != 0 - numerical propagator
   Double_t fVectorG[8]; // cache for propagator
+  TMatrixD fJacob;
   // Some constants
   static const Int_t fgkTriesMax; // max number of attempts to find exact position
   static const Double_t fgkEpsilon; // tracking precision (cm)

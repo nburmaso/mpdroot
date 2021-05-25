@@ -113,6 +113,7 @@ InitStatus MpdKalmanFilter::Init() {
       " "<<((FairField*)((MpdMultiField*)fMagField)->GetFieldList()->UncheckedAt(0))->GetType()<<endl;
   }
 
+  fJacob.ResizeTo(5,5);
   return kSUCCESS;
 }
 
@@ -1147,8 +1148,10 @@ Bool_t MpdKalmanFilter::PropagateWeight(MpdKalmanTrack *track, const MpdKalmanHi
   /// W = DtWD, where D is Jacobian 
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
 
-  TMatrixD jacob(5,5);
-
+  //TMatrixD jacob(5,5);
+  fJacob = 0.0;
+  TMatrixD &jacob = fJacob;
+  
   if (!fNumer && track->GetType() == MpdKalmanTrack::kEndcap && hit->GetType() == MpdKalmanHit::kFixedZ) {
     // Analytical track propagation (Jacobian computation)
     AnalyticJacob(track, hit, jacob);

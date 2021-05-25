@@ -14,8 +14,8 @@
 #include "MpdKalmanHit.h"
 #include "MpdTpcDedxTask.h"
 #include "MpdVertexZfinder.h"
-#include "MpdTpcFoundHit.h" //new
-#include "MpdTpcSectorGeo.h" //new
+#include "MpdTpcFoundHit.h" 
+#include "MpdTpcSectorGeo.h" 
 #include "TpcCluster.h"
 #include "TpcGeoPar.h"
 #include "TpcPoint.h"
@@ -69,9 +69,11 @@ MpdTpcKalmanFilter::MpdTpcKalmanFilter()
     fhLays(0x0),
     fVertZ(0.0),
     fZflag(0), 
-    fModular(0)
+    fModular(0),
     //fPadPlane(TpcPadPlane::Instance())
     //fSecGeo(MpdTpcSectorGeo::Instance())
+    //fCache(new std::map<Double_t,tuple<TMatrixD,TMatrixD,TMatrixD,TMatrixD> >)
+    fCache(new std::map<Double_t,matrix4>)
 {
   /// Default constructor
   fUseMCHit = kTRUE;
@@ -96,9 +98,11 @@ MpdTpcKalmanFilter::MpdTpcKalmanFilter(const char *name,
     fhLays(0x0),
     fVertZ(0.0),
     fZflag(0),
-    fModular(0)
+    fModular(0),
     //fPadPlane(TpcPadPlane::Instance())
     //fSecGeo(MpdTpcSectorGeo::Instance())
+    //fCache(new std::map<Double_t,tuple<TMatrixD,TMatrixD,TMatrixD,TMatrixD> >)
+    fCache(new std::map<Double_t,matrix4>)
 {
   /// Constructor
   FairTask *dedx = new MpdTpcDedxTask();
@@ -2159,7 +2163,9 @@ Bool_t MpdTpcKalmanFilter::SameOrigin(TpcPoint *hit, Int_t idKF, Int_t *mcTracks
 }
 
 //__________________________________________________________________________
-Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t charge, Bool_t skip, Int_t iDir, Bool_t exclude)
+Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t charge, Bool_t skip, Int_t iDir,
+				 Bool_t exclude, std::map<Double_t,matrix4> *cache)
+//				 Bool_t exclude, std::map<Double_t,std::tuple<TMatrixD,TMatrixD,TMatrixD,TMatrixD> > *cache)
 {
   /// Refit track in TPC using track hits (toward beam line) for some
   /// particle mass and charge hypothesis 
@@ -2232,6 +2238,11 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
     track->SetChi2(track->GetChi2()+dChi2);
     weight = *track->GetWeight();
     weight += pointWeight;
+    if (cache) {
+      // For smoother
+      TMatrixD fc(MpdKalmanFilter::Instance()->GetJacob(),TMatrixD::kMult,*track->GetWeight()); // DW
+      (*cache)[track->GetPosNew()] = matrix4(*track->GetParamNew(),param,fc,weight);
+    }
     track->SetWeight(weight);
     track->SetParamNew(param);
     //cout << i << " " << dChi2 << " " << 1./track->GetParamNew(4) << endl;
@@ -2674,4 +2685,37 @@ Double_t MpdTpcKalmanFilter::Interp2d(const Double_t *moms, const Double_t *thes
 }
 
 //__________________________________________________________________________
+
+void MpdTpcKalmanFilter::Smooth(MpdTpcKalmanTrack *track, std::vector<std::pair<Double_t,TMatrixD> >& vecSmooth)
+{
+  // Smooth track
+
+  fCache->clear();
+  Refit(track, 0.13957, 1, kTRUE, 1, kFALSE, fCache); // refit toward beam line
+
+  map<Double_t,matrix4>::iterator mit = fCache->begin(), mit1 = mit;
+
+  for ( ; mit != fCache->end(); ++mit) {
+    if (mit == fCache->begin()) {
+      vecSmooth.push_back(pair<Double_t,TMatrixD>(mit->first,mit->second.xfilt));
+      mit1 = mit;
+      continue;
+    }
+    //*
+    TMatrixD wfilt(mit->second.wfilt); // filtered weight
+    wfilt.Invert(); // covar
+    TMatrixD ak(wfilt,TMatrixD::kMult,mit1->second.jacob); // smoother gain matrix
+    TMatrixD dx(vecSmooth.back().second); // smoothed previous
+    dx -= (mit1->second.xextr); // -extrap. previous
+    TMatrixD xsmooth(ak,TMatrixD::kMult,dx);
+    xsmooth += (mit->second.xfilt);
+    vecSmooth.push_back(pair<Double_t,TMatrixD>(mit->first,xsmooth));
+    //*/
+    mit1 = mit;
+  }
+  
+}
+
+//__________________________________________________________________________
+
 ClassImp(MpdTpcKalmanFilter)
