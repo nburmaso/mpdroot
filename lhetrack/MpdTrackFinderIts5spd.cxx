@@ -391,7 +391,8 @@ void MpdTrackFinderIts5spd::MakeKalmanHits()
       Double_t posLoc[3] = {0}, posMas[3] = {h->GetX(), h->GetY(), h->GetZ()};
       gGeoManager->MasterToLocal(posMas,posLoc);
       
-      //----- Add error                                            
+      //----- Add error
+      /*AZ
       Double_t dX = 0, dZ = 0;
       gRandom->Rannor(dX,dZ);
       //  if (errZ > 2) dZ = 0.0; // 1-D case
@@ -399,6 +400,11 @@ void MpdTrackFinderIts5spd::MakeKalmanHits()
       //Double_t meas[2] = {xloc+dX*errX, z+dZ*errZ};
       Double_t meas[2] = {xloc+dX*errX, posLoc[2]+dZ*errZ};
       Double_t err[2] = {errX, errZ};
+      */
+      Double_t meas[2] = {xloc + h->GetDx() * errX, posLoc[2] + h->GetDz() * errZ};
+      Double_t err[2] = {errX*1.4, errZ*1.4}; // effective measure
+      if (lay > 2) { err[0] *= 2; err[1] *= 2; } // thick layers
+      
       Double_t cossin[2] = {TMath::Cos(fStereoA[0]), TMath::Sin(fStereoA[0])};
       
       MpdKalmanHit *hit = 0x0;
@@ -618,6 +624,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
   //cout << fHits->GetEntriesFast() << endl;
   //Int_t layMax = ((MpdKalmanHit*)fKHits->Last())->GetLayer();
   Int_t layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  Int_t layMin = ((MpdKalmanHit*)fKHits->Last())->GetLayer();
   MpdKalmanHit *hitOK = 0x0;
   MpdKalmanHit hitTmp;
   MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
@@ -627,6 +634,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 //    layEnd = layMax + 1;
 //    dLay = 1;
 //  }
+  layEnd = layMin -1;
   
   TMatrixDSym pointWeight(5), pointWeightTmp(5), saveWeight(5);
   TMatrixD param(5,1), paramTmp(5,1);
