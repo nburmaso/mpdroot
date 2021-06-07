@@ -24,6 +24,8 @@ class MpdTofMatchingData : public TObject
         Double_t 	fLength;		// Track length [cm], 	{KFTrack refit}
         Int_t      	fNmbTrHits = 0;		// number of track hits	{KFTrack refit}    
         TVector3	fMomentum;		// Momentum [GeV/c]	{KFTrack copy}   
+	Double_t	fdPhi;                  // VR
+	Double_t	fdZed;			// VR
    
 public: 
 	// CAUTION: transparent data, MUST be used only at run-time, for debug purpose
@@ -52,10 +54,13 @@ public:
 	Double_t		GetNormWeight(void)const{ return fNormWeight;};	
 	void			SetNormWeight(Double_t v){fNormWeight = v;};
 
+	Double_t		GetdPhi(void)const{ return fdPhi;};
+	Double_t		GetdZed(void)const{ return fdZed;};
+
 	// CAUTION: getters for transparent(NOT serialized) data
 	Double_t		GetDelta(void)const{ return  (fEstPoint - fHitPosition).Mag();};
 
-ClassDef(MpdTofMatchingData, 7)
+ClassDef(MpdTofMatchingData, 8)
 };
 //------------------------------------------------------------------------------------------------------------------------
 

@@ -34,6 +34,10 @@ MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Double_t
 	pHit->Position(fHitPosition);
 	fEstPoint = point;
 
+	fdPhi = TMath::Sqrt(fEstPoint.X()*fEstPoint.X() + fEstPoint.Y()*fEstPoint.Y()) * (TMath::ATan2(fEstPoint.Y(),fEstPoint.X()) - TMath::ATan2(fHitPosition.Y(),fHitPosition.X()));
+        //fdPhi = TMath::Sqrt( (fEstPoint.X()-fHitPosition.X())*(fEstPoint.X()-fHitPosition.X()) + (fEstPoint.Y()-fHitPosition.Y())*(fEstPoint.Y()-fHitPosition.Y()) );
+        fdZed = fEstPoint.Z() - fHitPosition.Z();
+
 	const static Double_t c_vel = TMath::C();
 	fBeta  = fLength / (fTime  * 1.e-7) / c_vel;// [cm/nc] -> m/c
 	Double_t beta2  = fBeta*fBeta;	
