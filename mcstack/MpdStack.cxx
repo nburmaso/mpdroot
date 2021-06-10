@@ -121,8 +121,16 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
     TParticle *moth = (TParticle*) partArray.UncheckedAt(parentId);
     TVector3 polar;
     moth->GetPolarisation(polar);
+    Double_t value = moth->GetWeight();
+    if (TMath::Abs(moth->GetPdgCode()) == 3312) value *= 0.927; // Xi+-
+    else if (TMath::Abs(moth->GetPdgCode()) == 3322) value *= 0.900; // Xi0
+    else if (TMath::Abs(moth->GetPdgCode()) == 3212) {
+      // Sigma0
+      value *= (1./3);
+      polar *= -1.0;
+    }
     particle->SetPolarisation(polar);
-    particle->SetWeight(moth->GetWeight());
+    particle->SetWeight(value);
   }    
   
   // --> Increment counter
@@ -204,8 +212,16 @@ void MpdStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
     TParticle *moth = (TParticle*) partArray.UncheckedAt(parentId);
     TVector3 polar;
     moth->GetPolarisation(polar);
+    Double_t value = moth->GetWeight();
+    if (TMath::Abs(moth->GetPdgCode()) == 3312) value *= 0.927; // Xi+-
+    else if (TMath::Abs(moth->GetPdgCode()) == 3322) value *= 0.900; // Xi0
+    else if (TMath::Abs(moth->GetPdgCode()) == 3212) {
+      // Sigma0
+      value *= (1./3);
+      polar *= -1.0;
+    }
     particle->SetPolarisation(polar);
-    particle->SetWeight(moth->GetWeight());
+    particle->SetWeight(value);
   }    
 
   // --> Increment counter

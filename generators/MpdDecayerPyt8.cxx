@@ -366,7 +366,8 @@ void MpdDecayerPyt8::Anisotropy (Double_t *pvert, Double_t *rndm, TVector3& pola
   else polar = polar3.X(); // transverse polar.
 
   //const Double_t alpha = 0.642;
-  static TF1 f("f","1+0.642*[0]*x",-1,1); 
+  //static TF1 f("f","1+0.642*[0]*x",-1,1); 
+  static TF1 f("f","1+0.732*[0]*x",-1,1); // AZ 10.06.21 - new value
   f.SetParameter(0,polar);
   f.SetNpx(1000);
 
