@@ -505,15 +505,26 @@ MpdHelix::pathLengths(const MpdHelix& hh) const
 	double slast=-999999, ss, d;
 	s1 = s - range/2.;
 	s2 = s + range/2.;
-	
+	double d1 = 0, d2 = 0, d3 = 0, s11 = 0, s12 = 0, s13 = 0;
 	while (ds > MinStepSize) {
+		int i = 0;
 	    for (ss=s1; ss<s2+ds; ss+=ds) {
-		d = hh.distance(at(ss));
-		if (d < dmin) {
-		    dmin = d;
-		    s = ss;
-		}
-		slast = ss;
+			d = hh.distance(at(ss));
+			i++;
+			if (i > 10){
+		        if (i == 11) {d1 = d; s11 = s;}
+                if (i == 12) {d2 = d; s12 = s;}
+                if (i == 13) {d3 = d; s13 = s;}
+                if (i == 14 && d1 == d2 && d2 == d3 && s11 == s12 && s12 == s13) {
+                    printf("REPEATING VALUES IN MpdHelix\n");
+                    return pair<double, double>(s, hh.pathLength(at(s)));
+                }
+            }
+			if (d < dmin) {
+		    	dmin = d;
+		    	s = ss;
+			}	
+			slast = ss;
 	    }
 	    //
 	    //  In the rare cases where the minimum is at the
