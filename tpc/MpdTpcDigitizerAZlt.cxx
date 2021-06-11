@@ -37,6 +37,7 @@
 #include "TSystem.h"
 #include "TaskHelpers.h"
 #include <TVirtualFFT.h>
+#include <TFile.h>
 
 // C/C++ Headers ----------------------
 #include <math.h>

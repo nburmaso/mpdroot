@@ -20,7 +20,7 @@
 #include "TEveGedEditor.h"
 #include "TGFileDialog.h"
 #include "TThread.h"
-
+#include "TVirtualX.h"
 #include <iostream>
 #include <vector>
 using namespace std;

@@ -33,6 +33,7 @@
 #include "MpdTpcSector.h"
 #include "TMath.h"
 #include "TVector3.h"
+#include "TFile.h"
 
 #include "sys/timeb.h"
 #include <sys/time.h>

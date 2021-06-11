@@ -5,6 +5,7 @@
 
 #include <TGraph.h>
 #include <TClonesArray.h>
+#include <TFile.h>
 
 #include "FairLogger.h" 
 #include "MpdMCTrack.h"

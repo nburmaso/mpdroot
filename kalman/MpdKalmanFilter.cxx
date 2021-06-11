@@ -27,6 +27,7 @@
 omp_lock_t geoManagerLock;
 #endif
 
+#include <iostream>
 using std::cout;
 using std::endl;
 

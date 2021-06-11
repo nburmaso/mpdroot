@@ -33,7 +33,7 @@ MpdZdcContFact.cxx
 MpdZdcDigi.cxx
 MpdZdcDigiProducer.cxx
 MpdZdcPoint.cxx
-MpdZdcTstSim.cxx
+#MpdZdcTstSim.cxx
 MpdZdcDigiPar.cxx
 MpdZdcDigiScheme.cxx
 )
@@ -47,7 +47,7 @@ MpdZdcContFact.h
 MpdZdcDigi.h
 MpdZdcDigiProducer.h
 MpdZdcPoint.h
-MpdZdcTstSim.h
+#MpdZdcTstSim.h
 MpdZdcDigiPar.h
 MpdZdcDigiScheme.h
 MpdZdcPsdGeoPar.h

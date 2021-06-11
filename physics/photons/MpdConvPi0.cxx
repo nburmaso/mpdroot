@@ -11,6 +11,7 @@
 #include "MpdEmcGeoUtils.h"
 
 #include "MpdConvPi0.h"
+#include "TFile.h"
 
 ClassImp(MpdConvPi0)
 

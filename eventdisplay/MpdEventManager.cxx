@@ -17,7 +17,7 @@
 #include <TGLCameraOverlay.h>
 #include <TGLLightSet.h>
 #include <TEveBrowser.h>
-
+#include <TColor.h>
 // XML
 #include <libxml/parser.h>
 #include <libxml/tree.h>

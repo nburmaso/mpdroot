@@ -16,6 +16,7 @@
 #include "FairRootManager.h"
 
 #include <TMath.h>
+#include <TFile.h>
 
 #include <iostream>
 #include <set>

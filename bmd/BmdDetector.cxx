@@ -47,6 +47,7 @@ using namespace std;
 #include "TGDMLParse.h"
 #include "FairGeoMedia.h"
 #include "TParticle.h"
+#include "TObjString.h"
 
 // Class Member definitions -----------
 

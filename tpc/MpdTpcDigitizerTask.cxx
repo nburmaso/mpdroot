@@ -37,6 +37,7 @@
 #include "TSystem.h"
 #include "TaskHelpers.h"
 #include "MpdTpcDigit.h"
+#include "TFile.h"
 
 // Class Member definitions -----------
 

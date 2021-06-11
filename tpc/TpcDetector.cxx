@@ -46,7 +46,7 @@ using namespace std;
 #include "FairGeoVolume.h"
 #include "FairVolume.h"
 #include "MpdStack.h"
-
+#include "TFile.h"
 #include "TGeoManager.h"
 #include "TGDMLParse.h"
 #include "FairGeoMedia.h"
