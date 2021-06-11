@@ -63,6 +63,6 @@ MpdTpcEDepParams.cxx
 Set(HEADERS)
 Set(LINKDEF tpcLinkDef.h)
 Set(LIBRARY_NAME tpc)
-Set(DEPENDENCIES ${FFTW_LIBRARY} Core Base Tof)
+Set(DEPENDENCIES ${FFTW_LIBRARY} Core Base Tof Gdml)
 
 GENERATE_LIBRARY()

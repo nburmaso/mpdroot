@@ -116,6 +116,6 @@ MpdItsToTpcMatching.h
 
 Set(LINKDEF LHETrackLinkDef.h)
 Set(LIBRARY_NAME LHETrack)
-Set(DEPENDENCIES Core Base Kalman Tof MpdBase)
+Set(DEPENDENCIES Core Base Kalman Tof Sts MpdBase)
 
 GENERATE_LIBRARY()
