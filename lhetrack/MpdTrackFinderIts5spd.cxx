@@ -57,7 +57,8 @@ MpdTrackFinderIts5spd::MpdTrackFinderIts5spd(Bool_t useVector, const char *name,
   : FairTask(name, iVerbose),
     fExact(0), //1),
     fGeo(0),
-    fUseVector(useVector)
+    fUseVector(useVector),
+    fTpcKF(NULL)
 {
   
   if (!fUseVector) fKHits = new TClonesArray("MpdKalmanHit", 100);
