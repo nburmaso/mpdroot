@@ -24,36 +24,53 @@
 using namespace std;
 
 // ------------------------------------------------------------------------
-MpdHistoGenerator::MpdHistoGenerator() : FairGenerator(), 
-    fPdgCode(-211), fMult(1), fHist(NULL)
+MpdHistoGenerator::MpdHistoGenerator() : 
+  FairGenerator(), fPdgCode(-211), fMult(1), fHist(NULL), fYield(-1.0), 
+  fFileName("")
 {
   // Constructor
 
   //gRandom->SetSeed(0); // change random seed
 
   // Get histograms Pt vs Eta (He3)
-  TFile f("he3_eta_pt.root");
-  f.ReadAll();
-  fHist = (TH2D*) f.FindObject("hPtEta");
-  fHist->SetDirectory(0);
+  //TFile f("he3_eta_pt.root");
+  //f.ReadAll();
+  //fHist = (TH2D*) f.FindObject("hPtEta");
+  //fHist->SetDirectory(0);
 }
 
 // ------------------------------------------------------------------------
-MpdHistoGenerator::MpdHistoGenerator(Int_t pdgid, Int_t mult) : FairGenerator(), 
-		   fPdgCode(pdgid), fMult(mult), fHist(NULL)
+MpdHistoGenerator::MpdHistoGenerator(Int_t pdgid, Int_t mult, Double_t yield) :
+  FairGenerator(), fPdgCode(pdgid), fMult(mult), fHist(NULL), fYield(yield),
+  fFileName("")
 {
   // Constructor
 
   //gRandom->SetSeed(0); // change random seed
 
   // Get histograms Pt vs Eta (He3)
-  TFile f("he3_eta_pt.root");
-  f.ReadAll();
-  fHist = (TH2D*) f.FindObject("hPtEta");
-  fHist->SetDirectory(0);
+  //TFile f("he3_eta_pt.root");
+  //f.ReadAll();
+  //fHist = (TH2D*) f.FindObject("hPtVsEta");
+  //fHist->SetDirectory(0);
 }
 
 // ------------------------------------------------------------------------
+
+Bool_t  MpdHistoGenerator::Init()
+{
+
+  // Get histograms Pt vs Eta (He3)
+  if (fFileName == "") fFileName = "genPtVsEta.root";
+  TFile *f = TFile::Open(fFileName);
+  f->ReadAll();
+  fHist = (TH2D*) f->FindObject("hPtVsEta");
+  fHist->SetDirectory(0);
+  return kTRUE;
+}
+
+// ------------------------------------------------------------------------
+
 MpdHistoGenerator::~MpdHistoGenerator()
 {
   // Destructor
@@ -76,6 +93,7 @@ Bool_t MpdHistoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
     }
   }
 
+  if (fYield > 0 && gRandom->Rndm() > fYield) return kTRUE;
   Double_t pt, eta, phi;
   TVector3 part;
 
