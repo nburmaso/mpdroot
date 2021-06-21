@@ -40,7 +40,7 @@ using namespace std;
 ClassImp(MpdEtofHitProducer)
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofHitProducer::MpdEtofHitProducer(const char *name,  Bool_t useMCdata, Int_t verbose, Bool_t test, const char *flnm)
-  : MpdEtofHitProducerIdeal(name, useMCdata, verbose, test, true, flnm), fTimeSigma(0.100), pRandom(new TRandom2), fErrR(1./sqrt(12.)), fErrPhi(0.5)
+  : MpdEtofHitProducerIdeal(name, useMCdata, verbose, test, true, flnm), fTimeSigma(0.100),  fErrPhi(0.5), fErrR(1./sqrt(12.)), pRandom(new TRandom2) 
 {
 
 }
@@ -88,16 +88,16 @@ Bool_t 	MpdEtofHitProducer::HitExist(Double_t val) // val - rasstojanie do kraja
 	
   //-------------------------------------
   // 99% ---------
-  //              \
-    //               \
-    //                \
-    // 95%             \ 
-    //  <-----------|--|
-    //            0.2  0.
-    //-------------------------------------
+  //              \.
+  //               \.
+  //                \.
+  // 95%             \. 
+  //  <-----------|--|
+  //            0.2  0.
+  //-------------------------------------
 	
-    if(pRandom->Rndm() < efficiency) return true;
-    return false;	
+  if(pRandom->Rndm() < efficiency) return true;
+  return false;	
 }
 //------------------------------------------------------------------------------------------------------------------------
 Bool_t 	MpdEtofHitProducer::DoubleHitExist(Double_t val) // val - rasstojanie do kraja pad
@@ -215,6 +215,3 @@ void 		MpdEtofHitProducer::SetSeed(UInt_t seed)
 	pRandom->SetSeed(seed);
 }
 //------------------------------------------------------------------------------------------------------------------------
-
-
-

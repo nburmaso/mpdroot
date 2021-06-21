@@ -32,7 +32,7 @@ MpdTpcHitProducer::MpdTpcHitProducer()
     fModular(0),
     fPersistance(kFALSE)
 {
-    fPointArray = NULL, fHitArray = NULL;
+    fPointArray = nullptr, fHitArray = nullptr;
 }
 
 //---------------------------------------------------------------------------
@@ -95,15 +95,15 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
 
   //fhLays->Reset();
  
-  static Int_t first = 1, version3 = 0;
+  static Int_t first = 1;//, version3 = 0;
   static Double_t rMin = 99999.0, rMax = 0.0, dR;
   Int_t lay, layMax = 0, nPoints = fPointArray->GetEntriesFast();
   if (first) {
     first = 0;
-    TpcPoint *point = (TpcPoint*) fPointArray->First();
-    TVector3 posOut;
+    //TpcPoint *point = (TpcPoint*) fPointArray->First();
+    //TVector3 posOut;
     //AZ point->PositionOut(posOut);
-    if (posOut != TVector3(0,0,0)) version3 = 1; // sectored and layered sensitive volume 
+    //if (posOut != TVector3(0,0,0)) version3 = 1; // sectored and layered sensitive volume 
     FairRuntimeDb* rtdb = FairRun::Instance()->GetRuntimeDb();
     //rtdb->printParamContexts();
     //cout << rtdb->findContainer("TpcGeoPar") << " " << rtdb->findContainer("TpcContFact:") << endl;
@@ -113,7 +113,7 @@ void MpdTpcHitProducer::Exec(Option_t* opt)
     //cout << sensNodes->GetEntriesFast() << " " << geoPar->GetGeoPassiveNodes()->GetEntriesFast() << endl;
     //FairGeoNode* sensVol = (FairGeoNode*) (sensNodes->FindObject(volName));
     Int_t nSens = sensNodes->GetEntriesFast(), nLays = 0;
-    FairGeoNode* sensVol0 = NULL;
+    FairGeoNode* sensVol0 = nullptr;
     for (Int_t i = 0; i < nSens; ++i) {
       FairGeoNode* sensVol = (FairGeoNode*) (sensNodes->UncheckedAt(i));
       TString name = sensVol->GetName();
@@ -356,8 +356,8 @@ void MpdTpcHitProducer::ExecModular()
   // Perform track interpolation to put hits on padrow median planes
   //
   multimap<Int_t,Int_t>::iterator mit;
-  Int_t id0 = -1, i0 = 0, nh = 0, *hindx = NULL, *ord = NULL, lastIndx = 0;
-  Double_t *times = NULL, *ys = NULL, *zs = NULL, *xx = NULL, *yy = NULL, *zz = NULL; 
+  Int_t id0 = -1, i0 = 0, nh = 0, *hindx = nullptr, *ord = nullptr, lastIndx = 0;
+  Double_t *times = nullptr, *ys = nullptr, *zs = nullptr, *xx = nullptr, *yy = nullptr, *zz = nullptr; 
   for (mit = midIndx.begin(); mit != midIndx.end(); ++mit) {
     // Loop over track hits 
     if (mit->first != id0) {
@@ -442,7 +442,7 @@ void MpdTpcHitProducer::ExecModular()
     // Change hit coordinates
     for (Int_t i3 = 0; i3 < nh; ++i3) {
       h = (MpdTpcHit*) fHitArray->UncheckedAt(hindx[ord[i3]]);
-      if (h == NULL) continue;
+      if (h == nullptr) continue;
       Int_t padID = h->GetDetectorID();
       h->SetLocalX(times[i3]);
       h->SetLocalY(ys[i3]);
@@ -586,7 +586,7 @@ Bool_t MpdTpcHitProducer::Interpolate(Int_t np, Int_t& ibeg, Double_t *yp, Doubl
     Fatal("Interpolate", "No points !!!");
   }
 
-  Double_t *yp3, *xp3, *zp3;
+  Double_t *yp3{nullptr}, *xp3{nullptr}, *zp3{nullptr};
   Bool_t ok = kTRUE;
   // Go to the right
   for (Int_t j = ibeg; j < np; ++j) {
@@ -647,7 +647,7 @@ Bool_t MpdTpcHitProducer::Interpolate(Int_t np, Int_t& ibeg, Double_t *yp, Doubl
   // Parabolic interpolation
   Double_t dy01 = yp3[1] - yp3[0], dy02 = yp3[2] - yp3[0];
   Double_t y01 = yp3[1] + yp3[0], y02 = yp3[2] + yp3[0];
-  Double_t yp302 = yp3[0] * yp3[0];
+  //Double_t yp302 = yp3[0] * yp3[0];
   Double_t ydy = dy02 * y02 - dy02 * y01;
 
   Double_t dx01 = xp3[1] - xp3[0], dx02 = xp3[2] - xp3[0];
@@ -765,7 +765,7 @@ void MpdTpcHitProducer::ExecNew()
     }
     
     // Find track segment in one sector going in one direction in sector frame
-    Int_t isec0 = -9, idir0 = -9, layb, laye, lay0;
+    Int_t isec0 = -9, idir0 = -9, layb, lay0; //laye,
     vector<Double_t> xyzloct[4];
     map<Double_t,MpdTpcHit>::iterator mitb, mite;
     nHits = fHitArray->GetEntriesFast();
@@ -786,7 +786,7 @@ void MpdTpcHitProducer::ExecNew()
 	  mite = hitMap.lower_bound(xyzloct[3].back());
 	}
 	layb = mitb->second.GetLayer();
-	laye = mite->second.GetLayer();
+	//laye = mite->second.GetLayer();
 	map<Double_t,MpdTpcHit>::iterator mitt = mitb, mitend = mite, mithit;
 	++mitend;
 	
@@ -795,7 +795,7 @@ void MpdTpcHitProducer::ExecNew()
 	Int_t spsize = TMath::Max (Int_t(xyzloct[0].size()),2);
 	//TSpline3 tx("tx",xyzloct[3].data(),xyzloct[0].data(),spsize);
 	//TSpline3 tz("tz",xyzloct[3].data(),xyzloct[2].data(),spsize);
-	TSpline3* yt = NULL, *yx = NULL, *yz = NULL;
+	TSpline3* yt = nullptr, *yx = nullptr, *yz = nullptr;
 	if (xyzloct[1].front() > xyzloct[1].back()) {
 	  // Reverse vectors (to have localY in ascending order)
 	  vector<Double_t> yrev(xyzloct[1]), trev(xyzloct[3]), xrev(xyzloct[0]), zrev(xyzloct[2]);
@@ -830,7 +830,7 @@ void MpdTpcHitProducer::ExecNew()
 	}
 	
 	Double_t time = 0.0;
-	MpdTpcHit *hitok = NULL;
+	MpdTpcHit *hitok = nullptr;
 	lay0 = -9;
 	
 	for ( ; mitt != mitend; ++mitt) {

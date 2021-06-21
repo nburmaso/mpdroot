@@ -235,13 +235,13 @@ void MpdEmcMatchingKI::MakeMatchToTracks()
   std::vector<MpdEmcTrackExtrap>::iterator a = fTrackPoints.begin();
   while (a != fTrackPoints.end()) {
     double minD = 9999.;
-    int icluMin;
+    //int icluMin;
     for (int i = 0; i < nClu; i++) {
       MpdEmcClusterKI* clu = static_cast<MpdEmcClusterKI*>(fClusterArray->UncheckedAt(i));
       double distance = a->Distance(clu);
       if (distance < minD) {
         minD = distance;
-        icluMin = i;
+        //icluMin = i;
       }
     }
 
@@ -254,4 +254,3 @@ void MpdEmcMatchingKI::MakeMatchToTracks()
 }
 
 ClassImp(MpdEmcMatchingKI)
-

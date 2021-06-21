@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------
 // -----                     MpdPointSetDraw source file               -----
 // -----                  Created 03/01/08  by M. Al-Turany            -----
 // -------------------------------------------------------------------------
@@ -18,9 +18,9 @@ using namespace std;
 MpdPointSetDraw::MpdPointSetDraw()
   : FairTask("MpdPointSetDraw", 0),
     fVerbose(0),
-    fPointList(NULL),
-    fEventManager(NULL),
-    fq(NULL),
+    fEventManager(nullptr),
+    fPointList(nullptr),
+    fq(nullptr),
     fColor(0),
     fStyle(0)
 {}
@@ -29,9 +29,9 @@ MpdPointSetDraw::MpdPointSetDraw()
 MpdPointSetDraw::MpdPointSetDraw(const char* name, Color_t color, Style_t mstyle, Int_t iVerbose)
   : FairTask(name, iVerbose),
     fVerbose(iVerbose),
-    fPointList(NULL),
-    fEventManager(NULL),
-    fq(NULL),
+    fEventManager(nullptr),
+    fPointList(nullptr),
+    fq(nullptr),
     fColor(color),
     fStyle(mstyle)
 {}

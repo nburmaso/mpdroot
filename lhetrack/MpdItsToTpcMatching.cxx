@@ -54,6 +54,7 @@ InitStatus MpdItsToTpcMatching::Init()
   //return ReInit();
   if (ReInit() != kSUCCESS) return kERROR;
   FairRuntimeDb* rtdb = FairRun::Instance()->GetRuntimeDb();
+  LOG(INFO) << __func__ << (rtdb);
   //FillGeoScheme(); /// TODO
 
   return kSUCCESS;
@@ -126,7 +127,7 @@ void MpdItsToTpcMatching::GetItsTracks(multimap <Float_t, MpdItsKalmanTrack*> &m
   /// Get ITS tracks linked to their outer hit positions (rphi and z)
 
   Int_t n = fItsTracks->GetEntriesFast();
-  Float_t phi;
+  //Float_t phi;
   MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
   
   for (Int_t i = 0; i < n; i++) {
@@ -282,7 +283,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
   //GetItsTracks(multimapIts, multimapItsPhi);
   RefitTpcTo27(multimapTpc, multimapTpcPhi);
 
-  Int_t n = fItsTracks->GetEntriesFast();
+  //Int_t n = fItsTracks->GetEntriesFast();
   
   multimap<Float_t, MpdItsKalmanTrack*>::iterator itits;
   multimap<Float_t, MpdTpcKalmanTrack*>::iterator ittpc;
@@ -325,7 +326,7 @@ void MpdItsToTpcMatching::Exec(Option_t * option)
 
     for (set<MpdTpcKalmanTrack*>::iterator it = intersect.begin(); it != intersect.end(); ++it) {
       MpdItsKalmanTrack* temp = new MpdItsKalmanTrack(*(*it)); /// TpcKalmanTrack is converted to ItsKalmanTrack
-      TMatrixD *parNew1 = temp->GetParamNew();
+      //TMatrixD *parNew1 = temp->GetParamNew();
       
       // ITS hits are sorted "inward"
       TMatrixD param(5,1);

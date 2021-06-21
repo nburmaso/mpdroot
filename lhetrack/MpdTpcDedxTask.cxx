@@ -14,9 +14,8 @@
 #include "MpdTpcHit.h"
 
 #include "FairRootManager.h"
-
-#include <TMath.h>
 #include <TFile.h>
+#include <TMath.h>
 
 #include <iostream>
 #include <set>
@@ -29,8 +28,8 @@ using std::set;
 MpdTpcDedxTask::MpdTpcDedxTask(const char *name, Int_t iVerbose )
   :FairTask(name, iVerbose)
 {
-    fHistoDir = NULL;
-    fTracks = NULL, fMCTracks = NULL;
+    fHistoDir = nullptr;
+    fTracks = nullptr, fMCTracks = nullptr;
 }
 
 
@@ -105,7 +104,7 @@ void MpdTpcDedxTask::Exec(Option_t * option)
       } else {
 	// For clusters: correct for track angles
 	while (1) {
-	  MpdKalmanHit *hit1 = NULL;
+	  MpdKalmanHit *hit1 = nullptr;
 	  if (j == 0) hit1 = (MpdKalmanHit*) hits->UncheckedAt(1);
 	  else hit1 = (MpdKalmanHit*) hits->UncheckedAt(j-1);
 	  Int_t isec = hit->GetDetectorID() % 1000000;
@@ -118,7 +117,7 @@ void MpdTpcDedxTask::Exec(Option_t * option)
 	  }
 	  MpdTpcHit *thit = (MpdTpcHit*) fHits->UncheckedAt(hit->GetIndex());
 	  MpdTpcHit *thit1 = (MpdTpcHit*) fHits->UncheckedAt(hit1->GetIndex());
-	  Double_t padh = thit->GetStep();
+	  //Double_t padh = thit->GetStep();
 	  Double_t dx = thit->GetLocalX() - thit1->GetLocalX();
 	  Double_t dz = thit->GetLocalZ() - thit1->GetLocalZ();
 	  Double_t dy = thit->GetLocalY() - thit1->GetLocalY();

@@ -46,8 +46,8 @@ static clock_t tAllMlem = 0;
 
 using namespace std;
 
-static Bool_t SortPix(const MpdTpcClusterFinderMlem::pixel i, 
-		      const MpdTpcClusterFinderMlem::pixel j); // sorting function
+//static Bool_t SortPix(const MpdTpcClusterFinderMlem::pixel i, 
+//		      const MpdTpcClusterFinderMlem::pixel j); // sorting function
 
 //__________________________________________________________________________
 
@@ -127,7 +127,7 @@ void MpdTpcClusterFinderMlem::Exec(Option_t* opt)
 
   fClusArray->Delete();
   fHitArray->Delete();
-  const Int_t nSec = fgkNsec2 / 2; // number of TPC readout sectors
+  //const Int_t nSec = fgkNsec2 / 2; // number of TPC readout sectors
   // Clear digi containers
   Int_t nRows = fSecGeo->NofRows();
   for (Int_t i = 0; i < fgkNsec2; ++i) {
@@ -819,7 +819,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   localMax.clear();
   Int_t npix = pixels[icur].size();
 
-  //test
+  /*/test
   Double_t qmx = -1;
   int ipmx, itmx, iii;
   for (Int_t ipix = 0; ipix < npix; ++ipix) {
@@ -832,7 +832,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
     }
   }
   //cout << " aaaa " << qmx << " " << ipmx << " " << itmx << " " << iii << endl;
-  //test
+  //test */
 
   for (Int_t ipix = 0; ipix < npix; ++ipix) {
     ipad = pixels[icur][ipix].iy - 1;
@@ -979,7 +979,7 @@ void MpdTpcClusterFinderMlem::PeakAndValley(const vector<pixel> &pixels, multima
 }
 
 //__________________________________________________________________________
-
+/*
 //static Bool_t MpdTpcClusterFinderMlem::SortPix(const pixel i, const pixel j)
 static Bool_t SortPix(const MpdTpcClusterFinderMlem::pixel i, const MpdTpcClusterFinderMlem::pixel j)
 {
@@ -987,7 +987,7 @@ static Bool_t SortPix(const MpdTpcClusterFinderMlem::pixel i, const MpdTpcCluste
 
   return i.qq > j.qq;
 }
-
+*/
 //__________________________________________________________________________
 
 void MpdTpcClusterFinderMlem::GetResponse(const MpdTpc2dCluster* clus, TH2D *hXY, TH2D *hOvfw, 
@@ -1032,10 +1032,10 @@ void MpdTpcClusterFinderMlem::GetResponse(const MpdTpc2dCluster* clus, TH2D *hXY
   Double_t tanDip2 = tanDip * tanDip;
   Double_t tanDip4 = tanDip2 * tanDip2;
 
-  Double_t tanCros = TMath::Abs(xloc) / p3glob.Pt();
-  tanCros = TMath::Min (tanCros, 1.0);
-  Double_t tanCros2 = tanCros * tanCros;
-  Double_t tanCros4 = tanCros2 * tanCros2;
+  //Double_t tanCros = TMath::Abs(xloc) / p3glob.Pt();
+  //tanCros = TMath::Min (tanCros, 1.0);
+  //Double_t tanCros2 = tanCros * tanCros;
+  //Double_t tanCros4 = tanCros2 * tanCros2;
 
   Int_t ireg = (clus->Row() < 27) ? 0 : 1; // pad height region
 
@@ -1153,7 +1153,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
 {
   // Create hits from pixels 
 
-  Int_t nLocMax0 = localMax.size();
+  //Int_t nLocMax0 = localMax.size();
   MpdTpc2dCluster* clus = (MpdTpc2dCluster*) fClusArray->UncheckedAt(iclus);
   TH2D *hXY = (TH2D*) gROOT->FindObject("hTimePad");
   TH2D *hMlem = (TH2D*) gROOT->FindObject("hMlem1");
@@ -1185,7 +1185,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
 	if (idirp > 0 && ip == 0) continue;
 	Int_t ipsign = ip * idirp;
 	Int_t ip1 = ipad + ipsign;
-	if (ip1 < 0 || ip1 >= flags.size()) break;
+	if (ip1 < 0 || (UInt_t) ip1 >= flags.size()) break;
 	
 	for (Int_t idirt = -1; idirt < 2; idirt += 2) {
 	  for (Int_t it = 0; it < 5; ++it) {
@@ -1193,7 +1193,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
 	    Int_t itsign = it * idirt;
 	    
 	    Int_t it1 = itime + itsign;
-	    if (it1 < 0 || it1 >= (flags[0]).size()) break;
+	    if (it1 < 0 || (UInt_t) it1 >= (flags[0]).size()) break;
 	    if (flags[ip1][it1] == 0) continue;
 	    
 	    Int_t add = 1;
@@ -1205,7 +1205,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
 	      if (it) {
 		itprev -= idirt;
 		Int_t it10 = itime + itprev;
-		if (it10 >= 0 && it10 < (flags[0]).size() && flags[ip1][it10] != 0) {
+		if (it10 >= 0 && (UInt_t) it10 < (flags[0]).size() && flags[ip1][it10] != 0) {
 		  if (selPix.find(pair<Int_t,Int_t>(ip1,it10)) != selPix.end() 
 		      && charges[ip1][it1] <= charges[ip1][it10]) add = 1;
 		}
@@ -1213,7 +1213,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
 	      if (add == 0 && ip) {
 		ipprev -= idirp;
 		Int_t ip10 = ipad + ipprev;
-		if (ip10 >= 0 && ip10 < flags.size() && flags[ip10][it1] != 0) {
+		if (ip10 >= 0 && (UInt_t) ip10 < flags.size() && flags[ip10][it1] != 0) {
 		  if (selPix.find(pair<Int_t,Int_t>(ip10,it1)) != selPix.end() 
 		      && charges[ip1][it1] <= charges[ip10][it1]) add = 1;
 		}
@@ -1376,7 +1376,7 @@ void MpdTpcClusterFinderMlem::ChargeMlem(Int_t nHits0, vector<pixel> &pixels, ve
     qTot += hit->GetQ();
   }
 
-  Int_t nBinsTot = bins.size(), nBins = 0, nHits = pixInMax.size();
+  Int_t nBinsTot = bins.size(), nBins = 0;//, nHits = pixInMax.size();
   Double_t coef = nBinsTot / qTot;
   vector<pixel> pixs;
   multimap<Double_t,Int_t>::iterator it;

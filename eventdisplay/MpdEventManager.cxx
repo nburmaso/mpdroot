@@ -17,6 +17,7 @@
 #include <TGLCameraOverlay.h>
 #include <TGLLightSet.h>
 #include <TEveBrowser.h>
+#include <TObjString.h>
 #include <TColor.h>
 // XML
 #include <libxml/parser.h>
@@ -44,45 +45,40 @@ int hex_string_to_int(string hex_string)
 //______________________________________________________________________________
 MpdEventManager::MpdEventManager()
   : TEveEventManager("EventManager", ""),
-   fEventEditor(NULL),
-   iCurrentEvent(0),
    fRunAna(FairRunAna::Instance()),
-
+   EveMCPoints(nullptr),
+   EveMCTracks(nullptr),
+   EveRecoPoints(nullptr),
+   EveRecoTracks(nullptr),
+   background_color(1),
+   isDarkColor(true),
+   isZDCModule(nullptr),
+   fgShowRecoPointsIsShow(false),
+   fgRedrawRecoPointsReqired(false),     
+   fEventEditor(nullptr),
+   fRPhiView(0),
+   fRhoZView(0),
+   fMulti3DView(0),
+   fMultiRPhiView(0),
+   fMultiRhoZView(0),
+   fRPhiMng(nullptr),
+   fRhoZMng(nullptr),
+   fRPhiGeomScene(0),
+   fRhoZGeomScene(0),
+   fAxesPhi(nullptr),
+   fAxesRho(nullptr),
+   fRPhiPlane{0, 0, 1, 0},
+   fRhoZPlane{-1, 0, 0, 0},
    fEvent(0),
+   iCurrentEvent(0),
    fPriOnly(kFALSE),
    fCurrentPDG(0),
    fMinEnergy(0),
    fMaxEnergy(25),
    fEvtMinEnergy(0),
    fEvtMaxEnergy(12),
-
-   fRPhiPlane{0, 0, 1, 0},
-   fRhoZPlane{-1, 0, 0, 0},
-   fRPhiView(0),
-   fRhoZView(0),
-   fMulti3DView(0),
-   fMultiRPhiView(0),
-   fMultiRhoZView(0),
-   fRPhiGeomScene(0),
-   fRhoZGeomScene(0),
-   fRPhiMng(NULL),
-   fRhoZMng(NULL),
-   fAxesPhi(NULL),
-   fAxesRho(NULL),
-   fXMLConfig(""),
-
-   EveMCPoints(NULL),
-   EveMCTracks(NULL),
-   EveRecoPoints(NULL),
-   EveRecoTracks(NULL),
-
-   background_color(1),
-   isDarkColor(true),
-
-   isZDCModule(NULL),
-   fgShowRecoPointsIsShow(false),
-   fgRedrawRecoPointsReqired(false),
-   fLastUsedColor(2001)
+   fLastUsedColor(2001),
+   fXMLConfig("")
 {
     fgRinstance = this;
 
@@ -271,10 +267,10 @@ void MpdEventManager::InitColorStructure()
     // check XML scheme
     if (ValidateXml(coloring_xml_path.Data(), coloring_xsd_path.Data()) == true)
     {   
-        xmlDoc* doc = xmlReadFile(coloring_xml_path.Data(), NULL, 0);
+        xmlDoc* doc = xmlReadFile(coloring_xml_path.Data(), nullptr, 0);
         
         /* Get the root element node */
-        xmlNode* root_element = NULL;
+        xmlNode* root_element = nullptr;
         root_element = xmlDocGetRootElement(doc);
         xmlAttr* root_element_attributes = root_element->properties;
         xmlChar* value = xmlNodeListGetString(root_element->doc, root_element_attributes->children, 1);
@@ -389,7 +385,7 @@ void MpdEventManager::Init(Int_t visopt, Int_t vislvl, Int_t maxvisnds)
     TEveManager::Create();
     fRunAna->Init();
 
-    if (gGeoManager == NULL)
+    if (gGeoManager == nullptr)
         return;
     TGeoNode* N = gGeoManager->GetTopNode();
     TEveGeoTopNode* TNod = new TEveGeoTopNode(gGeoManager, N, visopt, vislvl, maxvisnds);
@@ -551,7 +547,7 @@ void MpdEventManager::SetViewers(TEveViewer* RPhi, TEveViewer* RhoZ)
 void MpdEventManager::SelectedGeometryColoring()
 {
     TGeoVolume* curVolume;
-    for (int i = 0; i < vecSelectedColoring.size(); i++)
+    for (UInt_t i = 0; i < vecSelectedColoring.size(); i++)
     {
         structSelectedColoring* selected_coloring = vecSelectedColoring[i];
         curVolume = gGeoManager->GetVolume(selected_coloring->detector_name);
@@ -613,7 +609,7 @@ void MpdEventManager::SetTransparentGeometry(bool is_on)
     case selectedColoring:
     {
         TGeoVolume* curVolume;
-        for (int i = 0; i < vecSelectedColoring.size(); i++)
+        for (UInt_t i = 0; i < vecSelectedColoring.size(); i++)
         {
             structSelectedColoring* selected_coloring = vecSelectedColoring[i];
             curVolume = gGeoManager->GetVolume(selected_coloring->detector_name);
@@ -680,7 +676,7 @@ void MpdEventManager::LevelChangeNodeProperty(TGeoNode* node, int level)
     for (int i = 0; i < node->GetNdaughters(); i++)
     {
         TGeoNode* child = node->GetDaughter(i);
-        if (level < vecLevelColoring.size())
+        if (level < (int) vecLevelColoring.size())
         {
             TGeoVolume* curVolume = child->GetVolume();
 
@@ -705,14 +701,14 @@ bool MpdEventManager::ValidateXml(const char* XMLFileName, const char* XSDFileNa
     xmlSchemaParserCtxtPtr ctxt = xmlSchemaNewParserCtxt(XSDFileName);
     xmlSchemaSetParserErrors(ctxt, (xmlSchemaValidityErrorFunc) fprintf, (xmlSchemaValidityWarningFunc) fprintf, stderr);
 
-    xmlSchemaPtr schema = NULL;
+    xmlSchemaPtr schema = nullptr;
     schema = xmlSchemaParse(ctxt);
     xmlSchemaFreeParserCtxt(ctxt);
     //xmlSchemaDump(stdout, schema);    //to print schema dump
 
-    xmlDoc* doc = NULL;
-    doc = xmlReadFile(XMLFileName, NULL, 0);
-    if (doc == NULL)
+    xmlDoc* doc = nullptr;
+    doc = xmlReadFile(XMLFileName, nullptr, 0);
+    if (doc == nullptr)
         cout<<"Error: could not parse file"<<XMLFileName<<endl;
     else
     {
@@ -735,7 +731,7 @@ bool MpdEventManager::ValidateXml(const char* XMLFileName, const char* XSDFileNa
         xmlSchemaFreeValidCtxt(cvalid);
     }
 
-    if (schema != NULL)
+    if (schema != nullptr)
         xmlSchemaFree(schema);
     xmlSchemaCleanupTypes();
 
@@ -759,13 +755,13 @@ MpdEventManager::~MpdEventManager()
 {
     if (!vecSelectedColoring.empty())
     {
-        for (int i = 0; i < vecSelectedColoring.size(); i++)
+        for (UInt_t i = 0; i < vecSelectedColoring.size(); i++)
             delete (vecSelectedColoring[i]);
         vecSelectedColoring.clear();
     }
     if (!vecLevelColoring.empty())
     {
-        for (int i = 0; i < vecLevelColoring.size(); i++)
+        for (UInt_t i = 0; i < vecLevelColoring.size(); i++)
             delete (vecLevelColoring[i]);
         vecLevelColoring.clear();
     }
@@ -838,7 +834,7 @@ void MpdEventManager::AddEventElement(TEveElement* element, ElementList element_
     {
         case MCPointList:
         {
-            if (EveMCPoints == NULL)
+            if (EveMCPoints == nullptr)
             {
                 EveMCPoints = new TEveElementList("MC points");
                 gEve->AddElement(EveMCPoints, this);
@@ -851,7 +847,7 @@ void MpdEventManager::AddEventElement(TEveElement* element, ElementList element_
         }
         case MCTrackList:
         {
-            if (EveMCTracks == NULL)
+            if (EveMCTracks == nullptr)
             {
                 EveMCTracks = new TEveElementList("MC tracks");
                 gEve->AddElement(EveMCTracks, this);
@@ -864,7 +860,7 @@ void MpdEventManager::AddEventElement(TEveElement* element, ElementList element_
         }
         case RecoPointList:
         {
-            if (EveRecoPoints == NULL)
+            if (EveRecoPoints == nullptr)
             {
                 EveRecoPoints = new TEveElementList("Reco points");
                 gEve->AddElement(EveRecoPoints, this);
@@ -877,7 +873,7 @@ void MpdEventManager::AddEventElement(TEveElement* element, ElementList element_
         }
         case RecoTrackList:
         {
-            if (EveRecoTracks == NULL)
+            if (EveRecoTracks == nullptr)
             {
                 EveRecoTracks = new TEveElementList("Reco tracks");
                 gEve->AddElement(EveRecoTracks, this);

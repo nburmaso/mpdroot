@@ -4,7 +4,7 @@
 # ${MPDROOT_BINARY_DIR} or ${CMAKE_BINARY_DIR}.
 
 # Check if cmake has the required version
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.2 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
 
 ### CMP0025   Compiler id for Apple Clang is now AppleClang.
 ### CMP0042   MACOSX_RPATH is enabled by default.
@@ -26,6 +26,7 @@ project(MPDROOT)
 
 #In case you need Fortran
 enable_language(Fortran)
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -std=legacy")
 
 Option(USE_PATH_INFO "Information from PATH and LD_LIBRARY_PATH are used." ON)
 Option(ALIBUILD "Flag if we are building with AliBuild." OFF)
@@ -253,3 +254,29 @@ WRITE_CONFIG_FILE(install_config.sh)
 configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake 
                ${CMAKE_BINARY_DIR}/CTestCustom.cmake
               )
+
+# Summary ######################################################################
+if(CMAKE_CXX_FLAGS)
+  message(STATUS "  ")
+  message(STATUS "  ${Cyan}GLOBAL CXX FLAGS${CR}  ${BGreen}${CMAKE_CXX_FLAGS}${CR}")
+endif()
+if(CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "  ")
+  message(STATUS "  ${Cyan}BUILD TYPE         CXX FLAGS${CR}")
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" selected_type)
+  foreach(type IN LISTS CMAKE_CONFIGURATION_TYPES)
+   string(TOUPPER "${type}" type_upper)
+   if(type_upper STREQUAL selected_type)
+     pad("${type}" 18 " " type_padded)
+     message(STATUS "${BGreen}* ${type_padded}${CMAKE_CXX_FLAGS_${type_upper}}${CR}")
+   else()
+     pad("${type}" 18 " " type_padded)
+     message(STATUS "  ${BWhite}${type_padded}${CR}${CMAKE_CXX_FLAGS_${type_upper}}")
+   endif()
+   unset(type_padded)
+   unset(type_upper)
+ endforeach()
+message(STATUS "  ")
+message(STATUS "  (Change the build type with ${BMagenta}-DCMAKE_BUILD_TYPE=...${CR})")
+endif()
+################################################################################

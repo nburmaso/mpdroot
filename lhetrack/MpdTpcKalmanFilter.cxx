@@ -412,7 +412,7 @@ void MpdTpcKalmanFilter::FillGeoScheme()
 
   // The code below is based on TGeoTrd1::Divide()
   Int_t ndiv = nRows[0] + nRows[1];
-  Double_t start = -dz, end = dz, dx1n, dx2n, zmax, step = fSecGeo->PadHeight(), zmin = start - step;
+  Double_t start = -dz, dx1n, dx2n, zmax, step = fSecGeo->PadHeight(), zmin = start - step; // end = dz,
   for (Int_t id = 0; id < ndiv; ++id) {
     zmin += step;
     if (id == nRows[0]) step = fSecGeo->PadHeight(1);
@@ -614,7 +614,7 @@ void MpdTpcKalmanFilter::AddHits(Int_t indx0)
     Int_t nHits = track->GetNofHits();
     track->SetNofHits(nHits);
     TClonesArray &trHits = *track->GetTrHits();
-    Int_t idOld = track->GetTrackID(); // 24.12.2018
+    //Int_t idOld = track->GetTrackID(); // 24.12.2018
     SetTrackID(track); // set track ID as ID of majority of its hits
 
     Int_t nWrong = 0, motherID = track->GetTrackID();
@@ -697,7 +697,7 @@ void MpdTpcKalmanFilter::GetTrackSeeds(Int_t iPass)
   if (fZflag < 0) zToler = 50; // bad quality of vertex estimate
 
   MpdTpcKalmanTrack *track = 0x0;
-  MpdTpcHit *h1 = 0x0, *h2 = 0x0;
+  MpdTpcHit *h1 = 0x0;//, *h2 = 0x0;
   TVector3 pos1, pos2, posLoc;
   Double_t rad1, phi1, rad2, phi2, params[3];
 
@@ -730,7 +730,7 @@ void MpdTpcKalmanFilter::GetTrackSeeds(Int_t iPass)
       // Loop over hits in second (closer to the beam for the first pass) layer
       for (Int_t ihit2 = 0; ihit2 < nHits2; ++ihit2) {
 	MpdKalmanHit *hit2 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay+dLays*TMath::Sign(1,iDir)]+ihit2);
-	if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
+	//if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
 	//if (h2->GetTrackID() != h1->GetTrackID()) continue; //!!! for test - exact ID matching
 	if (hit2->GetFlag() & MpdKalmanHit::kUsed) continue;
 
@@ -840,7 +840,7 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
   if (fZflag < 0) zToler = 50; // bad quality of vertex estimate
 
   MpdTpcKalmanTrack *track = 0x0;
-  MpdTpcHit *h1 = 0x0, *h2 = 0x0;
+  MpdTpcHit *h1 = 0x0;//, *h2 = 0x0;
   TVector3 pos1, pos2, posLoc;
   Double_t rad1, phi1, rad2, phi2, params[3];
 
@@ -880,7 +880,7 @@ void MpdTpcKalmanFilter::GetTrackSeedsEndCaps()
       // Loop over hits in second (closer to the beam for the first pass) layer
       for (Int_t ihit2 = 0; ihit2 < nHits2; ++ihit2) {
 	MpdKalmanHit *hit2 = (MpdKalmanHit*) fKHits->UncheckedAt(fLayPointers[lay+dLays*iDir]+ihit2);
-	if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
+	//if (hit2->GetIndex() >= 0) h2 = (MpdTpcHit*) fHits->UncheckedAt(hit2->GetIndex());
 	//if (h2->GetTrackID() != h1->GetTrackID()) continue; //!!! for test - exact ID matching
 	if (hit2->GetFlag() & MpdKalmanHit::kUsed) continue;
 
@@ -1015,7 +1015,7 @@ void MpdTpcKalmanFilter::MakeKalmanHits()
     gRandom->Rannor(dRPhi,dZ);
     Double_t z = hit->GetZ() + dZ * hit->GetDz(); //add error
     Double_t rPhi = hit->GetRphi() + dRPhi * hit->GetDx(); //add error
-    Double_t phi = rPhi / hit->GetR();
+    //Double_t phi = rPhi / hit->GetR();
     //hit->SetX(hit->GetR()*TMath::Cos(phi));
     //hit->SetY(hit->GetR()*TMath::Sin(phi));
     // Create Kalman hits
@@ -1189,8 +1189,8 @@ void MpdTpcKalmanFilter::DoTracking(Int_t iPass)
   //fTracks->Sort(); // in descending order in Pt
   if (MpdCodeTimer::Active()) MpdCodeTimer::Instance()->Start(Class()->GetName(),__FUNCTION__);
   Int_t nTracks = fTrackCand->GetEntriesFast();
-  TH1F *hChi2 = (TH1F*) gROOT->FindObjectAny("hChi2");
-  TH1F *hNhits = (TH1F*) gROOT->FindObjectAny("hNhits");
+  //TH1F *hChi2 = (TH1F*) gROOT->FindObjectAny("hChi2");
+  //TH1F *hNhits = (TH1F*) gROOT->FindObjectAny("hNhits");
 
   //#pragma omp parallel for
   for (Int_t i = 0; i < nTracks; ++i) {
@@ -1765,9 +1765,7 @@ void MpdTpcKalmanFilter::GoOut()
     MpdTpcKalmanTrack *track = (MpdTpcKalmanTrack*) fTracks->UncheckedAt(i);
     //track->GetSteps().clear();
     MpdTpcKalmanTrack tr = *track;
-
-    Int_t id = tr.GetTrackID();
-
+    //Int_t id = tr.GetTrackID();
     tr.SetParam(*tr.GetParamAtHit());
     tr.SetParamNew(*tr.GetParamAtHit());
     tr.SetWeight(*tr.GetWeightAtHit());
@@ -1910,7 +1908,7 @@ Int_t MpdTpcKalmanFilter::GetNofCommonHits(MpdKalmanTrack *tr1, MpdKalmanTrack *
 
   TObjArray *hits1 = tr1->GetHits(), *hits2 = tr2->GetHits(); 
   Int_t nh1 = hits1->GetEntriesFast(), nh2 = hits2->GetEntriesFast();
-  Int_t nCom = 0, id = -1;
+  Int_t nCom = 0;//, id = -1;
 
   for (Int_t i = 0; i < nh1; ++i) {
     MpdKalmanHit *hit1 = (MpdKalmanHit*) hits1->UncheckedAt(i);
@@ -2277,7 +2275,7 @@ Bool_t MpdTpcKalmanFilter::Refit(MpdKalmanTrack *track, Double_t mass, Int_t cha
   }
 
   //if (!ok) continue;
-  TMatrixDSym *cov = track->Weight2Cov();
+  //TMatrixDSym *cov = track->Weight2Cov();
 
   // Update track
   track->SetParam(*track->GetParamNew());
@@ -2358,7 +2356,7 @@ Double_t MpdTpcKalmanFilter::CorrectForLoss(Double_t pt, Double_t the, Double_t 
   //const Double_t dedxPi[nPi] = {8.773, 5.002, 2.597, 2.259, 2.175, 2.143, 2.129, 2.131,
   const Double_t dedxPi[nPi] = {8.476, 5.050, 2.625, 2.304, 2.175, 2.143, 2.129, 2.131,
 				2.152, 2.154, 2.182, 2.193, 2.239}; // mean of fit Gauss*Landau
-  const Double_t sigmaPi[nPi] = {4.2e-4, 3.4e-4, 2.2e-4, 2.0e-4}; // gaussian fit
+  //const Double_t sigmaPi[nPi] = {4.2e-4, 3.4e-4, 2.2e-4, 2.0e-4}; // gaussian fit
   // Kaon
   const Int_t nK = 12; // K-
   //const Double_t momK[nK] =  {0.200, 0.250, 0.300, 0.400, 0.500, 0.700, 0.900, 1.200,

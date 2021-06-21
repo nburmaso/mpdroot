@@ -179,7 +179,7 @@ void MpdWebScreenshots::sendHeader(const char* Status_code, char* Content_Type, 
          * 2
     );
 
-	if (message != NULL)
+	if (message != nullptr)
 	{
 		strcpy(message, head);
 		strcat(message, Status_code);
@@ -211,7 +211,7 @@ void MpdWebScreenshots::sendFile(FILE* fp, int connecting_socket)
 	while (current_char != EOF);
 }
 
-int MpdWebScreenshots::scan(char* input, char* output, int start, int max)
+int MpdWebScreenshots::scan(char* input, char* output, unsigned int start, int max)
 {
 	if (start >= strlen(input))
 		return -1;
@@ -219,7 +219,7 @@ int MpdWebScreenshots::scan(char* input, char* output, int start, int max)
 	int appending_char_count = 0;
 	int count = 0;
 
-	int i = start;
+	unsigned int i = start;
 	for (; i < strlen(input); i++)
 	{
         if (*(input + i) != '\t' && *(input + i) != ' ' && *(input + i) != '\n' && *(input + i) != '\r')
@@ -263,7 +263,7 @@ int MpdWebScreenshots::checkMime(char* extension, char* mime_type)
 
 	memset(mime_type,'\0',200);
 
-	while (fgets(line, 200, mimeFile) != NULL)
+	while (fgets(line, 200, mimeFile) != nullptr)
 	{
 		if (line[0] != '#')
 		{
@@ -329,12 +329,12 @@ int MpdWebScreenshots::GetExtension(char* input, char* output, int max)
 	int in_position = 0;
 	int appended_position = 0;
 
-	int i = 0, count = 0;
+	unsigned int i = 0, count = 0;
 	for (; i < strlen(input); i++)
 	{
 		if (in_position == 1)
 		{
-			if (count < max)
+			if (count < (unsigned int) max)
 			{
 				output[appended_position] = input[i];
                 appended_position += 1;
@@ -418,7 +418,7 @@ int MpdWebScreenshots::handleHttpGET(char* input, TString output_dir, int connec
 	strcat(path, filename);
 
 	FILE* fp = fopen(path, "rb");
-	if (fp == NULL)
+	if (fp == nullptr)
 	{
 		printf("\nUnable to open file %s\n",path);
 
@@ -495,7 +495,7 @@ int MpdWebScreenshots::receive(int connecting_socket, TString output_dir)
 		handleHttpGET(buffer, output_dir, connecting_socket);
 	else
 		if (request == 2)			// HEAD
-			1; //SendHeader();
+			; //SendHeader();
 		else
 			if (request == 0)		// POST
 				sendString("501 Not Implemented\n", connecting_socket);
@@ -530,7 +530,8 @@ int MpdWebScreenshots::acceptConnection(int currentSocket, TString output_dir)
 
 	close(connecting_socket);
 
-	while (-1 != waitpid(-1, NULL, WNOHANG));
+	while (-1 != waitpid(-1, nullptr, WNOHANG));
+	return 0;
 }
 
 int MpdWebScreenshots::start(int webPort, TString output_dir)
@@ -574,7 +575,7 @@ int MpdWebScreenshots::start_server(void* ptr)
 	int daemon = pPar->daemon;
 
 	int argc = 0;
-	char** argv = NULL;
+	char** argv = nullptr;
 
 	TString log_file;
 	for (int parameterCount = 1; parameterCount < argc; parameterCount++)

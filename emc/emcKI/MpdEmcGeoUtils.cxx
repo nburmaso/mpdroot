@@ -29,10 +29,10 @@ ClassImp(MpdEmcGeoUtils)
   : fNTowsersPerModule(16), 
     fNTowersPerCrate(128), 
     fNTowersPerSector(768),
-    fNTowersPerChamber(19200),
-    fNCratesPerSector(6),  
-    fNSectorsPerChamber(25), 
+    fNCratesPerSector(6),
+    fNSectorsPerChamber(25),      
     fNChambers(2),           
+    fNTowersPerChamber(19200),     
     fEcalRmin(0.),           // minimal ECAL radius
     fEcalRmax(0.),           // maximal ECAL radius
     fEcalZmax(0.)            // ECAL half z size
@@ -219,7 +219,7 @@ void MpdEmcGeoUtils::DetIdToRelIndex(int detId, int& chamber, int& sector, int& 
   // Convert detId to iphi,iz indexes within one sector
   // We use consequent numbering of sectors
 
-  int chamberH = 0;
+  //int chamberH = 0;
   chamber = detId / fNTowersPerChamber;
   detId -= chamber * fNTowersPerChamber;
   sector = detId / fNTowersPerSector;

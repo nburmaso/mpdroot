@@ -12,15 +12,15 @@ MpdVector::MpdVector()
   : TObject(),
     fDetectorID(0),
     fFlag(1),
-    fLength(0.),
     fIndex(0),
     fHitType(kFixedP),
     fNofDim(2),
+    fLength(0.),
     fSignal(0.),
     fDist(0.),
     fCode(""),
-    fTrackPointer(NULL),
-    fKalmanHit(NULL)
+    fTrackPointer(nullptr),
+    fKalmanHit(nullptr)
  
 {
   /// Default constructor
@@ -36,9 +36,9 @@ MpdVector::MpdVector(Int_t detID, Int_t nDim, HitType hitType, TVector3 &meas, D
   : TObject(),
     fDetectorID(detID),
     fFlag(1),
-    fLength(0.),
     fHitType(hitType),
     fNofDim(nDim),
+    fLength(0.),
     fSignal(signal),
     fDist(dist),
     fMeas(meas),
@@ -142,4 +142,3 @@ void MpdVector::SetIndex(Int_t indx)
 }
 
 ClassImp(MpdVector);
-

@@ -35,16 +35,16 @@ link_directories( ${LINK_DIRECTORIES})
 
 # List of source files
 set(SRCS
-TpcLheTrackFinder.cxx
-TpcLheSegments.cxx
-TpcLheHit.cxx
-TpcLheTrackCuts.cxx      
-TpcLheCMPoint.cxx
-TpcLheTrack.cxx          
-TpcLheCMTrack.cxx        
-TpcLheTrackFitter.cxx
-TpcLheHitsMaker.cxx      
-TpcLhePoint.cxx 
+#TpcLheTrackFinder.cxx
+#TpcLheSegments.cxx
+#TpcLheHit.cxx
+#TpcLheTrackCuts.cxx      
+#TpcLheCMPoint.cxx
+#TpcLheTrack.cxx          
+#TpcLheCMTrack.cxx        
+#TpcLheTrackFitter.cxx
+#TpcLheHitsMaker.cxx      
+#TpcLhePoint.cxx 
 #TpcLheKalmanFilter.cxx
 #TpcLheKalmanTrack.cxx
 MpdTpcKalmanFilter.cxx
@@ -62,7 +62,7 @@ MpdKfPrimaryVertexFinder.cxx
 MpdTrackFinderIts5spd.cxx
 MpdVertexZfinder.cxx
 MpdTpcDedxTask.cxx
-MpdKfV0Fitter.cxx
+#MpdKfV0Fitter.cxx
 MpdEctTrackFinderCpc.cxx
 MpdEctTrackFinderTof.cxx
 MpdMotherFitterPart.cxx
@@ -75,16 +75,16 @@ MpdItsToTpcMatching.cxx
 
 # List of header files
 set(HEADERS
-TpcLheTrackFinder.h
-TpcLheSegments.h
-TpcLheHit.h
-TpcLheTrackCuts.h      
-TpcLheCMPoint.h
-TpcLheTrack.h          
-TpcLheCMTrack.h        
-TpcLheTrackFitter.h
-TpcLheHitsMaker.h      
-TpcLhePoint.h 
+#TpcLheTrackFinder.h
+#TpcLheSegments.h
+#TpcLheHit.h
+#TpcLheTrackCuts.h      
+#TpcLheCMPoint.h
+#TpcLheTrack.h          
+#TpcLheCMTrack.h        
+#TpcLheTrackFitter.h
+#TpcLheHitsMaker.h      
+#TpcLhePoint.h 
 #TpcLheKalmanFilter.h
 #TpcLheKalmanTrack.h
 MpdTpcKalmanFilter.h
@@ -102,12 +102,12 @@ MpdKfPrimaryVertexFinder.h
 MpdTrackFinderIts5spd.h
 MpdVertexZfinder.h
 MpdTpcDedxTask.h
-MpdKfV0Fitter.h
+#MpdKfV0Fitter.h
 MpdEctTrackFinderCpc.h
 MpdEctTrackFinderTof.h
 MpdMotherFitterPart.h
 #MpdMotherFitterTrac.h
-lhe.h
+#lhe.h
 MpdParticle.h
 MpdVector.h
 MpdVectorFinder.h
@@ -116,6 +116,6 @@ MpdItsToTpcMatching.h
 
 Set(LINKDEF LHETrackLinkDef.h)
 Set(LIBRARY_NAME LHETrack)
-Set(DEPENDENCIES Core Base Kalman Tof Sts MpdBase)
+Set(DEPENDENCIES Core Base Kalman Sts Tof MpdBase)
 
 GENERATE_LIBRARY()

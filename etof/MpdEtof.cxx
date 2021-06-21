@@ -43,7 +43,7 @@ MpdEtof::~MpdEtof()
 //------------------------------------------------------------------------------------------------------------------------
 Bool_t  MpdEtof::ProcessHits(FairVolume* vol)
 { 
-	Int_t  strip, detector, box, sector; 
+	Int_t  strip, box, sector; //detector,
 	
 	// Set parameters at entrance of volume. Reset ELoss.
 	if(gMC->IsTrackEntering()) 
@@ -64,7 +64,7 @@ Bool_t  MpdEtof::ProcessHits(FairVolume* vol)
 		fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
 				
 		TString padname = vol->GetName(); padname.Remove(0, 7); strip = padname.Atoi();//gMC->CurrentVolOffID(1, pad);
-		detector = 1;
+		//detector = 1;
 		gMC->CurrentVolOffID(2, box);
 		gMC->CurrentVolOffID(3, sector);
 		
@@ -111,7 +111,7 @@ void MpdEtof::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset)
 	Int_t nEntries = cl1->GetEntriesFast();
 	cout << "-I- MpdEtof: " << nEntries << " entries to add." << endl;
 	TClonesArray& clref = *cl2;
-	MpdTofPoint* oldpoint = NULL;
+	MpdTofPoint* oldpoint = nullptr;
 	
 	for(Int_t i=0; i<nEntries; i++) 
 	{
@@ -144,8 +144,8 @@ void MpdEtof::ConstructGeometry()
 	TObjArray *fSensNodes = par->GetGeoSensitiveNodes();
 	TObjArray *fPassNodes = par->GetGeoPassiveNodes();
 
-        FairGeoNode *node   = NULL;
-        FairGeoVolume *aVol = NULL;
+        FairGeoNode *node   = nullptr;
+        FairGeoVolume *aVol = nullptr;
 	TListIter iter(volList);
 	
         while((node = (FairGeoNode*)iter.Next()))
@@ -165,4 +165,3 @@ MpdTofPoint* MpdEtof::AddPoint(Int_t trackID, Int_t detID, TVector3 pos, TVector
 	return new((*aTofHits)[aTofHits->GetEntriesFast()]) MpdTofPoint(trackID, detID, pos, mom, time, length, eLoss);
 }
 //------------------------------------------------------------------------------------------------------------------------
-

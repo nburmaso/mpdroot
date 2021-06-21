@@ -3,7 +3,7 @@
 // $Id$
 //
 // Description:
-//      QA for TpcВшпшешяукTask
+//      QA for TpcDigitizerTask
 //
 //
 // Environment:
@@ -40,26 +40,24 @@ public:
 
   TH2F* _hRZ_global;
   TH2F* _hYZ_local;
-  
-  TH1F *_hY_global;
+  TH2F *_hDiffuseXY;
+  TH2F *_hDistortXY;
   TH1F *_hX_global;
-  TH1F *_hZ_global;
-  TH1F *_hZ_local;
+  TH1F *_hY_global;
+  TH1F *_hZ_global; 
+  TH1F *_hX_local;   
   TH1F *_hY_local;
-  TH1F *_hX_local;
+  TH1F *_hZ_local;
   TH2F *_hXY_local;
   TH2F *_hXY_global;
   TH1F *_hSect_dig;
   TH1F *_hADC_dig;
-  TH1F *_hZ_dig;
-  TH1F *_hY_dig;
   TH1F *_hX_dig;
+  TH1F *_hY_dig;
+  TH1F *_hZ_dig;
   TH2F *_hXY_dig;
   TH3F *_h3D_dig;
-  TH2F *_hDiffuseXY;
-  TH2F *_hDistortXY;
   TH3F *_h3D_el;
-  
   TH2F *_hXT_dig_1;
   TH2F *_hXT_dig_5;
   TH2F *_hXT_dig_10;

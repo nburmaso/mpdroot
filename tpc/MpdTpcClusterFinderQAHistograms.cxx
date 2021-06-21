@@ -25,28 +25,34 @@
 ClassImp( MpdTpcClusterFinderQAHistograms );
 
 MpdTpcClusterFinderQAHistograms::MpdTpcClusterFinderQAHistograms() :
-_hRZ_global(0), _hYZ_local(0),
-_hHitDistr(0), _hXY(0), _hXY_global(0), _h3D(0), _hN(0), _hUniqueN(0),
-_hUniqueTracks(0), _hXT_clust_row1(0), _hPointNotFoundError(0), _hGlobalDeltaX(0), _hGlobalDeltaY(0),
-_hGlobalDeltaZ(0), _hGlobalDeltaXY(0), _hDeltaXLocal(0), _hDeltaYLocal(0), _hDeltaZLocal(0),
-_hDeltaXYLocal(0), _hPeak(0), _hPeakValeyRatio(0), _hDeltaXLocalVsSector(0), _hDeltaYLocalVsSector(0),
-_hDeltaZLocalVsSector(0), _hDeltaRXY(0), _hDeltaRXYZ(0), _hDeltaXLocalVsPadRowDistance(0), _hDeltaYLocalVsPadRowDistance(0),
-_hDeltaZLocalVsPadRowDistance(0), _hDeltaXLocalVsXInterval(0), _hDeltaYLocalVsXInterval(0), _hErrX_inner(0),
-_hErrX_outer(0), _hErrY(0), _hErrZ_inner(0), _hErrZ_outer(0), _hX_global(0), _hY_global(0), _hZ_global(0),
-_hX(0), _hY(0), _hZ(0), _hDeltaZLocalVsXInterval(0), _hSect(0), _hNumOfPadsInCluster(0), _hNumOfDigitsInCluster(0),
-_hNumOfTimeBinsInCluster(0), _hXT_clust_hit_row(0), _hXT_clust_row(0), _hXT_hit_row(0), _hXT_peak_row(0), _hXT_collected_peak_row(0) {
+_hHitDistr(0), _hRZ_global(0), _hYZ_local(0), _hXY(0), _h3D(0), _hSect(0),
+_hErrX_inner(0), _hErrX_outer(0), _hErrY(0), _hErrZ_inner(0), _hErrZ_outer(0),
+_hX(0), _hY(0), _hZ(0),
+_hXY_global(0),  _hX_global(0), _hY_global(0), _hZ_global(0), 
+_hN(0), _hUniqueN(0), _hUniqueTracks(0), _hPointNotFoundError(0),
+_hGlobalDeltaX(0), _hGlobalDeltaY(0), _hGlobalDeltaZ(0), _hGlobalDeltaXY(0), 
+_hDeltaXLocal(0), _hDeltaYLocal(0), _hDeltaZLocal(0),_hDeltaXYLocal(0), 
+_hNumOfPadsInCluster(0), _hNumOfTimeBinsInCluster(0), _hNumOfDigitsInCluster(0),
+_hXT_clust_row1(0), 
+_hDeltaXLocalVsPadRowDistance(0), _hDeltaYLocalVsPadRowDistance(0),
+_hDeltaZLocalVsPadRowDistance(0), _hDeltaXLocalVsXInterval(0),
+_hDeltaYLocalVsXInterval(0), _hDeltaZLocalVsXInterval(0), 
+_hDeltaRXY(0), _hDeltaRXYZ(0), _hDeltaXLocalVsSector(0), _hDeltaYLocalVsSector(0),
+_hDeltaZLocalVsSector(0), _hPeak(0), _hPeakValeyRatio(0),  
+_hXT_clust_row(0), _hXT_hit_row(0), _hXT_clust_hit_row(0), _hXT_peak_row(0), _hXT_collected_peak_row(0) {
 }
 
 MpdTpcClusterFinderQAHistograms::MpdTpcClusterFinderQAHistograms(const std::string &prefix):
-_hRZ_global(0), _hYZ_local(0),
- _hHitDistr(0), _hXY(0), _h3D(0), _prefix(prefix), _hZ(0), _hN(0), _hUniqueN(0), _hUniqueTracks(0), 
+_prefix(prefix), _hHitDistr(0), _hRZ_global(0), _hYZ_local(0),
+_hXY(0), _h3D(0), _hZ(0), _hN(0), _hUniqueN(0), _hUniqueTracks(0), 
 _hPointNotFoundError(0), _hGlobalDeltaX(0), _hGlobalDeltaY(0), _hGlobalDeltaZ(0),
 _hGlobalDeltaXY(0), _hDeltaXLocal(0),
- _hDeltaYLocal(0), _hDeltaZLocal(0), _hDeltaXYLocal(0), _hPeak(0), _hPeakValeyRatio(0), 
- _hDeltaXLocalVsSector(0), _hDeltaYLocalVsSector(0), _hDeltaZLocalVsSector(0),
-_hDeltaRXY(0), _hDeltaRXYZ(0), _hDeltaXLocalVsPadRowDistance(0), _hDeltaYLocalVsPadRowDistance(0), 
+ _hDeltaYLocal(0), _hDeltaZLocal(0), _hDeltaXYLocal(0), 
+ _hDeltaXLocalVsPadRowDistance(0), _hDeltaYLocalVsPadRowDistance(0), 
 _hDeltaZLocalVsPadRowDistance(0), _hDeltaXLocalVsXInterval(0), _hDeltaYLocalVsXInterval(0), 
-_hDeltaZLocalVsXInterval(0)
+_hDeltaZLocalVsXInterval(0), _hDeltaRXY(0), _hDeltaRXYZ(0), 
+ _hDeltaXLocalVsSector(0), _hDeltaYLocalVsSector(0), _hDeltaZLocalVsSector(0),
+ _hPeak(0), _hPeakValeyRatio(0)
 {
 }
 
@@ -128,7 +134,7 @@ void MpdTpcClusterFinderQAHistograms::Initialize() {
 
     UInt_t nTimeBin = 512;
     TpcSector* sector = new TpcSector();
-    UInt_t nSectors = sector->GetNSectors();
+    //UInt_t nSectors = sector->GetNSectors();
     UInt_t nRows = sector->GetNumRows();
     UInt_t nPads = sector->GetNumPadsInRow(nRows - 1) * 2;
     UInt_t nPadsInCurrentRow = sector->GetNumPadsInRow(NumRow_hist) * 2;

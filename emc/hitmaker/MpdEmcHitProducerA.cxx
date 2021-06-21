@@ -282,7 +282,7 @@ void MpdEmcHitProducerA::Test()
     const Float_t tt_min = fGeoPar->GetTmin();
     const Float_t tt_max = fGeoPar->GetTmax();
     
-    for (UInt_t i = 0; i < fMcTrackArray->GetEntriesFast(); ++i) {
+    for (UInt_t i = 0; i < (UInt_t) fMcTrackArray->GetEntriesFast(); ++i) {
          
          MpdMCTrack* tr = (MpdMCTrack*)fMcTrackArray->At(i);
       
@@ -330,7 +330,7 @@ void MpdEmcHitProducerA::Test()
     Int_t npi0part = 0;
     Int_t npi0points = 0;
     
-    for (UInt_t i = 0; i < fMcTrackArray->GetEntriesFast(); ++i) {
+    for (UInt_t i = 0; i < (UInt_t) fMcTrackArray->GetEntriesFast(); ++i) {
          
          MpdMCTrack* tr = (MpdMCTrack*)fMcTrackArray->At(i);
          if (!tr) continue;
@@ -426,7 +426,3 @@ void MpdEmcHitProducerA::Test()
     cout << "--------------------------------------------------------" << endl;      
           
 }
-
-
-
-

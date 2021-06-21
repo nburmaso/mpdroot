@@ -212,7 +212,7 @@ void MpdEmcMatching::DoMatching(Int_t itrack)
   tr1.SetPos(tr1.GetPosAtHit());
   tr1.SetPosNew(tr1.GetPos());
   tr1.SetLength(tr1.GetLengAtHit());
-  Double_t eta = TMath::Abs (tr->Momentum3().Eta());
+  //Double_t eta = TMath::Abs (tr->Momentum3().Eta());
   Double_t theta = tr->Theta() * TMath::RadToDeg();
   Double_t pt = tr->Pt();
   

@@ -43,16 +43,16 @@ using namespace std;
 // -----   constructor with names ------------------------------------
 
 MpdFillDstTask::MpdFillDstTask(const char *name, const char *title)
-: FairTask(name),fEvent(NULL),
-  fKFTracks(NULL),fKFEctTracks(NULL),fMCTracks(NULL), fGenTracks(nullptr), fTpcHits(NULL),
-  fMCEventHeader(NULL),fTofMatching(NULL),fEtofMatching(NULL),
-  fVertex(NULL),fZdcSkeletonesSaved(kFALSE),
-  fHistZdc1En(NULL),fHistZdc2En(NULL),
-  fELossZdc1Histo(NULL),fELossZdc2Histo(NULL),
-  fELossZdc1Value(NULL),fELossZdc2Value(NULL),
-  fhTrackMotherId(NULL),fhTrackPrimaryPDG(NULL),
-  fhTrackVertex(NULL),fhTruthVertex(NULL),
-  fPID(NULL),fSharedHitArraySize(0),fSharedHitArray(NULL)
+: FairTask(name),fEvent(nullptr),
+  fKFTracks(nullptr),fKFEctTracks(nullptr),fMCTracks(nullptr), fGenTracks(nullptr), fTpcHits(nullptr),
+  fMCEventHeader(nullptr),fTofMatching(nullptr),fEtofMatching(nullptr),
+  fVertex(nullptr),fZdcSkeletonesSaved(kFALSE),
+  fHistZdc1En(nullptr),fHistZdc2En(nullptr),
+  fELossZdc1Histo(nullptr),fELossZdc2Histo(nullptr),
+  fELossZdc1Value(nullptr),fELossZdc2Value(nullptr),
+  fhTrackMotherId(nullptr),fhTrackPrimaryPDG(nullptr),
+  fhTrackVertex(nullptr),fhTruthVertex(nullptr),
+  fPID(nullptr),fSharedHitArraySize(0),fSharedHitArray(nullptr)
   {
 }
 // -----   Destructor -----------------------------------------------
@@ -85,12 +85,12 @@ InitStatus MpdFillDstTask::Init() {
     fHistZdc1En = (TH2F *) manager->GetObject("HistZdc1En"); //EL
     fHistZdc2En = (TH2F *) manager->GetObject("HistZdc2En"); //EL
     fZdcSkeletonesSaved = 0;
-    if(fPID==NULL){
+    if(fPID==nullptr){
     	fPID = new MpdPid(0, 0, 0, 0, "DEFAULT", "CF", "");
     	//PID with cluster finder
    // 	fPID->Init("DEFAULT","CF","");
     }
-    if(fTpcHits==NULL){
+    if(fTpcHits==nullptr){
     	cout<<"WARNING: no TpcRec array, can't fill hit maps!"<<endl;
     }
     fSharedHitArraySize = 1000;
@@ -316,7 +316,7 @@ void MpdFillDstTask::CleanMC() {
     //cout <<"rMax="<<rMax<<endl;
 
     vector<int> removedMother;
-    Int_t i, j;
+    Int_t i;//, j;
     for (i = 0; i < nMC; i++) {
         track = (MpdMCTrack*) fMCTracks->UncheckedAt(i);
 
@@ -398,7 +398,7 @@ void MpdFillDstTask::Finish() {
     //fhTruthVertex->Write();
 
     delete fEvent;
-    fEvent = NULL;
+    fEvent = nullptr;
 }
 
 void MpdFillDstTask::CalculateSharedArrayMap() {
@@ -466,7 +466,7 @@ void MpdFillDstTask::FillTrackTpcHits(Int_t particle_index, MpdTrack *track) {
 }*/
 
 MpdTrack *MpdFillDstTask::AddPrimaryTrack() {
-    return NULL;
+    return nullptr;
 }
 
 void MpdFillDstTask::FillTrackDCA(MpdTrack* track, TVector3 *recoVertex, TVector3 *mcVertex) {
@@ -515,4 +515,3 @@ void MpdFillDstTask::FillTrackPID(MpdTrack* track) {
 
 // -------------------------------------------------------------------
 ClassImp(MpdFillDstTask);
-

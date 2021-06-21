@@ -516,7 +516,7 @@ void MpdEmcClusterFinderAZ::FindHits()
     //cout << " Local max: " << clus->GetSect() << " " << clus->Row() << " " << localMax.size() << endl;
 
     // Remove local maxima not separated by valleys - Peak and Valley
-    Int_t nLocMax0 = localMax.size();
+    //Int_t nLocMax0 = localMax.size();
     if (localMax.size() > 1) PeakAndValley(clus, localMax, ishift);
 
     multimap<Double_t,Int_t>::reverse_iterator rit = localMax.rbegin();
@@ -684,7 +684,7 @@ void MpdEmcClusterFinderAZ::FindHits()
       hit->SetLayer(std::distance(fSecRows1.begin(),sit)); // sector number
       hit->SetLocalPosition(p3loc); // point position
       hit->SetEnergyLoss(adcTot);
-      Int_t ireg = 0; //(clus->Row() < fSecGeo->NofRowsReg(0)) ? 0 : 1;
+      //Int_t ireg = 0; //(clus->Row() < fSecGeo->NofRowsReg(0)) ? 0 : 1;
       Double_t step = 1; //fSecGeo->PadHeight(ireg);
       hit->SetStep(step);
       hit->SetModular(1); // modular geometry flag
@@ -814,8 +814,8 @@ void MpdEmcClusterFinderAZ::PeakAndValley(const MpdTpc2dCluster* clus, multimap<
       //if (TMath::Abs(dpad) <= 1 && TMath::Abs(dt) <= 1) merge = 1;
       //else {
       if (TMath::Abs(dpad) <= 1 && TMath::Abs(dt) <= 1) {
-	if (fFlags[ipad-dpad][itime] && fCharges[ipad-dpad][itime] > fCharges[ipad][itime] / ratio ||
-	    fFlags[ipad][itime-dt] && fCharges[ipad][itime-dt] > fCharges[ipad][itime] / ratio) merge = 1;
+	if ( (fFlags[ipad-dpad][itime] && fCharges[ipad-dpad][itime] > fCharges[ipad][itime] / ratio) ||
+	     (fFlags[ipad][itime-dt] && fCharges[ipad][itime-dt] > fCharges[ipad][itime] / ratio) ) merge = 1;
       } else {
 	for (Int_t ii = i0 + stepi; ii != i1; ii += stepi) {
 	  merge = 0;

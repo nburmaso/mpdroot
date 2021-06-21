@@ -104,8 +104,9 @@ void MpdItsHitProducer5spd::Exec(Option_t* opt) {
   fDigiArray->Delete();
 
   static Int_t eventCounter = 0, first = 1;
-  static Double_t par1[9] = {0}, par2[9] = {0}, par3[9] = {0}, spd_length = 0, spd_width = 0; // Detector parameters
-  Int_t detId = 0, sector = 0, ladder = 0, layer = 0;
+  //static Double_t par1[9] = {0}, par2[9] = {0}, par3[9] = {0}, 
+  static Double_t spd_length = 0, spd_width = 0; // Detector parameters
+  Int_t detId = 0;//, sector = 0, ladder = 0, layer = 0;
 
   //------ spd parameters
   //const Double_t spd_length = 3.0;       // cm, length of spd sensor
@@ -154,9 +155,9 @@ void MpdItsHitProducer5spd::Exec(Option_t* opt) {
     //    cout << "# of current STS point: " << iPoint+1 << endl; 
     
     detId = point->GetDetectorID();    
-    sector = (detId & 127);
-    ladder = ((detId >> 7) & 63);
-    layer = ((detId >> 13) & 7);
+    //sector = (detId & 127);
+    //ladder = ((detId >> 7) & 63);
+    //layer = ((detId >> 13) & 7);
     
     Double_t pos[3] = {0};
     //AZ TVector3 pos3;

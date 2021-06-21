@@ -58,7 +58,7 @@ MpdTrackFinderIts5spd::MpdTrackFinderIts5spd(Bool_t useVector, const char *name,
     fExact(0), //1),
     fGeo(0),
     fUseVector(useVector),
-    fTpcKF(NULL)
+    fTpcKF(nullptr)
 {
   
   if (!fUseVector) fKHits = new TClonesArray("MpdKalmanHit", 100);
@@ -103,7 +103,7 @@ InitStatus MpdTrackFinderIts5spd::Init()
 
    fGeo = 1; 
    Int_t nLay = 5;
-   Double_t safety = 0.005;
+   //Double_t safety = 0.005;
 
    for (Int_t i = 0; i < nLay; ++i) {
      fNladders[i] = fNsectors[i] = 0;
@@ -124,7 +124,7 @@ InitStatus MpdTrackFinderIts5spd::Init()
        if (!gGeoManager->CheckPath(path)) break;
        gGeoManager->cd(path);
        TGeoVolume *ladd = gGeoManager->GetVolume(volName);
-       TGeoBBox *box = (TGeoBBox*) ladd->GetShape();
+       //TGeoBBox *box = (TGeoBBox*) ladd->GetShape();
        Double_t xyzL[3] = {0}, xyzM[3];
        gGeoManager->LocalToMaster(xyzL,xyzM);
        Double_t rad = TMath::Sqrt (xyzM[0] * xyzM[0] + xyzM[1] * xyzM[1]);
@@ -144,7 +144,7 @@ InitStatus MpdTrackFinderIts5spd::Init()
      }
      cout << " *** Layer # " << i << " min_R= " <<  fRad[i]  << endl;
      TGeoVolume *ladd = gGeoManager->GetVolume(volName);
-     if (ladd == NULL) { nLay = i; break; }
+     if (ladd == nullptr) { nLay = i; break; }
      fRad[i] /= nladd; // mean radius
      /*
      TGeoBBox *box = (TGeoBBox*) ladd->GetShape();
@@ -233,8 +233,8 @@ void MpdTrackFinderIts5spd::FillGeoScheme()
 	//	if (!sdet1.Contains("sensor") && !sdet1.Contains("sector")) continue;
 	if (ladder == 1)  ++fNsectors[layer-1];
 	Int_t det1 = TString(sdet1(sdet1.Index("_")+1,2)).Atoi();
-	Int_t secType = -1;
-	if (sdet1.Contains("sector")) secType = TString(sdet1(sdet1.Index("_")-2,1)).Atoi();
+//	Int_t secType = -1;
+//	if (sdet1.Contains("sector")) secType = TString(sdet1(sdet1.Index("_")-2,1)).Atoi();
 
         ++iZ;
 
@@ -311,7 +311,7 @@ void MpdTrackFinderIts5spd::Reset()
   if (!fUseVector) fKHits->Delete();
   fTracks->Delete();
   delete [] fLayPointers;
-  fLayPointers = NULL;
+  fLayPointers = nullptr;
 }
 
 //__________________________________________________________________________
@@ -392,8 +392,7 @@ void MpdTrackFinderIts5spd::MakeKalmanHits()
       Double_t posLoc[3] = {0}, posMas[3] = {h->GetX(), h->GetY(), h->GetZ()};
       gGeoManager->MasterToLocal(posMas,posLoc);
       
-      //----- Add error
-      /*AZ
+      //----- Add error                                            
       Double_t dX = 0, dZ = 0;
       gRandom->Rannor(dX,dZ);
       //  if (errZ > 2) dZ = 0.0; // 1-D case
@@ -401,11 +400,6 @@ void MpdTrackFinderIts5spd::MakeKalmanHits()
       //Double_t meas[2] = {xloc+dX*errX, z+dZ*errZ};
       Double_t meas[2] = {xloc+dX*errX, posLoc[2]+dZ*errZ};
       Double_t err[2] = {errX, errZ};
-      */
-      Double_t meas[2] = {xloc + h->GetDx() * errX, posLoc[2] + h->GetDz() * errZ};
-      Double_t err[2] = {errX*1.4, errZ*1.4}; // effective measure
-      if (lay > 2) { err[0] *= 2; err[1] *= 2; } // thick layers
-      
       Double_t cossin[2] = {TMath::Cos(fStereoA[0]), TMath::Sin(fStereoA[0])};
       
       MpdKalmanHit *hit = 0x0;
@@ -536,10 +530,10 @@ void MpdTrackFinderIts5spd::DoTracking(Int_t iPass)
   for (Int_t i = 0; i < nCand; ++i) {
     MpdItsKalmanTrack *track = (MpdItsKalmanTrack*) fTracks->UncheckedAt(i);
 //   cout << " Track seed No. " << i << ", ID: " << track->GetTrackID() << ", Hits: " << track->GetNofTrHits() << endl;
-    for (Int_t j = 0; j < track->GetNofTrHits(); ++j) {
-      MpdKalmanHit *h = (MpdKalmanHit* )track->GetTrHits()->UncheckedAt(j);
+    //for (Int_t j = 0; j < track->GetNofTrHits(); ++j) {
+      //MpdKalmanHit *h = (MpdKalmanHit* )track->GetTrHits()->UncheckedAt(j);
 //    cout << "Track hit number= " << j << " Distance= " << h->GetDist() << " Layer= " << h->GetLayer() << endl;
-    }
+    //}
     iok = RunKalmanFilterMod(track, lay0); // modular geometry
     if (iok == -1) {
       fTracks->RemoveAt(i);
@@ -624,23 +618,21 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 
   //cout << fHits->GetEntriesFast() << endl;
   //Int_t layMax = ((MpdKalmanHit*)fKHits->Last())->GetLayer();
-  Int_t layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
-  Int_t layMin = ((MpdKalmanHit*)fKHits->Last())->GetLayer();
-  MpdKalmanHit *hitOK = 0x0;
+  //Int_t layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  //MpdKalmanHit *hitOK = 0x0;
   MpdKalmanHit hitTmp;
-  MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
+  //MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
   //Int_t layBeg = 0, layEnd = -1, dLay = -1, layOK = -1;
-  Int_t layEnd = -1, dLay = -1, layOK = -1;
+  Int_t layEnd = -1, dLay = -1;//, layOK = -1;
 //  if (trackDir == MpdKalmanTrack::kOutward) {
 //    layEnd = layMax + 1;
 //    dLay = 1;
 //  }
-  layEnd = layMin -1;
   
   TMatrixDSym pointWeight(5), pointWeightTmp(5), saveWeight(5);
   TMatrixD param(5,1), paramTmp(5,1);
 
-  Double_t saveZ = 0.0, saveLeng = 0.0, dChi2Min = 0.0, quality[maxBrLay] = {0.0}, posNew = 0.0;
+  Double_t quality[maxBrLay] = {0.0}; //,saveZ = 0.0, saveLeng = 0.0, dChi2Min = 0.0,  posNew = 0.0;
 //  cout << " Starting hit: " << hitOK->GetLayer() << " " << hitOK->GetTrackID() << " " << hitOK->GetUsage() << endl;
   
   MpdItsKalmanTrack branch[maxBr];
@@ -669,11 +661,11 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
   //  cout << " layBeg, LayEnd: " << layBeg << " " << layEnd << endl;
  
   for (Int_t lay = layBeg; lay != layEnd; lay+=dLay) {
-    Int_t nLay = GetNofHitsInLayer(lay);
-    Int_t indx0 = GetHitsInLayer(lay);
-    MpdKalmanHit *hitMin = 0x0;
+    //Int_t nLay = GetNofHitsInLayer(lay);
+    //Int_t indx0 = GetHitsInLayer(lay);
+    //MpdKalmanHit *hitMin = 0x0;
 //    cout << " lay, nLay, indx: " << lay << " " << nLay << " " << indx0 << endl;
-    Int_t indxBeg = 0, indxEnd = nLay, dIndx = 1;
+    //Int_t indxBeg = 0, indxEnd = nLay, dIndx = 1;
     MpdItsKalmanTrack branchLay[maxBrLay];
 
     nBr0 = nBr;
@@ -681,7 +673,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 
 //    cout << " Point#1: " << endl;
     for (Int_t ibr = 0; ibr < nBr0; ++ibr) {
-      MpdItsKalmanTrack *curTr = &branch[ibr], *branchTr = NULL;
+      MpdItsKalmanTrack *curTr = &branch[ibr], *branchTr = nullptr;
       
       // Check for missing layer (2 sides)
       Int_t lastLay = 4, frozen = 0; //VK
@@ -692,7 +684,7 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 
       ok = nAdd = 0;
 
-      Int_t firstHit = -1, skipHit = -1;
+      //Int_t firstHit = -1, skipHit = -1;
       //MpdItsKalmanTrack trackBr[4] = {*curTr, *curTr, *curTr, *curTr};
       map<Int_t,MpdItsKalmanTrack> trackBr;
       multimap<Int_t,Int_t> hitsInWin;
@@ -714,7 +706,8 @@ Int_t MpdTrackFinderIts5spd::RunKalmanFilterMod(MpdItsKalmanTrack *track, Int_t 
 
       for (it = trackBr.begin(); it != trackBr.end(); ++it) {
 	//if (frozen) break;
-	Double_t leng = curTr->GetLength(), step = 0;
+	//Double_t leng = curTr->GetLength(), 
+	Double_t step = 0;
 	branchTr = &it->second;
 	/*
 	step = branchTr->GetLength() - leng;
@@ -973,19 +966,19 @@ TVector2 MpdTrackFinderIts5spd::GetDistance(MpdKalmanTrack *track, MpdKalmanHit 
 
   Int_t lay = hit->GetLayer();
   Int_t lay2 = lay / 2;
-  Int_t side = lay % 2;
-  Int_t module = ((MpdItsHit5spd*) fItsHits->UncheckedAt(hit->GetIndex()))->Module();
+  //Int_t side = lay % 2;
+  Int_t module0 = ((MpdItsHit5spd*) fItsHits->UncheckedAt(hit->GetIndex()))->Module();
 
   Double_t zTr = track->GetParamNew(1);
   Double_t zloc = zTr + fDz[lay2];
   Int_t modTr = Int_t (zloc / fZmod[lay2]);
-  Int_t dMod = modTr - module;
+  Int_t dMod = modTr - module0;
 
   Double_t dZ = 0;
   if (dMod != 0) {
-    // Not in the same module - check Z-distance to module edge
-    if (dMod > 0) dZ = zloc - (module+1) * fZmod[lay2];
-    else dZ = zloc - module * fZmod[lay2];
+    // Not in the same module0 - check Z-distance to module0 edge
+    if (dMod > 0) dZ = zloc - (module0+1) * fZmod[lay2];
+    else dZ = zloc - module0 * fZmod[lay2];
     if (TMath::Abs(dMod) > 2) return TVector2(TMath::Abs(dZ),999.); // not in neighbour modules
   }
 
@@ -1046,7 +1039,7 @@ void MpdTrackFinderIts5spd::AddHits()
     TClonesArray &trHits = *track->GetTrHits();
 //    cout << nHits << " " << trHits.GetEntriesFast() << " " << track->GetTrackID() << endl;
     TObjArray *hits = track->GetHits();
-    Int_t nWrong = 0, nMirr = 0, motherID = track->GetTrackID();
+    Int_t nWrong = 0, motherID = track->GetTrackID(); // nMirr = 0,
     // Get track mother ID 
     MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID);
     while (mctrack->GetMotherId() >= 0) {
@@ -1075,7 +1068,7 @@ void MpdTrackFinderIts5spd::AddHits()
     }
 //    if (nHits) cout << "\n" << nWrong << endl;
     track->SetNofWrong(nWrong);
-    MpdKalmanTrack *tpc = (MpdKalmanTrack*) fTpcTracks->UncheckedAt(track->GetUniqueID()-1);
+    //MpdKalmanTrack *tpc = (MpdKalmanTrack*) fTpcTracks->UncheckedAt(track->GetUniqueID()-1);
     //track->SetChi2(track->GetChi2()+tpc->GetChi2());
     //track->SetLastLay();
     //track->GetParam()->Print();
@@ -1094,8 +1087,8 @@ Bool_t MpdTrackFinderIts5spd::Refit(MpdItsKalmanTrack *track, Double_t mass, Int
   /// Refit track in ITS+TPC using track hits (toward beam line) for some
   /// particle mass and charge hypothesis 
 
-  if (fTpcKF == NULL) fTpcKF = (MpdTpcKalmanFilter*) FairRun::Instance()->GetTask("TPC Kalman filter");
-  if (fTpcKF == NULL) {
+  if (fTpcKF == nullptr) fTpcKF = (MpdTpcKalmanFilter*) FairRun::Instance()->GetTask("TPC Kalman filter");
+  if (fTpcKF == nullptr) {
     cout << " !!! TPC Kalman Filter was not activated !!! " << endl;
     exit(1);
   }

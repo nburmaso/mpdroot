@@ -61,7 +61,7 @@ static clock_t tStart = 0;
 static clock_t tFinish = 0;
 static clock_t tAll = 0;
 
-FILE *lunErr = NULL; //fopen("error1.dat","w");
+FILE *lunErr = nullptr; //fopen("error1.dat","w");
 //FILE* lunErr= fopen ("file.txt","w");
 
 std::ofstream fout_v("log.txt");
@@ -72,10 +72,10 @@ MpdVectorFinder::MpdVectorFinder(const char *name, Bool_t sa, Int_t iVerbose)
   fNPass(6),
   fExact(0), //(0),
   fNTracks(0),
-  fTrackExact(NULL),
+  fTrackExact(nullptr),
   fGeo(0),
   fSa(sa), // by default its + tpc tracking is done
-  fTpcKF(NULL)
+  fTpcKF(nullptr)
 {
   fKHits1 = new TClonesArray("MpdKalmanHit", 100);
   for (Int_t i = 0; i < 5; ++i) {
@@ -126,7 +126,7 @@ InitStatus MpdVectorFinder::Init()
   
   fGeo = 1;
   Int_t nLay = 5;
-  Double_t safety = 0.005;
+  //Double_t safety = 0.005;
   
   for (Int_t i = 0; i < nLay; ++i) {
     fNladders[i] = fNsectors[i] = 0;
@@ -167,7 +167,7 @@ InitStatus MpdVectorFinder::Init()
     }
     cout << " *** Layer # " << i << " min_R= " <<  fRad[i]  << endl;
     TGeoVolume *ladd = gGeoManager->GetVolume(volName);
-    if (ladd == NULL) { nLay = i; break; }
+    if (!ladd) { nLay = i; break; }
     fRad[i] /= nladd; // mean radius                                           
     /*                                                                         
      TGeoBBox *box = (TGeoBBox*) ladd->GetShape();
@@ -352,7 +352,7 @@ void MpdVectorFinder::Reset()
   fTrackCand->Delete();
   if (fTrackExact) fTrackExact->Delete();
   delete [] fLayPointers;
-  fLayPointers = NULL;
+  fLayPointers = nullptr;
   fCellMap.clear();
   fout_v << "- Reset - done" << endl;
 }
@@ -463,11 +463,11 @@ void MpdVectorFinder::Build2DHits()
   /// Build track candidates from ITS 2-D hits.
 
   fItsHits->Sort();
-  Int_t nHits = fItsHits->GetEntriesFast(), layMax = 0, nKH = 0;
+  Int_t nHits = fItsHits->GetEntriesFast();//, layMax = 0, nKH = 0;
   Double_t  errZ = 0.001, errX = 0.001; ///10um for Z and X// 250um in Z, 23um in R-Phi (local X)
-  Double_t xloc, z;
+  Double_t xloc;//, z;
   Double_t r;
-  Double_t dX = 0, dZ = 0;
+  //Double_t dX = 0, dZ = 0;
   MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
 
   Int_t nKalmanHit = 0, nLayerHit = 0;
@@ -491,7 +491,7 @@ void MpdVectorFinder::Build2DHits()
       
     r = TMath::Sqrt (h->GetX() * h->GetX() + h->GetY() * h->GetY());
     xloc = h->GetLocalX();
-    z = h->GetZ();
+    //z = h->GetZ();
     //AZ Double_t meas[2] = {xloc + h->GetDx() * errX, z + dZ * errZ};
     Double_t meas[2] = {xloc + h->GetDx() * errX, posLoc[2] + h->GetDz() * errZ};
     //AZ Double_t err[2] = {errX, errZ};
@@ -533,8 +533,9 @@ void MpdVectorFinder::Build2DHits()
 						       ih, // index
 						       0, // index1
 						       -1, // trackNo - deprecated?
-						       NULL, // TrackPointer
+						       nullptr, // TrackPointer
 						       khit); // KalmanHit pointer
+    hit->SetUniqueID(nLayerHit); 
     ///cout << hit->GetKalmanHit() << " ";
   } // for (Int_t ih = 0; ih < nHits; ++ih)
 
@@ -574,8 +575,8 @@ void MpdVectorFinder::MakeTrackCandidates(Int_t iPass)
       ///fout_v << nKH - 1 << endl;
       ///fout_v << cellTr->GetKalmanHit() << " ";  
       //AZ
-      MpdItsHit5spd *h = (MpdItsHit5spd*) fItsHits->UncheckedAt(cellTr->GetIndex(0));
-      Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetTrackID()))->GetTrackID();
+      //MpdItsHit5spd *h = (MpdItsHit5spd*) fItsHits->UncheckedAt(cellTr->GetIndex(0));
+      //Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetTrackID()))->GetTrackID();
       //cout << " AZ-TrackID: " << trID << endl;
     } // for (Int_t i = 0; ih < nHits; ++i)
   } else {/// added 29.1.2020
@@ -596,8 +597,8 @@ void MpdVectorFinder::MakeTrackCandidates(Int_t iPass)
       cellTr->SetUniqueID(nKH - 1);
       //AZ
       cellTr->SetDeltaZ(-1/TMath::Tan(cellTr->GetCosSin(1)));
-      MpdItsHit5spd *h = (MpdItsHit5spd*) fItsHits->UncheckedAt(cellTr->GetIndex(0));
-      Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetTrackID()))->GetTrackID();
+      //MpdItsHit5spd *h = (MpdItsHit5spd*) fItsHits->UncheckedAt(cellTr->GetIndex(0));
+      //Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(h->GetTrackID()))->GetTrackID();
       //cout << " AZ1-TrackID: " << trID << " " <<  cellTr->GetMeas()[2] << endl;
     }
     cout << "Track Candidates on pass " <<  iPass + 1 << ": " << nKH << endl;
@@ -610,9 +611,9 @@ void MpdVectorFinder::MakeTrackCandidates(Int_t iPass)
 /// added 30.1.2020
 void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass) 
 {
-  const Int_t nSigm = 3;
+  //const Int_t nSigm = 3;
   int count = 0;
-  Double_t  errZ = 0.001, errX = 0.001;/// 10um for Z and X // 250um in Z, 23um in R-Phi (local X)
+  //Double_t  errZ = 0.001, errX = 0.001;/// 10um for Z and X // 250um in Z, 23um in R-Phi (local X)
   multimap <Float_t, MpdVector*> zMultimapHits[5], tMultimapHits[5];
 
   fout_v << "(transverse angle, longitudinal angle, z | MCtrackID)" << endl;
@@ -622,7 +623,7 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 
   //for (Int_t i234 = n; i234 >= 0; i234--) { /// loop over layers 3-0
   for (Int_t i234 = layNo[iPass]; i234 >= 0; i234--) { /// loop over layers 3-0
-    Int_t nKH = 0, iprint = 0;
+    Int_t nKH = 0;//, iprint = 0;
     cout << " AZsec: " << i234 << " " << f2DHits[i234]->GetEntriesFast() << endl; //AZ
     Double_t rmean = 0; //AZ
 
@@ -657,14 +658,14 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
       //AZ Double_t epsz_lower = 5e-2, epsz_upper = 5e-2;
       //Double_t epsz_lower = 3, epsz_upper = 3;
       Double_t epsz_lower = 5, epsz_upper = 5, dphi = 0;
-      MpdVector *prev = cand->GetPrevTrackPointer(), *preprev = NULL;
+      MpdVector *prev = cand->GetPrevTrackPointer(), *preprev = nullptr;
       vector<pair<Double_t,Double_t> > epst(2,pair<Double_t,Double_t>(999,999)); // for fine structure (2 branches)
       
-      if (prev != NULL) {
+      if (prev != nullptr) {
 	preprev = prev->GetPrevTrackPointer();
 	Double_t circle[3] = {0};
 
-	if (preprev == NULL) {
+	if (preprev == nullptr) {
 	//if (1) {
 	  // Use primary vertex
 	  ///fout_v << cand->GetPrevTrackPointer() << endl;
@@ -834,7 +835,7 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 	Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(hh->GetTrackID()))->GetTrackID();
 	if (fExact && trID != trID0) continue; // exact ID match
 	
-	MpdVector *trNew = NULL;
+	MpdVector *trNew = nullptr;
 	trNew = new ((*fKHits[i234])[nKH++]) MpdVector(*track); /// was h->Layer()
 	trNew->SetUniqueID(nKH - 1);
 	trNew->SetNofDim(2);
@@ -877,7 +878,7 @@ void MpdVectorFinder::ExtendSecondaryTracks(Int_t iPass)
 	         << " " << trNew->GetMeas()[2] << "|" //<< trNew->GetMeas()[1] << "|" << trNew->GetMeas()[2] << " " */
 	      //<< " " << trNew->GetKalmanHit()->GetMeas(0)
 	         <<  /*trackID <<*/ " " << MCtrackID << ")";
-	    MpdVector *trOld = trNew;
+	    //MpdVector *trOld = trNew; 
 	    
 	    trNew = trNew->GetPrevTrackPointer();
 	  }	  
@@ -916,9 +917,9 @@ void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
   /// Extend cell tracks to layers 4-1 
   /// pass 2 - start from the last but one layer
 
-  const Int_t nSigm = 3;
+  //const Int_t nSigm = 3;
   int count = 0;
-  Double_t  errZ = 0.001, errX = 0.001;/// 10um for Z and X // 250um in Z, 23um in R-Phi (local X)
+  //Double_t  errZ = 0.001, errX = 0.001;/// 10um for Z and X // 250um in Z, 23um in R-Phi (local X)
   multimap <Float_t, MpdVector*> lMultimapHits[5], tMultimapHits[5];
 
   fout_v << "(transverse angle, longitudinal angle, z | MCtrackID)" << endl;
@@ -927,7 +928,7 @@ void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
   n = TMath::Min (3, n);
   
   for (Int_t i234 = n; i234 >= 0; i234--) { /// loop over layers 3-0
-    Int_t nKH = 0, iprint = 0;
+    Int_t nKH = 0;//, iprint = 0;
     cout << " AZprim: " << i234 << " " << f2DHits[i234]->GetEntriesFast() << endl; //AZ
     ///nKH = fKHits[i234]->GetEntriesFast();
     // transverse and longitudinal hit maps
@@ -1027,7 +1028,7 @@ void MpdVectorFinder::ExtendCellTracks(Int_t iPass)
 	Int_t trID = ((MpdStsPoint*) fItsPoints->UncheckedAt(hh->GetTrackID()))->GetTrackID();
 	if (fExact && trID != trID0) continue; // exact ID match
       
-	MpdVector *trNew = NULL;
+	MpdVector *trNew = nullptr;
 	trNew = new ((*fKHits[i234])[nKH++]) MpdVector(*track); /// was h->Layer()
 	trNew->SetUniqueID(nKH - 1);
 	trNew->SetNofDim(2);
@@ -1131,7 +1132,7 @@ void MpdVectorFinder::GetTrackSeeds(Int_t iPass)
  
       for (Int_t jl = 0; jl < 4; ++jl) {
 	vec = vec->GetPrevTrackPointer();
-	if (vec == NULL) break;
+	if (vec == nullptr) break;
 	mapTr[vec->GetLayer()] = vec;
 	// Save vector from layer 1 not to double-use it
 	if (layEnd > 0 && vec->GetLayer() == 1) setVecs.insert(vec);
@@ -1152,7 +1153,7 @@ void MpdVectorFinder::GetTrackSeeds(Int_t iPass)
       //else pt = EvalPt(track4,track3,track1); //AZ
       //AZ-241020 if (mapTr.count(4)) pt = EvalPt(mapTr[4],mapTr[3],mapTr.begin()->second); /// TODO maybe some other hits should be used for pt evaluation - AZ
       //AZ-241020 else pt = EvalPt(mapTr[3],mapTr[2],mapTr.begin()->second); //AZ
-      MpdVector* vecs[3];
+      MpdVector* vecs[3]; //uninitialized pointer array?
       Int_t iv = 2;
       map<Int_t,MpdVector*>::reverse_iterator rmit = mapTr.rbegin();
       if (mapTr.size() == 5) ++rmit; // skip one hit
@@ -1428,7 +1429,7 @@ void MpdVectorFinder::EvalCovar(Double_t *parOut, Double_t *parIn, MpdItsKalmanT
   p->PositionOut(posOut);
   p->Momentum(pmom);
   Double_t phi = pmom.Phi();
-  Double_t th = pmom.Theta();
+  //Double_t th = pmom.Theta();
   Double_t r = (pos.Pt() + posOut.Pt()) / 2;//radius
   Double_t phi1 = pos.Phi(); 
   Double_t phi2 = posOut.Phi(); 
@@ -1462,12 +1463,12 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
     //if (iPass == 2) fout_v << "fTrackCand GetNofTrHits and GetNofHits " << track->GetNofTrHits() << " " << track->GetNofHits() << endl; /// 17.1.2019
     
     ///fout_v << " Track seed No. " << i << ", ID: " << track->GetTrackID() << ", Hits: " << track->GetNofTrHits() << endl;
-    for (Int_t j = 0; j < track->GetNofTrHits(); ++j) {
-      MpdKalmanHit *h = (MpdKalmanHit* )track->GetTrHits()->UncheckedAt(j);
+    //for (Int_t j = 0; j < track->GetNofTrHits(); ++j) {
+      //MpdKalmanHit *h = (MpdKalmanHit* )track->GetTrHits()->UncheckedAt(j);
       //MpdStsHit *hh = (MpdStsHit*) fItsHits->UncheckedAt(h->GetIndex());
       //Int_t id = ((FairMCPoint*) fItsPoints->UncheckedAt(hh->GetRefIndex()))->GetTrackID();
       ///fout_v << j << " " << h->GetDist() << " " << h->GetLayer() << endl;
-    }
+    //}
     
     /// RunKalmanFilterCell makes track->GetNofHits() from 0 to 3-5, adding them if they pass chi2 cut
     iok = RunKalmanFilterCell(track, iPass); /// removed if (fGeo) or smth like that// from cell track
@@ -1483,7 +1484,7 @@ void MpdVectorFinder::DoTracking(Int_t iPass)
     } else if ((iPass == fNPass-3) && (track->GetNofHits() < 5)) {
       fTrackCand->RemoveAt(i);
       continue;
-    } else if ((iPass < fNPass-1) && ((track->GetNofHits() < 4) || (track->GetNofHits() == 4) && (track->Pt() < 0.1))) {
+    } else if ((iPass < fNPass-1) && ((track->GetNofHits() < 4) || ((track->GetNofHits() == 4) && (track->Pt() < 0.1)))) {
       fTrackCand->RemoveAt(i);
       continue;
     }
@@ -1671,22 +1672,22 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
   MpdKalmanHit hitTmp;
   MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
   //Int_t layBeg = 0, layEnd = -1, dLay = -1, layOK = -1; /// old coment
-  Int_t layEnd = -1, dLay = -1, layOK = -1;
-  if (trackDir == MpdKalmanTrack::kInward) { /// was kOutward
-    layEnd = layMax + 1;
-    dLay = 1;
-  }
+  //Int_t layEnd = -1, dLay = -1, layOK = -1;
+  //if (trackDir == MpdKalmanTrack::kInward) { /// was kOutward
+  //  layEnd = layMax + 1;
+  //  dLay = 1;
+  //}
   
   TMatrixDSym pointWeight(5), pointWeightTmp(5), saveWeight(5);
   TMatrixD param(5,1), paramTmp(5,1);
   
-  Double_t saveZ = 0.0, saveLeng = 0.0, dChi2Min = 0.0, posNew = 0.0;
+  Double_t posNew = 0.0; //saveZ = 0.0, saveLeng = 0.0, dChi2Min = 0.0,
   Int_t ok = 0;
 
   /// TODO what is happening here?
   ///fout_v << track->GetUniqueID() << endl;
   /*AZ-211020
-  MpdVector *cellTr = NULL;
+  MpdVector *cellTr = nullptr;
 
   MpdVector *tracks[5];
 
@@ -1743,7 +1744,7 @@ Int_t MpdVectorFinder::RunKalmanFilterCell(MpdItsKalmanTrack *track, Int_t iPass
 	break; 
       } 
 
-      Double_t step = track->GetLength() - leng;
+      //Double_t step = track->GetLength() - leng;
 	
       /// fout_v << "!!!kalmanfiltercell" << " " << hit->GetLayer() << " " << track->GetLength() << " " << leng << " " << step << " " << " " << TMath::Sqrt(hit->GetMeas(0) * hit->GetMeas(0) + hit->GetMeas(1) * hit->GetMeas(1)) << " " << track->GetPosNew() << " " << track->GetUniqueID() << endl;
     } // if (TMath::Abs(hit->GetPos()-track->GetPosNew()) > 1.e-4)
@@ -1869,23 +1870,23 @@ void MpdVectorFinder::RemoveDoubles()
   for (mit1 = qualMap.begin(); mit1 != qualMap.end(); ++mit1) {
     ///fout_v << mit1->first << " " << mit1->second << endl;
     tr1 = mit1->second;
-    if (tr1 == NULL) continue; // killed track
+    if (tr1 == nullptr) continue; // killed track
     mit2 = mit1;
     ++mit2;
 
     for ( ; mit2 != qualMap.end(); ++mit2) {
       tr2 = mit2->second;
-      if (tr2 == NULL) continue; // killed track
+      if (tr2 == nullptr) continue; // killed track
       bool x = AreTracksDoubles(tr1, tr2);
       ///fout_v << x << endl;
       if (!x) continue;
       
       ///fout_v << "tracks doubles" << endl;
 
-      if (mit1->first < mit2->first) { fTrackCand->Remove(tr2); mit2->second = NULL; }
+      if (mit1->first < mit2->first) { fTrackCand->Remove(tr2); mit2->second = nullptr; }
       else {
-	if (tr1->GetChi2() <= tr2->GetChi2())  { fTrackCand->Remove(tr2); mit2->second = NULL; }
-	else { fTrackCand->Remove(tr1); mit1->second = NULL; break; }
+	if (tr1->GetChi2() <= tr2->GetChi2())  { fTrackCand->Remove(tr2); mit2->second = nullptr; }
+	else { fTrackCand->Remove(tr1); mit1->second = nullptr; break; }
       }
     }
   }
@@ -1952,20 +1953,20 @@ TVector2 MpdVectorFinder::GetDistance(MpdKalmanTrack *track, MpdKalmanHit *hit)
 
   Int_t lay = hit->GetLayer();
   Int_t lay2 = lay / 2;
-  Int_t side = lay % 2;
-  ///Int_t module = ((MpdStsHit*) fItsHits->UncheckedAt(hit->GetIndex()))->Module();
-  Int_t module = ((MpdItsHit5spd*) fItsHits->UncheckedAt(hit->GetIndex()))->Module();
+  //Int_t side = lay % 2;
+  ///Int_t module0 = ((MpdStsHit*) fItsHits->UncheckedAt(hit->GetIndex()))->Module();
+  Int_t module0 = ((MpdItsHit5spd*) fItsHits->UncheckedAt(hit->GetIndex()))->Module();
 
   Double_t zTr = track->GetParamNew(1);
   Double_t zloc = zTr + fDz[lay2];
   Int_t modTr = Int_t (zloc / fZmod[lay2]);
-  Int_t dMod = modTr - module;
+  Int_t dMod = modTr - module0;
 
   Double_t dZ = 0;
   if (dMod != 0) {
-    // Not in the same module - check Z-distance to module edge
-    if (dMod > 0) dZ = zloc - (module+1) * fZmod[lay2];
-    else dZ = zloc - module * fZmod[lay2];
+    // Not in the same module0 - check Z-distance to module0 edge
+    if (dMod > 0) dZ = zloc - (module0+1) * fZmod[lay2];
+    else dZ = zloc - module0 * fZmod[lay2];
     if (TMath::Abs(dMod) > 2) return TVector2(TMath::Abs(dZ),999.); // not in neighbour modules
   }
 
@@ -2068,7 +2069,7 @@ void MpdVectorFinder::AddHits()
     SetTrackID(track); // set track ID as ID of majority of its hits
     ///fout_v << nHits << " " << trHits.GetEntriesFast() << " " << track->GetTrackID() << " " << track->GetNofTrHits() << endl;
 
-    Int_t nWrong = 0, nMirr = 0, motherID = track->GetTrackID();
+    Int_t nWrong = 0, motherID = track->GetTrackID(); //nMirr = 0,
     // Get track mother ID 
 
     ///cout << "motherID " << motherID << endl;
@@ -2078,7 +2079,7 @@ void MpdVectorFinder::AddHits()
       mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
     }
 
-    Int_t lastIndx = trHits.GetEntriesFast();
+    //Int_t lastIndx = trHits.GetEntriesFast();
     for (Int_t j = 0; j < nHits; ++j) {
       MpdKalmanHit *hit = (MpdKalmanHit*) hits->UncheckedAt(j);
       //AZ hit->SetUniqueID(1); // flag ITS hits
@@ -2149,6 +2150,7 @@ Int_t MpdVectorFinder::GetHitID(MpdKalmanHit *hit)
     Int_t motherID1 = ((FairMCPoint*) fItsPoints->UncheckedAt(h->GetRefIndex()))->GetTrackID();
     return motherID1;
   }
+  return 0; // 0 points in hit?
 }
 
 //__________________________________________________________________________
@@ -2182,15 +2184,15 @@ Double_t MpdVectorFinder::Interp(Double_t angt, Int_t choice, Int_t lay)
   const Double_t xp[np] = {0.1/0.18, 0.1/0.069, 0.1/0.043, 0.1/0.034, 0.1/0.017, 0.1/0.0086, 0.1/0.0044};
   // const Double_t xp[np] =   {0.05,0.125,0.2, 0.25, 0.50, 1.00, 2.00}; //3.09
 
-  Double_t dpp05[np] = {0.18, 0.069, 0.043, 0.034, 0.017, 0.0086, 0.0044}; //mean angt
-  Double_t err05[np] = {0.0018, 0.00032, 0.00018, 0.00014, 0.000092, 0.00007, 0.00006}; // error mean angt
+  //Double_t dpp05[np] = {0.18, 0.069, 0.043, 0.034, 0.017, 0.0086, 0.0044}; //mean angt
+  //Double_t err05[np] = {0.0018, 0.00032, 0.00018, 0.00014, 0.000092, 0.00007, 0.00006}; // error mean angt
 
   
 
-  const Double_t angs[2][np] = {{0.042, 0.019, 0.017, 0.016, 0.017, 0.019, 0.018}, //sigma angl
-                                {0.054, 0.013, 0.0069, 0.006, 0.0036, 0.0034, 0.003}}; // sigma dangt Box(250)
-  const Double_t dangs[2][np] = {{0.0015, 0.00067, 0.00069, 0.00065, 0.00073, 0.00065, 0.00068}, // error sigma angl
-                                 {0.0027, 0.00045, 0.00027, 0.00018, 0.00014, 0.0001, 0.0001}}; //error sigma dangt
+  //const Double_t angs[2][np] = {{0.042, 0.019, 0.017, 0.016, 0.017, 0.019, 0.018}, //sigma angl
+  //                              {0.054, 0.013, 0.0069, 0.006, 0.0036, 0.0034, 0.003}}; // sigma dangt Box(250)
+  //const Double_t dangs[2][np] = {{0.0015, 0.00067, 0.00069, 0.00065, 0.00073, 0.00065, 0.00068}, // error sigma angl
+  //                               {0.0027, 0.00045, 0.00027, 0.00018, 0.00014, 0.0001, 0.0001}}; //error sigma dangt
   /*
   const Double_t angls[3][np] = {{0.047, 0.027, 0.025, 0.023, 0.027, 0.026, 0.028},
 				 {0.04, 0.022, 0.021, 0.02, 0.021, 0.021, 0.021},
@@ -2221,7 +2223,7 @@ Double_t MpdVectorFinder::Interp(Double_t angt, Int_t choice, Int_t lay)
     if (inds[0] < 0) for (Int_t i = 0; i < 3; ++i) ++inds[i];
     if (inds[2] == np) for (Int_t i = 0; i < 3; ++i) --inds[i];
   }
-  Double_t a,b,c,dy01,dy02;
+  Double_t a{0.},b{0.},c{0.},dy01{0.},dy02{0.};
   
   // Parabolic interpolation
   Double_t dx01 = xp[inds[1]] - xp[inds[0]], dx02 = xp[inds[2]] - xp[inds[0]];
@@ -2279,7 +2281,7 @@ void MpdVectorFinder::GetShortTracks()
     }
   }
 
-  Int_t left = 0;
+  //Int_t left = 0;
   /// fout_v << " Leftovers: " << endl;
   for (it = fCellMap.begin(); it != fCellMap.end(); ++it) {
     ///if (it->second > 0) fout_v << ++left << " " << it->first << endl;
@@ -2293,8 +2295,8 @@ Bool_t MpdVectorFinder::Refit(MpdItsKalmanTrack *track, Double_t mass, Int_t cha
   /// Refit track in ITS+TPC using track hits (toward beam line) for some
   /// particle mass and charge hypothesis 
 
-  if (fTpcKF == NULL) fTpcKF = (MpdTpcKalmanFilter*) FairRun::Instance()->GetTask("TPC Kalman filter");
-  if (fTpcKF == NULL) {
+  if (fTpcKF == nullptr) fTpcKF = (MpdTpcKalmanFilter*) FairRun::Instance()->GetTask("TPC Kalman filter");
+  if (fTpcKF == nullptr) {
     cout << " !!! TPC Kalman Filter was not activated !!! " << endl;
     exit(1);
   }

@@ -69,8 +69,8 @@ InitStatus MpdMCStack::Init()
     for (Int_t i = 0; i < 15; i++)
         ein[i] = 0;
 
-    Float_t length[1];
-    length[0] = 100.0;
+    //Float_t length[1];
+    //length[0] = 100.0;
     //gMC3->Eufill(1, ein, length);
 
     fTrajFilter = FairTrajFilter::Instance();
@@ -145,7 +145,8 @@ void MpdMCStack::Exec(Option_t* /*option*/)
         // PROPAGATION
         // Int_t GeantCode = TDatabasePDG::Instance()->ConvertPdgToGeant3(tr->GetPdgCode());
         // gMC3->Ertrak(x1, p1, x2, p2,G eantCode, "L");
-        fPro->PropagateToLength(100.0);
+         fPro->PropagateToLength(100.0);
+        // fPro->SetDestinationLength(100.0);
         fPro->Propagate(x1, p1, x2, p2, tr->GetPdgCode());
         TGeoTrack* tr1 = fTrajFilter->GetCurrentTrk();
 

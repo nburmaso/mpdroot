@@ -19,7 +19,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-MpdTpcEDepParams* MpdTpcEDepParams::fgTpcEdepParams = NULL;
+MpdTpcEDepParams* MpdTpcEDepParams::fgTpcEdepParams = nullptr;
 
 //__________________________________________________________________________
 
@@ -98,7 +98,7 @@ Double_t MpdTpcEDepParams::GetRandEnergy (Double_t log10bg)
 {
   /// Energy in the cluster vs log10(beta*gamma)
   
-  Int_t ib = 0, ib1 = 0;
+  Int_t ib = 0;//, ib1 = 0;
   Double_t bin = (log10bg - fEneL10BgMin) / fEneL10BgStep;
   if (bin <= 0.) ib = 0;
   else if (bin >= fNEneBgBins-1) ib = fNEneBgBins - 1;

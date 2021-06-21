@@ -219,7 +219,7 @@ assert(! pPoint->GetData().empty());
 
 		if(fUseTimeWindow)
 		{	
-			Int_t nWindowSize = fTimeWindow * fRoIBins/fRoISize; nWindowSize = nWindowSize < fRoIBins ? nWindowSize : fRoIBins - 1;
+			Int_t nWindowSize = fTimeWindow * fRoIBins/fRoISize; nWindowSize = ((UInt_t)nWindowSize < fRoIBins) ? nWindowSize : fRoIBins - 1;
 
 			for(size_t suid = 0; suid < 160; suid++) 
 			{		

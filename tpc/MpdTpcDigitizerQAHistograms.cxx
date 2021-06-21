@@ -22,24 +22,24 @@
 
 MpdTpcDigitizerQAHistograms::MpdTpcDigitizerQAHistograms() :
 _hRZ_global(0), _hYZ_local(0),
+_hDiffuseXY(0), _hDistortXY(0), 
+_hX_global(0), _hY_global(0), _hZ_global(0),
+_hX_local(0), _hY_local(0), _hZ_local(0), _hXY_local(0), _hXY_global(0),
 _hSect_dig(0), _hADC_dig(0),
 _hX_dig(0), _hY_dig(0), _hZ_dig(0),
 _h3D_dig(0), _h3D_el(0),
-_hDiffuseXY(0), _hDistortXY(0),
-_hX_global(0), _hY_global(0), _hZ_global(0), _hXY_global(0),
-_hX_local(0), _hY_local(0), _hZ_local(0), _hXY_local(0),
-_hXT_dig_1(0), _hXT_dig_20(0), _hXT_dig_5(0), _hXT_dig_10(0), _hXT_dig_40(0), _hXT_dig_60(0) {
+_hXT_dig_1(0),  _hXT_dig_5(0), _hXT_dig_10(0), _hXT_dig_20(0), _hXT_dig_40(0), _hXT_dig_60(0) {
 }
 
 MpdTpcDigitizerQAHistograms::MpdTpcDigitizerQAHistograms(const std::string& suffix) :
 _hRZ_global(0), _hYZ_local(0),
+_hDiffuseXY(0), _hDistortXY(0), 
+_hX_global(0), _hY_global(0), _hZ_global(0), 
+_hX_local(0), _hY_local(0), _hZ_local(0), _hXY_local(0), _hXY_global(0),
 _hSect_dig(0),  _hADC_dig(0),
 _hX_dig(0), _hY_dig(0), _hZ_dig(0),
-_h3D_dig(0),
-_hDiffuseXY(0), _hDistortXY(0),
-_hX_global(0), _hY_global(0), _hZ_global(0), _hXY_global(0),
-_hX_local(0), _hY_local(0), _hZ_local(0), _hXY_local(0),
-_hXT_dig_1(0), _hXT_dig_20(0), _hXT_dig_5(0), _hXT_dig_10(0), _hXT_dig_40(0), _hXT_dig_60(0) {
+_h3D_dig(0), _h3D_el(0),
+_hXT_dig_1(0), _hXT_dig_5(0), _hXT_dig_10(0), _hXT_dig_20(0), _hXT_dig_40(0), _hXT_dig_60(0) {
 }
 
 MpdTpcDigitizerQAHistograms::~MpdTpcDigitizerQAHistograms() {

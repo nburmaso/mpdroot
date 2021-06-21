@@ -35,7 +35,7 @@ TObject((const TObject&) cl) {
     fSigBkt = cl.fSigBkt;
     fCorrel = cl.fCorrel;
 
-    for (int i = 0; i < cl.GetNumDigits(); ++i) {
+    for (UInt_t i = 0; i < cl.GetNumDigits(); ++i) {
         fSecList.push_back(cl.fSecList[i]);
         fRowList.push_back(cl.fRowList[i]);
         fColList.push_back(cl.fColList[i]);

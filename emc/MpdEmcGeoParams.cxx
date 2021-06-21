@@ -60,7 +60,7 @@ MpdEmcGeoParams::MpdEmcGeoParams() {
     TGeoMatrix *rowMatrix;
     TGeoShape* boxShape;
 
-    while(sectorNode = (TGeoNode*) sectorIter->Next() )
+    while( (sectorNode = (TGeoNode*) sectorIter->Next()) )
       if ( ((TString)(sectorNode->GetName())).Contains("emcSector")) nSector++;
     fAngleSector = 360./nSector; nSec = nSector; 
   

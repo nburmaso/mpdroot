@@ -149,7 +149,7 @@ void MpdSftTrackFinderTpc::MakeKalmanHitsSft()
   /// Create Kalman hits from SFT points.
   Int_t lay, nKH = 0, layMax = 0;
   //Double_t phi, r, coord, errR = 0.008, errRphi = 0.008; // 80um in R, 80um in R-Phi
-  Double_t phi, r, coord, errR = 0.05, errRphi = 0.0170; // 500um in R, 170um in R-Phi
+  Double_t phi, r, errR = 0.05, errRphi = 0.0170; // coord, 500um in R, 170um in R-Phi
 
   fhLays->Reset();
   Int_t nSft = fSftPoints->GetEntriesFast(), iz = 0;
@@ -181,8 +181,9 @@ void MpdSftTrackFinderTpc::MakeKalmanHitsSft()
     phi = rphi / meas[1];
     meas[0] = 0.0; //
     Double_t cosSin[2] = {TMath::Cos(phi), TMath::Sin(phi)};
-    MpdKalmanHit *hit = new ( (*fKHits)[nKH++]) MpdKalmanHit(lay*1000000, 2, MpdKalmanHit::kFixedZ,
-							     meas, err, cosSin, 9.0, p->GetZ(), i);
+    //MpdKalmanHit *hit = 
+    new ( (*fKHits)[nKH++]) MpdKalmanHit(lay*1000000, 2, 
+      MpdKalmanHit::kFixedZ, meas, err, cosSin, 9.0, p->GetZ(), i);
   }
   fKHits->Sort(); // in descending order in layer No. (in abs(Z))
   cout << " First and last layers: " << ((MpdKalmanHit*)fKHits->First())->GetLayer() << " "
@@ -210,7 +211,7 @@ void MpdSftTrackFinderTpc::GetTrackSeeds(Int_t iPass)
 {
   /// Build track seeds from SFT hits and vertex
 
-  Int_t nCand = fTracks->GetEntriesFast(), layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  Int_t nCand = fTracks->GetEntriesFast();//, layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
   TVector3 vert(0.,0.,0.), pmom;
 
   // Build track candidates from 2 SFT detectors (closest to the vertex)
@@ -405,7 +406,7 @@ void MpdSftTrackFinderTpc::DoTracking(Int_t iPass)
       }
       iok = RunKalmanFilter(&tracks[j], lay);
       //iok = RunKalmanFilter(&tracks[lay], 0);
-      cout << j << " " << lay << " " << tracks[j].GetNofHits() << " " << tracks[j].GetChi2() << endl;
+      cout << j << " " << lay << " " << tracks[j].GetNofHits() << " " << tracks[j].GetChi2() << " " << iok << endl;
     }
 
     // Select the best track (with max number of hits)
@@ -528,7 +529,7 @@ Int_t MpdSftTrackFinderTpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
   MpdKalmanHit *hitOK = 0x0;
   MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
   //Int_t layBeg = layMax, layEnd = -1, dLay = -1, layOK = -1;
-  Int_t layEnd = -1, dLay = -1, layOK = -1;
+  Int_t layEnd = -1, dLay = -1;//, layOK = -1;
   if (trackDir == MpdKalmanTrack::kOutward) {
     layEnd = layMax + 1;
     dLay = 1;
@@ -584,7 +585,7 @@ Int_t MpdSftTrackFinderTpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
       if (!MpdKalmanFilter::Instance()->PropagateToHit(track,hit)) return -1;
       // For tests
       //FairMCPoint *mc = (FairMCPoint*) fEctHits->UncheckedAt(hit->GetIndex());
-      FairMCPoint *mc = (FairMCPoint*) fSftPoints->UncheckedAt(hit->GetIndex());
+      //FairMCPoint *mc = (FairMCPoint*) fSftPoints->UncheckedAt(hit->GetIndex());
       //*if (hit->GetTrackID() == 186)*/ cout << " Hit: " << mc->GetTrackID() << " " << hit->GetLayer() << " " << mc->GetX() << " " << mc->GetY() << " " << hit->GetDist() << " " << hit->GetPhi() << "; Track: " << track->GetParamNew(0)  << " " << track->GetParamNew(1) << " " << track->GetPosNew() << "; Dist: " << dist.X() << " " << dist.Y() << endl;
       //
       // For debugging
@@ -592,7 +593,7 @@ Int_t MpdSftTrackFinderTpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
       TVector2 dist0 = GetDistance(track, hit);
       cout << dist0.X() << " " << dist0.Y() << endl;
       *.
-      /*
+
       MpdKalmanHitZ hitDbg = *hit;
       Double_t xDbg = hit->GetXY(0) * TMath::Cos(hit->GetPhi()) + hit->GetXY(1) * TMath::Sin(hit->GetPhi());
       Double_t yDbg = -hit->GetXY(0) * TMath::Sin(hit->GetPhi()) + hit->GetXY(1) * TMath::Cos(hit->GetPhi());
@@ -671,10 +672,10 @@ Int_t MpdSftTrackFinderTpc::RunKalmanFilterTPC(MpdEctKalmanTrack *track, Int_t l
 
   // Get TpcKalmanFilter task
   MpdTpcKalmanFilter *tpcKF = (MpdTpcKalmanFilter*) FairRun::Instance()->GetTask("TPC Kalman filter");
-  if (tpcKF == NULL) Fatal("RunKalmanFilterTPC", "!!! No TPC kalman filter task is found !!! ");
+  if (tpcKF == nullptr) Fatal("RunKalmanFilterTPC", "!!! No TPC kalman filter task is found !!! ");
 
   MpdKalmanHit *hitOK = 0x0;
-  Int_t layEnd = -1, dLay = -1, layOK = -1;
+  Int_t layEnd = -1, dLay = -1;//, layOK = -1;
   Int_t layMax = ((MpdKalmanHit*)fTpcHits->UncheckedAt(0))->GetLayer();
   if (track->GetDirection() == MpdKalmanTrack::kOutward) {
     layEnd = layMax + 1;
@@ -986,10 +987,10 @@ void MpdSftTrackFinderTpc::AddHits()
       //Int_t motherID1 = p->GetTrackID();
       cout << "-" << motherID1;
       // Get point mother ID 
-      MpdMCTrack *mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID1);
-      while (mctrack->GetMotherId() > 0) {
-        motherID1 = mctrack->GetMotherId();
-        mctrack = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack->GetMotherId());
+      MpdMCTrack *mctrack1 = (MpdMCTrack*) fMCTracks->UncheckedAt(motherID1);
+      while (mctrack1->GetMotherId() > 0) {
+        motherID1 = mctrack1->GetMotherId();
+        mctrack1 = (MpdMCTrack*) fMCTracks->UncheckedAt(mctrack1->GetMotherId());
       }
       //if (motherID1 != motherID && hit->GetMult() == 1) nWrong++;
       if (motherID1 != motherID) nWrong++;
@@ -1033,13 +1034,13 @@ void MpdSftTrackFinderTpc::RemoveTpcTracks()
 
   for (Int_t i = 0; i < nTr; ++i) {
     MpdEctKalmanTrack *tr = (MpdEctKalmanTrack*) fTracks->UncheckedAt(i);
-    if (tr == NULL) continue;
-    Int_t id = tr->GetTrackID();
+    if (tr == nullptr) continue;
+    //Int_t id = tr->GetTrackID();
     if (tr->GetTpcIndex() >= 0) {
       // There are TPC hits
       for (Int_t j = 0; j < nTpc; ++j) {
 	MpdTpcKalmanTrack *tpc = (MpdTpcKalmanTrack*) tpcTracks->UncheckedAt(j);
-	if (tpc == NULL) continue;
+	if (tpc == nullptr) continue;
 	if (tpc->GetTrackID() != tr->GetTrackID()) continue;
 	if (tpc->GetNofTrHits() < tr->GetNofTrHits()) { 
 	  tpcTracks->RemoveAt(j);

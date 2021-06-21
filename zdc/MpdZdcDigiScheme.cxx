@@ -43,7 +43,7 @@ MpdZdcDigiScheme::~MpdZdcDigiScheme()
   fRefcount--;
   if(!fRefcount){
     delete this;
-    fInstance = NULL;
+    fInstance = nullptr;
   }
 }
 // -------------------------------------------------------------------------
@@ -104,11 +104,11 @@ Bool_t MpdZdcDigiScheme::Init (MpdZdcGeoPar* geoPar, MpdZdcDigiPar* digiPar, Boo
 MpdZdcVolInfo_t* MpdZdcDigiScheme::CreateVolInfoElement (FairGeoNode* nod, Int_t pVerbose)
 {
   if (!nod)
-    return NULL;
+    return nullptr;
 
   static TString root_name_copy1="";
   static Double_t volData[6]={0,0,0,0,0,0};
-  Int_t i,j;
+  Int_t i;//,j;
 
   TString shape_name = nod->getShapePointer()->GetName();
   TString root_name = nod->getRootVolume()->GetName();
@@ -162,19 +162,19 @@ MpdZdcVolId_t* MpdZdcDigiScheme::CreateVolElement (FairGeoNode* nod, Int_t nodeN
 						   MpdZdcDigiId_t* right, Int_t pGlobalDetectorNumber, Int_t pVerbose)
 {
   if (!nod)
-    return NULL;
+    return nullptr;
 
   FairGeoNode *nod0, *nod1;
   TString mother_name, tmp;
 
   if (!fPasNodes) 
-    return NULL;
+    return nullptr;
 
   nod0 = (FairGeoNode*)fPasNodes->At(0);
   nod1 = (FairGeoNode*)fPasNodes->At(1);
 
   if ((!nod0)||(!nod1)) 
-    return NULL;
+    return nullptr;
 
   mother_name = nod->getMother();
 
@@ -203,7 +203,7 @@ MpdZdcVolId_t* MpdZdcDigiScheme::CreateVolElement (FairGeoNode* nod, Int_t nodeN
   else {
     cout << "-E-  MpdZdcDigiScheme::CreateVolInfoElement:  Strange for me node: "
 	 << nod->GetName() << "  Node number:" << nodeNumber  << "  Mother:" << mother_name << endl;
-    return NULL;
+    return nullptr;
   }
 
 }
@@ -214,7 +214,7 @@ Bool_t MpdZdcDigiScheme::AddNodes (TObjArray* sensNodes,Int_t pGlobalDetectorNum
 {
   Int_t nNodes = sensNodes->GetEntriesFast();
   FairGeoNode *nod=0;
-  Int_t nodeNumber,nodeCopyNo,nodeVolumeId, chanId2=0, chanId1=0;
+  Int_t nodeNumber;//,nodeCopyNo,nodeVolumeId, chanId2=0, chanId1=0;
   MpdZdcVolId_t *left1,*left2;
   MpdZdcDigiId_t *right1,*right2;
 
@@ -482,12 +482,12 @@ MpdZdcVolInfo_t* MpdZdcDigiScheme::GetVolInfo(MpdZdcVolId_t* pVolId)
     MpdZdcDigiId_t pDigiID = GetDigiId(pVolId);
 
     if (fDigiToVolInfoMap.find(pDigiID)==fDigiToVolInfoMap.end())
-      return NULL;
+      return nullptr;
     else 
       return fDigiToVolInfoMap[pDigiID]; 
   }
   else 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -659,4 +659,3 @@ Bool_t  MpdZdcDigiScheme::GetDetIdModIdChanId (Int_t pMcVolumeNumber, Int_t pMcC
 
 // -------------------------------------------------------------------------
 ClassImp(MpdZdcDigiScheme)
-

@@ -120,7 +120,7 @@ void MpdCpcHitProducer::MakeHists() {
   fZ    = new TH1F("z","", 500, 150., 250.);
   hlist->Add(fZ);
 
-  Float_t xbins[5] = {0., 15., 20., 30., 50.0};
+  //Float_t xbins[5] = {0., 15., 20., 30., 50.0};
 
 
   fR    = new TH1F("r","", 100, 0., 55.);

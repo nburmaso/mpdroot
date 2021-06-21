@@ -363,7 +363,7 @@ void MpdEctTrackFinderCpc::MakeKalmanHits()
 
     Int_t nHits = fEctHits->GetEntriesFast(), lay = 0, nKH = 0, itube = 0;
     //Double_t phi, r, coord, errR = 0.2, errRphi = 0.02; // 2mm in R, 200um in R-Phi
-    Double_t phi, r, coord, errR = 0.02, errRphi = 0.02; // 200um in R, 200um in R-Phi
+    Double_t phi, coord, errR = 0.02, errRphi = 0.02; //r, 200um in R, 200um in R-Phi
     /*Double_t firstHit[100][1000] = {{0},{0}};
     Int_t indxTube[100][1000];
     for (Int_t i = 0; i < 100; ++i) {
@@ -397,14 +397,14 @@ void MpdEctTrackFinderCpc::MakeKalmanHits()
       Double_t cosSin[2] = {TMath::Cos(phi), TMath::Sin(phi)}; // phi - tube direction
       //Double_t xLoc = h->GetX() * cosPhi + h->GetY() * sinPhi; // cross-check
       //Double_t yLoc = -h->GetX() * sinPhi + h->GetY() * cosPhi;
-      Double_t xLoc = xNew * cosSin[0] + yNew * cosSin[1];
+      //Double_t xLoc = xNew * cosSin[0] + yNew * cosSin[1];
       Double_t yLoc = -xNew * cosSin[1] + yNew * cosSin[0];
       //Double_t xLoc = (xNew - h->GetX()) * cosPhi + (yNew - h->GetY()) * sinPhi;
       //Double_t yLoc = -(xNew - h->GetX()) * sinPhi + (yNew - h->GetY())  * cosPhi;
       //r = xNew * xNew + yNew * yNew;
       //r = TMath::Sqrt (r);
       //r = TMath::Abs(xLoc);
-      r = xLoc;
+      //r = xLoc;
       //cout << xLoc << " " << yLoc << " " << r << " " << h->GetPz() << endl;
       coord = yLoc;
       Double_t yWire = -h->GetX() * cosSin[1] + h->GetY() * cosSin[0];
@@ -415,9 +415,9 @@ void MpdEctTrackFinderCpc::MakeKalmanHits()
       gRandom->Rannor(dRphi,dR); // add errors
       Double_t meas[2] = {coord+dRphi*errRphi, 0};
       Double_t err[2] = {errRphi, errR};
-      MpdKalmanHit *hit = new ((*fKHits)[nKH]) MpdKalmanHit(lay*1000000, 1, MpdKalmanHit::kFixedZ, 
-			      //MpdKalmanHit *hit = new ((*fKHits)[nKH]) MpdKalmanHit(h->GetDetectorID()*1000, 1, MpdKalmanHit::kFixedZ, 
-							    meas, err, cosSin, 9., h->GetZ(), ih);
+      MpdKalmanHit *hit = new ((*fKHits)[nKH]) MpdKalmanHit(lay*1000000, 1, 
+        MpdKalmanHit::kFixedZ, meas, err, cosSin, 9., h->GetZ(), ih);
+	  //MpdKalmanHit *hit = new ((*fKHits)[nKH]) MpdKalmanHit(h->GetDetectorID()*1000, 1, MpdKalmanHit::kFixedZ, 
       //hit->SetXY(h->GetX(), h->GetY()); // wire coordinate
       // Add second measurement - just for test at the moment
       //!!!
@@ -521,18 +521,17 @@ void MpdEctTrackFinderCpc::MatchEtof()
     hTmp.SetDist(TMath::Abs(hTmp.GetDist())*TMath::Sign(1.,track.GetPos()));
     //MpdKalmanFilter::Instance()->PropagateParamZ(&track,&hTmp,kFALSE);
     MpdKalmanFilter::Instance()->PropagateParamZ(&track,&hTmp,kTRUE);
-    Int_t id = track.GetTrackID(), iMin = 0;
-    Double_t rMin = 999999., rID = 999, xTr = track.GetParamNew(0), yTr = track.GetParamNew(1);
+    //Int_t id = track.GetTrackID(), 
+    Int_t iMin = 0;
+    Double_t rMin = 999999., xTr = track.GetParamNew(0), yTr = track.GetParamNew(1); //rID = 999,
 
     for (Int_t itof = 0; itof < nTof; ++itof) {
       MpdTofHit *tof = (MpdTofHit*) fTofHits->UncheckedAt(itof);
-      MpdTofPoint *tofP = (MpdTofPoint*) fTofPoints->UncheckedAt(tof->GetRefIndex());
-
+      //MpdTofPoint *tofP = (MpdTofPoint*) fTofPoints->UncheckedAt(tof->GetRefIndex());
       //if (tof->GetZ() < 0) continue; // !!! exclude one side for now
-
       Double_t dx = tof->GetX() - xTr, dy = tof->GetY() - yTr;
       Double_t r = dx * dx + dy * dy;
-      if (id == tofP->GetTrackID()) rID = r;
+      //if (id == tofP->GetTrackID()) rID = r;
       if (r < rMin) { rMin = r; iMin = itof; }
     }
     //if (lun2) fprintf(lun2,"%d %10.3e %10.3e\n", id, TMath::Sqrt(rID), TMath::Sqrt(rMin));
@@ -584,8 +583,9 @@ void MpdEctTrackFinderCpc::MatchCpc()
       hTmp.SetDist(TMath::Sign(zCpc[icpc],track.GetPos()));
       MpdKalmanFilter::Instance()->PropagateParamZ(&track,&hTmp,kFALSE);
       //MpdKalmanFilter::Instance()->PropagateParamZ(&track,&hTmp,kTRUE);
-      Int_t id = track.GetTrackID(), iMin = 0;
-      Double_t rMin = 999999., rID = 999, xTr = track.GetParamNew(0), yTr = track.GetParamNew(1);
+      //Int_t id = track.GetTrackID(), 
+      Int_t iMin = 0;
+      Double_t rMin = 999999., xTr = track.GetParamNew(0), yTr = track.GetParamNew(1); //rID = 999,
 
       for (it = fMapCpc[icpc].begin(); it != fMapCpc[icpc].end(); ++it) {
 	TVector3 pos = it->second;
@@ -661,11 +661,11 @@ void MpdEctTrackFinderCpc::GetTrackSeeds(Int_t iPass)
         Int_t idEct = ectP->GetTrackID();
 
 	// !!! Exact match of TOF and ECT
-	if (fExact) {
-	  Int_t itmp = 0;
+	//if (fExact) {
+	  //Int_t itmp = 0;
 	  //if (fExact && idEct != tofP->GetTrackID()) continue;
 	  //if (HitMotherId(hit,tofP->GetTrackID(),itmp) != tofP->GetTrackID()) continue;
-	}
+	//}
 
 	Int_t detID = ectP->GetDetectorID();
 	if (fWireMap.find(detID) == fWireMap.end()) {
@@ -755,11 +755,11 @@ void MpdEctTrackFinderCpc::GetTrackSeedsCpc(Int_t iPass)
   Int_t tmp[99999] = {0}, idMax = 0, nID = 0;
   Int_t nTof = (fTofHits) ? fTofHits->GetEntriesFast() : 0, nCpc = fCpcPoints->GetEntriesFast();
  
-  Int_t nCand = 0, layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  Int_t nCand = 0;//, layMax = ((MpdKalmanHit*)fKHits->First())->GetLayer();
   const Double_t dphiMax = 0.3; //0.2; // cut on Phi between CPC1 and CPC2
   //const Double_t errRph = 0.02, errR = 0.2; // CPC errors
-  const Double_t errRph = 0.2, errR = 0.5; // CPC errors
-  Double_t sig1, sig2;
+  //const Double_t errRph = 0.2, errR = 0.5; // CPC errors
+  //Double_t sig1, sig2;
   TVector3 vert(0.,0.,0.), pmom, posTof, posCpc;
   if (fPrimVtx) vert[2] = ((MpdVertex*)fPrimVtx->UncheckedAt(0))->GetZ();
 
@@ -784,7 +784,7 @@ void MpdEctTrackFinderCpc::GetTrackSeedsCpc(Int_t iPass)
       //if (tof->GetZ() < 0) continue; // !!! exclude one side for now
 
       posTof = it1->second;
-      if (posTof.Z() > 0 && posCpc.Z() < 0 || posTof.Z() < 0 && posCpc.Z() > 0) continue; // different arms
+      if ((posTof.Z() > 0 && posCpc.Z() < 0) || (posTof.Z() < 0 && posCpc.Z() > 0)) continue; // different arms
       Double_t rTof = posTof.Pt();
       if (rTof <= rCpc) continue; // cut on radius
       Double_t phTof = posTof.Phi(), dph = phTof - phCpc;
@@ -798,7 +798,7 @@ void MpdEctTrackFinderCpc::GetTrackSeedsCpc(Int_t iPass)
       tof.SetZ(posTof.Z());
       MpdEctKalmanTrack *track = 
 	//new ((*fTrackCand)[nCand++]) MpdEctKalmanTrack(itof, idEct, tof, hit, vert);
-	new ((*fTrackCand)[nCand++]) MpdEctKalmanTrack(it1->first, cpc->GetTrackID(), &tof, (MpdKalmanHit*)NULL, vert);
+	new ((*fTrackCand)[nCand++]) MpdEctKalmanTrack(it1->first, cpc->GetTrackID(), &tof, (MpdKalmanHit*)nullptr, vert);
       track->SetTrackID(tofP->GetTrackID());
       //EvalParams(tof, hit, track, rEct, phEct);
       track->SetParam(0, posTof.X()); // x
@@ -822,7 +822,7 @@ void MpdEctTrackFinderCpc::GetTrackSeedsCpc(Int_t iPass)
       */
       track->SetParamNew(*track->GetParam());
       //track->GetParam()->Print();
-      EvalCovar(&tof, (MpdKalmanHit*)NULL, track, 0.0, 0.0);
+      EvalCovar(&tof, (MpdKalmanHit*)nullptr, track, 0.0, 0.0);
       //if (lun1 && idEct == tofP->GetTrackID()) fprintf(lun1,"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \n",track->GetParam(2),MpdKalmanFilter::Instance()->Proxim(track->GetParam(2),ph),track->GetParam(3),MpdKalmanFilter::Instance()->Proxim(track->GetParam(3),th),1./TMath::Sqrt((*track->GetWeight())(2,2)),1./TMath::Sqrt((*track->GetWeight())(3,3)),pmom.Mag(),rTof,pmom.Pt(),pt);
       if (lun3 && cpc->GetTrackID() == tofP->GetTrackID()) fprintf(lun3,"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \n",track->GetParam(2),MpdKalmanFilter::Instance()->Proxim(track->GetParam(2),pmom.Phi()),track->GetParam(3),MpdKalmanFilter::Instance()->Proxim(track->GetParam(3),TMath::PiOver2()-pmom.Theta()),1./TMath::Sqrt((*track->GetWeight())(2,2)),1./TMath::Sqrt((*track->GetWeight())(3,3)),pmom.Mag(),rTof,pmom.Pt(),ptTr);
 
@@ -1009,7 +1009,7 @@ void MpdEctTrackFinderCpc::DoTracking(Int_t iPass)
     // Add first ECT hit
     //track->Weight2Cov()->Print();
     //track->GetParamNew()->Print();
-    MpdKalmanHit *hit = NULL;
+    MpdKalmanHit *hit = nullptr;
     if (track->GetNofHits() > 0) {
       hit = (MpdKalmanHit*) track->GetHits()->UncheckedAt(0);
       MpdKalmanFilter::Instance()->PropagateToHit(track, hit);
@@ -1165,11 +1165,11 @@ Int_t MpdEctTrackFinderCpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
 
   const Double_t rMin = 49.2, rMax = 110.5; // min and max radial size of ECT - to be taken elsewhere
   //cout << fHits->GetEntriesFast() << endl;
-  Int_t layMax = ((MpdKalmanHit*)fKHits->Last())->GetLayer(); // min. layer
+  //Int_t layMax = ((MpdKalmanHit*)fKHits->Last())->GetLayer(); // min. layer
   MpdKalmanHit *hitOK = 0x0;
   MpdKalmanTrack::TrackDir trackDir = track->GetDirection();
   //Int_t layBeg = layMax, layEnd = -1, dLay = -1, layOK = -1;
-  Int_t layEnd = -1, dLay = -1, layOK = -1;
+  Int_t layEnd = -1, dLay = -1;//, layOK = -1;
   if (track->GetPosNew() < 0) layEnd = fgkNlays2;
   if (trackDir == MpdKalmanTrack::kOutward) {
     dLay = 1;
@@ -1312,7 +1312,7 @@ Int_t MpdEctTrackFinderCpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
       }
       FairGeoVector vec(track->GetParamNew(0)*10,track->GetParamNew(1)*10,track->GetPosNew()*10); // mm
       //cout << vec.getX() << " " << vec.getY() << " " << vec.getZ() << endl;
-      Int_t iTube1 = 0, iter = 0, idTubes = 0, iTubeOk = 0;
+      Int_t iTube1 = 0, iter = 0, idTubes = 0;//, iTubeOk = 0;
       Int_t iTube = Int_t (TMath::ATan2 (vec.getY(),vec.getX()) / TMath::TwoPi() * fNofTubes);
       if (iTube < 0) iTube += fNofTubes;
       iTube = iTube % fNofTubes;
@@ -1336,9 +1336,9 @@ Int_t MpdEctTrackFinderCpc::RunKalmanFilter(MpdEctKalmanTrack *track, Int_t layB
 	iTube1 = iTube1 % fNofTubes;
 	vecLoc1 = fTransf[layM1][iTube1]->transTo(vec);
 	dyMin = TMath::Abs(vecLoc1.getY());
-	iTubeOk = iTube1;
+	//iTubeOk = iTube1;
 	//cout << vecLoc1.getX() << " " << vecLoc1.getY() << " " << vecLoc1.getZ() << " " << iTubeOk << " " << dyMin << " " << iter << endl;
-	if (dyMin <= frMinMax[2] || iter && TMath::Abs(idTubes) < 2 && TMath::Abs(dyMin/dy) < 0.51) break;
+	if (dyMin <= frMinMax[2] || (iter && TMath::Abs(idTubes) < 2 && TMath::Abs(dyMin/dy) < 0.51)) break;
 	iTube = iTube1;
 	vecLoc = vecLoc1;
 	++iter;
@@ -1395,6 +1395,7 @@ Double_t MpdEctTrackFinderCpc::Proxim(MpdKalmanTrack *track, const MpdKalmanHit 
   Double_t phi0 = track->GetParamNew(0) / track->GetPosNew();
   return hit->GetR() * MpdKalmanFilter::Instance()->Proxim(phi0, hitPhi);
   */
+  return 0;
 }
 
 //__________________________________________________________________________
@@ -1732,7 +1733,7 @@ void MpdEctTrackFinderCpc::MatchTpc()
 {
   /// Match ETOF-ECT track with tracks from TPC.
 
-  Int_t nTpc = fTpcTracks->GetEntriesFast(), nMatch = 0;
+  Int_t nTpc = fTpcTracks->GetEntriesFast();//, nMatch = 0;
   map<Int_t,pair<Double_t,Double_t> > tpcM, ectM;
   set<Int_t> tpcEctS; 
 
@@ -2064,7 +2065,7 @@ void MpdEctTrackFinderCpc::GoToBeamLine()
       track->SetWeight(*cov);
     }
     if (!ok) continue;
-    TMatrixDSym *cov = track->Weight2Cov();
+    //TMatrixDSym *cov = track->Weight2Cov();
 
     // Update track
     track->SetParam(*track->GetParamNew());
@@ -2107,12 +2108,12 @@ Double_t MpdEctTrackFinderCpc::CorrectForLoss(Double_t pt, Double_t the, Int_t i
 
   //return pt; ///
   const Int_t nDim = 13;
-  const Double_t mom[nDim]={0.075,0.100,0.200,0.300,0.400,0.500,0.700,0.900,
-			    1.200,1.500,2.000,2.500,3.500};
+  //const Double_t mom[nDim]={0.075,0.100,0.200,0.300,0.400,0.500,0.700,0.900,
+  //	    1.200,1.500,2.000,2.500,3.500};
   const Double_t tkin[nDim]={0.019,0.032,0.104,0.191,0.284,0.380,0.574,0.771,
 			     1.069,1.367,1.865,2.364,3.363};
-  const Double_t dedxp[nDim]={3.125,1.950,0.975,0.800,0.800,0.750,0.750,0.750,
-			      0.750,0.750,0.750,0.775,0.775}; // peak
+  //const Double_t dedxp[nDim]={3.125,1.950,0.975,0.800,0.800,0.750,0.750,0.750,
+	//		      0.750,0.750,0.750,0.775,0.775}; // peak
   const Double_t dedxm[nDim]={3.195,2.085,1.100,0.952,0.918,0.898,0.898,0.890,
 			      0.887,0.886,0.901,0.904,0.913}; // mean
   const Double_t piMass = 0.13957, eMass = 0.00051;

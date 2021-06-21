@@ -32,8 +32,8 @@ using std::endl;
 MpdVertexZfinder::MpdVertexZfinder(const char *name, Int_t iVerbose)
   :FairTask(name, iVerbose)
 {
-  fKHits = NULL, fhLays = NULL;
-  fhZ = NULL, fUnc = NULL;
+  fKHits = nullptr, fhLays = nullptr;
+  fhZ = nullptr, fUnc = nullptr;
 }
 
 
@@ -123,7 +123,7 @@ Double_t MpdVertexZfinder::FindZ(const Int_t *layPointers, Int_t &flag)
 {
   /// Evaluate vertex Z
 
-  Int_t layMax0 = ((MpdKalmanHit*)fKHits->First())->GetLayer();
+  //Int_t layMax0 = ((MpdKalmanHit*)fKHits->First())->GetLayer();
   Int_t modular = 0;
   if (((MpdKalmanHit*)fKHits->First())->GetType() == MpdKalmanHit::kFixedP) modular = 1;
   //const TpcPadPlane *padPlane = TpcPadPlane::Instance();
@@ -132,7 +132,7 @@ Double_t MpdVertexZfinder::FindZ(const Int_t *layPointers, Int_t &flag)
   // Estimate Z-position of vertex
   // Loop over layers
   //Int_t layBeg = layMax0, layEnd = layBeg - 2, iDir = -1, dLays = 6; //10;
-  Int_t layBeg = layBeg = ((MpdKalmanHit*)fKHits->Last())->GetLayer(), layEnd = layBeg + 2;
+  Int_t layBeg = ((MpdKalmanHit*)fKHits->Last())->GetLayer(), layEnd = layBeg + 2;
   Int_t iDir = 1, dLays = 5, isec = 0, isec1 = 0;
   //Int_t layMax = layMax0, dLays = 6; //10;
   TVector3 pos1, pos2, posLoc;
@@ -201,7 +201,7 @@ Double_t MpdVertexZfinder::FindZ(const Int_t *layPointers, Int_t &flag)
   Double_t zFit = fUnc->GetParameter(1);
   Double_t zVert = (TMath::Abs(z-zFit) > 2.0) ? z : zFit;
   // Set quality flag
-  if (max < 6 || max < 10 && TMath::Abs(z-zFit) > 1) { flag = -1; zVert = 0.0; }
+  if (max < 6 || (max < 10 && TMath::Abs(z-zFit) > 1)) { flag = -1; zVert = 0.0; }
   else flag = 0;
   cout << " MpdVertexZfinder::FindZ: " << z << " " << zFit << " " << zVert << " " << max << " " << flag << endl;
   /*

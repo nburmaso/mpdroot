@@ -176,14 +176,14 @@ Double_t MpdKfV0Fitter::FindVertex(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2, TVe
   TMatrixD c(3,3), cov(3,3), xk0(3,1), xk(3,1), ck0(5,1);
   TMatrixD a(5,3), b(5,3);
   MpdKalmanHit hit;
-  Double_t chi2 = 0, chi2o = 0;
+  Double_t chi2 = 0;//, chi2o = 0;
 
   xk.SetMatrixArray(fVtx);
   c(0,0) = c(1,1) = c(2,2) = 1;
 
   for (Int_t ipass = 0; ipass < nPass; ++ipass) {
 
-    chi2o = chi2;
+    //chi2o = chi2;
     chi2 = 0.;
     if (ipass == 0) cov = TMatrixD(TMatrixD::kInverted,c);
 
@@ -435,7 +435,7 @@ void MpdKfV0Fitter::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track,
 {
   /// Compute matrices of derivatives w.r.t. vertex coordinates and track momentum
  
-  Double_t vert0[3], zero[3] = {0}, *vert = xk0.GetMatrixArray();
+  Double_t vert0[3],  *vert = xk0.GetMatrixArray(); //zero[3] = {0},
   for (Int_t i = 0; i < 3; ++i) vert0[i] = vert[i];
 
   MpdKalmanTrack trackk = *track;
@@ -560,7 +560,7 @@ void MpdKfV0Fitter::Proxim(const MpdKalmanTrack &track0, MpdKalmanTrack &track)
     exit(0);
   }
 
-  Double_t tmp = track.GetParamNew(0);
+  //Double_t tmp = track.GetParamNew(0);
   Double_t phi0 = track0.GetParamNew(0) / track0.GetPosNew();
   Double_t phi = track.GetParamNew(0) / track.GetPosNew();
   phi = MpdKalmanFilter::Instance()->Proxim(phi0,phi);

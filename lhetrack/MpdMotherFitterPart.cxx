@@ -301,7 +301,7 @@ void MpdMotherFitterPart::EvalVertex(vector<MpdParticle*> vDaught)
     Double_t cur = TMath::Abs (vDaught[i]->GetMeas(4));
     if (vDaught[i]->GetCharge() == 0) cur = numeric_limits<double>::epsilon();
     Int_t h = (Int_t) TMath::Sign(1.1,vDaught[i]->GetMeas(4));
-    Double_t dca = vDaught[i]->Dca();
+    //Double_t dca = vDaught[i]->Dca();
     Double_t phase = vDaught[i]->GetMeas(2) - TMath::PiOver2() * h;
     //Double_t x = dca * TMath::Sin(vDaught[i]->Phi());
     //Double_t y = -dca * TMath::Cos(vDaught[i]->Phi());
@@ -368,7 +368,7 @@ Double_t MpdMotherFitterPart::FindVertex(vector<MpdParticle*> vDaught, TVector3 
   TMatrixD c(3,3), cov(3,3), xk0(3,1), xk(3,1), ck0(5,1);
   TMatrixD a(5,3), b(5,3);
   MpdKalmanHit hit;
-  Double_t chi2 = 0, chi2o = 0;
+  Double_t chi2 = 0;//, chi2o = 0;
 
   xk.SetMatrixArray(fVtx);
   //xk += 1.0; // test
@@ -376,7 +376,7 @@ Double_t MpdMotherFitterPart::FindVertex(vector<MpdParticle*> vDaught, TVector3 
 
   for (Int_t ipass = 0; ipass < nPass; ++ipass) {
 
-    chi2o = chi2;
+    //chi2o = chi2;
     chi2 = 0.;
     //c.Zero(); // new 05.06.17
     c(0,0) = c(1,1) = c(2,2) = 100; // new 05.06.17
@@ -780,7 +780,7 @@ void MpdMotherFitterPart::Proxim(const MpdKalmanTrack &track0, MpdKalmanTrack &t
     exit(0);
   }
 
-  Double_t tmp = track.GetParamNew(0);
+  //Double_t tmp = track.GetParamNew(0);
   Double_t phi0 = track0.GetParamNew(0) / track0.GetPosNew();
   Double_t phi = track.GetParamNew(0) / track.GetPosNew();
   phi = MpdKalmanFilter::Instance()->Proxim(phi0,phi);

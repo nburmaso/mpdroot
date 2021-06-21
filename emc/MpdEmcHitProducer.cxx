@@ -88,7 +88,7 @@ void MpdEmcHitProducer::Exec(Option_t* opt) {
     if (!fDigiArray) Fatal("MpdEmcHitProducer::Exec)", "No array of digits");
     fDigiArray->Delete();
 
-    for (UInt_t iPnt = 0; iPnt < fPointArray->GetEntriesFast(); ++iPnt) {
+    for (UInt_t iPnt = 0; iPnt < (UInt_t) fPointArray->GetEntriesFast(); ++iPnt) {
         FairMCPoint* pnt = (FairMCPoint*) fPointArray->At(iPnt);
         Int_t trId = pnt->GetTrackID();
         MpdMCTrack* tr = (MpdMCTrack*) fMcTrackArray->At(trId);
@@ -116,7 +116,7 @@ void MpdEmcHitProducer::Exec(Option_t* opt) {
         hit->SetPhiCenter(CalcPhiCenter(sec, supMod, mod));
     }
     
-    for (UInt_t iHit = 0; iHit < fDigiArray->GetEntriesFast(); ++iHit) {
+    for (UInt_t iHit = 0; iHit < (UInt_t) fDigiArray->GetEntriesFast(); ++iHit) {
         MpdEmcHit* hit = (MpdEmcHit*) fDigiArray->At(iHit);
         if (hit->GetNumTracks() > 1) {
             hit->SetPdg(0);
@@ -146,7 +146,7 @@ UInt_t MpdEmcHitProducer::GetSupModId(Float_t x, Float_t y, Float_t z, UInt_t se
         sec -= fGeoPar->GetNsec();
 
     Float_t secStartAng = sec * nDegreesInOneSector;
-    Float_t secFinishAng = secStartAng + nDegreesInOneSector;
+    //Float_t secFinishAng = secStartAng + nDegreesInOneSector;
     Float_t localAng = ang - secStartAng;
 
     return UInt_t(localAng * fGeoPar->GetNsupMod() / nDegreesInOneSector);
@@ -193,10 +193,10 @@ MpdEmcHit* MpdEmcHitProducer::SearchHit(UInt_t sec, UInt_t supMod, UInt_t row, U
     MpdEmcHit* foundHit = NULL;
     for (Int_t i = 0; i < fDigiArray->GetEntriesFast(); ++i) {
         MpdEmcHit* hit = (MpdEmcHit*) fDigiArray->At(i);
-        if (hit->GetSec() != sec) continue;
-        if (hit->GetSupMod() != supMod) continue;
-        if (hit->GetRow() != row) continue;
-        if (hit->GetMod() != mod) continue;
+        if ((UInt_t)hit->GetSec() != sec) continue;
+        if ((UInt_t)hit->GetSupMod() != supMod) continue;
+        if ((UInt_t)hit->GetRow() != row) continue;
+        if ((UInt_t)hit->GetMod() != mod) continue;
         foundHit = hit;
     }
     return foundHit;

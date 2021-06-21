@@ -62,13 +62,13 @@ Bool_t MpdEmcDigitKI::CanAdd(MpdEmcPointKI* point) const
 {
   // Check, if point can be added (hits from the same Tower)
 
-  return fDetId == point->GetDetectorID();
+  return fDetId == (UInt_t) point->GetDetectorID();
 }
 
 void MpdEmcDigitKI::AddPoint(MpdEmcPointKI* point)
 {
   // Adds point (add energy, change time if necessary, add primary)
-  if (fDetId != point->GetDetectorID()) {
+  if (fDetId != (UInt_t) point->GetDetectorID()) {
     return;
   }
   if (point->GetEnergyLoss() == 0.) { // do nothing

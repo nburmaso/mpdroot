@@ -65,7 +65,7 @@ class MpdWebScreenshots : public FairTask
     static void sendHeader(const char* Status_code, char* Content_Type, int TotalSize, int socket);
     static void sendHTML(char* statusCode, char* contentType, char* content, int size, int socket);
     static void sendFile(FILE* fp, int connecting_socket);
-    static int scan(char* input, char* output, int start, int max);
+    static int scan(char* input, char* output, unsigned int start, int max);
     static int checkMime(char* extension, char* mime_type);
     static int getHttpVersion(char* input, char* output);
     static int GetExtension(char* input, char* output, int max);

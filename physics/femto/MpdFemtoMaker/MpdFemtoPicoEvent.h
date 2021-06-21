@@ -25,7 +25,7 @@ class MpdFemtoPicoEvent {
   /// Copy constructor
   MpdFemtoPicoEvent& operator=(const MpdFemtoPicoEvent& copy);
   /// Default destructor
-  ~MpdFemtoPicoEvent();
+  virtual ~MpdFemtoPicoEvent();
 
   //
   // Getters

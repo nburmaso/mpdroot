@@ -45,12 +45,13 @@ struct less_by_pointer
 ClassImp(MpdEtofMatching)
 //------------------------------------------------------------------------------------------------------------------------
 MpdEtofMatching::MpdEtofMatching(const char *name, Int_t verbose, Bool_t test, const char *flnm)
-  : FairTask(name, verbose), fDoTest(test), fUseMCData(false), fMode(kIntervalTree), pKF(nullptr), pRandom(new TRandom2),
-  fThreshR(15.), fThreshTheta(1.5), fNSmeared(20), fTofRmax(140.), fTofZpos(295.2), // 250.2
-  aMcPoints(nullptr), aMcTracks(nullptr), aTofHits(nullptr), aKFectTracks(nullptr), aTofMatchings(nullptr)
+  : FairTask(name, verbose),
+  aMcPoints(nullptr), aMcTracks(nullptr), aTofHits(nullptr), aKFectTracks(nullptr), aTofMatchings(nullptr), 
+  fMode(kIntervalTree), fDoTest(test), fUseMCData(false),   pRandom(new TRandom2),
+  fNSmeared(20),  fTofZpos(295.2), fTofRmax(140.), fThreshR(15.), fThreshTheta(1.5),  //Z- 250.0
+  pKF(nullptr)
 {
 	pMatchingQA = fDoTest ? new MpdTofMatchingQA(flnm, true) : nullptr;
-
 	//pMF = new LMatchingFilter(pMatchingQA, fVerbose);
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -306,5 +307,3 @@ bool		MpdEtofMatching::EstTrackOnPlane(const MpdEctKalmanTrack *tr, Double_t Zet
 return true;
 }
 //------------------------------------------------------------------------------------------------------------------------
-
-

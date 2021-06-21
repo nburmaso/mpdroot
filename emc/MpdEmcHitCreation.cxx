@@ -100,8 +100,8 @@ void MpdEmcHitCreation::Exec(Option_t* opt) {
     if (!fDigiArray) Fatal("MpdEmcHitCreation::Exec)", "No array of digits");
     fDigiArray->Delete();
 
-    Double_t phiRow, rhoMod, zMod, thetaMod; 
-    for (UInt_t iPnt = 0; iPnt < fPointArray->GetEntriesFast(); ++iPnt) {
+    //Double_t phiRow, rhoMod, zMod, thetaMod; 
+    for (UInt_t iPnt = 0; iPnt < (UInt_t) fPointArray->GetEntriesFast(); ++iPnt) {
 
         FairMCPoint* pnt = (FairMCPoint*) fPointArray->At(iPnt);
         Int_t trId = pnt->GetTrackID();
@@ -115,8 +115,8 @@ void MpdEmcHitCreation::Exec(Option_t* opt) {
 
 // Path to point 
 
-        TGeoNode* currentNode = gGeoManager->FindNode(x,y,z);
-        TString path(gGeoManager->GetPath());
+        //TGeoNode* currentNode = gGeoManager->FindNode(x,y,z);
+        //TString path(gGeoManager->GetPath());
 
 // Get sector number of module
 
@@ -240,11 +240,11 @@ Int_t MpdEmcHitCreation::GetTowerId(Double_t x, Double_t y, Double_t z, Int_t iR
     Double_t ang = ATan2(y, x);
     if (ang < 0) ang += TwoPi();
 
-    Double_t rhoMod0, zMod0, thetaPoint, lenTotal, thetaRad, boxRho; 
+    Double_t rhoMod0, zMod0, lenTotal, thetaRad, boxRho; //thetaPoint, 
     Double_t dPolTheta = ATan2(0.5*(boxSizeHigh - boxSizeLow),boxLength)*RadToDeg();
 
-    Int_t iRowStart, iRowNext = iRow*boxStep, iRowNum = iRow/2;  
-    if ( Odd(iRow) ) {iRowNext = (iRow-1)*boxStep + 1; iRowNum = (iRow - 1)/2.;}
+    Int_t iRowStart, iRowNext = iRow*boxStep;//, iRowNum = iRow/2;  
+    if ( Odd(iRow) ) {iRowNext = (iRow-1)*boxStep + 1; /*iRowNum = (iRow - 1)/2.;*/}
     iRowStart = iRowNext; 
 
     for (Int_t iBox = 0; iBox < boxStep; iBox++) {
@@ -280,9 +280,9 @@ MpdEmcHit* MpdEmcHitCreation::SearchHit(UInt_t sec, UInt_t row, UInt_t mod) {
     MpdEmcHit* foundHit = NULL;
     for (Int_t i = 0; i < fDigiArray->GetEntriesFast(); ++i) {
         MpdEmcHit* hit = (MpdEmcHit*) fDigiArray->At(i);
-        if (hit->GetSec() != sec) continue;
-        if (hit->GetRow() != row) continue;
-        if (hit->GetMod() != mod) continue;
+        if ((UInt_t)hit->GetSec() != sec) continue;
+        if ((UInt_t)hit->GetRow() != row) continue;
+        if ((UInt_t)hit->GetMod() != mod) continue;
         foundHit = hit;
     }
     return foundHit;

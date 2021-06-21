@@ -31,6 +31,8 @@ GNEXTZCALLBACK gnextz_callback = NULL;
 /*             8      x**2+y**2-(z-A1)**2/B2=0              2   |*/
 /*             9      x**2/A2+y**2/B2+z**2/C2-1=0           3   |*/
 /*--------------------------------------------------------------+*/
+const struct SGeoBody defaultBody = { -1, {}};
+            
 struct {
     int count; //count of types of bodies
     int countOfParameters[9];
@@ -318,7 +320,7 @@ struct SGeoBody createWED(double *parameters) {
     int i;
     for (i = 0; i < 2; i++) {
         if (testOrtoganality(1, &parameters[3], &parameters[3 * (i + 2)])) {
-            return;
+            return defaultBody;
         }
     }
     double x = parameters[0] + 0.25 * (parameters[3] + parameters[6] + parameters[9]);
@@ -383,7 +385,7 @@ struct SGeoBody createARBWithPositions(double *parameters, int *positions) {
         double checks = gssign(4, &body.parameters[i * 6 + 1], parameters[ip4], parameters[ip4 + 1], parameters[ip4 + 2]);
         if (fabs(checks) >= DIGORT) { //In gemca was DIGMIN
             printf("ARB: EXIT from GEOINI: Invalid coordinates ! (plane %i, abs=%f)\n", i, checks);
-            return;
+            return defaultBody;
         }
     }
     return body;
@@ -405,11 +407,11 @@ struct SGeoBody createBOX(double *parameters) {
     int i;
     for (i = 0; i < 2; i++) {
         if (testOrtoganality(3, &parameters[3], &parameters[3 * (i + 2)])) {
-            return;
+            return defaultBody;
         }
     }
     if (testOrtoganality(3, &parameters[6], &parameters[9])) {
-        return;
+        return defaultBody;
     }
     double x = parameters[0] + 0.5 * (parameters[3] + parameters[6] + parameters[9]);
     double y = parameters[1] + 0.5 * (parameters[4] + parameters[7] + parameters[10]);
@@ -440,7 +442,7 @@ struct SGeoBody createRPP(double *parameters) {
         printf("%s: X1 must be less than X2", ShieldBodies.namesOfBodies[4]);
         printf("%s: Y1 must be less than Y2", ShieldBodies.namesOfBodies[4]);
         printf("%s: Z1 must be less than Z2", ShieldBodies.namesOfBodies[4]);
-        return;
+        return defaultBody;
     }
     int i;
     for (i = 0; i < 3; i++) {
@@ -485,7 +487,7 @@ struct SGeoBody createREC(double *parameters) {
     int i;
     for (i = 0; i < 2; i++) {
         if (testOrtoganality(6, &parameters[3], &parameters[3 * (i + 2)])) {
-            return;
+            return defaultBody;
         }
     }
     gcosax(parameters[0], parameters[1], parameters[2],
@@ -515,7 +517,7 @@ struct SGeoBody createTRC(double *parameters) {
     double a1, b1, c1, a2, b2, c2;
     if (parameters[7] >= parameters[6]) {
         printf("%s: R2 must be less than R1", ShieldBodies.namesOfBodies[7]);
-        return;
+        return defaultBody;
     }
     gvec90_2(parameters[3], parameters[4], parameters[5],
              &a1, &b1, &c1, &a2, &b2, &c2);
@@ -546,11 +548,11 @@ struct SGeoBody createELL(double *parameters) {
     int i;
     for (i = 0; i < 2; i++) {
         if (testOrtoganality(7, &parameters[3], &parameters[3 * (i + 2)])) {
-            return;
+            return defaultBody;
         }
     }
     if (testOrtoganality(7, &parameters[6], &parameters[9])) {
-        return;
+        return defaultBody;
     }
     for (i = 0; i < 3; i++) {
         gcosax(parameters[0], parameters[1], parameters[2],
@@ -592,7 +594,6 @@ struct SGeoBody createBody(int type, double *parameters) {
             break;
         default:
             printf("Error in number of body");
-            struct SGeoBody defaultBody = { -1, {}};
             return defaultBody;
             break;
     }
@@ -631,7 +632,7 @@ int shield_add_body(int type, double *parameters) {
     }
     if(SGeometry.countBodies>=1000){ //Parameter MAXB at fortran code
         printf("shield_init_geometry ERROR: Count of bodies large then array for bodies.\n");
-        return;
+        return -1;
     }
     SGeometry.bodies[SGeometry.countBodies] = body;
     return SGeometry.countBodies++; //returned SGeometry.countBodies before increment

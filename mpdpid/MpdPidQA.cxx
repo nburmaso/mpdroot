@@ -24,7 +24,7 @@ void MpdPidQA::Init(TString Tracking, TString Particles)
 {
 	cout << "MpdPidQA::Init().." << endl;
 	Double_t XMIN[nQAHists][nPIDparticles], XMAX[nQAHists][nPIDparticles]; TString histName;
-	const Int_t nbins = 200, nbins2 = 100;
+	const Int_t nbins = 200;//, nbins2 = 100;
 	for (Int_t i = 0; i < nQAHists; i++) { for (Int_t j = 0; j < nPIDparticles; j++) { XMIN[i][j] = -1.; XMAX[i][j] = -1.; } }
 	TString ECHistNames[4] = { "All", "Id", "IdRight", "IdWrong" };
 	nSigPart = Particles;
@@ -400,7 +400,7 @@ void MpdPidQA::FillEffDenominator(Double_t p, Int_t pdg)
 
 void MpdPidQA::GetDedxQA(TString dir)
 {
-	Double_t XFUNCMIN, XFUNCMAX, mom;
+	Double_t XFUNCMIN, XFUNCMAX, mom{0.};
 	TString FuncFormula;
 	Int_t ibegloc, iendloc, nQAHistsloc;
 	map <Int_t,TGraphAsymmErrors*> graphs;
@@ -469,8 +469,8 @@ void MpdPidQA::GetDedxQA(TString dir)
 
 void MpdPidQA::Getm2QA(TString dir)
 {
-	Int_t nbinsx = 200, minbin, maxbin;
-	Double_t minbinborder, maxbinborder, MINGAUSX, MAXGAUSX;
+	Int_t nbinsx = 200, minbin{0}, maxbin{0};
+	Double_t minbinborder{0.}, maxbinborder{0.}, MINGAUSX{0.}, MAXGAUSX{0.};
 	TString mergestr, hname;
 	map <Int_t,TH1D*> m2Sigmas;
 	
@@ -713,7 +713,7 @@ void MpdPidQA::Savem2Hists(map <Int_t,TH1D*> m2Sigmas, TString dir)
 		it->second->GetXaxis()->SetTitle("Momentum, GeV/c");
 		it->second->GetYaxis()->SetTitle("#sigma, (GeV/c^{2})^{2}");
 		it->second->Draw("P"); 
-		for(int i = 0; i < m2Funcs.size(); i++) { m2Funcs[i]->Draw("same"); } m2Funcs.clear();
+		for(UInt_t i = 0; i < m2Funcs.size(); i++) { m2Funcs[i]->Draw("same"); } m2Funcs.clear();
 		SAVENAME = dir + "m2QA_" + PARTNAME + ".C";
 		can->SaveAs(SAVENAME);
 		delete can;

@@ -32,16 +32,16 @@ MpdEventManagerEditor::MpdEventManagerEditor(const TGWindow* p, Int_t width, Int
   : TGedFrame(p, width, height, options | kVerticalFrame, back),
    fObject(0),
    fEventManager(MpdEventManager::Instance()),
-   isMagnetFound(false),
-   fCurrentEvent(0),
+   fEventTime(nullptr),
    fCurrentPDG(0),
    fVizPri(0),
    fMinEnergy(0),
    fMaxEnergy(0),
-   fEventTime(NULL),
+   isMagnetFound(false),
+   iThreadState(0),
    iEventCount(-1),
    isStreamSource(false),
-   iThreadState(0)
+   fCurrentEvent(0)
 {
     fEventManager->SetEventEditor(this);
     Init();
@@ -60,7 +60,7 @@ void MpdEventManagerEditor::Init()
     // display file name (or stream name if no input file)
     TString InSource = "File: ";
     TFile* pChainFile = chain->GetFile();
-    if (pChainFile == NULL)
+    if (pChainFile == nullptr)
     {
         InSource = "Data Stream";
         isStreamSource = true;
@@ -358,7 +358,7 @@ void MpdEventManagerEditor::ShowMCPoints(Bool_t is_show)
     */
 
     TEveElement* points = fEventManager->FindChild("MC points");
-    if (points == NULL)
+    if (points == nullptr)
     {
         cout<<"There is no information about MC points"<<endl;
         fShowMCPoints->SetDisabledAndSelected(kFALSE);
@@ -394,7 +394,7 @@ bool MpdEventManagerEditor::RedrawZDC(bool isFull, bool isRedraw)
         for (; i < 68; i++)
         {
             TGeoNode* child = curVolume->FindNode(Form("VMDL_%d", i+1));
-            if (child == NULL)
+            if (child == nullptr)
                 continue;
             //cout<<"Node: "<<child->GetName()<<". Number is equal "<<i<<endl;
 
@@ -416,7 +416,7 @@ bool MpdEventManagerEditor::RedrawZDC(bool isFull, bool isRedraw)
         for (; i < 104; i++)
         {
             TGeoNode* child = curVolume->FindNode(Form("UMDL_%d", i+1-68));
-            if (child == NULL)
+            if (child == nullptr)
                 continue;
             //cout<<"Node: "<<child->GetName()<<". Number is equal "<<i<<endl;
 
@@ -451,7 +451,7 @@ bool MpdEventManagerEditor::RedrawZDC(bool isFull, bool isRedraw)
 void MpdEventManagerEditor::ShowMCTracks(Bool_t is_show)
 {
     TEveElement* tracks = fEventManager->FindChild("MC tracks");
-    if (tracks == NULL)
+    if (tracks == nullptr)
     {
         cout<<"There is no information about MC tracks"<<endl;
         fShowMCTracks->SetDisabledAndSelected(kFALSE);
@@ -466,7 +466,7 @@ void MpdEventManagerEditor::ShowMCTracks(Bool_t is_show)
 void MpdEventManagerEditor::ShowRecoPoints(Bool_t is_show)
 {
     TEveElement* points = fEventManager->FindChild("Reco points");
-    if (points == NULL)
+    if (points == nullptr)
     {
         cout<<"There is no information about reconstructed points"<<endl;
         fShowRecoPoints->SetDisabledAndSelected(kFALSE);
@@ -486,7 +486,7 @@ void MpdEventManagerEditor::ShowRecoPoints(Bool_t is_show)
 void MpdEventManagerEditor::ShowRecoTracks(Bool_t is_show)
 {
     TEveElement* tracks = fEventManager->FindChild("Reco tracks");
-    if (tracks == NULL)
+    if (tracks == nullptr)
     {
         cout<<"There is no information about reconstructed tracks"<<endl;
         fShowRecoTracks->SetDisabledAndSelected(kFALSE);
@@ -682,6 +682,7 @@ void* RunOnlineDisplay(void* ptr)
 
     fEditor->UnblockUI();
     fEditor->iThreadState = 0;
+    return nullptr;
 }
 
 ClassImp(MpdEventManagerEditor);

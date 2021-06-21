@@ -12,7 +12,6 @@
 
 #include "MpdConvPi0.h"
 #include "TFile.h"
-
 ClassImp(MpdConvPi0)
 
 
@@ -458,13 +457,13 @@ void MpdConvPi0::processHistograms(){
   for(auto &v : mV0){
     mMixV0[mixBin].emplace_back(v) ;
   }
-  while(mMixV0[mixBin].size()>mMaxMixSize){
+  while(mMixV0[mixBin].size()>(UInt_t)mMaxMixSize){
    	mMixV0[mixBin].pop_front();
   }
   for(auto &v : mClusters){
     mMixClu[mCenBin].emplace_back(v) ;
   }
-  while(mMixClu[mixBin].size()>mMaxMixSize){
+  while(mMixClu[mixBin].size()>(UInt_t)mMaxMixSize){
    	mMixClu[mixBin].pop_front();
   }
 
@@ -593,7 +592,7 @@ bool MpdConvPi0::createSelectV0(MpdTrack *tr1, MpdTpcKalmanTrack *ktr1, MpdTrack
 
   TVector3 v0(gamEE.Getx()(0,0), gamEE.Getx()(1,0), gamEE.Getx()(2,0));
   v0 -= mPrimaryVertex;
-  float decay = v0.Mag();
+  //float decay = v0.Mag();
 
   mhConvMap->Fill(gamEE.Getx()(0,0), gamEE.Getx()(1,0), gamEE.Getx()(2,0));
   if(isTrue){
@@ -606,7 +605,7 @@ bool MpdConvPi0::createSelectV0(MpdTrack *tr1, MpdTpcKalmanTrack *ktr1, MpdTrack
   }
   mhCutEff->Fill(13.,pt) ; 
 
-  float disth, angle;
+  float angle; // disth,
   angle = v0.Angle(gamEE.Momentum3());
   mhAlpha->Fill(angle,pt) ;
   if(isTrue){ //same for true electrontracks
@@ -755,8 +754,8 @@ bool MpdConvPi0::TestHybrid(MpdPhoton &c, MpdPhoton &v0) const {
   double yEMC = clu->GetY()  ;
   double zEMC = clu->GetZ()  ;
 
-  int itr1 = v0.getTr1() ;
-  int itr2 = v0.getTr2() ;
+  //int itr1 = v0.getTr1() ;
+  //int itr2 = v0.getTr2() ;
 
   MpdTpcKalmanTrack *tr1 = (MpdTpcKalmanTrack*) mKalmanTracks->UncheckedAt(v0.getTr1());
   MpdTpcKalmanTrack tr1tmp(*tr1);
@@ -1028,6 +1027,6 @@ float MpdConvPi0::tofCut(float time,float E) const {
 
 float MpdConvPi0::Nonlinearity(float oldE) const {
  
-  float x = TMath::Min(oldE,2.5) ;
+  float x = TMath::Min(oldE,2.5f) ;
   return 2.9411765*oldE/(0.97630219 + 7.194380e-002*x - 4.491255e-002*x*x +8.362250e-003*x*x*x);
 }

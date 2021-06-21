@@ -25,10 +25,11 @@ using namespace std;
 // -----   Default constructor   -------------------------------------------
 MpdEmcTowerDraw::MpdEmcTowerDraw()
   : FairTask("MpdEmcTowerDraw", 0),
+    fDigitList(nullptr),
+    fEventManager(nullptr),
+    fq(nullptr),
     fEmcMinEnergyThreshold(0),
     fVerbose(0),
-    fDigitList(NULL),
-    fEventManager(NULL),
     fResetRequiredFlag(kFALSE),
     fRMinEmc(0),
     fRMaxEmc(0),
@@ -38,19 +39,17 @@ MpdEmcTowerDraw::MpdEmcTowerDraw()
     fNTubes(0),
     fNSectors(0),
     fN3Dbins(0),
-    fEneArr(NULL),
-    fGeoPar(new MpdEmcGeoPar),
-    fq(NULL)
-{
-}
+    fEneArr(nullptr),
+    fGeoPar(new MpdEmcGeoPar){}
 
 // -----   Standard constructor   ------------------------------------------
 MpdEmcTowerDraw::MpdEmcTowerDraw(const char* name, Double_t emcMinEnergyThreshold, Int_t verbose)
   : FairTask(name, verbose),
+    fDigitList(nullptr),
+    fEventManager(nullptr),
+    fq(nullptr),
     fEmcMinEnergyThreshold(emcMinEnergyThreshold),
-    fVerbose(verbose),
-    fDigitList(NULL),
-    fEventManager(NULL),
+    fVerbose(0),
     fResetRequiredFlag(kFALSE),
     fRMinEmc(0),
     fRMaxEmc(0),
@@ -60,11 +59,8 @@ MpdEmcTowerDraw::MpdEmcTowerDraw(const char* name, Double_t emcMinEnergyThreshol
     fNTubes(0),
     fNSectors(0),
     fN3Dbins(0),
-    fEneArr(NULL),
-    fGeoPar(new MpdEmcGeoPar),
-    fq(NULL)
-{
-}
+    fEneArr(nullptr),
+    fGeoPar(new MpdEmcGeoPar){}
 
 // -------------------------------------------------------------------------
 InitStatus MpdEmcTowerDraw::Init()
@@ -108,7 +104,7 @@ InitStatus MpdEmcTowerDraw::Init()
     if (fVerbose > 0) cout<<"MpdEmcTowerDraw::Init() number of 3d bins = "<<GetN3Dbins()<<endl;
 
     fEneArr = new Double_t[GetN3Dbins()];
-    for (Int_t i = 0; i < GetN3Dbins(); i++)
+    for (UInt_t i = 0; i < GetN3Dbins(); i++)
         SetEneArr(i,0);
     
     fq = 0;
@@ -230,12 +226,12 @@ void MpdEmcTowerDraw::DrawBoxTowers()
         TGeoNode* chHNode = (TGeoNode*) chHArr->UncheckedAt(chH);
         sectorArr = chHNode->GetVolume()->GetNodes();
         TGeoVolume* chHVolumeClone = chHNode->GetVolume()->CloneVolume();
-        for (UInt_t sector = 0; sector < chHNode->GetVolume()->GetNdaughters(); sector++)
+        for (UInt_t sector = 0; sector < (UInt_t) chHNode->GetVolume()->GetNdaughters(); sector++)
         {
             TGeoNode* sectorNode = (TGeoNode*) sectorArr->UncheckedAt(sector);
             tubeArr = sectorNode->GetVolume()->GetNodes();
             TGeoVolume* sectorVolumeClone = sectorNode->GetVolume()->CloneVolume();
-            for (UInt_t tube = 0; tube < sectorNode->GetVolume()->GetNdaughters(); tube++)
+            for (UInt_t tube = 0; tube < (UInt_t) sectorNode->GetVolume()->GetNdaughters(); tube++)
             {
                 TGeoNode* tubeNode = (TGeoNode*) tubeArr->UncheckedAt(tube);
                 if (((TString)tubeNode->GetName()).Contains("St_"))
@@ -246,9 +242,9 @@ void MpdEmcTowerDraw::DrawBoxTowers()
 
                 moduleArr = tubeNode->GetVolume()->GetNodes();  
                 TGeoVolume* tubeVolumeClone = tubeNode->GetVolume()->CloneVolume();
-                for (UInt_t module = 0; module < tubeNode->GetVolume()->GetNdaughters(); module++)
+                for (UInt_t module0 = 0; module0 < (UInt_t) tubeNode->GetVolume()->GetNdaughters(); module0++)
                 {
-                    TGeoNode* moduleNode = (TGeoNode*) moduleArr->UncheckedAt(module);
+                    TGeoNode* moduleNode = (TGeoNode*) moduleArr->UncheckedAt(module0);
                     if (((TString)moduleNode->GetName()).Contains("Pad_"))
                     {
                         moduleNode->SetVisibility(kFALSE);
@@ -257,7 +253,7 @@ void MpdEmcTowerDraw::DrawBoxTowers()
 
                     boxArr = moduleNode->GetVolume()->GetNodes();
                     TGeoVolume* moduleVolumeClone = moduleNode->GetVolume()->CloneVolume();
-                    for (Int_t box = 0; box < moduleNode->GetVolume()->GetNdaughters(); box++)
+                    for (UInt_t box = 0; box < (UInt_t) moduleNode->GetVolume()->GetNdaughters(); box++)
                     {
                         TGeoNode* boxNode = (TGeoNode*) boxArr->UncheckedAt(box);
                         TString curPath = Form("/cave_1/emc1Chamber1_1/%s/%s/%s/%s/%s",
@@ -321,15 +317,15 @@ void MpdEmcTowerDraw::ResetBoxTowers()
     TObjArray *chHArr= emc1ChamberNode->GetVolume()->GetNodes();
 
     TObjArray *boxArr, *moduleArr, *tubeArr, *sectorArr;
-    for (UInt_t chH = 0; chH < emc1ChamberNode->GetVolume()->GetNdaughters(); chH++)
+    for (UInt_t chH = 0; chH < (UInt_t) emc1ChamberNode->GetVolume()->GetNdaughters(); chH++)
     {
         TGeoNode* chHNode = (TGeoNode*) chHArr->UncheckedAt(chH);
         sectorArr = chHNode->GetVolume()->GetNodes();
-        for (UInt_t sector = 0; sector < chHNode->GetVolume()->GetNdaughters(); sector++)
+        for (UInt_t sector = 0; sector < (UInt_t) chHNode->GetVolume()->GetNdaughters(); sector++)
         {
             TGeoNode* sectorNode = (TGeoNode*) sectorArr->UncheckedAt(sector);
             tubeArr = sectorNode->GetVolume()->GetNodes();
-            for (UInt_t tube = 0; tube < sectorNode->GetVolume()->GetNdaughters(); tube++)
+            for (UInt_t tube = 0; tube < (UInt_t) sectorNode->GetVolume()->GetNdaughters(); tube++)
             {
                 TGeoNode* tubeNode = (TGeoNode*) tubeArr->UncheckedAt(tube);
                 if (((TString)tubeNode->GetName()).Contains("St_"))
@@ -339,9 +335,9 @@ void MpdEmcTowerDraw::ResetBoxTowers()
                 }
 
                 moduleArr = tubeNode->GetVolume()->GetNodes();
-                for (UInt_t module = 0; module < tubeNode->GetVolume()->GetNdaughters(); module++)
+                for (UInt_t module0 = 0; module0 < (UInt_t) tubeNode->GetVolume()->GetNdaughters(); module0++)
                 {
-                    TGeoNode* moduleNode = (TGeoNode*) moduleArr->UncheckedAt(module);
+                    TGeoNode* moduleNode = (TGeoNode*) moduleArr->UncheckedAt(module0);
                     if (((TString)moduleNode->GetName()).Contains("Pad_"))
                     {
                         moduleNode->SetVisibility(kTRUE);
@@ -349,7 +345,7 @@ void MpdEmcTowerDraw::ResetBoxTowers()
                     }
 
                     boxArr = moduleNode->GetVolume()->GetNodes();
-                    for (Int_t box = 0; box < moduleNode->GetVolume()->GetNdaughters(); box++)
+                    for (UInt_t box = 0; box < (UInt_t) moduleNode->GetVolume()->GetNdaughters(); box++)
                     {
                         TGeoNode* boxNode = (TGeoNode*) boxArr->UncheckedAt(box);
                         TGeoTrap* trap = (TGeoTrap*) boxNode->GetVolume()->GetShape()->Clone();

@@ -400,8 +400,8 @@ void MpdParticle::FillJinv(TVector3& mom3)
   Double_t pz0 = mom3.Z();
   Double_t p0 = mom3.Mag();
   Double_t pt0 = mom3.Pt();
-  Double_t ph0 = mom3.Phi();
-  Double_t th0 = mom3.Theta();
+  //Double_t ph0 = mom3.Phi();
+  //Double_t th0 = mom3.Theta();
   //Double_t k0 = Theta();
   fJinv = 0.0;
 

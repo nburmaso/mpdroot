@@ -27,27 +27,29 @@ using namespace std;
 // -----   Default constructor   -------------------------------------------
 MpdZdcTowerDraw::MpdZdcTowerDraw()
   : FairTask("MpdZdcTowerDraw", 0),
+    fDigitList(nullptr),
+    fEventManager(nullptr),
+    fq(nullptr),
     fVerbose(0),
     fShadow(kFALSE),
     fResetRequiredFlag(kFALSE),
-    fDigitList(NULL),
-    fEventManager(NULL),
-    fEneArr(NULL),
-    fZdcMinEnergyThreshold(0),
-    fq(NULL)
+    fEneArr(nullptr),
+    fZdcMinEnergyThreshold(0)
+
 {
 }
 
 // -----   Standard constructor   ------------------------------------------
 MpdZdcTowerDraw::MpdZdcTowerDraw(const char* name, Double_t zdcMinEnergyThreshold, Bool_t shadow, Int_t verbose)
   : FairTask(name, verbose),
+    fDigitList(nullptr),
+    fEventManager(nullptr),
+    fq(nullptr),
     fVerbose(verbose),
     fShadow(shadow),
     fResetRequiredFlag(kFALSE),
-    fDigitList(NULL),
-    fEventManager(NULL),
-    fZdcMinEnergyThreshold(zdcMinEnergyThreshold),
-    fq(NULL)
+    fEneArr(nullptr),
+    fZdcMinEnergyThreshold(zdcMinEnergyThreshold)
 {
 }
 
@@ -75,7 +77,7 @@ InitStatus MpdZdcTowerDraw::Init()
     SetModuleZLen(40);
     
     fEneArr = new Double_t[GetNumModules()*2];
-    for (Int_t i = 0; i < GetNumModules()*2; i++)
+    for (UInt_t i = 0; i < GetNumModules()*2; i++)
         SetEneArr(i,0);
     
     fq = 0;
@@ -95,7 +97,7 @@ void MpdZdcTowerDraw::Exec(Option_t* option)
             UInt_t fNhits = fDigitList->GetEntriesFast();
             if (fVerbose > 0) cout<<"MpdZdcTowerDraw::Exec() Number of ZDC hits = " << fNhits << endl;
 
-            for (Int_t i = 0; i < GetNumModules()*2; i++)
+            for (UInt_t i = 0; i < GetNumModules()*2; i++)
                 SetEneArr(i,0);
 
             for (UInt_t iPnt = 0; iPnt < fNhits; iPnt++)
@@ -203,12 +205,12 @@ void MpdZdcTowerDraw::Exec(Option_t* option)
         {
             if (GetResetRequiredFlag())
             {
-                for (Int_t i = 0; i < GetNumModules()*2; i++)
+                for (UInt_t i = 0; i < GetNumModules()*2; i++)
                     SetEneArr(i,1);
 
                 SetMaxE(1);
                 DrawTowers();
-                for (Int_t i = 0; i < GetNumModules()*2; i++)
+                for (UInt_t i = 0; i < GetNumModules()*2; i++)
                     SetEneArr(i,0);
 
                 SetMaxE(0);
@@ -244,11 +246,11 @@ void MpdZdcTowerDraw::DrawTowers()
         TGeoVolume* zdcVolumeClone = zdcNode->GetVolume()->CloneVolume();
         TObjArray* zdcArr= zdcNode->GetVolume()->GetNodes();
         
-        for (UInt_t module = 0; module < zdcNode->GetVolume()->GetNdaughters(); module++)
+        for (UInt_t module0 = 0; module0 < (UInt_t) zdcNode->GetVolume()->GetNdaughters(); module0++)
         {
-            TGeoNode* moduleNode = (TGeoNode*) zdcArr->UncheckedAt(module);
+            TGeoNode* moduleNode = (TGeoNode*) zdcArr->UncheckedAt(module0);
 
-            TGeoNode* moduleNodeCopy;
+            TGeoNode* moduleNodeCopy{nullptr};
             if (GetShadowFlag())
             {
                 RecursiveChangeNodeTransparent(moduleNode, 0);

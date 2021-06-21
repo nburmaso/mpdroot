@@ -29,7 +29,7 @@
 #include "MpdMcordPoint.h"
 #include "TLorentzVector.h"
 
-MpdMcordGeo *MpdMcord::fgGeo = NULL;
+MpdMcordGeo *MpdMcord::fgGeo = nullptr;
 
 
 MpdMcord::MpdMcord() :MpdMcord("mcord",kTRUE) {
@@ -91,7 +91,7 @@ void MpdMcord::Register() {
 
 TClonesArray* MpdMcord::GetCollection(Int_t iColl) const {
 	if (iColl == 0) { return fPointCollection; }
-	else { return NULL; }
+	else { return nullptr; }
 }
 
 void MpdMcord::Print() const {
@@ -128,7 +128,7 @@ void MpdMcord::ConstructGeometry() {
 
 	    TList* volList = MGeo->getListOfVolumes();
 	    // store geo parameter
-	    FairRun* fRun = FairRun::Instance();
+	    //FairRun* fRun = FairRun::Instance();
 	    FairRuntimeDb* rtdb= FairRun::Instance()->GetRuntimeDb();
 	    MpdMcordGeoPar* par=static_cast<MpdMcordGeoPar*>(rtdb->getContainer("MpdMcordGeoPar"));
 	    TObjArray* fSensNodes = par->GetGeoSensitiveNodes();
@@ -169,4 +169,3 @@ MpdMcordPoint* MpdMcord::AddHit(Int_t trackID, Int_t detId, TVector3 pos,
 	  return new(clref[size]) MpdMcordPoint(trackID, detId, pos, mom,
 	time, length, eloss);
 }
-

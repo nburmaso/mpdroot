@@ -36,7 +36,18 @@ MpdMiniDstFillTask::MpdMiniDstFillTask() {
 
 //_________________
 MpdMiniDstFillTask::MpdMiniDstFillTask(TString name) :
+fIsUseCovMatrix(kTRUE),
+fIsUseECal(kTRUE),
+fEventHeaders(nullptr),
 fEvents(nullptr),
+fVertices(nullptr),
+fTpcTracks(nullptr),
+fTofHits(nullptr),
+fTofMatching(nullptr),
+fMCTracks(nullptr),
+fGenTracks(nullptr),
+fEmcClusters(nullptr),
+fZdcDigits(nullptr),
 fMiniDst(new MpdMiniDst()),
 fBField( 0.5 ), // mag. field in T (MUST be changed to the real magnetic field
 fOutputFile(nullptr),
@@ -45,10 +56,6 @@ fSplit(99),
 fCompression(9),
 fBufferSize(65536 * 4),
 fMiniArrays(nullptr),
-fIsUseCovMatrix(kTRUE),
-fIsUseECal(kTRUE),
-//fEmcDigits(nullptr),
-fEmcClusters(nullptr),
 fNSigmaDedxEstimator(0) {
 
   // Standard constructor
@@ -1025,7 +1032,7 @@ void MpdMiniDstFillTask::computeAandB(TMatrixD &xk0, const MpdKalmanTrack *track
 				      TMatrixD &a, TMatrixD &b, TMatrixD &ck0) {
 
   // Compute matrices of derivatives w.r.t. vertex coordinates and track momentum
-  Double_t vert0[3], zero[3] = {0}, *vert = xk0.GetMatrixArray();
+  Double_t vert0[3], *vert = xk0.GetMatrixArray(); //zero[3] = {0},
   for (Int_t i = 0; i < 3; ++i) vert0[i] = vert[i];
 
   MpdKalmanTrack trackk = *track;
@@ -1143,7 +1150,7 @@ void MpdMiniDstFillTask::Proxim(const MpdKalmanTrack &track0, MpdKalmanTrack &tr
     exit(0);
   }
 
-  Double_t tmp = track.GetParamNew(0);
+  //Double_t tmp = track.GetParamNew(0);
   Double_t phi0 = track0.GetParamNew(0) / track0.GetPosNew();
   Double_t phi = track.GetParamNew(0) / track.GetPosNew();
   phi = MpdKalmanFilter::Instance()->Proxim(phi0, phi);

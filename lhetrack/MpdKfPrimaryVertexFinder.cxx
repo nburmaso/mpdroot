@@ -29,7 +29,6 @@
 #include <TMatrixFSym.h>
 #include <TRandom.h>
 #include <TFile.h>
-
 #include <iostream>
 #include <vector>
 
@@ -42,14 +41,14 @@ FILE *lunVtx = 0x0; //fopen("vtx.dat","w");
 
 //__________________________________________________________________________
 MpdKfPrimaryVertexFinder::MpdKfPrimaryVertexFinder(const char *name, Int_t iVerbose)
-  :FairTask(name, iVerbose), fConstrFlag(0), fSmoothSame(0), fVertTracks(NULL)
+  :FairTask(name, iVerbose), fConstrFlag(0), fSmoothSame(0), fVertTracks(nullptr)
 {
-  fHistoDir = NULL;
-  fHist[0] = fHist[1] = fHist[2] = NULL;
+  fHistoDir = nullptr;
+  fHist[0] = fHist[1] = fHist[2] = nullptr;
 
   fCovar.ResizeTo(3,3);
   for (Int_t i = 0; i < 3; ++i) fXYZ[i] = 0;
-  fUnc = NULL;
+  fUnc = nullptr;
 }
 
 
@@ -60,7 +59,7 @@ MpdKfPrimaryVertexFinder::~MpdKfPrimaryVertexFinder()
   //delete fTracks;
   //delete fTrackCand;
   for (Int_t i = 0; i < 3; ++i)
-    if (fHist[i] != NULL) fHist[i]->Delete();
+    if (fHist[i] != nullptr) fHist[i]->Delete();
   delete fUnc;
 }
 
@@ -287,9 +286,9 @@ void MpdKfPrimaryVertexFinder::FindVertex()
       MpdKalmanTrack *track = (MpdKalmanTrack*) fTracks->UncheckedAt(itr);
       //if (track->GetNode() != "") continue; // exclude failed tracks 
       // Select primaries
-      MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
+      //MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
       //if (mcTr->GetMotherId() >= 0) continue; // secondary
-      Double_t th = TMath::PiOver2() - track->GetParam(3);
+      //Double_t th = TMath::PiOver2() - track->GetParam(3);
       //if (TMath::Abs(TMath::Log(TMath::Tan(th/2))) > 1.) continue; // eta-cut
       //if (1./TMath::Abs(track->GetParam(4)) < 0.2) continue; // pt-cut
       ++nPrim;
@@ -476,7 +475,7 @@ void MpdKfPrimaryVertexFinder::Smooth()
 
   for (Int_t itr = 0; itr < nPrim; ++itr) {
     MpdKalmanTrack *track = (MpdKalmanTrack*) fTracks->UncheckedAt((*ind)[itr]);
-    MpdKalmanTrack *trVert = NULL;
+    MpdKalmanTrack *trVert = nullptr;
     if (fConstrFlag) trVert = 
       new((*fVertTracks)[itr]) MpdTpcKalmanTrack(*(MpdTpcKalmanTrack*)track);
 
@@ -569,7 +568,7 @@ void MpdKfPrimaryVertexFinder::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack 
 {
   /// Compute matrices of derivatives w.r.t. vertex coordinates and track momentum
  
-  Double_t vert0[3], zero[3] = {0}, *vert = xk0.GetMatrixArray();
+  Double_t vert0[3], *vert = xk0.GetMatrixArray(); //zero[3] = {0},
   for (Int_t i = 0; i < 3; ++i) vert0[i] = vert[i];
 
   MpdKalmanTrack trackk = *track;
@@ -695,7 +694,7 @@ void MpdKfPrimaryVertexFinder::Proxim(const MpdKalmanTrack &track0, MpdKalmanTra
     exit(0);
   }
 
-  Double_t tmp = track.GetParamNew(0);
+  //Double_t tmp = track.GetParamNew(0);
   Double_t phi0 = track0.GetParamNew(0) / track0.GetPosNew();
   Double_t phi = track.GetParamNew(0) / track.GetPosNew();
   phi = MpdKalmanFilter::Instance()->Proxim(phi0,phi);
@@ -781,7 +780,7 @@ void MpdKfPrimaryVertexFinder::Chi2Vertex()
     // Select primaries
     //MpdMCTrack *mcTr = (MpdMCTrack*) fMCTracks->UncheckedAt(track->GetTrackID());
     //if (mcTr->GetMotherId() >= 0) continue; // secondary
-    Double_t th = TMath::PiOver2() - track->GetParam(3);
+    //Double_t th = TMath::PiOver2() - track->GetParam(3);
     //if (TMath::Abs(TMath::Log(TMath::Tan(th/2))) > 1.) continue; // eta-cut
     //if (1./TMath::Abs(track->GetParam(4)) < 0.2) continue; // pt-cut
     ++nPrim;

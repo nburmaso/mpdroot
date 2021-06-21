@@ -69,7 +69,7 @@ void		MpdEtofGeoUtils::FindNeighborStrips(Double_t thresh, bool forced)
 void			MpdEtofGeoUtils::ParseTGeoManager(bool forced)
 {
 assert(gGeoManager);
-static const double degree180 = 3.14159265359; // 180 degree to rad
+//static const double degree180 = 3.14159265359; // 180 degree to rad
 
 	if( !forced &&  !mStrips.empty()) return; // already parsed and filled
 /*
@@ -199,8 +199,4 @@ const LStrip*		MpdEtofGeoUtils::FindStrip(Int_t UID)
 assert(cit != mStrips.end());
 return &(cit->second);
 }
-//------------------------------------------------------------------------------------------------------------------------
-
-
-   
-    	
+//----------------------------------------------------------------------------------------------------------------------	

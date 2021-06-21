@@ -53,7 +53,7 @@ MpdCpc::~MpdCpc()
 //------------------------------------------------------------------------------------------------------------------------
 Bool_t  MpdCpc::ProcessHits(FairVolume* vol)
 {
-	Int_t gap, cell, module, region;
+	//Int_t gap, cell, module, region;
 	TString Volname;
 
 	// Set parameters at entrance of volume. Reset ELoss.

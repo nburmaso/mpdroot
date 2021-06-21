@@ -36,7 +36,7 @@ class MpdFemtoPicoEventCollectionVectorHideAway {
   /// Copy constructor
   MpdFemtoPicoEventCollectionVectorHideAway& operator=(const MpdFemtoPicoEventCollectionVectorHideAway& copy);
   /// Default destructor
-  ~MpdFemtoPicoEventCollectionVectorHideAway();
+  virtual ~MpdFemtoPicoEventCollectionVectorHideAway();
 
   /// Return pico event collection
   MpdFemtoPicoEventCollection* picoEventCollection(int, int, int);

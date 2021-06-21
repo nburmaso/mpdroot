@@ -24,6 +24,13 @@ MpdPid::MpdPid() : TObject(){
       fTracking = kTRUE;
 }
 
+
+MpdPid::MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, Double_t koef, TString Generator, TString Tracking, TString NSigPart)
+   : TObject(), fKoef(koef), kSigmaTof(sigmaTof), kSigmaEloss(sigmaEloss),  fCharge(1), fEnergy(sqrts) 
+{
+	Init(Generator, Tracking, NSigPart);
+}
+
 Double_t MpdPid::mergedPrBB(Double_t *x, Double_t *par)
 {
 	Double_t ans = -999.;
@@ -34,12 +41,6 @@ Double_t MpdPid::mergedPrBB(Double_t *x, Double_t *par)
 		else ans = parPrBB->EvalPar(x,par2);
 	}
 	return ans;
-}
-
-MpdPid::MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, Double_t koef, TString Generator, TString Tracking, TString NSigPart)
-   : TObject(), kSigmaTof(sigmaTof), kSigmaEloss(sigmaEloss), fCharge(1), fKoef(koef), fEnergy(sqrts) 
-{
-	Init(Generator, Tracking, NSigPart);
 }
 
 Double_t MpdPid::GetDedxWidthValue(Double_t p, Int_t specie)
@@ -1379,7 +1380,7 @@ Bool_t MpdPid::FillProbs(MpdTrack* track)
    if (track->GetPt() > 0) charge = -1;
    Int_t flag = track->GetTofFlag();
    Double_t dedx = track->GetdEdXTPC();
-   Double_t eta = track->GetEta();
+   //Double_t eta = track->GetEta();
    
    if (flag == 2 || flag == 6){
       Double_t m2 = track->GetTofMass2();
@@ -1405,7 +1406,7 @@ Bool_t MpdPid::FillProbs(MpdTrack* track, Double_t dedx){
    if (track->GetPt() > 0.) charge = -1;
       
    Int_t flag = track->GetTofFlag();
-   Double_t eta = track->GetEta();
+   //Double_t eta = track->GetEta();
    
    if (flag == 2 || flag == 6){
       Double_t m2 = track->GetTofMass2();
@@ -1642,7 +1643,7 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Double_t m2, Int_t charge){
 	/// otherwise evaluation..
 	///
 	
-	Double_t xx, yy, distance;
+	Double_t xx, yy;//, distance;
 	
 	xx = (dedx/emeanel-1.)/sigeel;
 	yy = (m2-0.0007)/sigmel;
@@ -1656,7 +1657,7 @@ Bool_t MpdPid::FillProbs(Double_t p, Double_t dedx, Double_t m2, Int_t charge){
 	fpr = GetCombProb_asym(cut_dedx, cut_m2, p, dedx, m2, npr, emeanpr, 0.887, sigepr, sigmpr, 3);
 	fmu = GetCombProb_asym(cut_dedx, cut_m2, p, dedx, m2, nmu, emeanmu, 0.011, sigemu, sigmmu, 5);
 	fde = GetCombProb_asym(cut_dedx, cut_m2, p, dedx, m2, nde, emeande, 3.54, sigede, sigmde, 6);
-	ftr = GetCombProb_asym(cut_dedx, cut_m2, p, dedx, m2, ntr, emeantr, 7.87, sigede, sigmde, 7);
+	ftr = GetCombProb_asym(cut_dedx, cut_m2, p, dedx, m2, ntr, emeantr, 7.87, sigetr, sigmtr, 7);
 	fhe3 = GetCombProb_asym(cut_dedx, cut_m2, p, dedx, m2, nhe3, emeanhe3, 1.983, sigehe3, sigmhe3, 8);
 	fhe4 = GetCombProb_asym(cut_dedx, cut_m2, p, dedx, m2, nhe4, emeanhe4, 3.51, sigehe4, sigmhe4, 9);
 	
