@@ -18,7 +18,7 @@
 #pragma link C++ class MpdMCEventHeader+;
 #pragma link C++ class MpdLAQGSMGenerator+;
 #pragma link C++ class MpdHypYPtGenerator+;
-#pragma link C++ class MpdPlutoGenerator+;
+//#pragma link C++ class MpdPlutoGenerator+;
 #pragma link C++ class MpdRainGenerator+;
 #pragma link C++ class MpdPHSDGenerator+;
 #pragma link C++ class Mpd3fdGenerator+;

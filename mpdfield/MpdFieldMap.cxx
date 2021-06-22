@@ -118,13 +118,13 @@ Bool_t MpdFieldMap::IsInside(Double_t x, Double_t y, Double_t z) {
 
   Double_t r1(40.3), r2(120.3); /// Real internal and external radiuses of the TPC
 
-  Double_t fZmin(-170.), fZmax(170.);
+  //Double_t fZmin(-170.), fZmax(170.);
 
-  Double_t fXmin_r2 = -r2, fXmax_r2 = r2;
-  Double_t fYmin_r2 = fXmin_r2, fYmax_r2 = fXmax_r2;
+  //Double_t fXmin_r2 = -r2, fXmax_r2 = r2;
+  //Double_t fYmin_r2 = fXmin_r2, fYmax_r2 = fXmax_r2;
 
-  Double_t fXmin_r1 = -r1, fXmax_r1 = r1;
-  Double_t fYmin_r1 = fXmin_r1, fYmax_r1 = fXmax_r1;
+  //Double_t fXmin_r1 = -r1, fXmax_r1 = r1;
+  //Double_t fYmin_r1 = fXmin_r1, fYmax_r1 = fXmax_r1;
   
   /// Checking only correct field map initialization
   /// In fact, the mag. field used at the point (0, 0, 0) is considered to be (0, 0, 5) kG 

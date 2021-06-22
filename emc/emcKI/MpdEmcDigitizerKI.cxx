@@ -183,7 +183,7 @@ void MpdEmcDigitizerKI::Exec(Option_t* opt)
   }
 
   LOG(INFO) << "Emc points done:" << fDigitsArray->GetEntriesFast();
-  system("date");
+  LOG(INFO) << system("date");
 }
 
 //_______________________________________________________________________

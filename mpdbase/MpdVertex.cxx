@@ -83,6 +83,7 @@ MpdVertex & MpdVertex::operator= (const MpdVertex& vert)
 
   for (Int_t i = 0; i < 6; ++i) fCovMatrix[i] = vert.fCovMatrix[i];
   *fTrInd = *(vert.fTrInd);
+  return *this;
 }
 
 // -----   Destructor   ----------------------------------------------------

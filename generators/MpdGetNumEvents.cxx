@@ -104,6 +104,9 @@ off_t MpdLibZ::seek(off_t pos, int whence)
             return gzseek(file, pos, SEEK_CUR);
         case 1:
             return gzseek(file, pos, SEEK_SET);
+        default:
+            cerr<<__FILE__<<__func__<<" wrong gzseek.";
+            return -1; 
     }
 }
 

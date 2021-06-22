@@ -16,40 +16,40 @@ MpdDstCompressTask::MpdDstCompressTask():MpdDstCompressTask("dstwirite",1) {
 InitStatus MpdDstCompressTask::CheckBranches() {
 	FairRootManager *mngr = FairRootManager::Instance();
 	fMpdEvent =(MpdEvent*)mngr->GetObject("MPDEvent.");
-	if(fMpdEvent==NULL) return kFATAL;
+	if(fMpdEvent==nullptr) return kFATAL;
 	mngr->Register("MPDEvent.", "MPD", fMpdEvent, kTRUE);
 	if(fUseMC){
 		fMCTracks = (TClonesArray*)mngr->GetObject("MCTrack");
-		if(fMCTracks==NULL){
-			LOG(WARNING)<<"MC tracks requested but not found!"<<FairLogger::endl;
-			fUseMC=NULL;
+		if(fMCTracks==nullptr){
+			LOG(WARNING)<<"MC tracks requested but not found!";
+			fUseMC=kFALSE;
 		}else{
 			mngr->Register("MCTrack", "MC",fMCTracks, kTRUE);
 		}
 	}
 	if(fUseFreezouts){
 		fFreezouts = (TClonesArray*)mngr->GetObject("Freezouts.");
-		if(fFreezouts==NULL){
-			LOG(WARNING)<<"Freeouts tracks requested but not found!"<<FairLogger::endl;
-			fUseFreezouts=NULL;
+		if(fFreezouts==nullptr){
+			LOG(WARNING)<<"Freeouts tracks requested but not found!";
+			fUseFreezouts=kFALSE;
 		}else{
 			mngr->Register("Freezouts.",  "Freezouts", fFreezouts,kTRUE);
 		}
 	}
 	if(fUseTpcKalmans){
 		fTpcKalmans = (TClonesArray*)mngr->GetObject("TpcKalmanTrack");
-		if(fTpcKalmans==NULL){
-			LOG(WARNING)<<"Kalman TPC tracks requested but not found!"<<FairLogger::endl;
-			fUseTpcKalmans=NULL;
+		if(fTpcKalmans==nullptr){
+			LOG(WARNING)<<"Kalman TPC tracks requested but not found!";
+			fUseTpcKalmans=kFALSE;
 		}else{
 			mngr->Register("TpcKalmanTrack",  "TPC", fTpcKalmans,kTRUE);
 		}
 	}
 	if(fUseTpcHits){
 		fTpcHits = (TClonesArray*)mngr->GetObject("TpcHit");
-		if(fTpcHits==NULL){
-			LOG(WARNING)<<"TPC hits requested but not found!"<<FairLogger::endl;
-			fUseTpcHits=NULL;
+		if(fTpcHits==nullptr){
+			LOG(WARNING)<<"TPC hits requested but not found!";
+			fUseTpcHits=kFALSE;
 		}else{
 			mngr->Register("TpcHi.",  "TPC", fTpcHits,kTRUE);
 		}
@@ -72,7 +72,7 @@ InitStatus MpdDstCompressTask::CheckBranches() {
 
 InitStatus MpdDstCompressTask::Init() {
 	if(CheckBranches()==kFATAL){
-		LOG(FATAL)<<"End of macro MPDEvent not found"<<FairLogger::endl;
+		LOG(FATAL)<<"End of macro MPDEvent not found";
 		return kFATAL;
 	}
 	fMCMapSize = 1000;
@@ -84,9 +84,9 @@ MpdDstCompressTask::MpdDstCompressTask(const char* name, Int_t Verbose):FairTask
 				fUseMC(kFALSE),fUseFreezouts(kFALSE),
 				fUseTpcKalmans(kFALSE),fUseTpcHits(kFALSE),fUseHeader(kFALSE),
 				fMCCompression(kFALSE),
-				fMpdEvent(NULL),fFreezouts(NULL),fMCTracks(NULL),
-				fTpcKalmans(NULL),fTpcHits(NULL),
-				fMCMapSize(0),fMCIndexMap(NULL){
+				fMpdEvent(nullptr),fFreezouts(nullptr),fMCTracks(nullptr),
+				fTpcKalmans(nullptr),fTpcHits(nullptr),
+				fMCMapSize(0),fMCIndexMap(nullptr){
 
 }
 

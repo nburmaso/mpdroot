@@ -1,5 +1,5 @@
 function(GENERATE_MPDCONFIG)
-message(WARNING "${BASE_INCLUDE_DIRECTORIES}" )	
+message( "${BASE_INCLUDE_DIRECTORIES}" )	
 	file( WRITE ${CMAKE_BINARY_DIR}/mpd-config "#!/bin/bash\n" )
 	file( APPEND ${CMAKE_BINARY_DIR}/mpd-config "mpdlibs=\"\\\n" )
 	file( APPEND ${CMAKE_BINARY_DIR}/mpd-config "-L${FAIRROOT_LIBRARY_DIR} -lBase -lEventDisplay -lFairDataMatch -lFairTools \\\n" )

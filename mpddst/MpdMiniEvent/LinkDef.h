@@ -15,12 +15,12 @@
 #pragma link C++ class MpdMiniMcEvent++;
 #pragma link C++ class MpdMiniMcTrack++;
 #pragma link C++ class MpdMiniDst++;
-#pragma link C++ class MpdMiniMessMgr++;
+//#pragma link C++ class MpdMiniMessMgr++;
 #pragma link C++ class MpdMiniArrays++;
 
 #pragma link C++ class MpdMiniHelix++;
 #pragma link C++ class MpdMiniPhysicalHelix++;
 #pragma link C++ class MpdMiniDstReader++;
-#pragma link C++ class MpdMiniDstLinkDef++;
+//#pragma link C++ class MpdMiniDstLinkDef++;
 
 #endif // #ifdef __CINT__

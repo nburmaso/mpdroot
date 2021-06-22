@@ -272,6 +272,7 @@ Bool_t ClManager::RemoveCollection(int id)
   // - remove collection's id from clusters
    
   its->second->RemoveClusters();
+  return kTRUE;
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

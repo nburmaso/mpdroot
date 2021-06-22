@@ -5,7 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class MpdFemtoMultiTrackCut+;
-#pragma link C++ class TpcLocalTransform+;
+//#pragma link C++ class TpcLocalTransform+;
 #pragma link C++ class MpdFemtoMaker+;
 #pragma link C++ class MpdFemtoModelWeightGeneratorLednicky+;
 #pragma link C++ class MpdFemtoManager+;

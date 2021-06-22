@@ -163,7 +163,7 @@ class MpdPid : public TObject
 	TF2 *fGaus2;
 	TF2 *fAsymGaus2;
 	
-	Double_t              					fProb[MpdPidUtils::kNSpecies]; ///< the probability to identify track as a species <i>
+	Double_t              					fProb[MpdPidUtils::kNSpecies+1]; ///< the probability to identify track as a species <i>
 	Double_t              					fEnLossSigmasArray[MpdPidUtils::kNSpecies]; ///< the deviation of the measured energy loss from that expected for the species <i>, in terms of the detector resolution
 	Double_t              					fMSquaredSigmasArray[MpdPidUtils::kNSpecies]; ///< the deviation of the measured mass squared from that expected for the species <i>, in terms of the detector resolution
 	Double_t              					fPrRatio; ///< proton ratio is pos./neg.

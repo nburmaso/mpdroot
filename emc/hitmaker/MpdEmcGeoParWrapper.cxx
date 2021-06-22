@@ -106,6 +106,7 @@ Bool_t MpdEmcGeoParWrapper::GetModPos(Int_t uid, Float_t& x, Float_t& y, Float_t
    
    x = fR*Cos(ang); 
    y = fR*Sin(ang); 
+   return kTRUE;
 }
 
 //_____________________________________________________________________________

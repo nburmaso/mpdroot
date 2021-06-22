@@ -151,14 +151,15 @@ void MpdLAQGSMGenerator::Init (const char *light_particles_filename)
     fscanf(fInputFile_light, "%s", ss);     strncpy(la_tab[i].name,ss,10);
     i++;   
     */
-    fscanf(fInputFile_light, "%d", &i_val); lt->pdg=i_val;
-    fscanf(fInputFile_light, "%d", &i_val); lt->Z=i_val;
-    fscanf(fInputFile_light, "%d", &i_val); lt->lepton=i_val;
-    fscanf(fInputFile_light, "%d", &i_val); lt->strange=i_val;
-    fscanf(fInputFile_light, "%d", &i_val); lt->A=i_val;
-    fscanf(fInputFile_light, "%f", &a_val); lt->mass=a_val;
-    fscanf(fInputFile_light, "%s", ss);     strncpy(lt->name,ss,10);
+    i = fscanf(fInputFile_light, "%d", &i_val); lt->pdg=i_val;
+    i = fscanf(fInputFile_light, "%d", &i_val); lt->Z=i_val;
+    i = fscanf(fInputFile_light, "%d", &i_val); lt->lepton=i_val;
+    i = fscanf(fInputFile_light, "%d", &i_val); lt->strange=i_val;
+    i = fscanf(fInputFile_light, "%d", &i_val); lt->A=i_val;
+    i = fscanf(fInputFile_light, "%f", &a_val); lt->mass=a_val;
+    i = fscanf(fInputFile_light, "%s", ss);     strncpy(lt->name,ss,10);
     fLa_tab.push_back(lt);
+    if(!i) cerr<<__FILE__<<__func__<<" something went wrong in reading input.";
   }
   fclose(fInputFile_light);
 }
@@ -173,7 +174,8 @@ Bool_t MpdLAQGSMGenerator::general_fgets (char *ss, Int_t nn, FILE* p)
     finished = (gzeof(fGZInputFile));
   }
   else {
-    fgets(ss,nn,fInputFile); 
+    if(!fgets(ss,nn,fInputFile)) 
+      cerr<<__FILE__<<__func__<<" something went wrong in reading input."; 
     finished = ( feof(fInputFile) );
   }
   return finished;

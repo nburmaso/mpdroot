@@ -37,9 +37,9 @@ set(LINK_DIRECTORIES
  ${ROOT_LIBRARY_DIR}
  ${FAIRROOT_LIBRARY_DIR}
 )
-if(PLUTO_FOUND)
-set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_LIBRARY_DIR})
-EndIf(PLUTO_FOUND)
+#if(PLUTO_FOUND)
+#set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_LIBRARY_DIR})
+#EndIf(PLUTO_FOUND)
  
 link_directories(${LINK_DIRECTORIES})
 
@@ -66,10 +66,10 @@ MpdSmashGenerator.cxx
 MpdDecayerPyt8.cxx
 MpdUnigenGenerator.cxx
 )
-if(PLUTO_FOUND)
+#if(PLUTO_FOUND)
 #set(SRCS ${SRCS} FairPlutoReactionGenerator.cxx MpdPlutoGenerator.cxx)
-set(SRCS ${SRCS} MpdPlutoGenerator.cxx)
-EndIf(PLUTO_FOUND)
+#set(SRCS ${SRCS} MpdPlutoGenerator.cxx)
+#EndIf(PLUTO_FOUND)
 
 Set(HEADERS)
 Set(LINKDEF GenLinkDef.h)

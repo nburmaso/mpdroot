@@ -131,7 +131,7 @@ void MpdEmc::Register() {
 
 TClonesArray* MpdEmc::GetCollection(Int_t iColl) const {
   if (iColl == 0) return fMpdEmcPointCollection;
-  else return NULL;
+  else return nullptr;
 }
 
 void MpdEmc::Reset() {
@@ -153,21 +153,15 @@ void MpdEmc::ConstructGeometry() {
     TString fileName = GetGeometryFileName();
 
     if ( fileName.EndsWith(".root") ) {
-        gLogger->Info(MESSAGE_ORIGIN,
-            "Constructing EMC geometry from ROOT file %s",
-            fileName.Data());
+        LOG(info)<<"Constructing EMC geometry from ROOT file "<<fileName.Data();
         ConstructRootGeometry();
     }
     else if ( fileName.EndsWith(".geo") ) {
-        gLogger->Info(MESSAGE_ORIGIN,
-            "Constructing EMC geometry from ASCII file %s",
-            fileName.Data());
+        LOG(info)<<"Constructing EMC geometry from ASCII file "<<fileName.Data();
         ConstructAsciiGeometry();
     }
     else {
-        gLogger->Fatal(MESSAGE_ORIGIN,
-            "Geometry format of EMC file %s not supported.",
-            fileName.Data());
+        LOG(fatal)<<"Geometry format of EMC file %s not supported."<<fileName.Data();
     }
 } 
 
@@ -193,8 +187,8 @@ void MpdEmc::ConstructAsciiGeometry() {
   TObjArray *fPassNodes = par->GetGeoPassiveNodes();
 
   TListIter iter(volList);
-  FairGeoNode* node   = NULL;
-  FairGeoVolume *aVol=NULL;
+  FairGeoNode* node   = nullptr;
+  FairGeoVolume *aVol=nullptr;
   
   while( (node = (FairGeoNode*)iter.Next()) ) {
     aVol = dynamic_cast<FairGeoVolume*> ( node );

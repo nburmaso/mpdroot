@@ -79,7 +79,7 @@ Bool_t MpdPHSDGenerator::ReadEvent(FairPrimaryGenerator *primGen)
     if (fHPol==kTRUE && (TMath::Abs(ipdg/100) == 31 || TMath::Abs(ipdg/100) == 32))
     {
       res=sscanf(fbuffer,"%*d %*d %*e %*e %*e %*e %*d %*d %*d %e %e %e",&pol[0],&pol[1],&pol[2]);
-      if (res!=3)  {printf("-E- MpdPHSDGenerator: no Hyperon polarization info\n",res); exit(1);}
+      if (res!=3)  {printf("-E- MpdPHSDGenerator: no Hyperon polarization info %d \n",res); exit(1);}
     }
 
     // replacement of heavy particles for Geant4

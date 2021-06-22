@@ -188,9 +188,9 @@ void MpdTpcClusterFinderAZ::ProcessPadrow(Int_t isec, Int_t irow)
       clus->SetErrY(fCharges[ipad][itime]); // ADC counts
       fFlags[ipad][itime] = -1;
       for (Int_t ip = 0; ip < 2; ++ip) {
-	for (Int_t it = 0; it < 2; ++it) {
-	  if (it == ip) continue;
-	  Int_t ip1 = ipad + ip, it1 = itime + it;
+	for (Int_t itt = 0; itt < 2; ++itt) {
+	  if (itt == ip) continue;
+	  Int_t ip1 = ipad + ip, it1 = itime + itt;
 	  if (ip1 >= fgkNpads) continue;
 	  if (it1 >= fgkNtimes) continue;
 	  if (fFlags[ip1][it1] <= 0) continue;
@@ -460,9 +460,9 @@ void MpdTpcClusterFinderAZ::FindHits()
       // Process simple cluster (only 1 local max)
       //if (localMax.size() == 1) {
       if (nLocMax0 == 1) {
-	for (Int_t idig = 0; idig < nDigis; ++idig) {
-	  Int_t ip = clus->Col(idig);
-	  Int_t it = clus->Bkt(idig);
+	for (Int_t idig1 = 0; idig1 < nDigis; ++idig1) {
+	  Int_t ip = clus->Col(idig1);
+	  Int_t it = clus->Bkt(idig1);
 	  padMean += ip * fCharges[ip][it];
 	  timeMean += it * fCharges[ip][it];
 	  adcTot += fCharges[ip][it];
@@ -611,9 +611,9 @@ void MpdTpcClusterFinderAZ::FindHits()
       for (Int_t idig = 0; idig < ndig; ++idig)
 	hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, clus->Sec(vecDig[idig]))); // trackID stored in Sec
       */
-      for (Int_t idig = 0; idig < ndig; ++idig) {
-	hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, vecDig[idig], idig)); // weight = idig
-	hit->AddID(vecDig[idig]);
+      for (Int_t idig1 = 0; idig1 < ndig; ++idig1) {
+	hit->AddLink(FairLink(MpdTpcHit::MCTrackIndex, vecDig[idig], idig1)); // weight = idig
+	hit->AddID(vecDig[idig1]);
       }
       //cout << hit->GetNLinks() << " " << *(vecDig.begin()) << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(0).GetIndex() << " " << hit->GetLinksWithType(MpdTpcHit::MCTrackIndex).GetLink(hit->GetNLinks()-1).GetIndex() << endl;
 

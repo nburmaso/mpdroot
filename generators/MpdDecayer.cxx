@@ -11,7 +11,7 @@
 #include "TDatabasePDG.h"
 #include <TDecayChannel.h>
 #include "TF1.h"
-#include "TGeant3.h"
+//#include "TGeant3.h"
 #include "TH1.h"
 #include <THashList.h>
 #include "TLorentzVector.h"
@@ -27,7 +27,7 @@
 
 #include <fstream>
 #include <iostream>
-
+#include <iomanip>
 using std::cout;
 using std::endl;
 using std::set;
@@ -249,6 +249,7 @@ Float_t MpdDecayer::GetPartialBranchingRatio(Int_t ipart)
     // return TPythia6::Instance()->GetBRAT(kc);
     return fBraPart[kc];
   */
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,6 +261,7 @@ Float_t MpdDecayer::GetLifetime(Int_t kf)
     Int_t kc=TPythia6::Instance()->Pycomp(TMath::Abs(kf));
     return TPythia6::Instance()->GetPMAS(kc,4) * 3.3333e-12;
   */
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,6 +511,7 @@ Int_t MpdDecayer::CountProducts(Int_t channel, Int_t particle)
     if (TMath::Abs(TPythia6::Instance()->GetKFDP(channel,i)) == particle) np++;
     return np;
   */
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
