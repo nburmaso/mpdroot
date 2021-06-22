@@ -495,10 +495,10 @@ void MpdFillDstTask::FillTrackPID(MpdTrack* track) {
     Double_t dedx_pi = fPID->GetDedxPiParam(p);
     Double_t dedx_ka = fPID->GetDedxKaParam(p);
     Double_t dedx_pr = fPID->GetDedxPrParam(p);
-    Double_t sigma_el = fPID->GetDedxWidthValue(p, 4) * dedx_el;
-    Double_t sigma_pi = fPID->GetDedxWidthValue(p, 1) * dedx_pi;
-    Double_t sigma_ka = fPID->GetDedxWidthValue(p, 2) * dedx_ka;
-    Double_t sigma_pr = fPID->GetDedxWidthValue(p, 3) * dedx_pr;
+    Double_t sigma_el = fPID->GetDedxWidthValue(p, MpdPidUtils::kElectron) * dedx_el;
+    Double_t sigma_pi = fPID->GetDedxWidthValue(p, MpdPidUtils::kPion) * dedx_pi;
+    Double_t sigma_ka = fPID->GetDedxWidthValue(p, MpdPidUtils::kKaon) * dedx_ka;
+    Double_t sigma_pr = fPID->GetDedxWidthValue(p, MpdPidUtils::kProton) * dedx_pr;
 
     if (sigma_el > FLT_EPSILON) 
         track->SetNSigmaElectron((dedx - dedx_el) / sigma_el);

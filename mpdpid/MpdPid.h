@@ -1,200 +1,188 @@
+//------------------------------------------------------------------------------------------------------------------------
 #ifndef MPD_PID_H
 #define MPD_PID_H
 
-#define MASS_MU 0.1057
-#define MASS_PI 0.1396
-#define MASS_PI2 0.0195
-#define MASS_KA 0.4937
-#define MASS_PR 0.9383
-#define MASS_DE 1.876
-#define MASS_TR 2.8094
-#define MASS_HE3 1.4047
-#define MASS_HE4 1.863
-
-#define PDG_DEUTERON 1000010020
-#define PDG_TRITON 1000010030
-#define PDG_HE3 1000020030
-#define PDG_HE4 1000020040
-
+//------------------------------------------------------------------------------------------------------------------------
+/// \class MpdPid
+/// 
+/// \brief 
+/// \author Alexander Mudrokh (LHEP, JINR, Dubna)
+//------------------------------------------------------------------------------------------------------------------------
+#include "MpdPidUtils.h"
 #include "MpdTrack.h"
-#include "MpdEvent.h"
-#include "MpdTpcKalmanTrack.h"
-#include "FairMCEventHeader.h"
-#include "FairTask.h"
-#include "FairRootManager.h"
-#include "FairRunAna.h"
-#include "FairRuntimeDb.h"
-#include <TClonesArray.h>
-#include <TCollection.h>
-#include <TFriendElement.h>
-#include <TList.h>
-#include <TChain.h>
-#include <TTree.h>
-#include <TSystem.h>
-#include <TGraphErrors.h>
-#include <TCanvas.h>
-#include <TF1.h>
+#include "MpdTpcKalmanTrack.h"  /// MiniDST
+#include "FairRunAna.h"         /// MiniDST
+#include <TFile.h>
 #include <TF2.h>
-#include <TH1D.h>
-#include <TH2D.h>
-#include <TMath.h>
-#include <TObject.h>
-#include <TROOT.h>
-#include <TFitter.h>
-#include <TLegend.h>
-#include "TString.h"
-
+#include <TMatrixD.h>           /// MiniDST
+//------------------------------------------------------------------------------------------------------------------------
 using namespace std;
+typedef vector<TF1*> vecTF1ptrs;
 
 class MpdPid : public TObject
 {
 	public:
 	
+//--------------------------------------------------------------------//
+//--------------------- Constructor / Destructor ---------------------//
+//--------------------------------------------------------------------//
+
 	MpdPid(); /// default ctor
 	
 	MpdPid(Double_t sigmaTof, Double_t sigmaEloss, Double_t sqrts, /// generators: "PHSD", "URQMD", "LAQGSM" ("QGSM"), "DEFAULT", "EPOS" (for pp collisions), "NSIG" (for n-sigma method)
-		Double_t koef = 1., TString Generator = "DEFAULT", TString Tracking = "CF", /// tracking: "HP" (Hit Producer), "CF" (Cluster Finder)
+		Double_t EnLossCoef = 1., TString Generator = "DEFAULT", TString Tracking = "CFHM", /// tracking: "HP" (Hit Producer), "CF" (Cluster Finder)
 		TString NSigPart = "pikapr"); /// possible expressions: pi, ka, pr, el, mu, de, tr, he3, he4
 	
-	virtual ~MpdPid(){} /// destructor
+	virtual ~MpdPid(); /// destructor
 	
-	/// Returns pos./neg. ratio for protons
-	Double_t GetPrRat() {return prrat;}
-	/// Set pos./neg. ratio for protons
-	void SetPrRat(Double_t PrRat) {prrat=PrRat; parPrNegMom->SetParameter(0, (parPrPosMom->GetParameter(0) / prrat));}
-	
-	/// Polynomials for asymmetry description
-	TF1 *fAsymmetryElLowP; TF1 *fAsymmetryElMidP; TF1 *fAsymmetryElHighP; /// electrons
-	TF1 *fAsymmetryMuLowP; TF1 *fAsymmetryMuMidP; TF1 *fAsymmetryMuHighP; /// muons
-	TF1 *fAsymmetryPiLowP; TF1 *fAsymmetryPiMidP; TF1 *fAsymmetryPiHighP; /// pions
-	TF1 *fAsymmetryKaLowP; TF1 *fAsymmetryKaMidP; TF1 *fAsymmetryKaHighP; /// kaons
-	TF1 *fAsymmetryPrLowP; TF1 *fAsymmetryPrMidP; TF1 *fAsymmetryPrHighP; /// protons
-	TF1 *fAsymmetryDeLowP; TF1 *fAsymmetryDeHighP; /// deuterons
-	TF1 *fAsymmetryTrLowP; TF1 *fAsymmetryTrMidP; TF1 *fAsymmetryTrHighP; /// tritons
-	TF1 *fAsymmetryHe3LowP; TF1 *fAsymmetryHe3MidP; TF1 *fAsymmetryHe3HighP; /// he3
-	TF1 *fAsymmetryHe4LowP; TF1 *fAsymmetryHe4MidP; TF1 *fAsymmetryHe4HighP; /// he4
-	
-	/// Bethe-Bloch functions for mean energy deposit description
-	TF1 *parElBB; TF1 *parMuBB; TF1 *parPiBB; TF1 *parKaBB; TF1 *parPrBB; TF1 *parPrBBMerged;
-	TF1 *parDeBB; TF1 *parTrBB; TF1 *parHe3BB; TF1 *parHe4BB;
-	TF1 *parDePol1; TF1 *parDePol2; TF1 *parTrPol1; TF1 *parTrPol2;
-	TF1 *parHe3Pol1; TF1 *parHe3Pol2; TF1 *parHe3Pol3; TF1 *parHe4Pol1; TF1 *parHe4Pol2;
-	
-	/// Functions for multiplicity description
-	TF1 *parElNegMom; TF1 *parElPosMom; TF1 *parMuNegMom; TF1 *parMuPosMom;
-	TF1 *parPiNegMom; TF1 *parPiPosMom; TF1 *parKaNegMom; TF1 *parKaPosMom;
-	TF1 *parPrPosMom; TF1 *parPrNegMom;
-	TF1 *parDeMom; TF1 *parTrMom; TF1 *parHe3Mom; TF1 *parHe4Mom;
-	
-	/// Functions for m2 width description
-	TF1 *parElM2; TF1 *parMuM2; TF1 *parPiLowPM2; TF1 *parPiHighPM2;
-	TF1 *parKaM2; TF1 *parPrLowPM2; TF1 *parPrHighPM2;
-	TF1 *parDeM2; TF1 *parTrM2; TF1 *parHe3M2; TF1 *parHe4M2;
-	
-	/// Subsidiary functions for multiplicity description
-	Double_t MomPi(Double_t *x, Double_t *par);
-	Double_t MomPr(Double_t *x, Double_t *par);
-	
+//--------------------------------------------------------------------//
+//---------------------- Array of probabilities ----------------------//
+//--------------------------------------------------------------------//
+
 	/// Fill array of probabilities, otherwise return kFALSE
 	Bool_t FillProbs(MpdTrack*);
-	Bool_t FillProbs(MpdTrack*, Double_t);
 	Bool_t FillProbs(Double_t, Double_t, Int_t); /// variables: full momentum, dE/dx, charge
 	Bool_t FillProbs(Double_t, Double_t, Double_t, Int_t); /// variables: full momentum, dE/dx, mass squared, charge
 	
-	/// Return probabilities 
-	Double_t GetProbPi(void){return fProbPi;}
-	Double_t GetProbMu(void){return fProbMu;}
-	Double_t GetProbPr(void){return fProbPr;}
-	Double_t GetProbKa(void){return fProbKa;}
-	Double_t GetProbEl(void){return fProbEl;}
-	Double_t GetProbDe(void){return fProbDe;}
-	Double_t GetProbTr(void){return fProbTr;}
-	Double_t GetProbHe3(void){return fProbHe3;}
-	Double_t GetProbHe4(void){return fProbHe4;}
+	/// Return probabilities
+	Double_t GetProbEl(void)  {return fProb[MpdPidUtils::kElectron];}
+	Double_t GetProbMu(void)  {return fProb[MpdPidUtils::kMuon];}
+	Double_t GetProbPi(void)  {return fProb[MpdPidUtils::kPion];}
+	Double_t GetProbKa(void)  {return fProb[MpdPidUtils::kKaon];}
+	Double_t GetProbPr(void)  {return fProb[MpdPidUtils::kProton];}
+	Double_t GetProbDe(void)  {return fProb[MpdPidUtils::kDeuteron];}
+	Double_t GetProbTr(void)  {return fProb[MpdPidUtils::kTriton];}
+	Double_t GetProbHe3(void) {return fProb[MpdPidUtils::kHe3];}
+	Double_t GetProbHe4(void) {return fProb[MpdPidUtils::kHe4];}
+	Double_t GetProb(MpdPidUtils::ePartType iType) {return fProb[iType];}
 	
-	/// Returns the most probable pdg code
-	Long_t GetMaxProb();
+	Long_t GetMaxProb(); /// Returns the most probable pdg code
 	
-	/// Change particle yield function parameters, if success returns kTRUE
-	Bool_t ReInitPartYield(Double_t*, Int_t);
+//--------------------------------------------------------------------//
+//------------------------------ dE/dx -------------------------------//
+//--------------------------------------------------------------------//
 	
-	/// Return expected dE/dx values (variable: full momentum)
-	Double_t GetDedxPiParam(Double_t);
-	Double_t GetDedxPrParam(Double_t);
-	Double_t GetDedxKaParam(Double_t);
-	Double_t GetDedxElParam(Double_t);
-	Double_t GetDedxMuParam(Double_t);
-	Double_t GetDedxDeParam(Double_t);
-	Double_t GetDedxTrParam(Double_t);
-	Double_t GetDedxHe3Param(Double_t);
-	Double_t GetDedxHe4Param(Double_t);
+	/// Returns expected <dE/dx> value (variable: full momentum)
+	Double_t GetDedxElParam(Double_t p)  { return GetDedxParam(p, MpdPidUtils::kElectron); }
+	Double_t GetDedxMuParam(Double_t p)  { return GetDedxParam(p, MpdPidUtils::kMuon); }
+	Double_t GetDedxPiParam(Double_t p)  { return GetDedxParam(p, MpdPidUtils::kPion); }
+	Double_t GetDedxKaParam(Double_t p)  { return GetDedxParam(p, MpdPidUtils::kKaon); }
+	Double_t GetDedxPrParam(Double_t p)  { return GetDedxParam(p, MpdPidUtils::kProton); }
+	Double_t GetDedxDeParam(Double_t p)  { return GetDedxParam(p, MpdPidUtils::kDeuteron); }
+	Double_t GetDedxTrParam(Double_t p)  { return GetDedxParam(p, MpdPidUtils::kTriton); }
+	Double_t GetDedxHe3Param(Double_t p) { return GetDedxParam(p, MpdPidUtils::kHe3); }
+	Double_t GetDedxHe4Param(Double_t p) { return GetDedxParam(p, MpdPidUtils::kHe4); }
+	Double_t GetDedxParam(Double_t, MpdPidUtils::ePartType);
 	
-	/// Returns expected asymmetry value delta (variables: full momentum, specie)
-	Double_t GetTailValue(Double_t, Int_t);
+	/// Returns expected dE/dx width (variables: full momentum, species)
+	Double_t GetDedxWidthValue(Double_t, MpdPidUtils::ePartType);
 	
-	/// Returns expected dE/dx width (variables: full momentum, specie)
-	Double_t GetDedxWidthValue(Double_t, Int_t);
+	/// Returns expected asymmetry value delta (variables: full momentum, species)
+	Double_t GetTailValue(Double_t, MpdPidUtils::ePartType);
+	
+	/// Returns expexted <dE/dx>, dE/dx width and asymmetry parameterizations as vectors of TF1*
+	vecTF1ptrs GetVecdEdxMean(MpdPidUtils::ePartType);
+	vecTF1ptrs GetVecdEdxWidth(MpdPidUtils::ePartType);
+	vecTF1ptrs GetVecdEdxAsym(MpdPidUtils::ePartType);
+	
+//--------------------------------------------------------------------//
+//------------------------------- m^2 --------------------------------//
+//--------------------------------------------------------------------//
+	
+	/// Returns expected m^2 width (variables: full momentum, species)
+	Double_t Getm2WidthParam(Double_t, MpdPidUtils::ePartType);
+	
+	/// Returns expected m^2 width parameterization as vector of TF1*
+	vecTF1ptrs GetVecm2Width(MpdPidUtils::ePartType);
+	
+//--------------------------------------------------------------------//
+//----------------------------- Yileds -------------------------------//
+//--------------------------------------------------------------------//
+
+	Double_t GetBayesCoefficient(Double_t, MpdPidUtils::ePartType, MpdPidUtils::ePartCharge);
+	
+	Double_t GetPrRat() {return fPrRatio;} /// Returns pos./neg. ratio for protons
+	void SetPrRat(Double_t); /// Set pos./neg. ratio for protons
+	
+	/// Returns expected yield parameterization as vector of TF1* 
+	/// use via vec[MpdPidUtils::kPos/kNeg]
+	vecTF1ptrs GetVecYield(MpdPidUtils::ePartType);
+	
+//--------------------------------------------------------------------//
+//------------------------------ Other -------------------------------//
+//--------------------------------------------------------------------//
+
+	void Print(const char* comment, ostream& os);
 	
 	/// Returns distance to the most probable dE/dx and m2 value in terms of sigmas
 	/// possible expressions: pi, ka, pr, el, mu, de, tr, he3, he4
 	/// use it after MpdPid::FillProbs usage only!!!
-	
 	Double_t GetNsigmaToBetheBloch(TString);
+	Double_t GetNsigmaToBetheBloch(MpdPidUtils::ePartType);
 	Double_t GetNsigmaToAverageMass2(TString);
+	Double_t GetNsigmaToAverageMass2(MpdPidUtils::ePartType);
 	
-	protected:
-	Double_t mergedPrBB(Double_t *x, Double_t *par);
-	Double_t dEdXSigmasArray[9], m2SigmasArray[9]; /// order: pi, ka, pr, el, mu, de, tr, he3, he4
+	/// Includes particle species iType to n-sigma method
+	void SetParticleEnabledNsig(MpdPidUtils::ePartType iType) { fNSigSpecies[iType] = kTRUE; }
 	
-	TF1 *fgaus;
-	TF2 *fgaus2;
-	TF1 *fasymgaus;
-	TF2 *fasymgaus2;
+	/// Additional functions
+	Double_t parElBB(Double_t*, Double_t*);
+	Double_t parMuBB(Double_t*, Double_t*);
+	Double_t parPiBB(Double_t*, Double_t*);
+	Double_t parKaBB(Double_t*, Double_t*);
+	Double_t parPrBB(Double_t*, Double_t*);
+	Double_t parDeBB(Double_t*, Double_t*);
+	Double_t parTrBB(Double_t*, Double_t*);
+	Double_t parHe3BB(Double_t*, Double_t*);
+	Double_t parHe4BB(Double_t*, Double_t*);
 	
-	/// dE/dx width
-	TF1* elSigmaLowP; TF1* elSigmaMidP; TF1* elSigmaHighP;
-	TF1* muSigmaLowP; TF1* muSigmaMidP; TF1* muSigmaHighP;
-	TF1* piSigmaLowP; TF1* piSigmaMid1P; TF1* piSigmaMid2P; TF1* piSigmaHighP;
-	TF1* prSigmaLowP; TF1* prSigmaHighP;
-	TF1* kaSigmaLowP; TF1* kaSigmaHighP;
-	TF1* deSigmaLowP; TF1* deSigmaHighP;
-	TF1* trSigmaLowP; TF1* trSigmaMidP; TF1* trSigmaHighP;
-	TF1* he3SigmaLowP; TF1* he3SigmaMidP; TF1* he3SigmaHighP;
-	TF1* he4SigmaLowP; TF1* he4SigmaMid1P; TF1* he4SigmaMid2P; TF1* he4SigmaHighP;
-	
-	Double_t fProbEl;
-	Double_t fProbMu;
-	Double_t fProbPi;
-	Double_t fProbKa;
-	Double_t fProbPr;
-	Double_t fProbDe;
-	Double_t fProbTr;
-	Double_t fProbHe3;
-	Double_t fProbHe4;
-	
-	Double_t prrat; /// rat is pos./neg.
-	Double_t fSigmaDedx_1, fSigmaDedx_2, fSigmaDedx_3;
-	Double_t fKoef; /// scale of dedx
-	
-	Double_t kSigmaTof;
-	Double_t kSigmaEloss;
-	
-	Bool_t fTracking;
-	Int_t fCharge;
-	Int_t Multiplicities[14];
-	Double_t fEnergy;
 	Double_t AsymGaus(Double_t*, Double_t*);
 	Double_t AsymGaus2(Double_t*, Double_t*);
+	Double_t MomPi(Double_t* , Double_t*);
+	Double_t MomPr(Double_t*, Double_t*);
 	
-	void Init(TString, TString, TString);
+	protected:
 	
-	/// GetDedxProb_asym variables: cut_dedx, p, dedx, n, emean, sige, specie
-	Double_t GetDedxProb_asym(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Int_t); 
+	void Init(TString, TString, TString, Double_t);
 	
-	/// GetCombProb_asym variables: cut_dedx, cut_m2, p, dedx, m2, n, emean, mmean, sige, sigm, specie
-	Double_t GetCombProb_asym(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Int_t);
+	/// GetDedxProb_asym variables: cut_dedx, p, dedx, n, emean, sige, species
+	Double_t ComputeDedxProb_asym(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, MpdPidUtils::ePartType); 
 	
-	ClassDef(MpdPid,3);
+	/// GetCombProb_asym variables: cut_dedx, cut_m2, p, dedx, m2, n, emean, mmean, sige, sigm, species
+	Double_t ComputeCombProb_asym(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, MpdPidUtils::ePartType);
+	
+	void ComputeBayesCoefficients(Double_t);
+	
+	Double_t ComputeEnLossSigma(Double_t, Double_t, Double_t, Double_t, MpdPidUtils::ePartType);
+	Double_t ComputeMSquaredSigma(Double_t, Double_t, Double_t, MpdPidUtils::ePartType);
+	
+	/// Variables
+	
+	TF1 *fGaus;
+	TF1 *fAsymGaus;
+	TF2 *fGaus2;
+	TF2 *fAsymGaus2;
+	
+	Double_t              					fProb[MpdPidUtils::kNSpecies]; ///< the probability to identify track as a species <i>
+	Double_t              					fEnLossSigmasArray[MpdPidUtils::kNSpecies]; ///< the deviation of the measured energy loss from that expected for the species <i>, in terms of the detector resolution
+	Double_t              					fMSquaredSigmasArray[MpdPidUtils::kNSpecies]; ///< the deviation of the measured mass squared from that expected for the species <i>, in terms of the detector resolution
+	Double_t              					fPrRatio; ///< proton ratio is pos./neg.
+	Double_t              					fEnergy; ///< collision energy
+	Double_t              					fSigmaTof; ///< non-zero distance from the average mass-squared value (in terms of standard deviations)
+	Double_t              					fSigmaEloss; ///< non-zero distance from the average dE/dx value (in terms of standard deviations)
+	MpdPidUtils::eTrackingState     		fTrackingState;
+	Bool_t                					fMethod; ///< PID method, kTRUE - Bayesian approach, kFALSE - n-sigma method
+	MpdPidUtils::ePartCharge       			fCharge; ///< track charge
+	Double_t              					fBayesCoefficients[MpdPidUtils::kNSpecies]; ///< Bayes Coefficients assigned to the track
+	Bool_t                					fNSigSpecies[MpdPidUtils::kNSpecies]; ///< array of flags to the particle species involved in n-sigma method
+	
+	map <MpdPidUtils::ePartType,vecTF1ptrs>	fdEdxBBMap;        /// Bethe-Bloch functions for mean energy deposit description
+	map <MpdPidUtils::ePartType,vecTF1ptrs> fdEdxSigmaMap;     /// Polynomials for dE/dx width description
+	map <MpdPidUtils::ePartType,vecTF1ptrs> fdEdxDeltaMap;     /// Polynomials for dE/dx asymmetry description
+	map <MpdPidUtils::ePartType,vecTF1ptrs> fParM2Map;         /// Functions for m2 width description
+	map <MpdPidUtils::ePartType,vecTF1ptrs> fPartYieldMap;     /// Functions for multiplicity description
+	
+	ClassDef(MpdPid,4);
 };
 
 #endif

@@ -35,7 +35,12 @@ MpdPid.cxx
 MpdPidQA.cxx
 )
 
-Set(HEADERS)
+# List of header files
+Set(HEADERS
+MpdPidUtils.h
+MpdPid.h
+MpdPidQA.h
+)
 Set(LINKDEF MpdPidLinkDef.h)
 Set(LIBRARY_NAME MpdPid)
 Set(DEPENDENCIES Core Base Hist MpdMCStack MpdBase)
