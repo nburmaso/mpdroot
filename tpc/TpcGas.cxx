@@ -16,8 +16,8 @@ TpcGas::TpcGas():_E(0),
 		 _Dt(0),
 		 _k(0),
 		 _W(0),
-                 _CSD(0),
-                 _CSDNorm(0),
+         _CSD(0),
+         _CSDNorm(0),
 		 _CSDEpol(0)
 {}
 
@@ -141,7 +141,7 @@ TpcGas::GetRandomCSUniform() const
 //return wrong number if r > overall sum
 int
 TpcGas::GetRandomCS(double const r) const {
-  int i=0;
+  UInt_t i=0;
   double sum=_CSD[0];
   while(r>sum && ++i<_CSD.size()){
     sum+=_CSD[i];
@@ -149,7 +149,8 @@ TpcGas::GetRandomCS(double const r) const {
   if (_CSDEpol > 0)
     while(r>sum && i < 100)//sum could converge < 1
     {
-      sum += _CSDEpol/i/i++;
+      sum += _CSDEpol/i/i;  
+      i++;
     }
   return i + 1;
 }

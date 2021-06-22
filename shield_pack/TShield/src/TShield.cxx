@@ -23,9 +23,9 @@ ClassImp(TShield)
 
 //______________________________________________________________________________
 TShield::TShield(bool clean, int FlyOutMax, int AbsorbedMax):
-    clearAtStart(clean), ParticlesNumFlyOutMax(FlyOutMax),
-    fGeometry(NULL), fParticlesFlyOut(NULL), fParticlesAbsorbed(NULL), fTree(NULL), fCurrentParticle(NULL),
-    ParticlesNumAbsorbedMax(AbsorbedMax) {
+    fGeometry(nullptr), fParticlesFlyOut(nullptr), fParticlesAbsorbed(nullptr),
+    ParticlesNumFlyOutMax(FlyOutMax), ParticlesNumAbsorbedMax(AbsorbedMax), 
+    clearAtStart(clean), fTree(nullptr), fCurrentParticle(nullptr) {
     // Check if another instance of TShield already exists
     if (fInstance) {
         Fatal("TShield", "FATAL ERROR: Another instance of TShield class already exists");

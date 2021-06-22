@@ -14,49 +14,49 @@ std::pair<zoneList, zoneList> getZoneFromBody(TGeoNode *node, TGeoHMatrix oldTra
 
 std::pair<zoneList, zoneList> getZoneFromShape(TGeoShape *shape, TGeoHMatrix currTransformation, double scale) {
     std::pair<zoneList, zoneList> zonePair;
-    if (dynamic_cast<TGeoTubeSeg *>(shape) != NULL) {
+    if (dynamic_cast<TGeoTubeSeg *>(shape) != nullptr) {
         zonePair = tubeSegToZones((TGeoTubeSeg *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoTube *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoTube *>(shape) != nullptr) {
         zonePair = tubeToZones((TGeoTube *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoCtub *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoCtub *>(shape) != nullptr) { //TODO
         printf("TGeoCtub not implemented yet\n");
-    } else if (dynamic_cast<TGeoConeSeg *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoConeSeg *>(shape) != nullptr) {
         zonePair = coneSegToZones((TGeoConeSeg *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoCone *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoCone *>(shape) != nullptr) {
         zonePair = coneToZones((TGeoCone *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoPara *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoPara *>(shape) != nullptr) { //TODO
         printf("TGeoPara not implemented yet\n");
-    } else if (dynamic_cast<TGeoTrd1 *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoTrd1 *>(shape) != nullptr) {
         zonePair = trd1ToZones((TGeoTrd1 *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoTrd2 *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoTrd2 *>(shape) != nullptr) {
         zonePair = trd2ToZones((TGeoTrd2 *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoTrap *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoTrap *>(shape) != nullptr) {
         zonePair = trapToZones((TGeoTrap *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoSphere *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoSphere *>(shape) != nullptr) {
         zonePair = sphereToZones((TGeoSphere *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoPgon *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoPgon *>(shape) != nullptr) {
         zonePair = polyhedraToZones((TGeoPgon *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoPcon *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoPcon *>(shape) != nullptr) {
         zonePair = polyconeToZones((TGeoPcon *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoEltu *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoEltu *>(shape) != nullptr) {
         zonePair = ellipticalTubeToZones((TGeoEltu *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoArb8 *>(shape) != NULL) {
+    } else if (dynamic_cast<TGeoArb8 *>(shape) != nullptr) {
         zonePair = arb8ToZones((TGeoArb8 *)shape, currTransformation, scale);
-    } else if (dynamic_cast<TGeoGtra *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoGtra *>(shape) != nullptr) { //TODO
         printf("TGeoGtra not implemented yet\n");
-    } else if (dynamic_cast<TGeoHype *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoHype *>(shape) != nullptr) { //TODO
         printf("TGeoHype not implemented yet\n");
-    } else if (dynamic_cast<TGeoTorus *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoTorus *>(shape) != nullptr) { //TODO
         printf("TGeoTorus not implemented yet\n");
-    } else if (dynamic_cast<TGeoParaboloid *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoParaboloid *>(shape) != nullptr) { //TODO
         printf("TGeoParaboloid not implemented yet\n");
-    } else if (dynamic_cast<TGeoXtru *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoXtru *>(shape) != nullptr) { //TODO
         printf("TGeoXtru not implemented yet\n");
-    } else if (dynamic_cast<TGeoHalfSpace *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoHalfSpace *>(shape) != nullptr) { //TODO
         printf("TGeoHalfSpace not implemented yet\n");
-    } else if (dynamic_cast<TGeoCompositeShape *>(shape) != NULL) { //TODO
+    } else if (dynamic_cast<TGeoCompositeShape *>(shape) != nullptr) { //TODO
         printf("TGeoCompositeShape not implemented yet\n");
-    } else if (dynamic_cast<TGeoBBox *>(shape) != NULL) { //All of this shapes in subclasses of TGeoBBox
+    } else if (dynamic_cast<TGeoBBox *>(shape) != nullptr) { //All of this shapes in subclasses of TGeoBBox
         zonePair = boxToZones((TGeoBBox *)shape, currTransformation, scale);
     } else {
         printf("ELSE");
@@ -288,7 +288,7 @@ inline std::pair<zoneList, zoneList> trapToZones(TGeoTrap *trap, TGeoHMatrix cur
     double alpha1 = (double) trap->GetAlpha1() / (180 / M_PI);
     double alpha2 = (double) trap->GetAlpha2() / (180 / M_PI);
 
-    double rCenter = dz / cos(theta);
+    //double rCenter = dz / cos(theta);
     double xC = dz * tan(theta) * cos(phi); //rCenter * sin(theta) * cos(phi);
     double yC = dz * tan(theta) * sin(phi); //rCenter * sin(theta) * sin(phi);
     double x1 = dy1 * tan(alpha1);
@@ -569,6 +569,9 @@ std::pair<zoneList, zoneList> compositeShapeToZones(TGeoCompositeShape *shape, T
         case TGeoBoolNode::kGeoSubtraction:
             return std::pair<zoneList, zoneList>(andZone(lo.first, ro.first), notZone(orZone(lo.second, ro.second)));
             break;
+        default:
+            printf("Something is wrong with Node. Returning subtraction");
+            return std::pair<zoneList, zoneList>(andZone(lo.first, ro.first), notZone(orZone(lo.second, ro.second)));
     }
 }
 
@@ -601,4 +604,3 @@ MediumData getMedium(TGeoNode *node) {
     return out;
 }
 }
-

@@ -74,8 +74,8 @@ void TShield::AddTreeParticle(shield_tree_node *node) {
 }
 
 double TShield::FindBoundary(double x, double y, double z, double vx, double vy, double vz) {
-    TGeoNode *node = fGeometry->FindNode(x, y, z);
-
+    //TGeoNode *node = fGeometry->FindNode(x, y, z);
+    return 0; //line 45: Disabled now
 }
 
 int TShield::GetNextVolume(double x, double y, double z, double vx, double vy, double vz) {
@@ -86,7 +86,7 @@ int TShield::GetNextVolume(double x, double y, double z, double vx, double vy, d
     tgeanttoshield::printGeant4ShieldData(geometryData);
 #endif
     bool isOnlyOuterVacuum = true;
-    for (int i = 0; i < geometryData.size(); i++) {
+    for (UInt_t i = 0; i < geometryData.size(); i++) {
         int countBodies = geometryData.at(i).bodyVector.size();
         // at "23.2.4 Class template vector" says, that elements of a vector are stored contiguously.
         int *zones = &(geometryData.at(i).zoneVector[0]);

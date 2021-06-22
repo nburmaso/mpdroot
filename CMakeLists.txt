@@ -71,8 +71,8 @@ include(CreateMpdConfig)
 
 # Set the build type: None, Debug, Release, RelWithDebInfo or MinSizeRel 
 If(NOT CMAKE_BUILD_TYPE)
-  Message("Set BuildType DEBUG")
-  set(CMAKE_BUILD_TYPE Debug)
+  Message("Set BuildType RelWithDebInfo")
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
 EndIf(NOT CMAKE_BUILD_TYPE)
 
 #Check the compiler and set the compile and link flags

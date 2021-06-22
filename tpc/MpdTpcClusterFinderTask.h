@@ -100,7 +100,7 @@ private:
     UInt_t nRows;                      // number of rows in TPC sector
     UInt_t nInRows;                    // number of rows in inner part of TPC sector
     UInt_t nOutRows;                   // number of rows in outer part of TPC sector 
-    Int_t *fNumOfPadsInRow;            // array of pads quantity in every TPC rows
+    UInt_t *fNumOfPadsInRow;            // array of pads quantity in every TPC rows
     Float_t fSectInHeight;              // height of inner part of TPC sector
     Float_t fNoiseThreshold;           // threshold for signal separation
     TString fNameResFile;              // name of output residuals file

@@ -6,7 +6,7 @@
 #include "TShieldGenerator.h"
 
 TShieldGenerator::TShieldGenerator():
-    TGenerator(), fNumStat(0), fStartX(0), fStartY(0), fStartZ(0), fEnergy(1E3), fPdgCode(1) {
+    TGenerator(), fEnergy(1E3), fStartX(0), fStartY(0), fStartZ(0), fPdgCode(1), fNumStat(0) {
     fShield = new TShield();
 }
 TShieldGenerator::~TShieldGenerator(){
@@ -72,7 +72,7 @@ Int_t TShieldGenerator::ImportParticles(TClonesArray *particles, Option_t *optio
     TClonesArray &a = *particles;
     a.Clear();
     
-    Int_t pdg;
+    //Int_t pdg;
     TTree *tree = (TTree*)fShield->GetTree();
     TParticle *p = 0;
     int numEntries;
@@ -81,7 +81,7 @@ Int_t TShieldGenerator::ImportParticles(TClonesArray *particles, Option_t *optio
     for (Int_t k = 0; k < numEntries; k++) {
         tree->GetEntry(k);
 //             if(p->GetStatusCode()!=3)continue;
-        pdg = p->GetPdgCode();
+        //pdg = p->GetPdgCode();
         new(a[k]) TParticle(*p);
     }
     return numEntries;

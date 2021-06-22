@@ -6,7 +6,6 @@
 #include <TGraph.h>
 #include <TClonesArray.h>
 #include <TFile.h>
-
 #include "FairLogger.h" 
 #include "MpdMCTrack.h"
 #include "MpdTpcKalmanTrack.h"
@@ -273,7 +272,7 @@ void	MpdTofMatchingQA::FillIdealMatching(const TmPt& mPt, const TmmT2H& mmT2H, c
 	for(const auto& it : mPt) // cycle by TPC KF tracks
 	{   	
 		auto pKfTrack = (const MpdTpcKalmanTrack*) it.first;
-		Int_t KfIndex = it.second;
+		//Int_t KfIndex = it.second;
 		Int_t mcTrackIndex = pKfTrack->GetTrackID();
 
 		size_t Nhits = mmT2H.count(mcTrackIndex); // number of hits for current tid
@@ -281,7 +280,8 @@ void	MpdTofMatchingQA::FillIdealMatching(const TmPt& mPt, const TmmT2H& mmT2H, c
 
                	auto pMCtrack = (MpdMCTrack*) aMCTracks->UncheckedAt(mcTrackIndex);
 		pMCtrack->GetMomentum(momentum);
-		double Eta = momentum.Eta(), P = momentum.Mag();
+		//double Eta = momentum.Eta(), 
+		double P = momentum.Mag();
 
 		bool IsTrueMatching = (Nhits == 1);
 		pEffEtaPIdeal->Fill(IsTrueMatching, P); //  = 1 hit per track

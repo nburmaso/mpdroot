@@ -156,7 +156,7 @@ Bool_t TpcDetector::ProcessHits( FairVolume *v)
 
 TClonesArray* TpcDetector::GetCollection(Int_t iColl) const {
   if (iColl == 0) return fTpcPointCollection;
-  else return NULL;
+  else return nullptr;
 }
 
 
@@ -225,8 +225,8 @@ void TpcDetector::ConstructAsciiGeometry() {
   TObjArray *fPassNodes = par->GetGeoPassiveNodes();
 
   TListIter iter(volList);
-  FairGeoNode* node   = NULL;
-  FairGeoVolume *aVol=NULL;
+  FairGeoNode* node   = nullptr;
+  FairGeoVolume *aVol=nullptr;
 
   while( (node = (FairGeoNode*)iter.Next()) ) {
       aVol = dynamic_cast<FairGeoVolume*> ( node );
@@ -362,6 +362,7 @@ void TpcDetector::ExpandNodeForGdml(TGeoNode* node)
                 {
                     LOG(DEBUG) << "    Found media in Geo file" << medName;
                     Int_t nmed = geobuild->createMedium(curMedInGeo);
+                    LOG(DEBUG) << "    nmed " << nmed;
                     fFixedMedia[medName] = (TGeoMedium*)gGeoManager->GetListOfMedia()->Last();
                     gGeoManager->RemoveMaterial(curMatOfMedInGeoManager->GetIndex());
                     LOG(DEBUG) << "    removing material " << curMatOfMedInGeoManager->GetName()

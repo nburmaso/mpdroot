@@ -62,7 +62,7 @@ Int_t MpdTPCpid::GetTpcProbs(Float_t P, Float_t dedx, Int_t nHits, Float_t& Ppi,
 
 
     //default sigmas
-    Float_t sigma = 0.07 * dedx;
+    //Float_t sigma = 0.07 * dedx;
 
     Float_t sum = 0.0; // for normalizing
 
@@ -285,7 +285,7 @@ void MpdTPCpid::ReadTPCResponse() {
     cerr<<"PID: READ TPC RESPONSE: Cannot open file "<<dEdxFile.Data()<<endl;
    }    
 
-   const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
+   //const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
 
   if(input) {
    

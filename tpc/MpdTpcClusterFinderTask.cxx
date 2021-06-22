@@ -34,7 +34,6 @@
 #include "TMath.h"
 #include "TVector3.h"
 #include "TFile.h"
-
 #include "sys/timeb.h"
 #include <sys/time.h>
 
@@ -51,19 +50,20 @@ static clock_t tFinish = 0;
 static clock_t tAll = 0;
 
 MpdTpcClusterFinderTask::MpdTpcClusterFinderTask() :
+
+fDigits(nullptr),
+fHitsArray(nullptr),
+fMCPointArray(nullptr),
+fMCTracks(nullptr),
+fDigitsArray(nullptr),
+fHisto(nullptr),
 fPersistence(kTRUE),
 fPrintDebugInfo(kFALSE),
-fHitsArray(NULL),
-fDigits(NULL),
 isHistogramsInitialized(kFALSE),
 fMakeQA(kFALSE),
+fCalcResiduals(kFALSE),
 fitGamma(kFALSE),
-fHisto(NULL),
-fNumOfPadsInRow(NULL),
-fMCTracks(NULL),
-fMCPointArray(NULL),
-fDigitsArray(NULL),
-fCalcResiduals(kFALSE) {
+fNumOfPadsInRow(nullptr) {
     inputBranchName = "MpdTpcDigit";
     outputBranchName = "MpdTpcHit";
 
@@ -99,7 +99,7 @@ InitStatus MpdTpcClusterFinderTask::Init() {
     zDrift = sector->GetLength(); //cm
     nSect = sector->GetNSectors();
     nRows = sector->GetNumRows();
-    fNumOfPadsInRow = sector->GetArrayPadsInRow();
+    fNumOfPadsInRow = (UInt_t*)sector->GetArrayPadsInRow();
     nTimeBins = sector->GetNTimeBins();
     pwIn = sector->GetInnerPadWidth();
     pwOut = sector->GetOuterPadWidth();
@@ -164,7 +164,7 @@ void MpdTpcClusterFinderTask::Exec(Option_t* opt) {
 
             for (Int_t i = 0; i < fDigits->GetEntriesFast(); ++i) {
                 MpdTpcDigit* fDigit = (MpdTpcDigit*) fDigits->At(i);
-                if (fDigit->GetSector() == iSec) {
+                if ( (UInt_t) fDigit->GetSector() == iSec) {
                     fDigitsArray[fDigit->GetRow()][fDigit->GetPad()][fDigit->GetTimeBin()].origin = fDigit->GetOrigin();
                     fDigitsArray[fDigit->GetRow()][fDigit->GetPad()][fDigit->GetTimeBin()].signal = fDigit->GetAdc();
                 }
@@ -189,9 +189,8 @@ void MpdTpcClusterFinderTask::Exec(Option_t* opt) {
                                     fHisto->_hXT_peak_row->Fill(peak->Col(), peak->MaxAdcBkt(), /*peak->SumADC()*/0.9);                                
                                 }
                             }
-                        }
-                        else {
-                            if(iRow == fHisto->NumRow_hist && iSec == numSect) {
+                        } else {
+                            if(iRow == fHisto->NumRow_hist && iSec == (UInt_t) numSect) {
                                 for(UInt_t iPeak = 0; iPeak < peakList.size(); iPeak++) {
                                     MpdTpcPeak *peak = peakList.at(iPeak);
                                     fHisto->_hXT_peak_row->Fill(peak->Col(), peak->MaxAdcBkt(), /*peak->SumADC()*/0.9);                            
@@ -227,7 +226,7 @@ void MpdTpcClusterFinderTask::Exec(Option_t* opt) {
                             }
                         }
                         else {
-                            if(iRow == fHisto->NumRow_hist && iSec == fHisto->NumSector_hist) {
+                            if(iRow == fHisto->NumRow_hist && iSec == (UInt_t) fHisto->NumSector_hist) {
                                 for(UInt_t iPeak = 0; iPeak < collectedPeakList.size(); iPeak++) {
                                     MpdTpcPeak *cpeak = collectedPeakList.at(iPeak);
                                     if(cpeak->Chi2() > 0.0) {
@@ -261,7 +260,7 @@ void MpdTpcClusterFinderTask::Exec(Option_t* opt) {
                 for (UInt_t iHit = 0; iHit < tpcHitList.size(); ++iHit) {
                     MpdTpcFoundHit* hit = tpcHitList.at(iHit);
 
-                    const Int_t Sect = hit->GetSect();
+                    const UInt_t Sect = hit->GetSect();
                     const Float_t sectPhi = Sect * TwoPi() / 12;
 
                     const Float_t lX = hit->GetLocalX(); // local X coordinate
@@ -308,7 +307,7 @@ void MpdTpcClusterFinderTask::Exec(Option_t* opt) {
                             fHisto->_hZ_global->Fill(gZ, Q);
                             fHisto->_hXY_global->Fill(gX, gY, Q);
                             fHisto->_hPeak->Fill(Q);
-                            if (hit->PadRow() < nInRows) {
+                            if ((UInt_t)hit->PadRow() < nInRows) {
                                 fHisto->_hErrX_inner->Fill(hit->errX());
                                 fHisto->_hErrZ_inner->Fill(hit->errZ());
                             } else {
@@ -322,7 +321,7 @@ void MpdTpcClusterFinderTask::Exec(Option_t* opt) {
 //mybeg   
                             //Clusters and hits drawing (together - on one histogram and separately - on different histograms)
                             if (fHisto->NumSector_hist == -1) {
-                                if(hit->Cluster()->Row() == fHisto->NumRow_hist) {                               
+                                if( (UInt_t) hit->Cluster()->Row() == fHisto->NumRow_hist) {                               
                                     for(UInt_t iDig = 0; iDig < hit->Cluster()->GetNumDigits(); ++iDig) {
                                         fHisto->_hXT_clust_hit_row->Fill(hit->Cluster()->Col(iDig),hit->Cluster()->Bkt(iDig), /*hit->Cluster()->Adc(iDig)*/0.001);                            
                                         fHisto->_hXT_clust_row->Fill(hit->Cluster()->Col(iDig),hit->Cluster()->Bkt(iDig), hit->Cluster()->Adc(iDig));                
@@ -331,7 +330,7 @@ void MpdTpcClusterFinderTask::Exec(Option_t* opt) {
                                     fHisto->_hXT_hit_row->Fill(hit->PadCol(), hit->TimeBkt(), hit->QADC());
                                 }
                             } else {
-                                if(hit->Cluster()->Row() == fHisto->NumRow_hist && hit->GetSect() == fHisto->NumSector_hist) {                                  
+                                if( (UInt_t) hit->Cluster()->Row() == fHisto->NumRow_hist && hit->GetSect() == fHisto->NumSector_hist) {                                  
                                     for(UInt_t iDig = 0; iDig < hit->Cluster()->GetNumDigits(); ++iDig) {
                                         fHisto->_hXT_clust_hit_row->Fill(hit->Cluster()->Col(iDig),hit->Cluster()->Bkt(iDig), /*hit->Cluster()->Adc(iDig)*/0.001);                            
                                         fHisto->_hXT_clust_row->Fill(hit->Cluster()->Col(iDig),hit->Cluster()->Bkt(iDig), hit->Cluster()->Adc(iDig));                
@@ -427,7 +426,7 @@ Bool_t MpdTpcClusterFinderTask::Find2DClusters(vector<MpdTpc2dCluster*> *extClus
     return kTRUE;
 }
 
-Bool_t MpdTpcClusterFinderTask::GetNextDigit(UInt_t* currdig, MpdTpc2dCluster* Clus2d, DigOrigArray **fDigitsArray, Bool_t **fADCMarks) {
+Bool_t MpdTpcClusterFinderTask::GetNextDigit(UInt_t* currdig, MpdTpc2dCluster* Clus2d, DigOrigArray **fDigitsArray1, Bool_t **fADCMarks) {
 
     UInt_t thisCol, thisRow, thisBkt;
     UInt_t nextCol, nextBkt;
@@ -449,11 +448,11 @@ Bool_t MpdTpcClusterFinderTask::GetNextDigit(UInt_t* currdig, MpdTpc2dCluster* C
             if (thisBkt == nTimeBins - 1 && j >= 0) continue;
             nextBkt = thisBkt + j; // look down, up, check if we're at the edge
 
-            if (fDigitsArray[nextCol][nextBkt].signal < fNoiseThreshold) continue;
+            if (fDigitsArray1[nextCol][nextBkt].signal < fNoiseThreshold) continue;
             UInt_t nextdig[3] = {thisRow, nextCol, nextBkt};
 
             if (!fADCMarks[nextCol][nextBkt]) {
-                if (!Clus2d->Insert(thisRow, nextCol, nextBkt, fDigitsArray[nextCol][nextBkt].signal)) {
+                if (!Clus2d->Insert(thisRow, nextCol, nextBkt, fDigitsArray1[nextCol][nextBkt].signal)) {
                     #pragma omp critical
                     {
                     cout << "Failed to insert digit into cluster..." << endl;
@@ -461,7 +460,7 @@ Bool_t MpdTpcClusterFinderTask::GetNextDigit(UInt_t* currdig, MpdTpc2dCluster* C
                     return kFALSE;
                 }
                 fADCMarks[nextCol][nextBkt] = kTRUE;
-                GetNextDigit(nextdig, Clus2d, fDigitsArray, fADCMarks);
+                GetNextDigit(nextdig, Clus2d, fDigitsArray1, fADCMarks);
             }
         }
     }
@@ -498,8 +497,8 @@ void MpdTpcClusterFinderTask::FindPeaksInCluster(MpdTpc2dCluster* clust, vector<
         Float_t thresh = 0.;
         Float_t max = 0.;
         Float_t min = 1.e9;
-        Int_t imax = -1;
-        Int_t imin = -1;
+        //Int_t imax = -1;
+        //Int_t imin = -1;
         Int_t npeak = 0;
 
         MpdTpcPeak* peak = new MpdTpcPeak();
@@ -516,14 +515,14 @@ void MpdTpcClusterFinderTask::FindPeaksInCluster(MpdTpc2dCluster* clust, vector<
                 peak->Insert(adc, i + mincol, j + minbkt);
                 if (adc > max) {
                     max = adc;
-                    imax = i;
+                    //imax = i;
                     thresh = max - 2 * sqrt(max); // ???
                 }
             }
 
             if (FoundPeak && adc < min) {
                 min = adc;
-                imin = i;
+                //imin = i;
             }
             if (adc < thresh) FoundPeak = kTRUE;
 
@@ -555,8 +554,8 @@ void MpdTpcClusterFinderTask::FindPeaksInCluster(MpdTpc2dCluster* clust, vector<
                 thresh = 0.;
                 max = 0.;
                 min = 1.e9;
-                imax = -1;
-                imin = -1;
+                //imax = -1;
+                //imin = -1;
 
             } // end check for 2nd peak (or clear end of 1st peak)
         } // end loop through buckets in this column
@@ -628,7 +627,7 @@ void MpdTpcClusterFinderTask::CollectPeaks(vector<MpdTpcPeak*> peakList, MpdTpc2
     if (peakList[0]->Chi2() > 0.)
         tprev = peakList[0]->PeakTime();
     else {
-        Float_t x1 = peakList[0]->NSamples();
+        //Float_t x1 = peakList[0]->NSamples();
         //Float_t dt1 = par[0]*(1 - exp(-(par[1] - x1)*(par[1] - x1) / par[2]));
         tprev = peakList[0]->Mean() + peakList[0]->BktOff(); // - dt1;
     }
@@ -639,7 +638,7 @@ void MpdTpcClusterFinderTask::CollectPeaks(vector<MpdTpcPeak*> peakList, MpdTpc2
         if (peakList[i]->Chi2() > 0.)
             tnext = peakList[i]->PeakTime();
         else {
-            Float_t x1 = peakList[i]->NSamples();
+            //Float_t x1 = peakList[i]->NSamples();
             //Float_t dt1 = par[0]*(1 - exp(-(par[1] - x1)*(par[1] - x1) / par[2]));
             tnext = peakList[i]->Mean() + peakList[i]->BktOff(); // - dt1;
         }
@@ -663,7 +662,7 @@ void MpdTpcClusterFinderTask::CreateHit(vector<MpdTpcPeak*> collectedPeakList, M
     if (clust->GetNumPads() == 1 || clust->GetNumTimeBins() == 1) oneHitCluster = kTRUE;
     if (!oneHitCluster && !collectedPeakList.empty()) {
 
-        //        TF1* fitfcn = NULL;
+        //        TF1* fitfcn = nullptr;
         Float_t sigmaX = -1.0;
 
         MpdTpcFoundHit* hit = new MpdTpcFoundHit(clust);
@@ -772,7 +771,7 @@ void MpdTpcClusterFinderTask::CreateHit(vector<MpdTpcPeak*> collectedPeakList, M
                     hit->SetQADC(hit->QADC() + peak->SumADC());
                     hit->SetType(hit->Type() | MpdTpcFoundHit::kWMPeak);
                     hit->AddOrigin(peak->GetOrigin());
-                    Float_t x1 = peak->NSamples();
+                    //Float_t x1 = peak->NSamples();
                     //Float_t dt1 = par[0]*(1 - exp(-(par[1] - x1)*(par[1] - x1) / par[2]));
                     Float_t myt = peak->Mean() + peak->BktOff(); // - dt1;
                     /// Correction for TPC MPD may be added here
@@ -810,7 +809,7 @@ void MpdTpcClusterFinderTask::CreateHit(vector<MpdTpcPeak*> collectedPeakList, M
         if (GoodHit) {
 
             Float_t padW, padH;
-            Int_t Row = clust->Row();
+            UInt_t Row = (UInt_t) clust->Row();
 
             if (Row < nInRows) {
                 padW = pwIn;
@@ -851,8 +850,8 @@ void MpdTpcClusterFinderTask::CreateHit(vector<MpdTpcPeak*> collectedPeakList, M
         Float_t rmsx = 0.0, rmsz = 0.0;
         Float_t adc = 0.0, sumadc = 0.0, invsum = 0.0;
 
-        Int_t ndig = clust->GetNumDigits();
-        Int_t Origin;
+        UInt_t ndig = (UInt_t) clust->GetNumDigits();
+        Int_t Origin{0};
 
         for (UInt_t i = 0; i < ndig; ++i) {
 
@@ -865,7 +864,7 @@ void MpdTpcClusterFinderTask::CreateHit(vector<MpdTpcPeak*> collectedPeakList, M
             Origin = CurrDigOrigin;
 
             // y-coordinate of pad center
-            y = (iRow < nInRows) ? (phIn * ((Float_t) iRow + 0.5)) : (fSectInHeight + ((Float_t) (iRow - nInRows) + 0.5) * phOut);
+            y = ((UInt_t)iRow < nInRows) ? (phIn * ((Float_t) iRow + 0.5)) : (fSectInHeight + ((Float_t) (iRow - nInRows) + 0.5) * phOut);
 
             // Compute weighted sums of x, t, x^2, and t^2
             avgx += adc * iPad;
@@ -908,7 +907,7 @@ void MpdTpcClusterFinderTask::CreateHit(vector<MpdTpcPeak*> collectedPeakList, M
         Float_t pos[3];
         Float_t hitErr[3];
 
-        const Float_t padW = (clust->Row() < nInRows) ? pwIn : pwOut;
+        const Float_t padW = ( (UInt_t) clust->Row() < nInRows) ? pwIn : pwOut;
         pos[0] = padW * ((Float_t) clust->GetX() - (Float_t) fNumOfPadsInRow[clust->Row()] + 0.5);
 
         pos[1] = y;
@@ -943,9 +942,9 @@ void MpdTpcClusterFinderTask::FitPeaks(vector<MpdTpcPeak*> PeakList, Int_t npeak
         Int_t ny = peak->NSamples();
 
         // skip the fitting if this peak has too few bins...
-        UInt_t fMinNBktGamma = 5; ///because this is the minimum number of bins in hit, must be re-checked!
-
-        if (ny < fMinNBktGamma) continue;
+       
+        //Int_t fMinNBktGamma = 5; ///because this is the minimum number of bins in hit, must be re-checked!
+        if (ny < 5) continue;
 
         Float_t yADC[ny];
 
@@ -1198,7 +1197,8 @@ void MpdTpcClusterFinderTask::CalcResiduals(MpdTpcFoundHit* hit, Float_t sectPhi
             << gX << " " << gY << " " << gZ << " " << lX << " " << lY << " " << lZ << " " << hit->QADC() << " " << hit->GetOrigin() << endl;
     f.close();
 
-    delete gResX, gResZ;
+    delete gResX;
+    delete gResZ;
 }
 
 void MpdTpcClusterFinderTask::CalcNewErrors(MpdTpcFoundHit* hit) {

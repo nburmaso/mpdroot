@@ -31,8 +31,8 @@
 // -----   Default constructor   -------------------------------------------
 MpdItsHitProducer5spd::MpdItsHitProducer5spd() :
   FairTask("Ideal ITS hit Producer5spd"),
-  fPointArray(NULL),
-  fDigiArray(NULL)
+  fPointArray(nullptr),
+  fDigiArray(nullptr)
 {}
 
 // -----   Default constructor   -------------------------------------------
@@ -41,12 +41,12 @@ MpdItsHitProducer5spd::MpdItsHitProducer5spd(const char* fileGeo) :
   FairTask("Ideal ITS hit Producer_5spd") {
   fFileGeo=fileGeo;
   eneThr = 0.001; // Energy threshold for ITS
-  fDigiArray = NULL;
+  fDigiArray = nullptr;
 }
 */
 
 // -----   Destructor   ----------------------------------------------------
-//MpdItsHitProducer5spd::~MpdItsHitProducer5spd() { delete fDigiArray; fDigiArray = NULL; }
+//MpdItsHitProducer5spd::~MpdItsHitProducer5spd() { delete fDigiArray; fDigiArray = nullptr; }
 MpdItsHitProducer5spd::~MpdItsHitProducer5spd() { }
 
 // -----   Public method Init   --------------------------------------------
@@ -143,7 +143,7 @@ void MpdItsHitProducer5spd::Exec(Option_t* opt) {
   fDigiArray->Clear();
 
   //------ Declare some variables
-  MpdStsPoint* point  = NULL;
+  MpdStsPoint* point  = nullptr;
   
   //------ Loop over MCPoints
   Int_t nPoints = fPointArray->GetEntriesFast();
@@ -258,7 +258,7 @@ void MpdItsHitProducer5spd::Finish()
   ///                                                                           
 
   delete fDigiArray;
-  fDigiArray = NULL;
+  fDigiArray = nullptr;
 }
 
 ClassImp(MpdItsHitProducer5spd)

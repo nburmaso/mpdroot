@@ -389,7 +389,8 @@ return left;
 //------------------------------------------------------------------------------------------------------------------------
 void 		LRectangle::Dump(const char* comment, ostream& out) const 
 { 
-	if(comment) out<<comment; out<<" uid="<<volumeUID<<" IsInvalid="<<IsInvalid;
+	if(comment) out<<comment; 
+	out<<" uid="<<volumeUID<<" IsInvalid="<<IsInvalid;
 	MpdTof::Print(A, " A:", out); MpdTof::Print(B, " B:", out); MpdTof::Print(C, " C:", out); MpdTof::Print(D, " D:", out); MpdTof::Print(perp, " perp:", out);
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -397,7 +398,7 @@ void 		LRectangle::Test(const char* comment, ostream &out)
 {
 	if(comment) out<<comment; 
 	out<<"\n [LRectangle::Test]--------------------------->>>"; 
-	const double  epsilon = 1.E-3;
+	//const double  epsilon = 1.E-3;
 
 	for(double xshift = -10; xshift < 10; xshift++)
 	for(double yshift = -10; yshift < 10; yshift++)
@@ -486,12 +487,13 @@ Double_t 	LStrip::Distance(Side_t side, const LStrip& strip) const
 	if((*this) == strip) 		return min1; // same strip, return big value
 	if(!IsSameDetector(strip)) 	return min1; // different detector, return big value
 	
-	const TVector3 *p1, *p2;
+	const TVector3 *p1{nullptr}, *p2{nullptr}; //TODO test
 	switch(side)
 	{
 		case kRight: 	p1 = &A; p2 = &B; break;	
-		case kLeft: 	p1 = &C; p2 = &D; break;				
-	};
+		case kLeft: 	p1 = &C; p2 = &D; break;
+		case kInvalid: return min1;				
+	}
 
 	value 	= (*p1 - strip.A).Mag();	min1 = std::min(value, min1); 
 	value 	= (*p1 - strip.B).Mag();	min1 = std::min(value, min1);	
@@ -506,5 +508,4 @@ Double_t 	LStrip::Distance(Side_t side, const LStrip& strip) const
 return std::min(min1, min2);
 }	
 //------------------------------------------------------------------------------------------------------------------------
-
 

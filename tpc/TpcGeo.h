@@ -48,7 +48,7 @@ public:
 
   // Operations ----------------------
 protected:
-  char modName[20];  // name of module
+  char modName[22];  // name of module
   char eleName[20];  // substring for elements in module
 private:
 

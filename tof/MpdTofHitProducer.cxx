@@ -58,7 +58,7 @@ InitStatus 	MpdTofHitProducer::Init()
 
 	LOG(INFO)<<"[MpdTofHitProducer::Init] Initialization finished succesfully.";
 
-return kSUCCESS;
+    return status;
 }
 //------------------------------------------------------------------------------------------------------------------------
 Bool_t 	MpdTofHitProducer::IsHitCreated(Double_t value, Int_t gap) // value - distance to the strip edge [cm]
@@ -66,12 +66,12 @@ Bool_t 	MpdTofHitProducer::IsHitCreated(Double_t value, Int_t gap) // value - di
 	constexpr Double_t slope = (0.98 - 0.95)/0.2;
 	Double_t efficiency = (value > 0.2) ? 0.98 : ( 0.95 + slope*value);
 	
-  //-------------------------------------
+  //------------------------------------- 
   // 99% ---------
-  //              \
-  //               \
-  //                \
-  // 95%             \ 
+  //              \.
+  //               \.
+  //                \.
+  // 95%             \.
   //  <-----------|--|
   //            0.2  0. value
   //-------------------------------------
@@ -166,7 +166,7 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 			Double_t distance = strip->MinDistanceToEdge(&mcPosition, side); // [cm]
 
 			bool stripFired;
-			if(stripFired = IsHitCreated(distance, gap))  // simulate hit efficiency (add flag MpdTofUtils::IsSingle)
+			if( (stripFired = IsHitCreated(distance, gap)) )  // simulate hit efficiency (add flag MpdTofUtils::IsSingle)
 			{
 			 	AddHit(MpdTofPoint::ClearGap(suid), hitPosition, hitPosError, pointIndex, tid, time, MpdTofUtils::IsSingle); 	
 			 	nSingleHits++;			
@@ -181,7 +181,7 @@ void 			MpdTofHitProducer::Exec(Option_t *option)
 				pQA->CentralDetectorTest(suid, hitPosition);
 			}
 	
-	     		if(stripFired = IsCrossHitCreated(distance, gap)) // simulate cross hit efficiency (add flag MpdTofUtils::IsDouble)
+	     		if( (stripFired = IsCrossHitCreated(distance, gap)) ) // simulate cross hit efficiency (add flag MpdTofUtils::IsDouble)
         		{
         			Int_t crossSuid = (side == LStrip::kRight) ? strip->neighboring[LStrip::kRight] : strip->neighboring[LStrip::kLeft];
   
@@ -234,5 +234,4 @@ void 		MpdTofHitProducer::SetSeed(UInt_t seed)
 	pRandom->SetSeed(seed);
 }
 //------------------------------------------------------------------------------------------------------------------------
-
 

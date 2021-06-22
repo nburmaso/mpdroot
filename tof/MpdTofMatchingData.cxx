@@ -26,7 +26,7 @@ MpdTofMatchingData::MpdTofMatchingData()
 }
 //------------------------------------------------------------------------------------------------------------------------
 MpdTofMatchingData::MpdTofMatchingData(Int_t kfTrackId, Int_t tofHitId, Double_t weight, const MpdTofHit* pHit, Double_t length,  Int_t nTrHits,  const TVector3& P, const TVector3& point)
- : fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fLength(length), fNmbTrHits(nTrHits), fWeight(weight)
+ : fKFTrackIndex(kfTrackId), fTofHitIndex(tofHitId), fWeight(weight), fLength(length), fNmbTrHits(nTrHits)
 {
 	fFlag = pHit->GetFlag();
  	fTime = pHit->GetTime();

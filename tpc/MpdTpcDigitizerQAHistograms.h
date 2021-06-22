@@ -3,7 +3,7 @@
 // $Id$
 //
 // Description:
-//      QA for TpcDigitizerTask
+//      QA for TpcВшпшешяукTask
 //
 //
 // Environment:

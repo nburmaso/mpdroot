@@ -57,7 +57,7 @@ void toDirectory(const char* dir)
 {
  std::vector<std::string> splitedPath = pathToList(dir);
  TDirectory *d = (TDirectory*) gFile;
- for(int i = 0; i < splitedPath.size(); i++)
+ for(UInt_t i = 0; i < splitedPath.size(); i++)
  {
   TDirectory *nextDir = (TDirectory*) d->FindObject( splitedPath[i].c_str() );
   if (! nextDir)

@@ -646,8 +646,8 @@ void		MpdTofMatching::FillWeights(const TmPt& mPt, const TmmD2H& mmD2H, const Tm
 //if(pQA) pQA->tidsTofTouch.Reset();
 
 	mcInfo 		*pMCdata = {};	
-	double 		trLength, trackLength;
-	Int_t 		charge;
+	double 		trLength; //, trackLength;
+	//Int_t 		charge;
  	vector<Tinterval> list; // list of strips overlapped probe point
 	fNTofTracksEvent = 0;
 
@@ -655,7 +655,7 @@ void		MpdTofMatching::FillWeights(const TmPt& mPt, const TmmD2H& mmD2H, const Tm
 	{   	
 		auto pKfTrack = (const MpdTpcKalmanTrack*) it.first;
 		Int_t KfIndex = it.second;
-		Int_t tid = pKfTrack->GetTrackID();
+		//Int_t tid = pKfTrack->GetTrackID();
 	
 		if(fDoMCtest)
 		{
@@ -917,5 +917,4 @@ void 		MpdTofMatching::Print(const MpdTpcKalmanTrack *track, const char* comment
 	os<<"Mom=("<<P.X()<<","<<P.Y()<<","<<P.Z()<<";"<<P.Perp()<<","<<P.Mag()<<") Pos=("<<X<<","<<Y<<","<<Z<<"; "<<sqrt(X*X+Y*Y)<<","<<sqrt(X*X+Y*Y+Z*Z)<<")";
 }
 //------------------------------------------------------------------------------------------------------------------------
-
 

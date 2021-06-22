@@ -38,7 +38,6 @@
 #include "TaskHelpers.h"
 #include <TVirtualFFT.h>
 #include <TFile.h>
-
 // C/C++ Headers ----------------------
 #include <math.h>
 #include <iostream>
@@ -57,7 +56,7 @@ static clock_t tStart = 0;
 static clock_t tFinish = 0;
 static clock_t tAll = 0;
 
-FILE *lunAZ = NULL; //fopen("gasGain.dat","w");
+FILE *lunAZ = nullptr; //fopen("gasGain.dat","w");
 //---------------------------------------------------------------------------
 
 MpdTpcDigitizerAZ::MpdTpcDigitizerAZ()
@@ -72,14 +71,14 @@ MpdTpcDigitizerAZ::MpdTpcDigitizerAZ()
   fPrintDebugInfo(kFALSE),
   fIsHistogramsInitialized(kFALSE),
   fMakeQA(kFALSE),
-  fHisto(NULL),
-  fPRF(NULL),
-  fNumOfPadsInRow(NULL),
-  fMCPointArray(NULL),
-  fMCTracksArray(NULL),
-  fDigits(NULL),
-  fSector(NULL),
-  fDigits4dArray(NULL) 
+  fHisto(nullptr),
+  fPRF(nullptr),
+  fNumOfPadsInRow(nullptr),
+  fMCPointArray(nullptr),
+  fMCTracksArray(nullptr),
+  fDigits(nullptr),
+  fSector(nullptr),
+  fDigits4dArray(nullptr) 
   
 {
   fInputBranchName = "TpcPoint";
@@ -107,7 +106,7 @@ InitStatus MpdTpcDigitizerAZ::Init()
 
   //Get ROOT Manager
   FairRootManager* ioman = FairRootManager::Instance();
-  if (FairRunSim::Instance() == NULL)
+  if (FairRunSim::Instance() == nullptr)
     fMagField = FairRunAna::Instance()->GetField();
   else fMagField = FairRunSim::Instance()->GetField();
   //fMagField = FairRunSim::Instance()->GetField();
@@ -461,8 +460,8 @@ void MpdTpcDigitizerAZ::SignalShaping()
   // Apply electronics response function
 
   static Int_t first = 0, nbins = 0, icent = 0;
-  static Double_t *reFilt = NULL, *imFilt = NULL;
-  static TVirtualFFT *fft[2] = {NULL,NULL};
+  static Double_t *reFilt = nullptr, *imFilt = nullptr;
+  static TVirtualFFT *fft[2] = {nullptr,nullptr};
   const Double_t sigma = 190./2/TMath::Sqrt(2*TMath::Log(2)), sigma2 = sigma * sigma; // FWHM = 190 ns
 
   if (first == 0) {

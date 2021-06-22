@@ -134,10 +134,8 @@ void		MpdTofHitProducerQA::PositionInsideStripTest(const TVector3& stripCenter, 
 {
 	double hitMeanR = (stripCenter.Perp() + hitPosition.Perp())/2.;
 	hHitPositionInsideStrip->Fill((stripCenter.Phi() - hitPosition.Phi())*hitMeanR, stripCenter.Z() - hitPosition.Z());
-
-	double mcMeanR = (stripCenter.Perp() + mcPosition.Perp())/2.;
+	//double mcMeanR = (stripCenter.Perp() + mcPosition.Perp())/2.;
 	hMCPositionInsideStrip->Fill((stripCenter.Phi() - mcPosition.Phi())*hitMeanR, stripCenter.Z() - mcPosition.Z());
-
 }
 //------------------------------------------------------------------------------------------------------------------------
 void		MpdTofHitProducerQA::RotationToOriginTest(const TGeoCombiTrans& matrix, const TVector3& mcPosition, const TVector3& hitPosition)
@@ -188,5 +186,4 @@ void	MpdTofHitProducerQA::FillCrossHitEfficiency(bool fired, Double_t distance, 
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------
-
 

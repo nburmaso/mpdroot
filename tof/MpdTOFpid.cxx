@@ -257,7 +257,7 @@ void MpdTOFpid::ReadTOFResponse() {
     cerr<<"PID: READ TOF RESPONSE: Cannot open file "<<BetaFile.Data()<<endl;
    }    
 
-   const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
+  //const Int_t Ntypes = 4; //order: pion, kaon, proton, electron
 
   if(input) {
    

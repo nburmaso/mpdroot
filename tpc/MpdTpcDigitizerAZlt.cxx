@@ -38,7 +38,6 @@
 #include "TaskHelpers.h"
 #include <TVirtualFFT.h>
 #include <TFile.h>
-
 // C/C++ Headers ----------------------
 #include <math.h>
 #include <iostream>
@@ -57,31 +56,29 @@ static clock_t tStart = 0;
 static clock_t tFinish = 0;
 static clock_t tAll = 0;
 
-//FILE *lunAZ = NULL; //fopen("gasGain.dat","w");
+//FILE *lunAZ = nullptr; //fopen("gasGain.dat","w");
 //---------------------------------------------------------------------------
 
 MpdTpcDigitizerAZlt::MpdTpcDigitizerAZlt()
   : FairTask("TPC digitizerAZlt"),
+  fMCPointArray(nullptr),
+  fMCTracksArray(nullptr),
+  fDigits(nullptr),
+  fDigits4dArray(nullptr),
+  fSector(nullptr), 
+  fHisto(nullptr),
+  fPRF(nullptr),
+  fNumOfPadsInRow(nullptr),
+  fIsHistogramsInitialized(kFALSE),
+  fMakeQA(kFALSE),
   fOnlyPrimary(kFALSE),
   fPersistence(kTRUE),
-  fResponse(kTRUE),
-  fDistribute(kTRUE),
   fAttach(kFALSE),
   fDiffuse(kTRUE),
   fDistort(kFALSE),
-  fPrintDebugInfo(kFALSE),
-  fIsHistogramsInitialized(kFALSE),
-  fMakeQA(kFALSE),
-  fHisto(NULL),
-  fPRF(NULL),
-  fNumOfPadsInRow(NULL),
-  fMCPointArray(NULL),
-  fMCTracksArray(NULL),
-  fDigits(NULL),
-  fSector(NULL),
-  fDigits4dArray(NULL) 
-  
-{
+  fResponse(kTRUE),
+  fDistribute(kTRUE),
+  fPrintDebugInfo(kFALSE) {
   fInputBranchName = "TpcPoint";
   fOutputBranchName = "MpdTpcDigit";
   
@@ -107,7 +104,7 @@ InitStatus MpdTpcDigitizerAZlt::Init()
 
   //Get ROOT Manager
   FairRootManager* ioman = FairRootManager::Instance();
-  if (FairRunSim::Instance() == NULL)
+  if (FairRunSim::Instance() == nullptr)
     fMagField = FairRunAna::Instance()->GetField();
   else fMagField = FairRunSim::Instance()->GetField();
   //fMagField = FairRunSim::Instance()->GetField();
@@ -164,7 +161,7 @@ InitStatus MpdTpcDigitizerAZlt::Init()
   fDigits4dArray = new DigOrigArray** [nRows];
   for (UInt_t iRow = 0; iRow < nRows; ++iRow) {
     fDigits4dArray[iRow] = new DigOrigArray* [fNumOfPadsInRow[iRow] * 2];
-    for (UInt_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
+    for (UInt_t iPad = 0; iPad < (UInt_t) fNumOfPadsInRow[iRow] * 2; ++iPad) {
       fDigits4dArray[iRow][iPad] = new DigOrigArray [fNTimeBins];
       for (UInt_t iTime = 0; iTime < fNTimeBins; ++iTime) {
 	fDigits4dArray[iRow][iPad][iTime].isOverlap = kFALSE;
@@ -231,7 +228,7 @@ void MpdTpcDigitizerAZlt::Exec(Option_t* opt)
     TpcPoint* point = (TpcPoint*) fMCPointArray->UncheckedAt(ip);
     Float_t phi = ATan2(point->GetY(), point->GetX()); //angle in global coordinates
     if (phi < 0) phi += TMath::TwoPi();
-    Int_t isec = (Int_t) (phi / phiStep + 0.5); //index of current sector
+    UInt_t isec = (UInt_t) (phi / phiStep + 0.5); //index of current sector
     if (isec == nSectors / 2) isec = 0;
     if (point->GetZ() < 0.0) isec += (nSectors / 2);
     pointsM[isec].insert(pair<Float_t,Int_t>(point->GetTime(),ip));
@@ -285,9 +282,9 @@ void MpdTpcDigitizerAZlt::Exec(Option_t* opt)
     //AZ Electronics response
     SignalShaping();
  
-    Int_t maxTimeBin = MpdTpcSectorGeo::Instance()->TimeMax() / MpdTpcSectorGeo::Instance()->TimeBin() + 1;
+    UInt_t maxTimeBin = (UInt_t) MpdTpcSectorGeo::Instance()->TimeMax() / MpdTpcSectorGeo::Instance()->TimeBin() + 1;
     for (UInt_t iRow = 0; iRow < nRows; ++iRow) {
-      for (UInt_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
+      for (UInt_t iPad = 0; iPad < (UInt_t) fNumOfPadsInRow[iRow] * 2; ++iPad) {
 	//AZ for (UInt_t iTime = 0; iTime < fNTimeBins; ++iTime) {
 	for (UInt_t iTime = 0; iTime < maxTimeBin; ++iTime) {
 	  if (fDigits4dArray[iRow][iPad][iTime].signal > fNoiseThreshold) {
@@ -386,7 +383,7 @@ void MpdTpcDigitizerAZlt::PadResponse(Float_t x, Float_t y, UInt_t timeID, Int_t
   vector<UInt_t> lightedRows;
   vector<Float_t> amps;
 
-  Float_t avAmp = 0.0;
+  //Float_t avAmp = 0.0;
   Float_t amplSum = 0.0;
   Float_t amplitude = 0.0;
 
@@ -466,8 +463,8 @@ void MpdTpcDigitizerAZlt::SignalShaping()
   // Apply electronics response function
 
   static Int_t first = 0, nbins = 0, icent = 0, n2 = 0;
-  static Double_t *reFilt = NULL, *imFilt = NULL;
-  static TVirtualFFT *fft[2] = {NULL,NULL};
+  static Double_t *reFilt = nullptr, *imFilt = nullptr;
+  static TVirtualFFT *fft[2] = {nullptr,nullptr};
   const Double_t sigma = 190./2/TMath::Sqrt(2*TMath::Log(2)), sigma2 = sigma * sigma; // FWHM = 190 ns
   const Int_t maxTimeBin = MpdTpcSectorGeo::Instance()->TimeMax() / MpdTpcSectorGeo::Instance()->TimeBin() + 1;
 
@@ -497,13 +494,13 @@ void MpdTpcDigitizerAZlt::SignalShaping()
   Double_t *reTot = new Double_t [nbins];
   Double_t *imTot = new Double_t [nbins];
   map<Int_t,Int_t> cumul; // cumulative active time bin counter 
-
+  const Double_t ScaleFactor = 0.083916084; //See ampl for details
   //AZ Int_t nRows = MpdTpcSectorGeo::Instance()->NofRows();
-  for (Int_t iRow = 0; iRow < nRows; ++iRow) {
-    for (Int_t iPad = 0; iPad < fNumOfPadsInRow[iRow] * 2; ++iPad) {
+  for (UInt_t iRow = 0; iRow < nRows; ++iRow) {
+    for (UInt_t iPad = 0; iPad < (UInt_t) fNumOfPadsInRow[iRow] * 2; ++iPad) {
       memset(reSig,0,sizeof(Double_t)*nbins);
-      Int_t fired = 0;
-      Int_t ntbins = 0;
+      UInt_t fired = 0;
+      UInt_t ntbins = 0;
 
       //for (Int_t iTime = 0; iTime < nbins; ++iTime) {
       for (Int_t iTime = 0; iTime < maxTimeBin; ++iTime) {
@@ -575,7 +572,7 @@ void MpdTpcDigitizerAZlt::SignalShaping()
 	Double_t ampl = reTot[i1];
 	//
 	// Scale factor to adjust ADC counts
-	ampl /= 30.0;
+	ampl /= 30.0; //include division in scalefactor?
 	//IR 11-MAR-2020 if (ampl > 4095.1) ampl = 4095.1; // dynamic range 12 bits
         //
         // IR03 new scale and rounding
@@ -583,7 +580,7 @@ void MpdTpcDigitizerAZlt::SignalShaping()
         // В старой шкале пик от mip для 15mm пэда был 687 канале, 
         // тогда среднее (As=1.3MP) от рел-роста 1.01 в канале 550.*1.25*1.3,
         // а в правильной шкале должен быть в 75 канале 
-        Double_t ScaleFactor = 75./(550.*1.25*1.3); // 19-MAR-2020 Movchan 
+        // const Double_t ScaleFactor = 0.083916084; //Move above loop == 75./(550.*1.25*1.3); // 19-MAR-2020 Movchan 
         // S.Movchan denies: if( iRow >= 26) ScaleFactor *=(1.2/1.8);
         ampl *= ScaleFactor;
         if( ampl > 1023.1) ampl = 1023.1;                                     
@@ -603,15 +600,12 @@ void MpdTpcDigitizerAZlt::SignalShaping()
 void MpdTpcDigitizerAZlt::GetArea(Float_t xEll, Float_t yEll, Float_t radius, vector<UInt_t> &padIDs, vector<UInt_t> &rowIDs) 
 {
 
-  Float_t padW = 0.0, padH = 0.0;
-  Float_t y = 0.0, x = 0.0;
+  //Float_t padW = 0.0, padH = 0.0;
+  //Float_t y = 0.0, x = 0.0;
   UInt_t pad = 0, row = 0;
-  Float_t delta, yNext;
-  if (fResponse) delta = 0.0;
-  else delta = -1000.0; //for test only!!!
-  
+  Float_t yNext; //delta = 0,
+  //if (!fResponse) delta = -1000.0; //for test only!!!
   fSecGeo->PadID(xEll, yEll, row, pad, yNext);
-
   for (Int_t ip = -1; ip < 2; ++ip) {
     Int_t pad1 = pad + ip;
     if (pad1 < 0) continue;
@@ -628,7 +622,7 @@ void MpdTpcDigitizerAZlt::GetArea(Float_t xEll, Float_t yEll, Float_t radius, ve
       if (fSecGeo->NPadsInRows()[row1] != fSecGeo->NPadsInRows()[row]) --pad; // different number of pads in rows
     } else if (yNext > 0) {
       ++row1;
-      if (row1 > nRows - 1) return;
+      if ((UInt_t)row1 > nRows - 1) return;
       if (fSecGeo->NPadsInRows()[row1] != fSecGeo->NPadsInRows()[row]) ++pad; // different number of pads in rows
     }
     for (Int_t ip = -1; ip < 2; ++ip) {
@@ -649,7 +643,8 @@ Float_t MpdTpcDigitizerAZlt::CalculatePadResponse(Int_t iloop, Int_t nLoop, UInt
 
   const Int_t npads = 5, nposX = 100, nposX2 = nposX * 2; // 5 pads, 100 positions along padrow (step 25 um)
   const Int_t nposY = 100, nposY2 = nposY * 2;
-  static Int_t first = 1, padID0, rowID0, istep0, idist0;
+  static Int_t first = 1, padID0, istep0, idist0;
+  static UInt_t rowID0;
   static Double_t chargeX[npads][nposX], stepX = pwIn / nposX2;
   static Double_t chargeY[2][nposY]; // charges on padrow (inner and outer regions)
   static Double_t cy;
@@ -963,7 +958,7 @@ void MpdTpcDigitizerAZlt::Finish() {
         UInt_t iPad_shifted = 0; //needed for correct drawing of fDigitsArray
 
             for (UInt_t iRows = 0; iRows < nRows; ++iRows) {  
-                for (UInt_t iPads = 0; iPads < fNumOfPadsInRow[iRows] * 2; ++iPads) {
+                for (UInt_t iPads = 0; iPads < (UInt_t) fNumOfPadsInRow[iRows] * 2; ++iPads) {
                     iPad_shifted = iPads + fNumOfPadsInRow[nRows - 1] - fNumOfPadsInRow[iRows];
                     for (UInt_t iTime = 0; iTime < fNTimeBins; ++iTime) {
                         digit = fDigits4dArray[iRows][iPads][iTime].signal;
@@ -980,7 +975,7 @@ void MpdTpcDigitizerAZlt::Finish() {
 
 
         for (UInt_t iRows = 0; iRows < nRows; ++iRows) {
-            for (UInt_t iPads = 0; iPads < fNumOfPadsInRow[iRows] * 2; ++iPads) {
+            for (UInt_t iPads = 0; iPads < (UInt_t) fNumOfPadsInRow[iRows] * 2; ++iPads) {
                 iPad_shifted = iPads + fNumOfPadsInRow[nRows - 1] - fNumOfPadsInRow[iRows];
                 for (UInt_t iTime = 0; iTime < fNTimeBins; ++iTime) {
                     digit = fDigits4dArray[iRows][iPads][iTime].signal;
@@ -995,27 +990,27 @@ void MpdTpcDigitizerAZlt::Finish() {
         }
 
         for (UInt_t iTime = 0; iTime < fNTimeBins; ++iTime) {
-            for (UInt_t iPads = 0; iPads < fNumOfPadsInRow[1] * 2; ++iPads) {
+            for (UInt_t iPads = 0; iPads < (UInt_t) fNumOfPadsInRow[1] * 2; ++iPads) {
                 iPad_shifted = iPads + fNumOfPadsInRow[nRows - 1] - fNumOfPadsInRow[1];
                 digit = fDigits4dArray[1][iPads][iTime].signal;
                 fHisto->_hXT_dig_1->Fill(iPad_shifted, iTime, digit);
             }
-            for (UInt_t iPads = 0; iPads < fNumOfPadsInRow[5] * 2; ++iPads) {
+            for (UInt_t iPads = 0; iPads < (UInt_t) fNumOfPadsInRow[5] * 2; ++iPads) {
                 iPad_shifted = iPads + fNumOfPadsInRow[nRows - 1] - fNumOfPadsInRow[5];
                 digit = fDigits4dArray[5][iPads][iTime].signal;
                 fHisto->_hXT_dig_5->Fill(iPad_shifted, iTime, digit);
             }
-            for (UInt_t iPads = 0; iPads < fNumOfPadsInRow[10] * 2; ++iPads) {
+            for (UInt_t iPads = 0; iPads < (UInt_t) fNumOfPadsInRow[10] * 2; ++iPads) {
                 iPad_shifted = iPads + fNumOfPadsInRow[nRows - 1] - fNumOfPadsInRow[10];
                 digit = fDigits4dArray[10][iPads][iTime].signal;
                 fHisto->_hXT_dig_10->Fill(iPad_shifted, iTime, digit);
             }
-            for (UInt_t iPads = 0; iPads < fNumOfPadsInRow[20] * 2; ++iPads) {
+            for (UInt_t iPads = 0; iPads < (UInt_t) fNumOfPadsInRow[20] * 2; ++iPads) {
                 iPad_shifted = iPads + fNumOfPadsInRow[nRows - 1] - fNumOfPadsInRow[20];
                 digit = fDigits4dArray[20][iPads][iTime].signal;
                 fHisto->_hXT_dig_20->Fill(iPad_shifted, iTime, digit);
             }
-            for (UInt_t iPads = 0; iPads < fNumOfPadsInRow[40] * 2; ++iPads) {
+            for (UInt_t iPads = 0; iPads < (UInt_t) fNumOfPadsInRow[40] * 2; ++iPads) {
                 iPad_shifted = iPads + fNumOfPadsInRow[nRows - 1] - fNumOfPadsInRow[40];
                 digit = fDigits4dArray[40][iPads][iTime].signal;
                 fHisto->_hXT_dig_40->Fill(iPad_shifted, iTime, digit);

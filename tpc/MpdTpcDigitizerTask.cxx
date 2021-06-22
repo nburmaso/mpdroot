@@ -38,7 +38,6 @@
 #include "TaskHelpers.h"
 #include "MpdTpcDigit.h"
 #include "TFile.h"
-
 // Class Member definitions -----------
 
 using namespace std;
@@ -61,14 +60,14 @@ fDistort(kFALSE),
 fPrintDebugInfo(kFALSE),
 fIsHistogramsInitialized(kFALSE),
 fMakeQA(kFALSE),
-fHisto(NULL),
-fPRF(NULL),
-fNumOfPadsInRow(NULL),
-fMCPointArray(NULL),
-fMCTracksArray(NULL),
-fDigits(NULL),
-fSector(NULL),
-fDigits4dArray(NULL) {
+fHisto(nullptr),
+fPRF(nullptr),
+fNumOfPadsInRow(nullptr),
+fMCPointArray(nullptr),
+fMCTracksArray(nullptr),
+fDigits(nullptr),
+fSector(nullptr),
+fDigits4dArray(nullptr) {
     fInputBranchName = "TpcPoint";
     fOutputBranchName = "MpdTpcDigit";
 

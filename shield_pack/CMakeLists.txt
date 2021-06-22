@@ -1,7 +1,7 @@
-cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 if(NOT DEFINED PROJECT_NAME)
     project (TShield)
-    set(NOT_BUILD_GenelalGenerator "TRUE")
+    set(NOT_BUILD_GeneralGenerator "TRUE")
 endif()
 
 set(TSHIELD_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})

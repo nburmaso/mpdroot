@@ -591,7 +591,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
 
   TH2D *hXY = new TH2D("hTimePad","Pad No. vs Time bin",nx,clus->MinBkt(),clus->MaxBkt()+1,
 		       ny,clus->MinCol()-1,clus->MaxCol()+2);
-  TH2D *hOvfw = NULL;
+  TH2D *hOvfw = nullptr;
   if (clus->Overflows() > 1 && nDigis < 50) {
     // Special treatment for (relatively) small clusters with many overflows
     if (gROOT->FindObject("hOvfw")) gROOT->FindObject("hOvfw")->Delete();
@@ -653,7 +653,7 @@ void MpdTpcClusterFinderMlem::Mlem(Int_t iclus, multimap<Double_t,Int_t> &localM
   //for (Int_t ibin = 0; ibin < nbins; ++ibin) cout << ibin << " " << pixels[1][ibin].qq << " " 
   //						  << pixels[1][ibin].ix << " " << pixels[1][ibin].iy << endl;
 
-  //TH2D *hMlem[2] = {NULL, (TH2D*)hXY->Clone("hMlem1")};
+  //TH2D *hMlem[2] = {nullptr, (TH2D*)hXY->Clone("hMlem1")};
   TH2D *hMlem[2] = {(TH2D*)hXY->Clone("hMlem0"), (TH2D*)hXY->Clone("hMlem1")};
   //TH2D *hExp = (TH2D*) hXY->Clone("hExp"); // for testing
 
@@ -1157,7 +1157,7 @@ void MpdTpcClusterFinderMlem::CreateHits(const vector<pixel> &pixels, multimap<D
   MpdTpc2dCluster* clus = (MpdTpc2dCluster*) fClusArray->UncheckedAt(iclus);
   TH2D *hXY = (TH2D*) gROOT->FindObject("hTimePad");
   TH2D *hMlem = (TH2D*) gROOT->FindObject("hMlem1");
-  //if (hMlem == NULL) hMlem = (TH2D*) gROOT->FindObject("hMlem1");
+  //if (hMlem == nullptr) hMlem = (TH2D*) gROOT->FindObject("hMlem1");
   Double_t scale = hXY->GetXaxis()->GetBinWidth(1) / hMlem->GetXaxis()->GetBinWidth(1);
 
   multimap<Double_t,Int_t>::reverse_iterator rit = localMax.rbegin();
