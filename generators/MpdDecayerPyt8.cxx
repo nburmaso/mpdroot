@@ -515,7 +515,7 @@ void MpdDecayerPyt8::ChangeParticleBr(TObjArray *channels)
 
   Int_t pdg = ((TObjString*)channels->UncheckedAt(0))->String().Atoi();
   //cout << pdg << endl;
-  ParticleDataEntry* part = fPythia8->Pythia8()->particleData.particleDataEntryPtr(pdg); // mother particle
+  ParticleDataEntryPtr part = fPythia8->Pythia8()->particleData.particleDataEntryPtr(pdg); // mother particle
   Int_t ndecays = part->sizeChannels();
   
   TObjArray *tokens = NULL;

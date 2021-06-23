@@ -22,7 +22,12 @@ class TPythia8;
 class TRandom;
 
 #include <set>
- 
+#if PYTHIA_VERSION_INTEGER < 8304
+ typedef Pythia8::ParticleDataEntry* ParticleDataEntryPtr;
+#else
+ typedef Pythia8::ParticleDataEntryPtr ParticleDataEntryPtr;
+#endif
+
 class MpdDecayerPyt8 : public TVirtualMCDecayer 
 {
 
@@ -68,7 +73,7 @@ class MpdDecayerPyt8 : public TVirtualMCDecayer
   Int_t     fGlobalPolar;      // global polarization flag
   
   Float_t fBranch; // branching of lambda to p + \pi-
-  Pythia8::ParticleDataEntry *fLambda; // pointer to Lambda in Pythia8 database
+  ParticleDataEntryPtr fLambda; // pointer to Lambda in Pythia8 database
   TLorentzVector fMother; // mother decay point position
   TClonesArray *fParticles;
   TRotation fRotation;
