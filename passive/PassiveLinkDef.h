@@ -17,6 +17,7 @@
 #pragma link C++ class  FairTarget+;
 #pragma link C++ class  FairPipe+;
 #pragma link C++ class  FairCave+;
+#pragma link C++ class  FairConverter+;
 
 #pragma link C++ class FairGeoCave;
 #pragma link C++ class FairGeoPipe;
@@ -24,6 +25,7 @@
 #pragma link C++ class FairGeoMagnet;
 #pragma link C++ class FairGeoPassivePar;
 #pragma link C++ class FairPassiveContFact;
+#pragma link C++ class FairGeoConverter;
 
 #endif
 

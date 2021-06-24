@@ -25,16 +25,18 @@ Set(LINK_DIRECTORIES
 Link_Directories(${LINK_DIRECTORIES})
 
 Set(SRCS
-  FairCave.cxx            
-  FairGeoCave.cxx        
-  FairGeoMagnet.cxx      
-  FairGeoPassivePar.cxx  
-  FairGeoPipe.cxx        
-  FairGeoTarget.cxx      
-  FairMagnet.cxx         
+  FairCave.cxx
+  FairGeoCave.cxx
+  FairGeoMagnet.cxx
+  FairGeoPassivePar.cxx
+  FairGeoPipe.cxx
+  FairGeoTarget.cxx
+  FairMagnet.cxx
   FairPassiveContFact.cxx
-  FairPipe.cxx           
-  FairTarget.cxx 
+  FairPipe.cxx
+  FairTarget.cxx
+  FairGeoConverter.cxx
+  FairConverter.cxx
 )
 
 Set(HEADERS )

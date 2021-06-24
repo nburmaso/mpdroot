@@ -14,63 +14,61 @@
 #include <stddef.h>                     // for NULL
 #include <iostream>                     // for operator<<, basic_ostream, etc
 
-FairPipe::~FairPipe()
-{
-}
-FairPipe::FairPipe()
-{
+FairPipe::~FairPipe() {
 }
 
-FairPipe::FairPipe(const char * name, const char * title)
-  : FairModule(name ,title)
-{
+FairPipe::FairPipe() {
 }
-void FairPipe::ConstructGeometry()
-{
 
-  TString fileName=GetGeometryFileName();
+FairPipe::FairPipe(const char *name, const char *title)
+    : FairModule(name, title) {
+}
+
+void FairPipe::ConstructGeometry() {
+  TString fileName = GetGeometryFileName();
   if (fileName.EndsWith(".geo")) {
     ConstructASCIIGeometry();
-  } else if(fileName.EndsWith(".root")) {
+  } else if (fileName.EndsWith(".root")) {
     ConstructRootGeometry();
   } else {
-    std::cout<< "Geometry format not supported " <<std::endl;
+    std::cout << "Geometry format not supported " << std::endl;
   }
 }
-void FairPipe::ConstructASCIIGeometry(){
 
-    FairGeoLoader *loader=FairGeoLoader::Instance();
-        FairGeoInterface *GeoInterface =loader->getGeoInterface();
-        FairGeoPipe *MGeo=new FairGeoPipe();
-	MGeo->setGeomFile(GetGeometryFileName());
-	GeoInterface->addGeoModule(MGeo);
-	Bool_t rc = GeoInterface->readSet(MGeo);
-	if ( rc ) MGeo->create(loader->getGeoBuilder());
-	
-        TList* volList = MGeo->getListOfVolumes();
-        // store geo parameter
-        FairRun *fRun = FairRun::Instance();
-        FairRuntimeDb *rtdb= FairRun::Instance()->GetRuntimeDb();
-        FairGeoPassivePar* par=(FairGeoPassivePar*)(rtdb->getContainer("FairGeoPassivePar"));
-        TObjArray *fSensNodes = par->GetGeoSensitiveNodes();
-        TObjArray *fPassNodes = par->GetGeoPassiveNodes();
+void FairPipe::ConstructASCIIGeometry() {
 
-        TListIter iter(volList);
-        FairGeoNode* node   = NULL;
-        FairGeoVolume *aVol=NULL;
+  FairGeoLoader *loader = FairGeoLoader::Instance();
+  FairGeoInterface *GeoInterface = loader->getGeoInterface();
+  FairGeoPipe *MGeo = new FairGeoPipe();
+  MGeo->setGeomFile(GetGeometryFileName());
+  GeoInterface->addGeoModule(MGeo);
+  Bool_t rc = GeoInterface->readSet(MGeo);
+  if (rc) MGeo->create(loader->getGeoBuilder());
 
-        while( (node = (FairGeoNode*)iter.Next()) ) {
-            aVol = dynamic_cast<FairGeoVolume*> ( node );
-            if ( node->isSensitive()  ) {
-                fSensNodes->AddLast( aVol );
-            }else{
-                fPassNodes->AddLast( aVol );
-            }
-        }
-	ProcessNodes( volList );
-        par->setChanged();
-        par->setInputVersion(fRun->GetRunId(),1);
+  TList *volList = MGeo->getListOfVolumes();
+  // store geo parameter
+  FairRun *fRun = FairRun::Instance();
+  FairRuntimeDb *rtdb = FairRun::Instance()->GetRuntimeDb();
+  FairGeoPassivePar *par = (FairGeoPassivePar *) (rtdb->getContainer("FairGeoPassivePar"));
+  TObjArray *fSensNodes = par->GetGeoSensitiveNodes();
+  TObjArray *fPassNodes = par->GetGeoPassiveNodes();
+
+  TListIter iter(volList);
+  FairGeoNode *node = NULL;
+  FairGeoVolume *aVol = NULL;
+
+  while ((node = (FairGeoNode *) iter.Next())) {
+    aVol = dynamic_cast<FairGeoVolume *> ( node );
+    if (node->isSensitive()) {
+      fSensNodes->AddLast(aVol);
+    } else {
+      fPassNodes->AddLast(aVol);
+    }
+  }
+  ProcessNodes(volList);
+  par->setChanged();
+  par->setInputVersion(fRun->GetRunId(), 1);
 }
-	
+
 ClassImp(FairPipe)
 
