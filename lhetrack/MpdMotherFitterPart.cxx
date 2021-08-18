@@ -359,7 +359,7 @@ Double_t MpdMotherFitterPart::FindVertex(vector<MpdParticle*> vDaught, TVector3 
 {
   /// Kalman filter based secondary vertex fitter
 
-  const Int_t nPass = 3; // number of iterations
+  const Int_t nPass = 20; // number of iterations
   const Double_t cutChi2 = 1000.; // chi2-cut
 
   EvalVertex(vDaught);
@@ -375,6 +375,7 @@ Double_t MpdMotherFitterPart::FindVertex(vector<MpdParticle*> vDaught, TVector3 
   c(0,0) = c(1,1) = c(2,2) = 1;
 
   for (Int_t ipass = 0; ipass < nPass; ++ipass) {
+    // printf("ipass = %d\n", ipass);
 
     chi2o = chi2;
     chi2 = 0.;
@@ -462,21 +463,19 @@ Double_t MpdMotherFitterPart::FindVertex(vector<MpdParticle*> vDaught, TVector3 
       chi2 += chi21(0,0);
       //if (chi2 > cutChi2) {
       if (chi2 > cutChi2 || chi21(0,0) < 0 || chi22(0,0) < 0) {
-	for (Int_t i = 0; i < 3; ++i) vtx[i] = fVtx[i];
-	/*
-	for (Int_t i = 0; i < nDaught; ++i) {
-	  MpdKalmanTrack trTmp = *vDaught[i];
-	  trTmp.SetPos(trTmp.GetPosNew());
-	  trTmp.SetParamNew(*trTmp.GetParam());
-	  if (trTmp.GetNode() != "") trTmp.SetNode(""); // 25-jul-2012
-	  MpdKalmanFilter::Instance()->FindPca(&trTmp,fVtx);
-	  vDaught[i]->SetParam(*trTmp.GetParamNew());
-	  vDaught[i]->SetPosNew(trTmp.GetPosNew());
-	}
-	*/
-	// AZ-Debug
-	//cout << " !!! Too high chi2: " << ipass << " " << itr << " " << chi2 << " " << chi22(0,0) << " " << chi21(0,0) << " " << vtx[0] << " " << vtx[1] << " " << vtx[2] << " " << fVtx[0] << " " << fVtx[1] << " " << fVtx[2] << " " << tracks[0]->GetNode() << " " << tracks[1]->GetNode() << " ids: " << tracks[0]->GetTrackID() << " " << tracks[1]->GetTrackID() << " " << xk0(0,0) << " " << xk0(1,0) << " " << xk0(2,0) << " " << xk(0,0) << " " << xk(1,0) << " " << xk(2,0) << endl;
-	return -cutChi2;
+        for (Int_t i = 0; i < 3; ++i) vtx[i] = fVtx[i];
+//          for (Int_t i = 0; i < nDaught; ++i) {
+//            MpdKalmanTrack trTmp = *vDaught[i];
+//            trTmp.SetPos(trTmp.GetPosNew());
+//            trTmp.SetParamNew(*trTmp.GetParam());
+//            if (trTmp.GetNode() != "") trTmp.SetNode(""); // 25-jul-2012
+//            MpdKalmanFilter::Instance()->FindPca(&trTmp,fVtx);
+//            vDaught[i]->SetParam(*trTmp.GetParamNew());
+//            vDaught[i]->SetPosNew(trTmp.GetPosNew());
+//          }
+        // AZ-Debug
+        //cout << " !!! Too high chi2: " << ipass << " " << itr << " " << chi2 << " " << chi22(0,0) << " " << chi21(0,0) << " " << vtx[0] << " " << vtx[1] << " " << vtx[2] << " " << fVtx[0] << " " << fVtx[1] << " " << fVtx[2] << " " << tracks[0]->GetNode() << " " << tracks[1]->GetNode() << " ids: " << tracks[0]->GetTrackID() << " " << tracks[1]->GetTrackID() << " " << xk0(0,0) << " " << xk0(1,0) << " " << xk0(2,0) << " " << xk(0,0) << " " << xk(1,0) << " " << xk(2,0) << endl;
+        return -cutChi2;
       }
       //cout << ipass << " " << itr << " " << chi2 << endl;
     } // for (Int_t itr = 0; itr < nDaught;

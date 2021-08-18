@@ -1329,7 +1329,7 @@ Int_t MpdTpcKalmanFilter::RunKalmanFilter(MpdTpcKalmanTrack *track)
   for (Int_t lay = layBeg; lay != layEnd; lay+=dLay) {
     //#pragma omp critical
     {
-      //nLay = GetNofHitsInLayer(lay);
+      nLay = GetNofHitsInLayer(lay);
     }
     //Int_t indx0 = GetHitsInLayer(lay);
 
@@ -1337,7 +1337,7 @@ Int_t MpdTpcKalmanFilter::RunKalmanFilter(MpdTpcKalmanTrack *track)
     Double_t dChi2Min = 1.e+6, padH = lay < MpdTpcSectorGeo::Instance()->NofRowsReg(0) ?
       MpdTpcSectorGeo::Instance()->PadHeight() : MpdTpcSectorGeo::Instance()->PadHeight(1);
     MpdKalmanHit *hitMin = 0x0;
-    //cout << " lay, nLay: " << lay << " " << nLay << " " << indx0 << endl;
+    cout << " lay, nLay: " << lay << " " << nLay << endl;
     Int_t indxBeg = 0, indxEnd = nLay, dIndx = 1, secFirst = -1, isecHit = -1, isecDif = 0;
     if (trackDir == MpdKalmanTrack::kOutward) {
       indxBeg = nLay - 1;

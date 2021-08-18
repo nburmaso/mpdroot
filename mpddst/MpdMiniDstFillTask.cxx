@@ -1172,11 +1172,9 @@ void MpdMiniDstFillTask::fillCovMatrix(MpdTpcKalmanTrack* tpcTrack, MpdMiniTrack
   for (Int_t iEle = 0; iEle < nElements; iEle++) {
     if (iEle % Int_t(TMath::Sqrt(nElements) + 1) == 0) {
       sigmas.push_back(matrixElements[iEle]);
-
       for (Int_t jEle = 1; jEle < shift; jEle++) {
-	correlations.push_back(matrixElements[iEle + jEle]);
+        correlations.push_back(matrixElements[iEle + jEle]);
       }
-
       shift--;
     } // if (iEle % Int_t(TMath::Sqrt(nElements) + 1) == 0)
   } // for (Int_t iEle = 0; iEle < nElements; iEle++)

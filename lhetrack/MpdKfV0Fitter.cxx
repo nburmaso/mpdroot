@@ -1,5 +1,5 @@
 /// \class MpdKfV0Fitter
-/// 
+///
 /// Kalman filter V0 fitter for the MPD detector
 /// \author Alexander Zinchenko (LHEP, JINR, Dubna)
 
@@ -27,7 +27,7 @@ using std::endl;
 MpdKfV0Fitter* MpdKfV0Fitter::fgV0 = 0x0;
 
 //__________________________________________________________________________
-MpdKfV0Fitter::MpdKfV0Fitter() 
+MpdKfV0Fitter::MpdKfV0Fitter()
   : FairTask()
 {
   /// Default constructor
@@ -68,7 +68,7 @@ MpdKfV0Fitter* MpdKfV0Fitter::Instance(const char *name, const char *title)
 }
 
 //__________________________________________________________________________
-MpdKfV0Fitter::~MpdKfV0Fitter() 
+MpdKfV0Fitter::~MpdKfV0Fitter()
 {
   /// Destructor
   //FairRootManager *manager = FairRootManager::Instance();
@@ -89,21 +89,21 @@ InitStatus MpdKfV0Fitter::Init() {
 }
 
 //__________________________________________________________________________
-InitStatus MpdKfV0Fitter::ReInit() 
+InitStatus MpdKfV0Fitter::ReInit()
 {
   //fMagField = FairRunAna::Instance()->GetField(); // !!! interim solution !!!
   return kSUCCESS;
 }
 
 //__________________________________________________________________________
-void MpdKfV0Fitter::Reset() 
+void MpdKfV0Fitter::Reset()
 {
   ///
   //cout << " MpdKfV0Fitter::Reset  " << endl;
 }
 
 //__________________________________________________________________________
-void MpdKfV0Fitter::Register() 
+void MpdKfV0Fitter::Register()
 {
   ///
   //FairRootManager::Instance()->
@@ -111,13 +111,13 @@ void MpdKfV0Fitter::Register()
 }
 
 //__________________________________________________________________________
-void MpdKfV0Fitter::Finish() 
+void MpdKfV0Fitter::Finish()
 {
   ///
 }
 
 //__________________________________________________________________________
-void MpdKfV0Fitter::Exec(Option_t * option) 
+void MpdKfV0Fitter::Exec(Option_t * option)
 {
   ///
 }
@@ -139,10 +139,10 @@ void MpdKfV0Fitter::EvalVertex(MpdKalmanTrack* tr[2])
     Double_t dip = tr[i]->GetParam(3);
     Double_t cur = TMath::Abs (tr[i]->GetParam(4)) * fieldConst;
     TVector3 o(x, y, tr[i]->GetParam(1));
-      
-    Int_t h = (Int_t) TMath::Sign(1.1,tr[i]->GetParam(4));
+
+    Int_t h = (Int_t) TMath::Sign(1,tr[i]->GetParam(4));
     //helix[itr++] = MpdHelix(cur, dip, phi, o, h);
-    helix[i] = new MpdHelix(cur, dip, tr[i]->GetParam(2)-TMath::PiOver2()*h, o, h);
+    helix[i] = new MpdHelix(cur, dip, tr[i]->GetParam(2)-TMath::PiOver2()*h*0.995, o, h * 1.1);
     //cout << helix[i]->xcenter() << " " << helix[i]->ycenter() << endl;
     sum += o;
   }
@@ -153,11 +153,12 @@ void MpdKfV0Fitter::EvalVertex(MpdKalmanTrack* tr[2])
   TVector3 p2 = helix[1]->at(paths.second);
   p1 += p2;
   p1 *= 0.5;
-  if (TMath::Abs(paths.first) > 50) p1.SetXYZ(0,0,0);
+  if (TMath::Abs(paths.first) > 80) p1.SetXYZ(0,0,0);
   p1.GetXYZ(fVtx);
+  p1.Print();
   for (Int_t i = 0; i < 2; ++i) delete helix[i];
-  sum *= 0.5;
-  //sum.GetXYZ(fVtx); // half-sum
+  // sum *= 0.5;
+  // sum.GetXYZ(fVtx); // half-sum
 }
 
 //__________________________________________________________________________
@@ -218,10 +219,10 @@ Double_t MpdKfV0Fitter::FindVertex(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2, TVe
 	  // ITS
 	  detName = detName(16,detName.Length());
 	  detName += "#0";
-	} 
+	}
 	MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
 	hit.SetDetectorID(geo->DetId(detName));
-	// Find distance from the current track position to the last point (plane) - 
+	// Find distance from the current track position to the last point (plane) -
 	// to define direction (mainly for ITS)
 	TVector3 pos = geo->GlobalPos(&hit);
 	TVector3 norm = geo->Normal(&hit);
@@ -233,7 +234,7 @@ Double_t MpdKfV0Fitter::FindVertex(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2, TVe
 	TVector3 v3(v7[0], v7[1], v7[2]);
 	d += v3 * norm;
 	if (d < 0) track1.SetDirection(MpdKalmanTrack::kOutward);
-      }	
+      }
       MpdKalmanFilter::Instance()->PropagateToHit(&track1,&hit,kFALSE,kTRUE);
       //track1.GetParamNew()->Print();
       //cout << " Meas. radius " << track1.GetPosNew() << endl;
@@ -258,7 +259,7 @@ Double_t MpdKfV0Fitter::FindVertex(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2, TVe
       c = TMatrixD(a,TMatrixD::kTransposeMult,tmp5);
       c += cov;
       c.Invert();
-      
+
       // xk = Ck*((Ck-1)'x(k-1)+At*Gb*(m-ck0))
       TMatrixD m = *track1.GetParamNew();
       m -= ck0; // m-ck0
@@ -267,7 +268,7 @@ Double_t MpdKfV0Fitter::FindVertex(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2, TVe
       //m.Print();
       TMatrixD tmp11(gb,TMatrixD::kMult,m);
       TMatrixD tmp12(a,TMatrixD::kTransposeMult,tmp11);
-      TMatrixD tmp13(cov,TMatrixD::kMult,xk0); 
+      TMatrixD tmp13(cov,TMatrixD::kMult,xk0);
       tmp13 += tmp12;
       xk = TMatrixD(c,TMatrixD::kMult,tmp13);
       //cout << " Vertex: " << itr << " " << track->GetTrackID() << " " << xk(0,0) << " " << xk(1,0) << " " << xk(2,0) << endl;
@@ -328,7 +329,7 @@ Double_t MpdKfV0Fitter::FindVertex(MpdKalmanTrack *tr1, MpdKalmanTrack *tr2, TVe
   fCovar.ResizeTo(3,3);
   fCovar = c;
 
-  Smooth(tracks);
+  // Smooth(tracks);
   return chi2;
 }
 
@@ -370,10 +371,10 @@ void MpdKfV0Fitter::Smooth(MpdKalmanTrack* tr[2])
 	// ITS
 	detName = detName(16,detName.Length());
 	detName += "#0";
-      } 
+      }
       MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
       hit.SetDetectorID(geo->DetId(detName));
-      // Find distance from the current track position to the last point (plane) - 
+      // Find distance from the current track position to the last point (plane) -
       // to define direction (mainly for ITS)
       TVector3 pos = geo->GlobalPos(&hit);
       TVector3 norm = geo->Normal(&hit);
@@ -384,7 +385,7 @@ void MpdKfV0Fitter::Smooth(MpdKalmanTrack* tr[2])
       TVector3 v3(v7[0], v7[1], v7[2]);
       d += v3 * norm;
       if (d < 0) track1.SetDirection(MpdKalmanTrack::kOutward);
-    }	
+    }
 
     MpdKalmanFilter::Instance()->PropagateToHit(&track1,&hit,kTRUE,kTRUE);
     //track1.GetParamNew()->Print();
@@ -411,8 +412,8 @@ void MpdKfV0Fitter::Smooth(MpdKalmanTrack* tr[2])
     // Update momentum and last coordinates
     TMatrixD par = *track->GetParam();
     for (Int_t i = 0; i < 3; ++i) par(i+2,0) = qk(i,0);
-    par(0,0) = rad * phi; 
-    par(1,0) = fVtx[2]; 
+    par(0,0) = rad * phi;
+    par(1,0) = fVtx[2];
     track->SetParam(par);
     track->SetPosNew(rad);
 
@@ -434,7 +435,7 @@ void MpdKfV0Fitter::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track,
 				 TMatrixD &a, TMatrixD &b, TMatrixD &ck0)
 {
   /// Compute matrices of derivatives w.r.t. vertex coordinates and track momentum
- 
+
   Double_t vert0[3], zero[3] = {0}, *vert = xk0.GetMatrixArray();
   for (Int_t i = 0; i < 3; ++i) vert0[i] = vert[i];
 
@@ -458,7 +459,7 @@ void MpdKfV0Fitter::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track,
   trackk.SetNode("");
   MpdKalmanTrack track0 = trackk;
 
-  // Propagate track to chosen radius 
+  // Propagate track to chosen radius
   MpdKalmanHit hit;
   if (track->GetNode() == "") {
     hit.SetType(MpdKalmanHit::kFixedR);
@@ -475,10 +476,10 @@ void MpdKfV0Fitter::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track,
       // ITS
       detName = detName(16,detName.Length());
       detName += "#0";
-    } 
+    }
     MpdKalmanGeoScheme *geo = MpdKalmanFilter::Instance()->GetGeo();
     hit.SetDetectorID(geo->DetId(detName));
-    // Find distance from the current track position to the last point (plane) - 
+    // Find distance from the current track position to the last point (plane) -
     // to define direction (mainly for ITS)
     TVector3 pos = geo->GlobalPos(&hit);
     TVector3 norm = geo->Normal(&hit);
@@ -523,7 +524,7 @@ void MpdKfV0Fitter::ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track,
     if (j == 4) shift *= TMath::Sign(1.,-track0.GetParamNew(j)); // 1/p
     //if (j == 4) shift *= TMath::Sign(1.,track0.GetParamNew(j)); // 1/p
     track1.SetParam(j,track0.GetParamNew(j)+shift);
-    //if (j == 2 && track1.GetParamNew(j)*TMath::Sign(1.,track1.GetParamNew(j)) > TMath::Pi()) 
+    //if (j == 2 && track1.GetParamNew(j)*TMath::Sign(1.,track1.GetParamNew(j)) > TMath::Pi())
     //track1.SetParam(j,track0.GetParamNew(j)-shift);
     if (track->GetNode() == "") {
       MpdKalmanFilter::Instance()->PropagateParamR(&track1,&hit,kFALSE);

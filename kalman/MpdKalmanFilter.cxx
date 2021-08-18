@@ -31,8 +31,8 @@ omp_lock_t geoManagerLock;
 using std::cout;
 using std::endl;
 
-const Int_t MpdKalmanFilter::fgkTriesMax = 1000;
-const Double_t MpdKalmanFilter::fgkEpsilon = 0.001; 
+const Int_t MpdKalmanFilter::fgkTriesMax = 20000;
+const Double_t MpdKalmanFilter::fgkEpsilon = 0.00001;
 MpdKalmanFilter* MpdKalmanFilter::fgKF = 0x0;
 
 //__________________________________________________________________________
