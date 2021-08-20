@@ -27,7 +27,7 @@ class MpdKfV0Fitter : public FairTask
   void Reset();
   void Register();
 
-  void EvalVertex(MpdKalmanTrack* tr[2]); // evaluate V0 for 2 tracks
+  double EvalVertex(MpdKalmanTrack* tr[2]); // evaluate V0 for 2 tracks
   Double_t FindVertex(MpdKalmanTrack *track1, MpdKalmanTrack *track2, TVector3 &vtx); // find V0 for 2 tracks
   void Smooth(MpdKalmanTrack* tr[2]); // smooth (update track momenta and track lengths)
   void ComputeAandB(TMatrixD &xk0, const MpdKalmanTrack *track, const MpdKalmanTrack &trackM,
